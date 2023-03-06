@@ -79,10 +79,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
 		<ProjectReference Include="..\..\Bcl\src\WpfLib\WpfLib.csproj" />
-		<ProjectReference Include="..\..\Contracts\Contracts.csproj" />
 		<ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Internals\Data\Data.csproj" />
-		<ProjectReference Include="..\..\UiContracts\Contracts.csproj" />
 		<ProjectReference Include="..\..\UiServices\Services.csproj" />
 		<ProjectReference Include="..\Engine\Engine.csproj" />
 	</ItemGroup>

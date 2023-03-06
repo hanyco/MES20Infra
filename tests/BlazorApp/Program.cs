@@ -22,7 +22,7 @@ public class Program
                 options.Filters.Add(new SampleAsyncPageFilter());
             });
         _ = builder.Services.AddServerSideBlazor();
-
+        
         _ = builder.Services.AddSingleton<IMapper, Mapper>()
                             .AddMesInfraServices<Program>("connection string", Library.Logging.ILogger.Empty);
 

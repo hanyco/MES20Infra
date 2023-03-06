@@ -23,11 +23,8 @@
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.7" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
-      <ProjectReference Include="..\..\Bcl\src\CqrsLib\CqrsLib.csproj" />
-      <ProjectReference Include="..\..\Contracts\Contracts.csproj" />
-      <ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />
-      <ProjectReference Include="..\..\Security\Security.csproj" />
+      <ProjectReference Include="..\..\src\Bcl\src\CoreLib\CoreLib.csproj" />
+      <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

@@ -23,7 +23,8 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\CodeGenerator\Engine\Engine.csproj" />
+        <ProjectReference Include="..\..\src\CodeGenerator\Engine\Engine.csproj" />
+        <ProjectReference Include="..\..\src\Bcl\src\CoreLib\CoreLib.csproj" />
         <!--<ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />-->
     </ItemGroup>
 
