@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>preview</LangVersion>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+		<GenerateRequiresPreviewFeaturesAttribute>true</GenerateRequiresPreviewFeaturesAttribute>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<PropertyGroup>
+		<AssemblyName>HanyCo.Infra.CodeGeneration</AssemblyName>
+		<RootNamespace>HanyCo.Infra.CodeGeneration</RootNamespace>
+		<Configurations>Debug;Release;Release Infra</Configurations>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="CodeGenerator\Models\Components\ApiControllers\**" />
+		<EmbeddedResource Remove="CodeGenerator\Models\Components\ApiControllers\**" />
+		<None Remove="CodeGenerator\Models\Components\ApiControllers\**" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
+		<PackageReference Include="System.CodeDom" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\..\Bcl\src\CqrsLib\CqrsLib.csproj" />
+		<ProjectReference Include="..\..\Contracts\Contracts.csproj" />
+		<ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />
+	</ItemGroup>
+</Project>

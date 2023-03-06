@@ -1,0 +1,180 @@
+﻿<local:PageBase
+    x:Class="HanyCo.Infra.UI.Controls.Pages.DtoDetailsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Blazor="clr-namespace:HanyCo.Infra.UI.Pages.Blazor"
+    xmlns:Converters="clr-namespace:Library.Wpf.Converters;assembly=Library.Wpf"
+    xmlns:Pages="clr-namespace:Microsoft.AspNetCore.Mvc.RazorPages;assembly=Microsoft.AspNetCore.Mvc.RazorPages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
+    x:Name="Me"
+    Title="Model Details Page"
+    d:DesignHeight="850"
+    d:DesignWidth="1200"
+    BindingData="DtoDetailsPage_Binding"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <Converters:ObjectNullToBooleanConverter x:Key="ObjectNullToBooleanConverter" />
+    </Page.Resources>
+    <Grid x:Name="HostGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" ToolTip="PageToolbar" />
+            <RowDefinition Height="*" ToolTip="Container" />
+            <RowDefinition Height="Auto" ToolTip="StatusBar" />
+        </Grid.RowDefinitions>
+        <ToolBarTray x:Name="PageToolbar">
+            <ToolBar>
+                <Button
+                    Name="NewDtoFromTableButton"
+                    Click="CreateDtoWithTableMenuItem_Click"
+                    IsEnabled="False"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Create new model using selected table">
+                    <Path Style="{StaticResource NewFill}" />
+                </Button>
+                <Button
+                    x:Name="NewDtoButton"
+                    Click="NewDtoButton_Click"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="New unbound model">
+                    <Path Style="{StaticResource New}" />
+                </Button>
+                <Separator />
+                <Button
+                    x:Name="EditDtoButton"
+                    Click="EditDtoButton_Click"
+                    IsEnabled="True"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Edit model">
+                    <Path Style="{StaticResource Edit}" />
+                </Button>
+                <Button
+                    x:Name="DeleteDtoButton"
+                    Click="DeleteDtoButton_Click"
+                    IsEnabled="True"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Delete model">
+                    <Path Style="{StaticResource Delete}" />
+                </Button>
+                <Button
+                    x:Name="SaveDtoButton"
+                    Click="SaveDtoButton_Click"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Save">
+                    <Path Style="{StaticResource SaveToDb}" />
+                </Button>
+                <Button
+                    x:Name="ResetFormButton"
+                    Click="ResetFormButton_Click"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Reset Form">
+                    <Path Style="{StaticResource BackupRestore}" />
+                </Button>
+                <Separator />
+                <Button
+                    x:Name="GenerateCodeButton"
+                    Click="GenerateCodeButton_Click"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Generate Source Code">
+                    <Path Style="{StaticResource CodeFile}" />
+                </Button>
+                <Button
+                    x:Name="SaveCodeButton"
+                    Click="SaveCodeButton_Click"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Save Source Code to File">
+                    <Path Style="{StaticResource Save}" />
+                </Button>
+                <Separator />
+                <Button
+                    Name="AddToDtoButton"
+                    Click="AddColumnToDtoButton_Click"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Adds column to model as a new property">
+                    <Path Style="{StaticResource Add}" />
+                </Button>
+                <Button
+                    x:Name="SecurityDescriptorButton"
+                    Click="SecurityDescriptorButton_Click"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Model Security Descriptor…">
+                    <Path
+                        Width="16"
+                        Height="18"
+                        Style="{StaticResource SecurityMan}" />
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <Grid x:Name="Container" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" ToolTip="Panes" />
+                <ColumnDefinition ToolTip="ModelDetails" />
+            </Grid.ColumnDefinitions>
+            <TabControl x:Name="Panes" Width="Auto">
+                <TabItem Header="Tables">
+                    <Grid
+                        x:Name="ServerExplorer"
+                        Grid.Column="0"
+                        Width="250">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" ToolTip="Titlebar" />
+                            <RowDefinition Height="Auto" ToolTip="Toolbar" />
+                            <RowDefinition ToolTip="TreeView Host" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            x:Name="ServerExplorerTitle"
+                            Grid.Row="0"
+                            Text="Server Explorer" />
+                        <usercontrols:DatabaseExplorerUserControl
+                            x:Name="DatabaseExplorerUserControl"
+                            Grid.Row="2"
+                            MouseDoubleClick="DtoExplorerTreeView_MouseDoubleClick"
+                            SelectedDbObjectNodeChanged="DatabaseExplorerUserControl_SelectedDbObjectNodeChanged">
+                            <usercontrols:DatabaseExplorerUserControl.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Click="CreateDtoWithTableMenuItem_Click" Header="Create Model…" />
+                                </ContextMenu>
+                            </usercontrols:DatabaseExplorerUserControl.ContextMenu>
+                        </usercontrols:DatabaseExplorerUserControl>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Models">
+                    <Grid
+                        x:Name="DtoExplorer"
+                        Grid.Column="0"
+                        Width="250">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" ToolTip="Titlebar" />
+                            <RowDefinition Height="Auto" ToolTip="Toolbar" />
+                            <RowDefinition ToolTip="TreeView Host" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            x:Name="DtoExplorerTitle"
+                            Grid.Row="0"
+                            Text="Model Explorer" />
+                        <usercontrols:CqrsExplorerTreeView
+                            x:Name="CqrsExplorerTreeView"
+                            Grid.Row="2"
+                            ItemDoubleClicked="CqrsExplorerTreeView_ItemDoubleClicked"
+                            LoadDtos="True"
+                            SelectedItemChanged="CqrsExplorerTreeView_SelectedItemChanged" />
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            <TabControl
+                x:Name="DtoDetails"
+                Grid.Column="1"
+                TabStripPlacement="Left">
+                <TabItem Header="General">
+                    <usercontrols:DtoEditUserControl x:Name="DtoEditUserControl" />
+                </TabItem>
+                <TabItem Name="ResultsTabItem" Header="Results">
+                    <Blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" />
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <StatusBar Grid.Row="2" />
+    </Grid>
+</local:PageBase>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
+    <ProjectReference Include="..\Bcl\src\WpfLib\WpfLib.csproj" />
+    <ProjectReference Include="..\UiContracts\Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

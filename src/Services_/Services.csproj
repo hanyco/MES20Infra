@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup>
+    <AssemblyName>HanyCo.InfraServices</AssemblyName>
+    <RootNamespace>HanyCo.Infra.Services</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="UI\FormDesigner\Queries1\**" />
+    <EmbeddedResource Remove="UI\FormDesigner\Queries1\**" />
+    <None Remove="UI\FormDesigner\Queries1\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Library\Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UI\FormDesigner\Commands\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="HanyCo.Infra.CodeGeneration.Forms.Html.Elements.HtmlTable" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAABAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormGenerator\Html\Elements\HtmlTable.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Body" />
+      <Property Name="Head" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="HanyCo.Infra.CodeGeneration.Forms.Html.Elements.HtmlTableHead" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormGenerator\Html\Elements\HtmlTable.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Children" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="HanyCo.Infra.CodeGeneration.Forms.Html.Elements.HtmlTableBody" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormGenerator\Html\Elements\HtmlTable.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Children" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="HanyCo.Infra.CodeGeneration.Forms.Html.Elements.HtmlTableRow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="7.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAEAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormGenerator\Html\Elements\HtmlTable.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Head" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="Children" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="HanyCo.Infra.CodeGeneration.Forms.Html.Elements.HtmlTableCell" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormGenerator\Html\Elements\HtmlTable.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="HanyCo.Infra.CodeGeneration.Forms.Html.Elements.HtmlTableCellHead" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.25" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormGenerator\Html\Elements\HtmlTable.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

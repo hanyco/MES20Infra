@@ -1,0 +1,151 @@
+﻿<UserControl
+    x:Class="HanyCo.Infra.UI.UserControls.DtoEditUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:HanyCo.Infra.UI.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    d:DataContext="{d:DesignInstance models:DtoViewModel,
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" ToolTip="Separator" />
+            <RowDefinition Height="Auto" ToolTip="Details" />
+            <RowDefinition Height="Auto" ToolTip="Properties Toolbar" />
+            <RowDefinition ToolTip="Properties" />
+            <RowDefinition Height="Auto" ToolTip="Property Details" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Grid.ColumnSpan="3"
+                d:Text="Table Name"
+                Style="{StaticResource Heading1}"
+                Text="{Binding FullName}" />
+            <!--<usercontrols:FieldPanel Title="Name:" Grid.Row="1">
+                <usercontrols:FieldPanel.AdditionalContent>
+                    <TextBox Style="{StaticResource LongTextBox}" Text="{Binding Name}" />
+                </usercontrols:FieldPanel.AdditionalContent>
+            </usercontrols:FieldPanel>-->
+            <StackPanel
+                Grid.Row="1"
+                Grid.RowSpan="3"
+                Grid.Column="2"
+                Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LabelBlock}" Text="Comments:" />
+                <TextBox Style="{StaticResource Multiline}" Text="{Binding Comment}" />
+            </StackPanel>
+            <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LabelBlock}" Text="Module:" />
+                <ComboBox
+                    x:Name="ModulesComboBox"
+                    SelectedValue="{Binding Module}"
+                    Style="{StaticResource LongComboBox}" />
+            </StackPanel>
+            <StackPanel Grid.Row="3" Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LabelBlock}" Text="Namespace:" />
+                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding NameSpace}" />
+            </StackPanel>
+            <CheckBox
+                Grid.Row="1"
+                Grid.Column="3"
+                Content="Is Params DTO"
+                IsChecked="{Binding IsParamsDto}" />
+            <CheckBox
+                Grid.Row="2"
+                Grid.Column="3"
+                Content="Is Result DTO"
+                IsChecked="{Binding IsResultDto}" />
+            <CheckBox
+                Grid.Row="3"
+                Grid.Column="3"
+                Content="Is View Model"
+                IsChecked="{Binding IsViewModel}" />
+        </Grid>
+        <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+            <TextBlock Style="{StaticResource GroupTitleBlock}" Text="Properties" />
+            <Separator Width="8000" />
+        </StackPanel>
+        <ToolBar Grid.Row="2">
+            <Button
+                x:Name="NewPropertyButton"
+                Click="NewPropertyButton_Click"
+                Style="{StaticResource IconButton}"
+                ToolTip="New Property">
+                <Path Style="{StaticResource New}" />
+            </Button>
+            <Button
+                x:Name="DeletePropertyButton"
+                Click="DeletePropertyButton_Click"
+                Style="{StaticResource IconButton}"
+                ToolTip="Delete Property… (Ctrl+Delete)">
+                <Path Style="{StaticResource Delete}" />
+            </Button>
+        </ToolBar>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition MaxWidth="350" />
+            </Grid.ColumnDefinitions>
+            <ListView
+                Name="PropertiesListView"
+                Grid.Column="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                ItemsSource="{Binding Properties}"
+                Keyboard.KeyDown="PropertiesListView_KeyDown"
+                SelectionChanged="PropertiesListView_SelectionChanged"
+                SelectionMode="Single">
+                <ListView.View>
+                    <GridView AllowsColumnReorder="true">
+                        <GridViewColumn
+                            Width="140"
+                            DisplayMemberBinding="{Binding Path=Name}"
+                            Header="Name" />
+                        <GridViewColumn
+                            Width="140"
+                            DisplayMemberBinding="{Binding Path=Type}"
+                            Header="Type" />
+                        <!--<GridViewColumn
+                                            Width="140"
+                                            DisplayMemberBinding="{Binding Path=IsList}"
+                                            Header="Is List" />
+                                        <GridViewColumn
+                                            Width="140"
+                                            DisplayMemberBinding="{Binding Path=IsNullable}"
+                                            Header="Is Nullable" />-->
+                        <GridViewColumn
+                            Width="350"
+                            DisplayMemberBinding="{Binding Path=Dto}"
+                            Header="Model" />
+                        <GridViewColumn
+                            Width="350"
+                            DisplayMemberBinding="{Binding Path=Comment}"
+                            Header="Comment" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <local:PropertyDetailsUserControl
+                x:Name="PropertyDetails"
+                Grid.Column="1"
+                Margin="10"
+                DataContext="{Binding ElementName=PropertiesListView, Path=SelectedItem}" />
+        </Grid>
+    </Grid>
+</UserControl>

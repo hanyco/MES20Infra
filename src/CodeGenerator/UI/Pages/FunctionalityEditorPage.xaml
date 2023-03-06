@@ -1,0 +1,107 @@
+﻿<local:PageBase
+    x:Class="HanyCo.Infra.UI.Pages.FunctionalityEditorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
+    xmlns:viewmodels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    x:Name="Me"
+    Title="Functionality Editor"
+    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    BindingData="Me_BindingData"
+    mc:Ignorable="d">
+
+    <Grid x:Name="Container">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" ToolTip="ToolBar" />
+            <RowDefinition ToolTip="Host" />
+        </Grid.RowDefinitions>
+        <ToolBar>
+            <Button
+                Name="CreateFunctionalityButton"
+                Click="CreateFunctionalityButton_Click"
+                Style="{StaticResource IconButton}"
+                ToolTip="New Functionality">
+                <Path Style="{StaticResource New}" />
+            </Button>
+            <Button
+                Name="EditFunctionalityButton"
+                Style="{StaticResource IconButton}"
+                ToolTip="Edit Functionality">
+                <Path Style="{StaticResource Edit}" />
+            </Button>
+            <Button
+                Name="DeleteFunctionalityButton"
+                Style="{StaticResource IconButton}"
+                ToolTip="Delete Functionality">
+                <Path Style="{StaticResource Delete}" />
+            </Button>
+            <Separator />
+            <Button
+                Name="GenerateCodesButton"
+                Click="GenerateCodesButton_Click"
+                Style="{StaticResource IconButton}"
+                ToolTip="Generate Functionality Codes">
+                <Path Style="{StaticResource CodeFile}" />
+            </Button>
+            <Separator />
+            <Button
+                Name="SaveToDbButton"
+                Style="{StaticResource IconButton}"
+                ToolTip="Save to Database">
+                <Path Style="{StaticResource SaveToDb}" />
+            </Button>
+            <Button
+                Name="SaveToDiskButton"
+                Style="{StaticResource IconButton}"
+                ToolTip="Save Codes to Disk">
+                <Path Style="{StaticResource SaveAll}" />
+            </Button>
+        </ToolBar>
+        <TabControl Grid.Row="1" TabStripPlacement="Left">
+            <TabItem Header="General">
+                <Grid VerticalAlignment="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
+                        <TextBlock Style="{StaticResource LabelBlock}" Text="Root DTO:" />
+                        <TextBox
+                            IsReadOnly="True"
+                            Style="{StaticResource LongTextBox}"
+                            Text="{Binding RootDto.Name, Mode=OneWay}" />
+                        <Button
+                            x:Name="SelectRootDtoButton"
+                            Click="SelectRootDtoButton_Click"
+                            Style="{StaticResource IconButton}">
+                            <Path Style="{StaticResource FolderOpen}" />
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+                        <TextBlock Style="{StaticResource LabelBlock}" Text="Module:" />
+                        <usercontrols:SelectModuleUserControl
+                            x:Name="ModuleComboBox"
+                            Initializing="ModuleComboBox_Initializing"
+                            SelectedModule="{Binding RootDto.Module}"
+                            SelectedModuleChanged="ModuleComboBox_SelectedModuleChanged"
+                            Style="{StaticResource LongControl}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
+                        <TextBlock Style="{StaticResource LabelBlock}" Text="Namespace:" />
+                        <TextBox Style="{StaticResource LongTextBox}" Text="{Binding NameSpace}" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="DTO">
+                <usercontrols:DtoEditUserControl DataContext="{Binding Path=RootDto}" />
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</local:PageBase>

@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="HanyCo.Infra.UI.ViewModels.CqrsCommandViewModel" Collapsed="true">
+    <Position X="11.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\CqrsCommandViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.CqrsQueryViewModel" Collapsed="true">
+    <Position X="14" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\CqrsQueryViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.CqrsViewModelBase" Collapsed="true">
+    <Position X="12.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ADAAAAAEAAAgAAFAEBABAAgAAAAgBAQEAAAQCAEBCEA=</HashCode>
+      <FileName>ViewModels\CqrsViewModelBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.DbColumnViewModel" Collapsed="true">
+    <Position X="2.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAEAAAAAAAAAAAAACAAAAAQAAAAIAA=</HashCode>
+      <FileName>ViewModels\DbColumnViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.DbObjectViewModel" Collapsed="true">
+    <Position X="1.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAEAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\DbObjectViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.DbTableViewModel" Collapsed="true">
+    <Position X="0.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\DbTableViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.DtoViewModel" Collapsed="true">
+    <Position X="16.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAIAAABABAAgAAAAAIAAAAAAQCAACCAA=</HashCode>
+      <FileName>ViewModels\DtoViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.ModuleViewModel" Collapsed="true">
+    <Position X="18.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>ViewModels\ModuleViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.PropertyViewModel" Collapsed="true">
+    <Position X="9.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAACAAEEAAgAAAAAAAABAAgAAAAEAAAAAQAQAAAAJAA=</HashCode>
+      <FileName>ViewModels\PropertyViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.SettingsModel" Collapsed="true">
+    <Position X="27.75" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\SettingsModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.InfraViewModelBase" Collapsed="true">
+    <Position X="12.75" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAEiAAAIAQAAAAABIAABAAAAAAEAiA=</HashCode>
+      <FileName>ViewModels\InfraViewModelBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.BlazorComponentPropertyViewModel" Collapsed="true">
+    <Position X="7.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAARAACAAAAAAAAAAAAAABgAIAAAAABAAQAACAA=</HashCode>
+      <FileName>ViewModels\BlazorComponentPropertyViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.BlazorComponentViewModel" Collapsed="true">
+    <Position X="20.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQQAACAQAAAABAAAAAAAAAAJAAAAAAAAEAACAA=</HashCode>
+      <FileName>ViewModels\BlazorComponentViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.BlazorComponentViewModelBase" Collapsed="true">
+    <Position X="21.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\BlazorComponentViewModelBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.BlazorPageViewModel" Collapsed="true">
+    <Position X="23" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAACAAIAAAFAAAAAAAEAAIAAAAAAACAAACAA=</HashCode>
+      <FileName>ViewModels\BlazorPageViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.BootstrapPositionViewModel" Collapsed="true">
+    <Position X="25.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAIAAAAAABAAAECAAAAAQSAAEEAgAAAAAAAAAQAAA=</HashCode>
+      <FileName>ViewModels\BootstrapPositionViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.BlazorComponentContentViewModelBase" Collapsed="true">
+    <Position X="6" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAEAAAAAAAAABAAACAACgEAAAAA=</HashCode>
+      <FileName>ViewModels\BlazorComponentContentViewModelBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HanyCo.Infra.UI.ViewModels.BlazorComponentActionViewModel" Collapsed="true">
+    <Position X="5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAEAAAAQAAAAAAAAAAAAAAAAAgAAAAAAAAIAAAAACAA=</HashCode>
+      <FileName>ViewModels\BlazorComponentActionViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="HanyCo.Infra.UI.ViewModels.IInfraViewModel" Collapsed="true">
+    <Position X="27.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAABAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ViewModels\IDbEntityConvertibleViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

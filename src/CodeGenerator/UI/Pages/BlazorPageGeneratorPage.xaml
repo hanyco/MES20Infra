@@ -1,0 +1,326 @@
+﻿<local:PageBase
+    x:Class="HanyCo.Infra.UI.Pages.BlazorPageGeneratorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:UserControls="clr-namespace:HanyCo.Infra.UI.UserControls"
+    xmlns:ViewModels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    xmlns:blazor="clr-namespace:HanyCo.Infra.UI.Pages.Blazor"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:infraCommands="clr-namespace:HanyCo.Infra.UI.Commands"
+    xmlns:libCommands="clr-namespace:Library.Wpf.Windows.Input.Commands;assembly=Library.Wpf"
+    xmlns:libConverters="clr-namespace:Library.Wpf.Converters;assembly=Library.Wpf"
+    xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+    x:Name="Me"
+    Title="Blazor Page Code Generator"
+    d:DataContext="{d:DesignInstance Type=ViewModels:UiPageViewModel,
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="450"
+    d:Width="1035"
+    BindingData="Page_BindingData"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <libConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <libConverters:ObjectNullToBooleanConverter x:Key="ObjectNullToBooleanConverter" />
+    </Page.Resources>
+    <local:PageBase.CommandBindings>
+        <CommandBinding
+            CanExecute="NewCommandBinding_CanExecute"
+            Command="libCommands:LibCommonCommands.New"
+            Executed="NewCommandBinding_Executed" />
+        <CommandBinding
+            CanExecute="EditBlazorPageCommand_CanExecute"
+            Command="libCommands:LibCommonCommands.Edit"
+            Executed="EditBlazorPageCommand_Executed" />
+        <CommandBinding
+            CanExecute="DeleteBlazorPageCommand_CanExecute"
+            Command="libCommands:LibCommonCommands.Delete"
+            Executed="DeleteBlazorPageCommand_Executed" />
+        <CommandBinding
+            CanExecute="ResetBlazorPageCommand_CanExecute"
+            Command="libCommands:LibCommonCommands.Reset"
+            Executed="ResetBlazorPageCommand_Executed" />
+        <CommandBinding
+            CanExecute="SaveBlazorPageCommand_CanExecute"
+            Command="libCommands:LibCommonCommands.Save"
+            Executed="SaveBlazorPageCommand_Executed" />
+        <CommandBinding
+            CanExecute="GenerateCodeCommand_CanExecute"
+            Command="infraCommands:InfraCommands.GenerateCodeCommand"
+            Executed="GenerateCodeCommand_Executed" />
+        <CommandBinding
+            CanExecute="ValidateCommandBinding_CanExecute"
+            Command="libCommands:LibCommonCommands.Validate"
+            Executed="ValidateCommandBinding_Executed" />
+        <CommandBinding
+            CanExecute="SaveToDiskCommand_CanExecute"
+            Command="{x:Static local:BlazorPageGeneratorPage.SaveToDiskCommand}"
+            Executed="SaveToDiskCommand_Executed" />
+    </local:PageBase.CommandBindings>
+    <Page.InputBindings>
+        <KeyBinding Command="{Binding SaveToDiskCommand, ElementName=Me}" Gesture="CTRL+Shift+S" />
+    </Page.InputBindings>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" ToolTip="Explorer" />
+            <ColumnDefinition ToolTip="Content" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" ToolTip="ToolBars" />
+            <RowDefinition ToolTip="Content" />
+        </Grid.RowDefinitions>
+        <ToolBar Grid.ColumnSpan="2">
+            <ToggleButton
+                x:Name="ShowPagesPaneButton"
+                Style="{StaticResource IconToggleButton}"
+                ToolTip="Show Pages List pane">
+                <Path Style="{StaticResource Apps}" />
+                <ToggleButton.IsChecked>
+                    <Binding
+                        Converter="{StaticResource ObjectNullToBooleanConverter}"
+                        ElementName="Me"
+                        Mode="OneWay"
+                        Path="IsEditMode">
+                        <Binding.ConverterParameter>
+                            <sys:Boolean>false</sys:Boolean>
+                        </Binding.ConverterParameter>
+                    </Binding>
+                </ToggleButton.IsChecked>
+            </ToggleButton>
+            <Separator />
+            <Button
+                Command="libCommands:LibCommonCommands.New"
+                Style="{StaticResource IconButton}"
+                ToolTip="New Page">
+                <Path Style="{StaticResource New}" />
+            </Button>
+            <Button
+                Command="libCommands:LibCommonCommands.Edit"
+                Style="{StaticResource IconButton}"
+                ToolTip="Edit Page">
+                <Path Style="{StaticResource Edit}" />
+            </Button>
+            <Button
+                Command="libCommands:LibCommonCommands.Delete"
+                Style="{StaticResource IconButton}"
+                ToolTip="Delete Page">
+                <Path Style="{StaticResource Delete}" />
+            </Button>
+            <Separator />
+            <Button
+                Command="libCommands:LibCommonCommands.Validate"
+                Style="{StaticResource IconButton}"
+                ToolTip="Validate Form…">
+                <Path Style="{StaticResource CheckboxMarkedOutline}" />
+            </Button>
+            <Button
+                Command="libCommands:LibCommonCommands.Save"
+                Style="{StaticResource IconButton}"
+                ToolTip="Save Page to Database">
+                <Path x:Name="SavePageButton" Style="{StaticResource SaveToDb}" />
+            </Button>
+            <Button
+                Command="infraCommands:InfraCommands.GenerateCodeCommand"
+                Style="{StaticResource IconButton}"
+                ToolTip="Generate Source Code">
+                <Path x:Name="GenerateCodeButton" Style="{StaticResource CodeFile}" />
+            </Button>
+            <Button
+                Command="{x:Static local:BlazorPageGeneratorPage.SaveToDiskCommand}"
+                Style="{StaticResource IconButton}"
+                ToolTip="Save Source to disk…">
+                <Path Style="{StaticResource Save}" />
+            </Button>
+            <Separator />
+            <Button
+                Command="libCommands:LibCommonCommands.Reset"
+                Style="{StaticResource IconButton}"
+                ToolTip="Reset Page">
+                <Path Style="{StaticResource BackupRestore}" />
+            </Button>
+        </ToolBar>
+        <TreeView
+            x:Name="PageTreeView"
+            Grid.Row="1"
+            Width="200"
+            MouseDoubleClick="PageTreeView_MouseDoubleClick"
+            SelectedItemChanged="PageTreeView_SelectedItemChanged"
+            Visibility="{Binding ElementName=ShowPagesPaneButton, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <TabControl
+            Grid.Row="1"
+            Grid.Column="1"
+            IsEnabled="{Binding ElementName=Me, Path=IsEditMode}"
+            TabStripPlacement="Left">
+            <TabItem Header="General">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource FieldPanel}">
+                                <TextBlock Style="{StaticResource LabelBlock}" Text="Name:" />
+                                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding Name}" />
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldPanel}">
+                                <TextBlock Style="{StaticResource LabelBlock}" Text="Class Name:" />
+                                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding ClassName}" />
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldPanel}">
+                                <TextBlock Style="{StaticResource LabelBlock}" Text="NameSpace:" />
+                                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding NameSpace}" />
+                            </StackPanel>
+                        </WrapPanel>
+                        <WrapPanel Grid.Row="1">
+                            <StackPanel Style="{StaticResource FieldPanel}">
+                                <TextBlock Style="{StaticResource LabelBlock}" Text="Route:" />
+                                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding Route}" />
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldPanel}" />
+                            <StackPanel Style="{StaticResource FieldPanel}">
+                                <TextBlock Style="{StaticResource LabelBlock}" Text="Module:" />
+                                <UserControls:SelectModuleUserControl
+                                    Initializing="SelectModuleUserControl_Initializing"
+                                    SelectedModule="{Binding Module, Mode=TwoWay}"
+                                    Style="{StaticResource LongControl}" />
+                            </StackPanel>
+                        </WrapPanel>
+                        <WrapPanel Grid.Row="2" />
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Style="{StaticResource FieldPanel}">
+                            <TextBlock Style="{StaticResource HighlightBlock}" Text="Code Generation Options" />
+                            <Separator />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+                            <CheckBox Content="Generate _Main Code" IsChecked="{Binding GenerateMainCode}" />
+                            <CheckBox Content="Generate _Partial Code" IsChecked="{Binding GeneratePartialCode}" />
+                            <CheckBox Content="Generate _UI Code" IsChecked="{Binding GenerateUiCode}" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Components">
+                <Grid x:Name="TabContent">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" ToolTip="All Components" />
+                        <ColumnDefinition Width="*" ToolTip="Page Properties" />
+                    </Grid.ColumnDefinitions>
+                    <ToolBar
+                        Grid.Row="0"
+                        Grid.ColumnSpan="2"
+                        IsTabStop="False">
+                        <ToggleButton x:Name="ShowAllComponentsToggleButton" IsChecked="True">
+                            <Path Style="{StaticResource Apps}" />
+                        </ToggleButton>
+                        <Button
+                            Name="AddComponentToPageButton"
+                            Click="AddComponentToPageButton_Click"
+                            Content="➕"
+                            IsEnabled="{Binding ElementName=AllComponentsListView, Path=SelectedItem, Converter={StaticResource ObjectNullToBooleanConverter}}"
+                            IsTabStop="False"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Add Component"
+                            Visibility="{Binding ElementName=ShowAllComponentsToggleButton, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Separator Visibility="{Binding ElementName=ShowAllComponentsToggleButton, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Button
+                            Name="RemoveComponentFromPageButton"
+                            Click="RemoveComponentFromPageButton_Click"
+                            Content="❌"
+                            IsEnabled="{Binding ElementName=PageComponentLisView, Path=SelectedItem, Converter={StaticResource ObjectNullToBooleanConverter}}"
+                            IsTabStop="False"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Delete Component" />
+                        <Button
+                            Name="RefreshPageComponentsButton"
+                            Click="RefreshPageComponentsButton_Click"
+                            IsTabStop="False"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Refresh Page Components list">
+                            <Path Style="{StaticResource Refresh}" />
+                        </Button>
+                    </ToolBar>
+                    <Grid
+                        x:Name="AllComponentsGrid"
+                        Grid.Row="1"
+                        Visibility="{Binding ElementName=ShowAllComponentsToggleButton, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" ToolTip="Title" />
+                            <RowDefinition ToolTip="Content" />
+                        </Grid.RowDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Heading}" Text="All Components" />
+                            <Separator Margin="2,2,2,2" />
+                        </StackPanel>
+                        <ListView
+                            x:Name="AllComponentsListView"
+                            Grid.Row="1"
+                            Width="258"
+                            ItemsSource="{Binding ElementName=Me, Path=AllComponents}"
+                            SelectedItem="{Binding ElementName=Me, Path=SelectedComponentInAll, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid
+                        x:Name="PageProperties"
+                        Grid.Row="2"
+                        Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.ColumnSpan="2">
+                            <TextBlock Style="{StaticResource Heading}" Text="Current Page Components" />
+                            <Separator Margin="2,2,2,2" />
+                        </StackPanel>
+                        <ListView
+                            x:Name="PageComponentLisView"
+                            Grid.Row="1"
+                            Width="258"
+                            ItemsSource="{Binding Components}"
+                            SelectionChanged="PageComponentLisView_SelectionChanged" />
+                        <Grid Grid.Row="1" Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock d:Text="Component Name" Style="{StaticResource Heading1}">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}, Position {1}">
+                                        <Binding ElementName="PageComponentLisView" Path="SelectedItem.Name" />
+                                        <Binding ElementName="PageComponentLisView" Path="SelectedItem.Position" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <UserControls:ElementPositionUserControl
+                                x:Name="PositionUserControl"
+                                Grid.Row="1"
+                                DataContext="{Binding SelectedItem.Position, ElementName=PageComponentLisView, Mode=OneWay}"
+                                PropertyChanged="ElementPositionUserControl_PropertyChanged" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="ResultsTabItem" Header="Result">
+                <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</local:PageBase>

@@ -1,0 +1,106 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>HanyCo Infrastructure</AssemblyName>
+		<RootNamespace>HanyCo.Infra.UI</RootNamespace>
+		<PackageId>HanyCo.Infra.CodeGenerationUI</PackageId>
+		<Authors>HanyCo</Authors>
+		<Product>HanyCo Infrastructure</Product>
+		<StartupObject>UI.App</StartupObject>
+		<Copyright>HanyCo</Copyright>
+		<MinimumPlatformVersion>7.0</MinimumPlatformVersion>
+		<TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+		<AssemblyVersion>0.5.0.0</AssemblyVersion>
+		<FileVersion>0.5.0.0</FileVersion>
+		<Configurations>Debug;Release;Release Infra</Configurations>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<IsPublishable>False</IsPublishable>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Infra|AnyCPU'">
+	  <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Services\Imp\**" />
+	  <Compile Remove="ViewModels\**" />
+	  <EmbeddedResource Remove="Services\Imp\**" />
+	  <EmbeddedResource Remove="ViewModels\**" />
+	  <None Remove="Services\Imp\**" />
+	  <None Remove="ViewModels\**" />
+	  <Page Remove="Services\Imp\**" />
+	  <Page Remove="ViewModels\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Helpers\PropertyTypeHelper.cs" />
+	  <Compile Remove="Services\IBlazorCodingService.cs" />
+	  <Compile Remove="Services\IBlazorComponentService.cs" />
+	  <Compile Remove="Services\IBlazorPageService.cs" />
+	  <Compile Remove="Services\ICqrsCodeGeneratorService.cs" />
+	  <Compile Remove="Services\ICqrsCommandService.cs" />
+	  <Compile Remove="Services\ICqrsQueryService.cs" />
+	  <Compile Remove="Services\IDbTableService.cs" />
+	  <Compile Remove="Services\IDtoCodeService.cs" />
+	  <Compile Remove="Services\IDtoService.cs" />
+	  <Compile Remove="Services\IEntityViewModelConverter.cs" />
+	  <Compile Remove="Services\IFunctionalityCodeService.cs" />
+	  <Compile Remove="Services\IFunctionalityService.cs" />
+	  <Compile Remove="Services\IModuleService.cs" />
+	  <Compile Remove="Services\IPropertyService.cs" />
+	  <Compile Remove="Services\ISecurityDescriptorService.cs" />
+	  <Compile Remove="Services\ITranslationService.cs" />
+	  <Compile Remove="UserControls\DtoEditorUserControl.xaml.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Remove="UserControls\DtoEditorUserControl.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft-Windows10-APICodePack-Core" Version="1.1.6" />
+		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+		<PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\..\Bcl\src\WpfLib\WpfLib.csproj" />
+		<ProjectReference Include="..\..\Contracts\Contracts.csproj" />
+		<ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />
+		<ProjectReference Include="..\..\Internals\Data\Data.csproj" />
+		<ProjectReference Include="..\..\UiContracts\Contracts.csproj" />
+		<ProjectReference Include="..\..\UiServices\Services.csproj" />
+		<ProjectReference Include="..\Engine\Engine.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="AppSettings.Development.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="AppSettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="AppSettings.Production.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
+
+</Project>

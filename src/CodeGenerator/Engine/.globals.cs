@@ -1,0 +1,11 @@
+﻿global using Library.DesignPatterns.Markers;
+global using Library.Helpers;
+global using System;
+global using System.Collections.Generic;
+global using System.IO;
+global using System.Linq;
+global using System.Text;
+global using System.Threading.Tasks;
+global using Library.Coding;
+global using static Library.Coding.Functional;
+global using static Library.Helpers.FluencyHelper;

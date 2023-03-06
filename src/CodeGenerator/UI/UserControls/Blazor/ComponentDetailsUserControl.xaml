@@ -1,0 +1,136 @@
+﻿<blazor:BlazorComponentUserControlBase
+    x:Class="HanyCo.Infra.UI.Pages.Blazor.ComponentDetailsUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:blazor="clr-namespace:HanyCo.Infra.UI.UserControls.Blazor"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:libConverters="clr-namespace:Library.Wpf.Converters;assembly=Library.Wpf"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    x:Name="Me"
+    d:DataContext="{d:DesignInstance viewModels:UiComponentViewModel,
+                                     IsDesignTimeCreatable=True}"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <libConverters:ObjectNullToBooleanConverter x:Key="ObjectNullToBooleanConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock
+            Grid.Row="0"
+            Style="{StaticResource Heading1}"
+            Text="{Binding Name}" />
+        <GroupBox Grid.Row="1">
+            <GroupBox.Header>
+                <TextBlock Style="{StaticResource Heading4}" Text="Specifications" />
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*" />
+                    <RowDefinition Height="10*" />
+                </Grid.RowDefinitions>
+                <StackPanel Style="{StaticResource FieldPanel}">
+                    <StackPanel Style="{StaticResource FieldPanel}">
+                        <TextBlock Text="Name:" />
+                        <TextBox Style="{StaticResource LongTextBox}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource FieldPanel}">
+                        <TextBlock Text="NameSpace:" />
+                        <TextBox Style="{StaticResource LongTextBox}" Text="{Binding NameSpace}" />
+                    </StackPanel>
+                </StackPanel>
+                <CheckBox
+                    Grid.Row="1"
+                    HorizontalAlignment="Left"
+                    Content="Is _Grid"
+                    IsChecked="{Binding IsGrid}"
+                    Style="{StaticResource LongToggleButton}" />
+            </Grid>
+
+        </GroupBox>
+        <GroupBox Grid.Row="2">
+            <GroupBox.Header>
+                <TextBlock Style="{StaticResource Heading4}" Text="Coding Parameters" />
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <WrapPanel Grid.Row="0">
+                    <StackPanel Style="{StaticResource FieldPanel}">
+                        <WrapPanel Grid.Row="5">
+                            <StackPanel Style="{StaticResource FieldPanel}">
+                                <CheckBox
+                                    Content="Generate _Partial Code"
+                                    IsChecked="{Binding GeneratePartialCode}"
+                                    Style="{StaticResource LongToggleButton}" />
+                                <CheckBox
+                                    Content="Generate _Main Code"
+                                    IsChecked="{Binding GenerateMainCode}"
+                                    Style="{StaticResource LongToggleButton}" />
+                                <CheckBox
+                                    Content="Generate _UI Code"
+                                    IsChecked="{Binding GenerateUiCode}"
+                                    Style="{StaticResource LongToggleButton}" />
+                            </StackPanel>
+                        </WrapPanel>
+                    </StackPanel>
+                </WrapPanel>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="3">
+            <GroupBox.Header>
+                <TextBlock Style="{StaticResource Heading4}" Text="DataContext" />
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Page DataContext:" />
+                    <TextBox
+                        HorizontalAlignment="Right"
+                        IsReadOnly="True"
+                        Style="{StaticResource LongTextBox}"
+                        Text="{Binding PageDataContextType, Mode=OneWay}" />
+                    <Button
+                        x:Name="SelectViewModelButton"
+                        Click="SelectViewModelButton_Click"
+                        Content="…"
+                        Style="{StaticResource IconButton}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+                    <RadioButton
+                        x:Name="EmptyPageDataContextPropertyNameRadioButton"
+                        Checked="EmptyPageDataContextPropertyNameRadioButton_Checked"
+                        Content="Page DataContext"
+                        GroupName="PageDataContextPropertyNameRadioButtons"
+                        Style="{StaticResource LongToggleButton}" />
+                    <StackPanel Style="{StaticResource FieldPanel}">
+                        <RadioButton
+                            x:Name="HasPageDataContextPropertyNameRadioButton"
+                            Checked="HasPageDataContextPropertyNameRadioButton_Checked"
+                            Content="Property of Page DataContext:"
+                            GroupName="PageDataContextPropertyNameRadioButtons"
+                            Style="{StaticResource LongToggleButton}" />
+                        <ComboBox
+                            x:Name="PageDataContextPropertyComboBox"
+                            DataContextChanged="PageDataContextPropertyComboBox_DataContextChanged"
+                            IsEnabled="{Binding ElementName=HasPageDataContextPropertyNameRadioButton, Path=IsChecked}"
+                            ItemsSource="{Binding PageDataContext.Properties}"
+                            SelectedItem="{Binding PageDataContextProperty}"
+                            SelectionChanged="PageDataContextPropertyComboBox_SelectionChanged"
+                            Style="{StaticResource LongComboBox}" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</blazor:BlazorComponentUserControlBase>
