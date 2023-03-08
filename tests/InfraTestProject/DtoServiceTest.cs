@@ -1,18 +1,20 @@
-﻿//namespace InfraTestProject;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-//[Collection("DbServices")]
-//public class DtoServiceTest : TestBase, ICollectionFixture<DbServicesFixture>
-//{
-//    private readonly DbServicesFixture _fixture;
+namespace InfraTestProject;
 
-//    public DtoServiceTest(DbServicesFixture fixture)
-//    {
-//        this._fixture = fixture.InitializeDbForDtoServiceTest(this.ServiceProvider);
-//    }
+public class DtoServiceTest : IClassFixture<ServicesFixture>
+{
+    private readonly ServicesFixture _fixture;
 
-//    [Fact]
-//    public void Test1()
-//    {
-//        // Test something using _fixture
-//    }
-//}
+    public DtoServiceTest(ServicesFixture fixture)
+    {
+        this._fixture = fixture;
+    }
+
+    [Fact]
+    public void TestOne()
+    {
+        this._fixture.WriteDbContext.Add(new Dto { Id = 1, Guid = Guid.NewGuid(), Name = "TestDto" });
+        this._fixture.WriteDbContext.SaveChanges();
+    }
+}
