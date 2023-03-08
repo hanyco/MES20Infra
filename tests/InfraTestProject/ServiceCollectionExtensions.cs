@@ -1,17 +1,35 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.Helpers;
+using Library.Interfaces;
+using Library.Logging;
+using Library.Mapping;
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using UiContracts;
+
+using UiServices;
+
 namespace InfraTestProject;
 
-public static class ServiceCollectionExtensions
+internal static class ServiceCollectionExtensions
 {
     public static void AddUnitTestServices(this IServiceCollection services)
-        //UseConfigurationFile(services);
-        => services.AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"))
-                   .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"));
+    {
+        var inMemoryDatabaseRoot = new InMemoryDatabaseRoot();
+        services
+                    .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule))
+                    .AddScoped<IMapper, Mapper>()
+                    .AddScoped<ILogger, EmptyLogger>()
+                    .AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot)
+                                                                         .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)))
+                    .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot));
+    }
 
     private static void UseConfigurationFile(IServiceCollection services)
     {
