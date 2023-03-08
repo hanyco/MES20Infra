@@ -1,17 +1,29 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.Helpers;
+using Library.Interfaces;
+using Library.Logging;
+using Library.Mapping;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using UiContracts;
+
+using UiServices;
+
 namespace InfraTestProject;
 
-public static class ServiceCollectionExtensions
+internal static class ServiceCollectionExtensions
 {
     public static void AddUnitTestServices(this IServiceCollection services)
-        //UseConfigurationFile(services);
-        => services.AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"))
-                   .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"));
+        => services
+                .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule))
+                .AddScoped<IMapper, Mapper>()
+                .AddScoped<ILogger, EmptyLogger>()
+                .AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"))
+                .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"));
 
     private static void UseConfigurationFile(IServiceCollection services)
     {

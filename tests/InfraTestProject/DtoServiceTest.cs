@@ -2,11 +2,11 @@
 
 namespace InfraTestProject;
 
-public class DtoServiceTest : IClassFixture<ServicesFixture>
+public class DtoServiceTest : IClassFixture<DtoServiceFixture>
 {
-    private readonly ServicesFixture _fixture;
+    private readonly DtoServiceFixture _fixture;
 
-    public DtoServiceTest(ServicesFixture fixture)
+    public DtoServiceTest(DtoServiceFixture fixture)
     {
         this._fixture = fixture;
     }
@@ -14,7 +14,6 @@ public class DtoServiceTest : IClassFixture<ServicesFixture>
     [Fact]
     public void TestOne()
     {
-        this._fixture.WriteDbContext.Add(new Dto { Id = 1, Guid = Guid.NewGuid(), Name = "TestDto" });
-        this._fixture.WriteDbContext.SaveChanges();
+        var test = _fixture.Service.GetAllAsync().Result;
     }
 }
