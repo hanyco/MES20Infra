@@ -225,7 +225,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync();
         await insertDto(viewModel, entity.Dto);
-        await insertPoperties(entity.PropertyViewModels, entity.Dto.Id);
+        await insertProperties(entity.PropertyViewModels, entity.Dto.Id);
         var result = await this.SubmitChangesAsync(persist, transaction).With(_ => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 
@@ -237,7 +237,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                                           .With(_ => viewModel.Guid = dto.Guid);
             await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false);
         }
-        async Task insertPoperties(IEnumerable<PropertyViewModel> properties, long parentEntityId)
+        async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId)
         {
             foreach (var property in properties)
             {
