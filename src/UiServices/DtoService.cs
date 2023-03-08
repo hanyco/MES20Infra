@@ -327,7 +327,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         var result = viewModel.Check()
             .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
-            .NotNull(x => x.Module, () => "Module name cannot be null.")
+            .RuleFor(x => x.Module?.Id is not null or 0, () => "Module name cannot be null.")
             .Build();
         if (!result.IsSucceed)
         {

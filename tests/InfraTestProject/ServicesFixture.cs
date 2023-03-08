@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace InfraTestProject;
 
-public class ServicesFixture : IDisposable
+public abstract class ServicesFixture<TService> : IDisposable
 {
     private readonly IServiceProvider _services;
     private bool _disposedValue;
@@ -17,9 +17,12 @@ public class ServicesFixture : IDisposable
 
         this.WriteDbContext = this._services.GetService<InfraWriteDbContext>().NotNull();
         this.ReadDbContext = this._services.GetService<InfraReadDbContext>().NotNull();
+        this.Service = this.InitializeService();
     }
 
     public InfraReadDbContext ReadDbContext { get; }
+
+    public TService Service { get; }
 
     public InfraWriteDbContext WriteDbContext { get; }
 
@@ -29,8 +32,8 @@ public class ServicesFixture : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public TService GetService<TService>()
-        => this._services.GetService<TService>().NotNull();
+    public Service GetService<Service>()
+        => this._services.GetService<Service>().NotNull();
 
     protected virtual void Dispose(bool disposing)
     {
@@ -44,5 +47,16 @@ public class ServicesFixture : IDisposable
 
             this._disposedValue = true;
         }
+    }
+
+    protected virtual void OnInitializingService(in TService service)
+    {
+    }
+
+    private TService InitializeService()
+    {
+        var result = this.GetService<TService>().NotNull();
+        this.OnInitializingService(result);
+        return result;
     }
 }

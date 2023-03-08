@@ -1,4 +1,5 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.UI.Services;
 
 namespace InfraTestProject;
 
@@ -12,8 +13,11 @@ public class DtoServiceTest : IClassFixture<DtoServiceFixture>
     }
 
     [Fact]
-    public void TestOne()
+    public void InsertDto()
     {
-        var test = _fixture.Service.GetAllAsync().Result;
+        var module = this._fixture.GetService<IModuleService>().GetByIdAsync(1).Result!;
+        var model = new HanyCo.Infra.UI.ViewModels.DtoViewModel { Name = "Test DTO", Module = module };
+        var actual = this._fixture.Service.InsertAsync(model).Result;
+        Assert.True(actual);
     }
 }
