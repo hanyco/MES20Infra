@@ -13,7 +13,8 @@ public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>,
     /// Gets a new DtoViewModel.
     /// </summary>
     /// <returns>A DtoViewModel.</returns>
-    new Task<DtoViewModel> CreateAsync() => Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });
+    new Task<DtoViewModel> CreateAsync() 
+        => Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });
 
     /// <summary>
     /// Creates a new DTO by db table.

@@ -13,6 +13,29 @@ public class DtoServiceTest : IClassFixture<DtoServiceFixture>
         => this._fixture = fixture;
 
     [Fact]
+    public async Task _20_GetByIdTestAsync()
+    {
+        var model1 = await this.InsertDtoAsync("DTO 1");
+        var model2 = await this.InsertDtoAsync("DTO 2");
+        var model3 = await this.InsertDtoAsync("DTO 3");
+
+        var actual1 = await this._fixture.Service.GetByIdAsync(model1.Value.Id!.Value);
+        Assert.NotNull(actual1);
+        Assert.NotNull(actual1.Id);
+        Assert.Equal(model1.Value.Name, actual1.Name);
+
+        var actual2 = await this._fixture.Service.GetByIdAsync(model2.Value.Id!.Value);
+        Assert.NotNull(actual2);
+        Assert.NotNull(actual2.Id);
+        Assert.Equal(model2.Value.Name, actual2.Name);
+
+        var actual3 = await this._fixture.Service.GetByIdAsync(model3.Value.Id!.Value);
+        Assert.NotNull(actual3);
+        Assert.NotNull(actual3.Id);
+        Assert.Equal(model3.Value.Name, actual3.Name);
+    }
+
+    [Fact]
     public async void _30_InsertDtoTest()
     {
         var actual = await this.InsertDtoAsync("Test DTO");
@@ -34,29 +57,6 @@ public class DtoServiceTest : IClassFixture<DtoServiceFixture>
     }
 
     [Fact]
-    public async Task _20_GetByIdTestAsync()
-    {
-        var model1 = await this.InsertDtoAsync("DTO 1");
-        var model2 = await this.InsertDtoAsync("DTO 2");
-        var model3 = await this.InsertDtoAsync("DTO 3");
-        
-        var actual1 = await this._fixture.Service.GetByIdAsync(model1.Value.Id!.Value);
-        Assert.NotNull(actual1);
-        Assert.NotNull(actual1.Id);
-        Assert.Equal(model1.Value.Name, actual1.Name);
-
-        var actual2 = await this._fixture.Service.GetByIdAsync(model2.Value.Id!.Value);
-        Assert.NotNull(actual2);
-        Assert.NotNull(actual2.Id);
-        Assert.Equal(model2.Value.Name, actual2.Name);
-
-        var actual3 = await this._fixture.Service.GetByIdAsync(model3.Value.Id!.Value);
-        Assert.NotNull(actual3);
-        Assert.NotNull(actual3.Id);
-        Assert.Equal(model3.Value.Name, actual3.Name);
-    }
-
-    [Fact]
     public async Task _50_DeleteDtoTestAsync()
     {
         var model = (await this.InsertDtoAsync("Test DTO")).Value;
@@ -66,6 +66,12 @@ public class DtoServiceTest : IClassFixture<DtoServiceFixture>
         Assert.Null(actual);
     }
 
+    [Fact]
+    public async Task _60_CreateDtoTestAsync()
+    {
+        var model = await _fixture.Service.CreateAsync();
+        Assert.NotNull(model);
+    }
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
     {
         var module = this._fixture.GetService<IModuleService>().GetByIdAsync(1).Result!;
