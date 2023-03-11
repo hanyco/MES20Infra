@@ -1,7 +1,9 @@
 ﻿using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.Helpers;
 using Library.Results;
+using Library.Wpf.Bases;
 
 namespace InfraTestProject;
 
@@ -72,10 +74,54 @@ public class DtoServiceTest : IClassFixture<DtoServiceFixture>
         var model = await _fixture.Service.CreateAsync();
         Assert.NotNull(model);
     }
+    [Fact]
+    public async Task _70_GetAllByCategoryAsyncTest()
+    {
+        await InsertDtoAsync(x =>
+        {
+            var model = x.Model;
+            model.IsParamsDto = x.Index % 3 == 0;
+            model.IsResultDto = x.Index % 4 == 0;
+            model.IsViewModel = x.Index % 5 == 0;
+
+            return (model, x.Index < 30);
+        });
+
+        var actual1 = await _fixture.Service.GetAllByCategoryAsync(true, false, false);
+        Assert.Equal(10, actual1.Count);
+
+        var actual2 = await _fixture.Service.GetAllByCategoryAsync(false, true, false);
+        Assert.Equal(8, actual2.Count);
+
+        var actual3 = await _fixture.Service.GetAllByCategoryAsync(false, false, true);
+        Assert.Equal(6, actual3.Count);
+
+        var actual4 = await _fixture.Service.GetAllByCategoryAsync(true, true, true);
+        Assert.Equal(18, actual4.Count);
+
+        var actual5 = await _fixture.Service.GetAllByCategoryAsync(false, false, false);
+        Assert.Equal(0, actual5.Count);
+    }
+
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
     {
-        var module = this._fixture.GetService<IModuleService>().GetByIdAsync(1).Result!;
-        var model = new DtoViewModel { Name = dtoName, Module = module };
+        var module = await this._fixture.GetService<IModuleService>().GetByIdAsync(1);
+        var model = new DtoViewModel { Name = dtoName, Module = module! };
         return await this._fixture.Service.InsertAsync(model);
+    }
+
+    private async Task<Result<int>> InsertDtoAsync(Func<(DtoViewModel Model, int Index), (DtoViewModel Model, bool canContiniue)> process)
+    {
+        var module = await this._fixture.GetService<IModuleService>().GetByIdAsync(1);
+        var canContinue = true;
+        var index = 0;
+        while (canContinue)
+        {
+            var model = new DtoViewModel { Name = $"DTO {index}", Module = module! };
+            var processResult = process((model, index++));
+            if(!processResult.canContiniue) break;
+            await this._fixture.Service.InsertAsync(processResult.Model, persist: false);
+        }
+        return await this._fixture.Service.SaveChangesAsync();
     }
 }

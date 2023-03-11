@@ -142,7 +142,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         return result;
     }
 
-    public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategory(bool paramsDtos, bool resultDtos, bool viewModels)
+    public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels)
     {
         var rawQuery = from dto in this._readDbContext.Dtos
                        select dto;
