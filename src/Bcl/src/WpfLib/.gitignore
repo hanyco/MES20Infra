@@ -331,15 +331,3 @@ ASALocalRun/
 Source/WpfLibrary/.gitignore
 Source/WpfLibrary/LICENSE
 Source/WpfLibrary/README.md
-Source/Library.sln
-Source/Bcl/.gitignore
-Source/Bcl/Directory.Packages.props
-Source/Bcl/Library.sln
-Source/Bcl/README.md
-Source/Bcl/WpfLib/.gitignore
-Source/Bcl/.github/
-Source/Bcl/Library.lutconfig
-Source/Bcl/Test/LibraryTest/
-src/Bcl/Library.sln
-src/Bcl/Library.lutconfig
-src/Bcl/tests/
