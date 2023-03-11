@@ -7,13 +7,14 @@ namespace HanyCo.Infra.UI.Services;
 /// <summary>
 /// The DTO service.
 /// </summary>
-public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>, IResetChanges, IAsyncCreator<DtoViewModel>
+public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>, IAsyncSaveService, IAsyncCreator<DtoViewModel>
 {
     /// <summary>
     /// Gets a new DtoViewModel.
     /// </summary>
     /// <returns>A DtoViewModel.</returns>
-    new Task<DtoViewModel> CreateAsync() => Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });
+    new Task<DtoViewModel> CreateAsync() 
+        => Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });
 
     /// <summary>
     /// Creates a new DTO by db table.
@@ -30,7 +31,7 @@ public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>,
     /// <param name="resultDtos">if set to <c>true</c> [result dtos].</param>
     /// <param name="viewModels">if set to <c>true</c> [view models].</param>
     /// <returns></returns>
-    public Task<IReadOnlySet<DtoViewModel>> GetAllByCategory(bool paramsDtos, bool resultDtos, bool viewModels);
+    public Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels);
 
     /// <summary>
     /// Gets the DTOs by module id.
