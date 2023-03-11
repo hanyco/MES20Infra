@@ -18,7 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{7989E273-1C8A-4431-A23C-9517B91AE279}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		DbScript.sql = DbScript.sql
+		items\DbScript.sql = items\DbScript.sql
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "src\UiContract
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "src\UiServices\Services.csproj", "{6380D943-B564-4114-9044-FDD97F33E68D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfraTestProject", "tests\InfraTestProject\InfraTestProject.csproj", "{A589EC37-53BD-438D-9778-5548C58CA310}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfraTestProject", "tests\InfraTestProject\InfraTestProject.csproj", "{A589EC37-53BD-438D-9778-5548C58CA310}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreLib", "src\Bcl\src\CoreLib\CoreLib.csproj", "{A7755C26-A28C-4B91-8FFF-DA32AAC04606}"
 EndProject
