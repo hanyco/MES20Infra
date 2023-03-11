@@ -7,7 +7,7 @@ namespace HanyCo.Infra.UI.Services;
 /// <summary>
 /// The DTO service.
 /// </summary>
-public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>, IAsyncSaveService, IAsyncCreator<DtoViewModel>
+public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>, IAsyncSaveService, IResetChanges, IAsyncCreator<DtoViewModel>
 {
     /// <summary>
     /// Gets a new DtoViewModel.
