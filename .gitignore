@@ -340,3 +340,6 @@ Source/Bcl/WpfLib/.gitignore
 Source/Bcl/.github/
 Source/Bcl/Library.lutconfig
 Source/Bcl/Test/LibraryTest/
+src/Bcl/Library.sln
+src/Bcl/Library.lutconfig
+src/Bcl/tests/
