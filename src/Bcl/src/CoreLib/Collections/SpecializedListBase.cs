@@ -17,8 +17,7 @@ public abstract class SpecializedListBase<TItem, TEnumerable> : ReadOnlySpeciali
     public TEnumerable Add(TItem? item)
     {
         this.OnInserting(this.Count, item);
-        //this.AsList().Add(item);
-        this.InnerList.Add(item);
+        this.AsList().Add(item);
         return this.This();
     }
 

@@ -15,6 +15,7 @@ using HanyCo.Infra.UI.ViewModels;
 using Library.CodeGeneration.Models;
 using Library.Data.Linq;
 using Library.Exceptions.Validations;
+using Library.Helpers;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
 using Library.Mapping;

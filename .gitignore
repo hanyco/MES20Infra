@@ -344,3 +344,4 @@ src/Bcl/Library.sln
 src/Bcl/Library.lutconfig
 src/Bcl/tests/
 /src/CodeGenerator/UI/AppSettings.Development.json
+*.csproj
