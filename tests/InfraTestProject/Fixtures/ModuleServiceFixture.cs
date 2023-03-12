@@ -2,8 +2,6 @@
 
 namespace InfraTestProject;
 
-public sealed class ModuleServiceFixture : ServicesFixture<IDtoService>
+public sealed class ModuleServiceFixture : ServicesFixture<IModuleService>
 {
-    //[Fact]
-    //public async Task
 }
