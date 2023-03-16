@@ -57,7 +57,7 @@ internal sealed class BlazorPageService : IBusinesService, IBlazorPageService
         return model;
     }
 
-    public Codes GenerateCodes(in UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(in UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         _ = this.CheckValidator(viewModel);
         this.Logger.Debug($"Generating code is started.");
@@ -71,7 +71,7 @@ internal sealed class BlazorPageService : IBusinesService, IBlazorPageService
         var result = page.GenerateCodes(arguments);
         this.Logger.Debug($"Generating code is done.");
 
-        return result;
+        return Result<Codes>.New(result);
 
         static IHtmlElement toHtmlElement(UiComponentViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty)
         {

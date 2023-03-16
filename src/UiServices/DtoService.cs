@@ -15,7 +15,6 @@ using HanyCo.Infra.UI.ViewModels;
 using Library.CodeGeneration.Models;
 using Library.Data.Linq;
 using Library.Exceptions.Validations;
-using Library.Helpers;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
 using Library.Mapping;
@@ -51,7 +50,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         this._propertyService = propertyService;
     }
 
-    public Task<DtoViewModel> CreateAsync() 
+    public Task<DtoViewModel> CreateAsync()
         => Task.FromResult(new DtoViewModel());
 
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
@@ -113,15 +112,19 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             => await this._propertyService.DeleteByParentIdAsync(dto.Id!.Value, false);
     }
 
-    public Codes GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         Check.IfArgumentNotNull(viewModel);
-
         var result = new Codes();
+        if (!validate(viewModel).TryParse(out var validationResult))
+        {
+            return Result<Codes>.From(validationResult, result);
+        }
+
         var codeGen = convertViewModelToCodeGen(viewModel);
         var code = codeGen.GenerateCode(viewModel.NameSpace);
 
-        return result.Add(code);
+        return Result<Codes>.New(result.Add(code));
 
         static CodeGenDto convertViewModelToCodeGen(DtoViewModel resultViewModel)
         {
@@ -132,6 +135,14 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             }
             return result;
         }
+
+        static Result<DtoViewModel> validate(DtoViewModel viewModel) 
+            => viewModel.Check()
+                    .NotNull(x => x.Id)
+                    .NotNull(x => x.Module)
+                    .NotNullOrEmpty(x => x.Name)
+                    .NotNullOrEmpty(x => x.NameSpace)
+                    .Build();
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync()

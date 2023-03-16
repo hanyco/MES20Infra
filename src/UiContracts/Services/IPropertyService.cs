@@ -13,5 +13,5 @@ public interface IPropertyService : IBusinesService, IAsyncCrudService<PropertyV
 
     Task<IReadOnlyList<PropertyViewModel>> GetByParentIdAsync(long parentId);
 
-    Task<IReadOnlyList<Property>> GetDbPropetiesByParentIdAsync(long parentId);
+    Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId);
 }

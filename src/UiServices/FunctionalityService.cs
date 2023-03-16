@@ -374,7 +374,7 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
     public Task<Result> CommitTransactionAsync(CancellationToken cancellationToken = default)
         => this._writeDbContext.CommitTransactionAsync(cancellationToken);
 
-    public Codes GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
         => throw new NotImplementedException();
 
     public void ResetChanges()

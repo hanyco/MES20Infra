@@ -48,11 +48,11 @@ internal sealed class PropertyService : IPropertyService
 
     public async Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true)
     {
-        var dbProperties = await queryProperies(parentId);
+        var dbProperties = await queryProperties(parentId);
         await removeProperties(dbProperties);
         return await this.SubmitChangesAsync(persist: persist) > 0;
 
-        async Task<IEnumerable<Property>> queryProperies(long parentId)
+        async Task<IEnumerable<Property>> queryProperties(long parentId)
         {
             var query = from x in this._writeDbContext.Properties
                         where x.ParentEntityId == parentId
@@ -105,11 +105,11 @@ internal sealed class PropertyService : IPropertyService
                     where x.ParentEntityId == parentId
                     select x;
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var vewiModels = await this._converter.ToViewModelAsync<PropertyViewModel, Property>(dbResult, this._securityService).ToListCompactAsync();
-        return vewiModels;
+        var viewModels = await this._converter.ToViewModelAsync<PropertyViewModel, Property>(dbResult, this._securityService).ToListCompactAsync();
+        return viewModels;
     }
 
-    public async Task<IReadOnlyList<Property>> GetDbPropetiesByParentIdAsync(long parentId)
+    public async Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId)
     {
         var query = from d in this._readDbContext.Properties
                     where d.ParentEntityId == parentId
