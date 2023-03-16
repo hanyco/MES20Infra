@@ -16,7 +16,7 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
 
     [Fact]
     [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _05_GenerateValidationTestAsync()
+    public async Task _05_Generate_ValidationTest_ArgsNull_Async()
     {
         var actualExcept1ion = await Assert.ThrowsAsync<ArgumentNullException>(() => this.Service.GenerateAsync(null!));
         Assert.Equal("Value cannot be null. (Parameter 'viewModel')", actualExcept1ion?.Message);
@@ -24,7 +24,7 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
 
     [Fact]
     [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _10_GenerateValidationTestAsync()
+    public async Task _10_Generate_ValidationTest_RootDtoNull_Async()
     {
         var actualExcept1ion = await Assert.ThrowsAsync<NullValueValidationException>(() => this.Service.GenerateAsync(new FunctionalityViewModel()).ThrowOnFailAsync());
         Assert.Equal("RootDto cannot be null", actualExcept1ion?.Message);
@@ -32,7 +32,7 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
 
     [Fact]
     [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _20_GenerateValidationTestAsync()
+    public async Task _20_Generate_ValidationTest_NameNull_Async()
     {
         var model = new FunctionalityViewModel()
         {
@@ -47,7 +47,7 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
 
     [Fact]
     [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _25_GenerateValidationTestAsync()
+    public async Task _25_Generate_ValidationTest_NameSpaceNull_Async()
     {
         var model = new FunctionalityViewModel()
         {
@@ -63,7 +63,7 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
 
     [Fact]
     [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _30_GenerateValidationTestAsync()
+    public async Task _30_Generate_ValidationTest_ModuleNotSelected_Async()
     {
         var model = new FunctionalityViewModel()
         {
@@ -73,6 +73,23 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
             },
             Name = "Test Functionality",
             NameSpace = "TestNameSpaceForFunctionalityTest"
+        };
+        var actualExcept1ion = await Assert.ThrowsAsync<ValidationException>(() => this.Service.GenerateAsync(model).ThrowOnFailAsync());
+        Assert.Equal("Module is not selected.", actualExcept1ion?.Message);
+    }
+    [Fact]
+    [Trait(nameof(FunctionalityServiceTest), "Validation")]
+    public async Task _40_Generate_ValidationTest_ModuleNotSelected_Async()
+    {
+        var model = new FunctionalityViewModel()
+        {
+            RootDto = new()
+            {
+                DbObject = new("Person") { Id = 1 }
+            },
+            Name = "Test Functionality",
+            NameSpace = "TestNameSpaceForFunctionalityTest",
+            ModuleId = 1
         };
         var actualExcept1ion = await Assert.ThrowsAsync<ValidationException>(() => this.Service.GenerateAsync(model).ThrowOnFailAsync());
         Assert.Equal("Module is not selected.", actualExcept1ion?.Message);
