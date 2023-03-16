@@ -58,7 +58,7 @@
             Grid.Column="2"
             d:IsChecked="True"
             Content="Is Partial"
-            IsChecked="{Binding IsPartial}"
+            IsChecked="{Binding IsPartial, Mode=OneWay}"
             IsEnabled="False" />
         <!--<TextBox
             Grid.Row="2"

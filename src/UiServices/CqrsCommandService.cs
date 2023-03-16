@@ -1,6 +1,7 @@
 ﻿using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
+[Service]
 internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
@@ -126,10 +128,14 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     }
 
     public Task<Result<CqrsCommandViewModel>> ValidateAsync(CqrsCommandViewModel item)
-        => (Check.MustBeNotNull(item, () => "Please fill the form.")
-          + Check.MustBeNotNull(item, item.Name)
-          + Check.MustBeNotNull(item, item.ParamDto?.Id)
-          + Check.MustBeNotNull(item, item.ResultDto?.Id)).ToAsync();
+        => item.Check()
+               .NotNull(() => "Please fill the form.")
+               .NotNull(x=>x.Name)
+               .NotNull(x => x.ParamDto)
+               .NotNull(x => x.ParamDto.Id)
+               .NotNull(x => x.ResultDto)
+               .NotNull(x => x.ResultDto.Id)
+               .BuildAll().ToAsync();
 
     private IQueryable<CqrsSegregate> GetAllQuery()
     {

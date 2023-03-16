@@ -23,29 +23,29 @@ namespace Services;
 [Service]
 internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 {
-    public IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsCqrsGenerateCodesParams parametes, CqrsCodeGenerateCodesConfig? config)
+    public IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsCqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config)
     {
-        var (entityName, _, _, _) = parametes.ArgumentNotNull();
+        var (entityName, _, _, _) = parameters.ArgumentNotNull();
         config ??= new();
         if (config.ShouldGenerateGetAll)
         {
-            yield return new($"GetAll{StringHelper.Pluralize(entityName)}", this.GenerateGetAllCode(parametes));
+            yield return new($"GetAll{StringHelper.Pluralize(entityName)}", this.GenerateGetAllCode(parameters));
         }
         if (config.ShouldGenerateGetById)
         {
-            yield return new($"Get{entityName}ById", this.GenerateGetByIdCode(parametes));
+            yield return new($"Get{entityName}ById", this.GenerateGetByIdCode(parameters));
         }
         if (config.ShouldGenerateCreate)
         {
-            yield return new($"Create{entityName}", this.GenerateCreateCode(parametes));
+            yield return new($"Create{entityName}", this.GenerateCreateCode(parameters));
         }
         if (config.ShouldGenerateUpdate)
         {
-            yield return new($"Update{entityName}", this.GenerateUpdateCode(parametes));
+            yield return new($"Update{entityName}", this.GenerateUpdateCode(parameters));
         }
         if (config.ShouldGenerateDelete)
         {
-            yield return new($"Delete{entityName}", this.GenerateDeleteCode(parametes));
+            yield return new($"Delete{entityName}", this.GenerateDeleteCode(parameters));
         }
     }
 
@@ -57,9 +57,9 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                 _ => throw new NotSupportedException()
             };
 
-    public Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var paramDto = CodeGenDto.New($"{tableName}ParamDto");
         foreach (var child in table.Children.First().Children)
@@ -82,9 +82,9 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateDeleteCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateDeleteCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var paramDto = CodeGenDto.New($"{tableName}ParamDto").AddProp(typeof(Guid), "Id");
         var param = CodeGenCommandParameter.New().AddProp(paramDto, "Dto");
@@ -101,9 +101,9 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateGetAllCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateGetAllCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name.NotNull().Trim();
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
@@ -126,9 +126,9 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateGetByIdCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateGetByIdCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
@@ -151,9 +151,9 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateUpdateCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateUpdateCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var paramDto = CodeGenDto.New($"{tableName}ParamDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
@@ -177,7 +177,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     }
 
     //UNDONE CQRS Code Generator Service SaveToDatabaseAsync.
-    public Task SaveToDatabaseAsync(CqrsCqrsGenerateCodesParams parametes, CqrsCodeGenerateCodesConfig config)
+    public Task SaveToDatabaseAsync(CqrsCqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config)
         => throw new NotImplementedException();
 
     public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null)
