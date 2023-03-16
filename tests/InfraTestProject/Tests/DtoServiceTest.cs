@@ -1,7 +1,6 @@
 ﻿using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.Helpers;
 using Library.Results;
 
 namespace InfraTestProject.Tests;
@@ -12,21 +11,32 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     {
     }
 
-    [Theory()]
-    [InlineData("DTO 1")]
-    [InlineData("DTO 2")]
-    [InlineData("DTO 3")]
+    [Fact]
     [Trait(nameof(DtoServiceTest), "CRUD Test")]
-    public async Task _20_GetByIdTestAsync(string dtoName)
+    public async Task _20_GetByIdTestAsync()
     {
-        var model = await this.InsertDtoAsync(dtoName).GetValue();
-        var actual = await this.Service.GetByIdAsync(model.Id!.Value);
-        Assert.NotNull(actual);
-        Assert.NotNull(actual.Id);
-        Assert.Equal(model.Name, actual.Name);
+        var model1 = await this.InsertDtoAsync("DTO 1");
+        var model2 = await this.InsertDtoAsync("DTO 2");
+        var model3 = await this.InsertDtoAsync("DTO 3");
+
+        var actual1 = await this.Service.GetByIdAsync(model1.Value.Id!.Value);
+        Assert.NotNull(actual1);
+        Assert.NotNull(actual1.Id);
+        Assert.Equal(model1.Value.Name, actual1.Name);
+
+        var actual2 = await this.Service.GetByIdAsync(model2.Value.Id!.Value);
+        Assert.NotNull(actual2);
+        Assert.NotNull(actual2.Id);
+        Assert.Equal(model2.Value.Name, actual2.Name);
+
+        var actual3 = await this.Service.GetByIdAsync(model3.Value.Id!.Value);
+        Assert.NotNull(actual3);
+        Assert.NotNull(actual3.Id);
+        Assert.Equal(model3.Value.Name, actual3.Name);
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async void _30_InsertDtoTest()
     {
         var actual = await this.InsertDtoAsync("Test DTO");
@@ -36,6 +46,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _40_UpdateDtoTestAsync()
     {
         var model = (await this.InsertDtoAsync("Test DTO")).Value;
@@ -48,6 +59,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _50_DeleteDtoTestAsync()
     {
         var model = (await this.InsertDtoAsync("Test DTO")).Value;
@@ -58,6 +70,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _60_CreateDtoTestAsync()
     {
         var model = await this.Fixture.Service.CreateAsync();
@@ -78,20 +91,20 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
             return (model, x.Index < 30);
         });
 
-        var actualParamsDtos = await this.Fixture.Service.GetAllByCategoryAsync(true, false, false);
-        Assert.Equal(10, actualParamsDtos.Count);
+        var actual1 = await this.Fixture.Service.GetAllByCategoryAsync(true, false, false);
+        Assert.Equal(10, actual1.Count);
 
-        var actualResultDtos = await this.Fixture.Service.GetAllByCategoryAsync(false, true, false);
-        Assert.Equal(8, actualResultDtos.Count);
+        var actual2 = await this.Fixture.Service.GetAllByCategoryAsync(false, true, false);
+        Assert.Equal(8, actual2.Count);
 
-        var actualViewModels = await this.Fixture.Service.GetAllByCategoryAsync(false, false, true);
-        Assert.Equal(6, actualViewModels.Count);
+        var actual3 = await this.Fixture.Service.GetAllByCategoryAsync(false, false, true);
+        Assert.Equal(6, actual3.Count);
 
-        var actualAll = await this.Fixture.Service.GetAllByCategoryAsync(true, true, true);
-        Assert.Equal(18, actualAll.Count);
+        var actual4 = await this.Fixture.Service.GetAllByCategoryAsync(true, true, true);
+        Assert.Equal(18, actual4.Count);
 
-        var actualNone = await this.Fixture.Service.GetAllByCategoryAsync(false, false, false);
-        Assert.Equal(0, actualNone.Count);
+        var actual5 = await this.Fixture.Service.GetAllByCategoryAsync(false, false, false);
+        Assert.Equal(0, actual5.Count);
     }
 
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)

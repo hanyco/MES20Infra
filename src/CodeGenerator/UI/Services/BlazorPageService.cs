@@ -157,7 +157,7 @@ internal sealed class BlazorPageService : IBusinesService, IBlazorPageService
                 .NotNull(x => x.ClassName)
                 .NotNull(x => x.Dto)
                 .NotNull(x => x.Module)
-                .NotNull(x => x.Route).Build();
+                .NotNull(x => x.Route).BuildAll();
 
     public Task<Result<UiPageViewModel>> ValidateAsync(UiPageViewModel model)
         => this.Validate(model).ToAsync();
