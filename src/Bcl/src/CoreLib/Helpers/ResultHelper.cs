@@ -143,4 +143,9 @@ public static class ResultHelper
 
     public static Task<TResult> ToAsync<TResult>(this TResult result) where TResult : ResultBase 
         => Task.FromResult(result);
+    public static async Task<TValue> GetValue<TValue>(this Task<Result<TValue>> task)
+    {
+        var result = await task;
+        return result.Value;
+    }
 }
