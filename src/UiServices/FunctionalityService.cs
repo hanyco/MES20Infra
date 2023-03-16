@@ -2,6 +2,7 @@
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
+using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
@@ -17,7 +18,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 using Database = Library.Data.SqlServer.Dynamics.Database;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace Services;
 
 [Service]
 internal sealed class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
@@ -81,6 +82,7 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
 
     public async Task<Result<FunctionalityViewModel?>> GenerateAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
+        Check.IfArgumentNotNull(viewModel);
         if (!validateArgs(viewModel).TryParse(out var validationChecks))
         {
             return validationChecks!;
@@ -114,24 +116,20 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         {
             var dataResult = viewModel;
             var db = await Database.GetDatabaseAsync(connectionString);
-            var dbTable = db?.Tables[dataResult.RootDto!.DbObject.Name!]
-                .NotNull(() => new Library.Exceptions.ObjectNotFoundException($"Table name `{dataResult.RootDto!.DbObject}` not found."));
+            var dbTable = db.NotNull(() => "Database not found.")
+                .Tables[dataResult.RootDto!.DbObject.Name!].NotNull(() => new Library.Exceptions.ObjectNotFoundException($"Table name `{dataResult.RootDto!.DbObject}` not found."));
             var data = new CreationData(dataResult, dbTable);
             return data;
         }
 
-        static Result<FunctionalityViewModel> validateArgs(in FunctionalityViewModel args)
-        {
-            if (!Check.MustBeNotNull(args).TryParse(out var viewModelNullCheck))
-            {
-                return viewModelNullCheck;
-            }
-
-            var result = Check.MustBeNotNull(args, args.RootDto?.DbObject);
-            result += Check.MustBeNotNull(args, args.NameSpace, nameof(args.NameSpace));
-            result += Check.MustBe(args, args.ModuleId != 0, () => new ValidationException("Module is not selected."));
-            return result;
-        }
+        static Result<FunctionalityViewModel> validateArgs(FunctionalityViewModel args) 
+            => args.Check().ArgumentNotNull()
+                .NotNull(x => x.RootDto)
+                .NotNull(x => x.RootDto.DbObject)
+                .NotNull(x => x.Name)
+                .NotNull(x => x.NameSpace)
+                .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
+                .Build();
     }
 
     private async Task CreateBlazorPage(CreationData data)

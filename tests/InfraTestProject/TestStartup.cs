@@ -4,6 +4,7 @@ using Library.Helpers;
 using Library.Interfaces;
 using Library.Logging;
 using Library.Mapping;
+using Library.Threading.MultistepProgress;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -38,7 +39,8 @@ internal static class ServiceCollectionExtensions
                 .AddScoped<ILogger, EmptyLogger>()
                 .AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot)
                                                                      .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)))
-                .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot));
+                .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot))
+                .AddSingleton(IMultistepProcess.New());
     }
 
     private static void UseConfigurationFile(IServiceCollection services)
