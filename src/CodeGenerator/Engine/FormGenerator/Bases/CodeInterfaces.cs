@@ -1,4 +1,5 @@
 ﻿using Library.CodeGeneration.Models;
+using Library.Results;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
@@ -50,5 +51,5 @@ public interface IUiCodeGenerator
 
 public interface ICodeGeneratorService<TViewModel>
 {
-    Codes GenerateCodes(in TViewModel viewModel, GenerateCodesParameters? arguments = null);
+    Result<Codes> GenerateCodes(in TViewModel viewModel, GenerateCodesParameters? arguments = null);
 }

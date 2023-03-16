@@ -271,7 +271,7 @@ public partial class BlazorPageGeneratorPage
     {
         this.ValidateForm();
         var viewModel = this.ViewModel!;
-        var code = this._service.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode));
+        var code = this._service.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
         _ = await code.SaveToFileAsync();
         return "Codes saved.";
     }
@@ -286,7 +286,7 @@ public partial class BlazorPageGeneratorPage
     {
         this.ValidateForm();
         var viewModel = this.ViewModel;
-        var code = this._service.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode));
+        var code = this._service.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
         _ = await code.SaveToFileAsync();
         this.ActionScopeEnd("Codes saved.");
     }

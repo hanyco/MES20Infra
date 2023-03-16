@@ -139,7 +139,7 @@ public partial class CqrsExplorerTreeView : UserControl
     {
         if (this.GettingDtos is null)
         {
-            return await this._dtoService.GetAllByCategory(this.FilterDtoParams, this.FilterDtoResult, this.FilterViewModel);
+            return await this._dtoService.GetAllByCategoryAsync(this.FilterDtoParams, this.FilterDtoResult, this.FilterViewModel);
         }
 
         var e = new ItemActingEventArgs<Task<IReadOnlyList<DtoViewModel>>>();

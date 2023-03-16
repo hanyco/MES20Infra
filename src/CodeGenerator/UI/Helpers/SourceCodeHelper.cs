@@ -70,7 +70,7 @@ public static class SourceCodeHelper
             await validatorAsync();
         }
 
-        var codes = codeGeneratorService.GenerateCodes(viewModel);
+        var codes = codeGeneratorService.GenerateCodes(viewModel).GetValue();
         var result = await codes.SaveToFileAsync();
         return result;
     }

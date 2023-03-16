@@ -50,7 +50,8 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         this._propertyService = propertyService;
     }
 
-    public Task<DtoViewModel> CreateAsync() => throw new NotImplementedException();
+    public Task<DtoViewModel> CreateAsync()
+        => Task.FromResult(new DtoViewModel());
 
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
     {
@@ -111,15 +112,19 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             => await this._propertyService.DeleteByParentIdAsync(dto.Id!.Value, false);
     }
 
-    public Codes GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         Check.IfArgumentNotNull(viewModel);
-
         var result = new Codes();
+        if (!validate(viewModel).TryParse(out var validationResult))
+        {
+            return Result<Codes>.From(validationResult, result);
+        }
+
         var codeGen = convertViewModelToCodeGen(viewModel);
         var code = codeGen.GenerateCode(viewModel.NameSpace);
 
-        return result.Add(code);
+        return Result<Codes>.New(result.Add(code));
 
         static CodeGenDto convertViewModelToCodeGen(DtoViewModel resultViewModel)
         {
@@ -130,6 +135,14 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             }
             return result;
         }
+
+        static Result<DtoViewModel> validate(DtoViewModel viewModel) 
+            => viewModel.Check()
+                    .NotNull(x => x.Id)
+                    .NotNull(x => x.Module)
+                    .NotNullOrEmpty(x => x.Name)
+                    .NotNullOrEmpty(x => x.NameSpace)
+                    .Build();
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync()
@@ -142,7 +155,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         return result;
     }
 
-    public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategory(bool paramsDtos, bool resultDtos, bool viewModels)
+    public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels)
     {
         var rawQuery = from dto in this._readDbContext.Dtos
                        select dto;
@@ -225,7 +238,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync();
         await insertDto(viewModel, entity.Dto);
-        await insertPoperties(entity.PropertyViewModels, entity.Dto.Id);
+        await insertProperties(entity.PropertyViewModels, entity.Dto.Id);
         var result = await this.SubmitChangesAsync(persist, transaction).With(_ => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 
@@ -237,7 +250,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                                           .With(_ => viewModel.Guid = dto.Guid);
             await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false);
         }
-        async Task insertPoperties(IEnumerable<PropertyViewModel> properties, long parentEntityId)
+        async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId)
         {
             foreach (var property in properties)
             {
@@ -327,8 +340,8 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         var result = viewModel.Check()
             .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
-            .NotNull(x => x.Module, () => "Module name cannot be null.")
-            .Build();
+            .RuleFor(x => x.Module?.Id is not null or 0, () => "Module name cannot be null.")
+            .BuildAll();
         if (!result.IsSucceed)
         {
             return result;

@@ -82,7 +82,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
     {
         Check.IfArgumentNotNull(dto?.Id);
         var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value)).NotNull(() => new NotFoundValidationException());
-        var propsEntity = await this._propertyService.GetDbPropetiesByParentIdAsync(dto.Id!.Value);
+        var propsEntity = await this._propertyService.GetDbPropertiesByParentIdAsync(dto.Id!.Value);
         var parsedName = entity.Name?.Replace("Dto", "Component").Replace("ViewModel", "Component") ?? string.Empty;
         var parsedNameSpace = entity.NameSpace.Replace("Dto", "Component").Replace("ViewModel", "Component");
         var result = new UiComponentViewModel

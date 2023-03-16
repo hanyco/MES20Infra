@@ -1,6 +1,7 @@
 ﻿using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Interfaces;
@@ -8,15 +9,15 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace Services;
 
-internal sealed class ModuleService : IBusinesService,IModuleService
+internal sealed class ModuleService : IBusinesService, IModuleService
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _readDbContext;
 
-    public ModuleService(InfraReadDbContext readDbContext, IEntityViewModelConverter converter) =>
-        (this._readDbContext, this._converter) = (readDbContext, converter);
+    public ModuleService(InfraReadDbContext readDbContext, IEntityViewModelConverter converter)
+        => (this._readDbContext, this._converter) = (readDbContext, converter);
 
     public Task<IReadOnlyList<ModuleViewModel>> GetAllAsync()
         => this.GetAllAsync<ModuleViewModel, Module>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
