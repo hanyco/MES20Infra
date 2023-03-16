@@ -8,7 +8,8 @@ public sealed class ModuleServiceTest : ServiceTestBase<IModuleService, ModuleSe
     {
     }
 
-    [Fact]  
+    [Fact]
+    [Trait(nameof(ModuleServiceTest), "CRUD Test")]
     public async Task _10_GetAllAsync()
     {
         var modules = await this.Service.GetAllAsync();
@@ -17,6 +18,7 @@ public sealed class ModuleServiceTest : ServiceTestBase<IModuleService, ModuleSe
     }
 
     [Fact]
+    [Trait(nameof(ModuleServiceTest), "CRUD Test")]
     public async Task _10_GetByIdAsync()
     {
         var module = await this.Service.GetByIdAsync(1);

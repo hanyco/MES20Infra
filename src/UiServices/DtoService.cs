@@ -51,7 +51,8 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         this._propertyService = propertyService;
     }
 
-    public Task<DtoViewModel> CreateAsync() => throw new NotImplementedException();
+    public Task<DtoViewModel> CreateAsync() 
+        => Task.FromResult(new DtoViewModel());
 
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
     {
@@ -329,7 +330,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         var result = viewModel.Check()
             .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
             .RuleFor(x => x.Module?.Id is not null or 0, () => "Module name cannot be null.")
-            .Build();
+            .BuildAll();
         if (!result.IsSucceed)
         {
             return result;

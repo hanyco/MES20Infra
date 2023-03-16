@@ -12,6 +12,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _20_GetByIdTestAsync()
     {
         var model1 = await this.InsertDtoAsync("DTO 1");
@@ -35,6 +36,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async void _30_InsertDtoTest()
     {
         var actual = await this.InsertDtoAsync("Test DTO");
@@ -44,6 +46,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _40_UpdateDtoTestAsync()
     {
         var model = (await this.InsertDtoAsync("Test DTO")).Value;
@@ -56,6 +59,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _50_DeleteDtoTestAsync()
     {
         var model = (await this.InsertDtoAsync("Test DTO")).Value;
@@ -66,6 +70,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _60_CreateDtoTestAsync()
     {
         var model = await this.Fixture.Service.CreateAsync();
@@ -73,6 +78,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     }
 
     [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _70_GetAllByCategoryAsyncTest()
     {
         _ = await this.InsertDtoAsync(x =>
