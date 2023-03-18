@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 using Contracts.Services;
 
@@ -8,6 +9,7 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.Mapping;
 using Library.Validations;
+using Library.Wpf.Bases;
 
 using Services.Helpers;
 
@@ -161,8 +163,8 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         return result;
     }
 
-    public Property? ToDbEntity(PropertyViewModel? model, long parentId) =>
-        this.ToDbEntity(model?.ForMember(x => x.ParentEntityId = parentId));
+    public Property? ToDbEntity(PropertyViewModel? model, long parentId)
+        => this.ToDbEntity(model?.ForMember(x => x.ParentEntityId = parentId));
 
     public Dto? ToDbEntity(DtoViewModel? viewModel)
     {
@@ -250,9 +252,9 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
             return null;
         }
 
-        var result = this._mapper.Map<DtoViewModel>(entity);
+        var result = InnerToViewModel(entity);
 
-        if (entity.Properties?.Any() is true)
+        if (entity.Properties is not null and { Count: > 0})
         {
             _ = result.Properties!.AddRange(entity.Properties.Select(this.ToViewModel));
         }
@@ -268,8 +270,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
     }
 
     public IEnumerable<ModuleViewModel?> ToViewModel(IEnumerable<Module?> entities)
-        =>
-        entities.Select(this.ToViewModel);
+        => entities.Select(this.ToViewModel);
 
     public IEnumerable<UiBootstrapPositionViewModel?> ToViewModel(IEnumerable<UiBootstrapPosition?> entities)
         => throw new NotImplementedException();
@@ -343,8 +344,11 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
             .ForMember(x => x.TypeFullName = entity.TypeFullName!)
             .ForMember(x => x.Type = PropertyTypeHelper.FromPropertyTypeId(entity.PropertyType))
             //!? Using `Convert` method to convert DTO, causes recursive infinite method-call.
-            .ForMember(x => x.Dto = entity.Dto is null ? null : new() { Id = entity.Dto.Id, Name = entity.Dto.Name, NameSpace = entity.Dto.NameSpace ?? string.Empty });
-
+            .ForMember(x => x.Dto = InnerToViewModel(entity.Dto));
+    
+    [return: NotNullIfNotNull(nameof(entity))]
+    private DtoViewModel? InnerToViewModel(Dto? entity) 
+        => entity is null ? null : this._mapper.Map<DtoViewModel>(entity);
     public IEnumerable<SecurityDescriptorViewModel?> ToViewModel(IEnumerable<SecurityDescriptor?> entities)
         => entities.Select(this.ToViewModel);
 
@@ -413,7 +417,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         return result;
     }
 
-    public IEnumerable<FunctionalityViewModel?> ToViewModel(IEnumerable<Functionality?> entities) 
+    public IEnumerable<FunctionalityViewModel?> ToViewModel(IEnumerable<Functionality?> entities)
         => entities.Select(ToViewModel);
 
     public FunctionalityViewModel? ToViewModel(Functionality? entity)

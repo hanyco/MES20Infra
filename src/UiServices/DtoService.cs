@@ -77,13 +77,16 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
     public async Task<Result> DeleteAsync(DtoViewModel model, bool persist)
     {
-        Check.IfArgumentNotNull(model);
+        if (!validate(model).TryParse(out var validationResult))
+        {
+            return validationResult;
+        }
 
         try
         {
-            await deleteProperties(model);
-            await deleteDto(model);
-            return await this.SubmitChangesAsync(persist: persist).ThrowOnFailAsync();
+            _ = await this._propertyService.DeleteByParentIdAsync(model.Id!.Value, false);
+            _ = this._writeDbContext.RemoveById<DtoEntity>(model.Id!.Value);
+            return await this.SubmitChangesAsync(persist: persist);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_CqrsSegregate_Dto"))
         {
@@ -102,14 +105,11 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return Result.CreateFail(message);
         }
 
-        async Task deleteDto(DtoViewModel dto)
-        {
-            _ = this._writeDbContext.RemoveById<DtoEntity>(dto.Id!.Value);
-            await Task.CompletedTask;
-        }
-
-        async Task deleteProperties(DtoViewModel dto)
-            => await this._propertyService.DeleteByParentIdAsync(dto.Id!.Value, false);
+        static Result<DtoViewModel> validate(DtoViewModel model) 
+            => model.Check()
+                    .ArgumentNotNull()
+                    .NotNull(x => x.Id)
+                    .Build();
     }
 
     public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
@@ -136,7 +136,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return result;
         }
 
-        static Result<DtoViewModel> validate(DtoViewModel viewModel) 
+        static Result<DtoViewModel> validate(DtoViewModel viewModel)
             => viewModel.Check()
                     .NotNull(x => x.Id)
                     .NotNull(x => x.Module)
@@ -277,7 +277,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         var entity = this.ToDbEntity(viewModel);
         this.ResetChanges();
 
-        await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync();
+        await using var transaction = await this._writeDbContext.BeginTransactionAsync();
         await removeDeletedProperties(viewModel.DeletedProperties);
         await updateDto(viewModel, entity.Dto);
         await updateProperties(entity.PropertyViewModels, entity.Dto);
@@ -351,8 +351,12 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                     where dto.Name == viewModel!.Name && dto.Id != viewModel.Id
                     select dto.Id;
         _ = result.Check(await query.AnyAsync(), "DTO name already exists.", ObjectDuplicateValidationException.ErrorCode);
-        var duplicates = viewModel!.Properties.GroupBy(x => x.Name).Where(g => g.Count() > 1).Select(y => y.Key).Compact().ToList();
-        _ = result.Check(duplicates.Count > 0, $"{duplicates.Merge(",")} property name(s are) is duplicated.", ObjectDuplicateValidationException.ErrorCode);
+        var duplicates = viewModel!.Properties
+            .GroupBy(x => x.Name)
+            .Where(g => g.Count() > 1)
+            .Select(y => y.Key)
+            .Compact().ToList();
+        _ = result.Check(duplicates.Count != 0, $"{duplicates.Merge(",")} property name(s) are|is duplicated.", ObjectDuplicateValidationException.ErrorCode);
         return result;
     }
 

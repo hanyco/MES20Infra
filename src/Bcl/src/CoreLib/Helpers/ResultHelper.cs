@@ -57,7 +57,7 @@ public static class ResultHelper
     }
 
     public static TResult OnSucceed<TResult>([DisallowNull] this TResult result, [DisallowNull] Func<TResult> next) where TResult : ResultBase 
-        => result is true ? next() : result;
+        => result == true ? next() : result;
 
     public static Result<Stream> SerializeToXmlFile<T>(this Result<Stream> result, string filePath)
     {
