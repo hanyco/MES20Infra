@@ -4,9 +4,7 @@ using HanyCo.Infra.UI.ViewModels;
 using InfraTestProject.Fixtures;
 
 using Library.Data.SqlServer.Dynamics;
-using Library.Exceptions.Validations;
-
-using Microsoft.VisualStudio.TestPlatform.Utilities;
+using Library.Threading.MultistepProgress;
 
 using Xunit.Abstractions;
 
@@ -14,33 +12,38 @@ namespace InfraTestProject.Tests;
 
 public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, FunctionalityServiceFixture>
 {
-    private readonly ITestOutputHelper _output;
+    private readonly IUnitTestLogger _logger;
 
-    public FunctionalityServiceTest(FunctionalityServiceFixture fixture, ITestOutputHelper output) : base(fixture)
-    {
-        this._output = output;
-    }
+    public FunctionalityServiceTest(FunctionalityServiceFixture fixture, ITestOutputHelper output) : base(fixture) 
+        => this._logger = IUnitTestLogger.New(output).HandleReporterEvents(DI.GetService<IMultistepProcess>());
 
-    [Fact(DisplayName ="Main Test")]
+    [Fact(DisplayName = "Main Test")]
     [Trait(nameof(FunctionalityServiceTest), "Main Test")]
     public async Task Generate_MainTest_Async()
     {
-        const string cs = "InMemoryConnectionString";
-        var model = new FunctionalityViewModel()
+        var model = initializeModel();
+
+        this._logger.Log("Test is starting...");
+        _ = await this.Service.GenerateAsync(model).ThrowOnFailAsync();
+        this._logger.Log("Test is ended.");
+
+        static FunctionalityViewModel initializeModel()
         {
-            DbTable = new(null!, "Person", "dbo", cs),
-            DbObject = new("Person") { Id = 1 },
-            Name = "TestFunctionality",
-            NameSpace = "CodeGen.UnitTest",
-            ModuleId = 1,
-        };
-        model.DbTable.Columns = new(new Column[]
-        {
-            new(model.DbTable, "Name", cs) { DataType = "nvarchar", MaxLength=50, },
-            new(model.DbTable, "Age", cs) { DataType = "int" },
-        });
-        _output.WriteLine("Starting...");
-        var actual = await this.Service.GenerateAsync(model).ThrowOnFailAsync();
-        _output.WriteLine("Done.");
+            const string CS = "InMemoryConnectionString";
+            var model = new FunctionalityViewModel()
+            {
+                DbTable = new(null!, "Person", "dbo", CS),
+                DbObject = new("Person") { Id = 1 },
+                Name = "TestFunctionality",
+                NameSpace = "CodeGen.UnitTest",
+                ModuleId = 1,
+            };
+            model.DbTable.Columns = new(new Column[]
+            {
+                new(model.DbTable, "Name", CS) { DataType = "nvarchar", MaxLength = 50, },
+                new(model.DbTable, "Age", CS) { DataType = "int" },
+            });
+            return model;
+        }
     }
 }

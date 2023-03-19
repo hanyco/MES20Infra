@@ -125,7 +125,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
         if (isSelected && this._dtoExplorerTreeView.SelectedItem is DtoViewModel { } dto)
         {
-            this.ViewModel.RootDto = dto;
+            this.ViewModel.DbObject = dto.DbObject;
         }
     }
 

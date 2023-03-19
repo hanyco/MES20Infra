@@ -1,6 +1,5 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.Helpers;
 using Library.Interfaces;
 using Library.Logging;
 using Library.Mapping;
@@ -9,7 +8,6 @@ using Library.Threading.MultistepProgress;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using UiContracts;
@@ -24,7 +22,9 @@ public static class TestStartup
     {
         var services = new ServiceCollection();
         services.AddUnitTestServices();
-        return services.BuildServiceProvider();
+        var result = services.BuildServiceProvider();
+        DI.Initialize(result);
+        return result;
     }
 }
 
@@ -42,44 +42,4 @@ internal static class ServiceCollectionExtensions
                 .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot))
                 .AddSingleton(IMultistepProcess.New());
     }
-
-    private static void UseConfigurationFile(IServiceCollection services)
-    {
-        var configuration = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json")
-                    .Build();
-
-        var serviceSettings = configuration.GetSection("Services").Get<ServiceSettings[]>();
-
-        foreach (var serviceSetting in serviceSettings)
-        {
-            if (serviceSetting?.Implementation == null)
-            {
-                continue;
-            }
-
-            var serviceType = Type.GetType(serviceSetting.Implementation);
-            if (serviceType == null)
-            {
-                continue;
-            }
-
-            _ = serviceSetting.Type switch
-            {
-                "Transient" => services.AddTransient(serviceType),
-                "Scoped" => services.AddScoped(serviceType),
-                "Singleton" => services.AddSingleton(serviceType),
-                _ => throw new Exception($"Invalid service type: {serviceSetting.Type}"),
-            };
-        }
-    }
-}
-
-file class ServiceSettings
-{
-    public string? Implementation { get; set; }
-
-    public string? Name { get; set; }
-
-    public string? Type { get; set; }
 }

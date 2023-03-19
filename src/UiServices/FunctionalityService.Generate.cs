@@ -16,14 +16,13 @@ using Library.Threading.MultistepProgress;
 using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 using Database = Library.Data.SqlServer.Dynamics.Database;
 
 namespace Services;
 
 [Service]
-internal sealed class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
+internal sealed partial class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
     , IBusinesService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSaveService, ILoggerContainer
 {
     private readonly ICqrsCommandService _commandService;
@@ -61,27 +60,6 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
 
     public ILogger Logger { get; }
 
-    #region CRUD
-
-    public Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true)
-        => this.DeleteAsync<FunctionalityViewModel, Functionality>(this._writeDbContext, model, persist, persist, this.Logger);
-
-    public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync()
-        => this.GetAllAsync<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
-
-    public Task<FunctionalityViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync<FunctionalityViewModel, Functionality>(id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
-
-    public Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true)
-        => this.InsertAsync(this._readDbContext, model, this._converter.ToDbEntity, persist, logger: this.Logger).ModelResult();
-
-    public Task<Result<FunctionalityViewModel>> UpdateAsync(long id, FunctionalityViewModel model, bool persist = true)
-        => this.UpdateAsync(this._readDbContext, model, this._converter.ToDbEntity, persist, logger: this.Logger).ModelResult();
-
-    #endregion CRUD
-
-    #region Generate Families
-
     public async Task<Result<FunctionalityViewModel?>> GenerateAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(viewModel);
@@ -109,12 +87,17 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
             .AddStep(this.CreateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"));
 
         var result = await process.RunAsync(token);
-        this._reporter.Report(description: result.Result.IsSucceed ? "Functionality view model is generated." : result.Result.Message);
+        var message = result.Result.Message.IsNullOrEmpty()
+            ? result.Result.IsSucceed 
+                ? "Functionality view model is created." 
+                : "An error occurred while creating functionality view model"
+            : result.Result.Message;
+        this._reporter.Report(description: getTitle(message));
 
         return result.Result!;
 
         string getTitle(string description)
-            => $"{nameof(FunctionalityService)}: {data.ViewModel.Name} - ${description}";
+            => $"{data.ViewModel.Name} - {description}";
 
         static async Task<CreationData> initialize(FunctionalityViewModel viewModel, string? connectionString)
         {
@@ -143,6 +126,9 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
                 .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
                 .Build();
     }
+
+    public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
+        => throw new NotImplementedException();
 
     private async Task CreateBlazorPage(CreationData data)
     {
@@ -174,7 +160,7 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
     }
 
     private Task CreateCodes(CreationData arg)
-        => throw new NotImplementedException();
+        => Task.CompletedTask;
 
     private async Task CreateDeleteCommand(CreationData data)
     {
@@ -183,10 +169,10 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         await createHandler(data);
         await createResult(data);
 
-        Task createParams(CreationData data) => throw new NotImplementedException();
-        Task createValidator(CreationData data) => throw new NotImplementedException();
-        Task createHandler(CreationData data) => throw new NotImplementedException();
-        Task createResult(CreationData data) => throw new NotImplementedException();
+        Task createParams(CreationData data) => Task.CompletedTask;
+        Task createValidator(CreationData data) => Task.CompletedTask;
+        Task createHandler(CreationData data) => Task.CompletedTask;
+        Task createResult(CreationData data) => Task.CompletedTask;
     }
 
     private async Task CreateDetailsComponent(CreationData data)
@@ -204,9 +190,9 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
             return Task.CompletedTask;
         }
 
-        Task createDetailsFrontCode(CreationData data) => throw new NotImplementedException();
+        Task createDetailsFrontCode(CreationData data) => Task.CompletedTask;
 
-        Task createDetailsBackendCode(CreationData data) => throw new NotImplementedException();
+        Task createDetailsBackendCode(CreationData data) => Task.CompletedTask;
     }
 
     private async Task CreateGetAllQuery(CreationData data)
@@ -219,13 +205,11 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         {
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
             var query = await this._queryService.CreateAsync();
-            data.ViewModel.GetAllQueryViewModel = query.Fluent()
+            data.ViewModel.GetAllQuery = query.Fluent()
                 .With(x => x.Name = $"{data.GetAllQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
                 .With(x => x.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries"))
                 .With(x => x.DbObject = data.ViewModel.DbObject)
-                .With(x => x.HasPartialHandller = true)
-                .With(x => x.HasPartialOnInitialize = true)
                 .With(x => x.FriendlyName = data.GetAllQueryName.SplitCamelCase().Merge(" "))
                 .With(x => x.Comment = data.COMMENT)
                 .IfTrue(data.ViewModel.ModuleId != 0, async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
@@ -234,7 +218,7 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         Task createParams(CreationData data)
         {
             var rawDto = this.CreateRawDto(data, false);
-            data.ViewModel.GetAllQueryViewModel.ParamDto = rawDto
+            data.ViewModel.GetAllQuery.ParamDto = rawDto
                 .With(x => x.IsParamsDto = true)
                 .With(x => x.Name = $"{data.GetAllQueryName}Params");
             return Task.CompletedTask;
@@ -243,7 +227,7 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         Task createResult(CreationData data)
         {
             var rawDto = this.CreateRawDto(data, true);
-            data.ViewModel.GetAllQueryViewModel.ResultDto = rawDto
+            data.ViewModel.GetAllQuery.ResultDto = rawDto
                 .With(x => x.IsResultDto = true)
                 .With(x => x.Name = $"GetAll{data.GetAllQueryName}Result");
             return Task.CompletedTask;
@@ -260,13 +244,11 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         {
             data.GetByIdQueryName = $"GetById{data.DbTable.Name}Query";
             var query = await this._queryService.CreateAsync();
-            data.ViewModel.GetByIdQueryViewModel = query.Fluent()
+            data.ViewModel.GetByIdQuery = query.Fluent()
                 .With(x => x.Name = $"{data.GetByIdQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
                 .With(x => x.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries"))
                 .With(x => x.DbObject = data.ViewModel.DbObject)
-                .With(x => x.HasPartialHandller = true)
-                .With(x => x.HasPartialOnInitialize = true)
                 .With(x => x.FriendlyName = data.GetByIdQueryName.SplitCamelCase().Merge(" "))
                 .With(x => x.Comment = data.COMMENT)
                 .IfTrue(data.ViewModel.ModuleId != 0, async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
@@ -278,7 +260,7 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
                 .With(x => x.IsParamsDto = true)
                 .With(x => x.Name = $"GetById{data.DbTable.Name}Params")
                 .With(x => x.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long }));
-            data.ViewModel.GetByIdQueryViewModel.ParamDto = rawDto;
+            data.ViewModel.GetByIdQuery.ParamDto = rawDto;
             return Task.CompletedTask;
         }
 
@@ -287,20 +269,22 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
             var rawDto = this.CreateRawDto(data, true)
                 .With(x => x.IsResultDto = true)
                 .With(x => x.Name = $"GetById{data.DbTable.Name}Result");
-            data.ViewModel.GetByIdQueryViewModel.ResultDto = rawDto;
+            data.ViewModel.GetByIdQuery.ResultDto = rawDto;
             return Task.CompletedTask;
         }
     }
 
     private async Task CreateInsertCommand(CreationData data)
     {
+        var command =await _commandService.CreateAsync();
+        data.ViewModel.InsertCommand = new() { Category = CqrsSegregateCategory.Create, Comment = data.COMMENT, };
         await createParams(data);
         await createValidator(data);
         await createHandler(data);
         await createResult(data);
 
-        Task createValidator(CreationData data) => throw new NotImplementedException();
-        Task createHandler(CreationData data) => throw new NotImplementedException();
+        Task createValidator(CreationData data) => Task.CompletedTask;
+        Task createHandler(CreationData data) => Task.CompletedTask;
 
         Task createParams(CreationData data)
         {
@@ -342,10 +326,10 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         }
 
         Task createListFrontCode(CreationData data)
-            => throw new NotImplementedException();
+            => Task.CompletedTask;
 
         Task createListBackendCode(CreationData data)
-            => throw new NotImplementedException();
+            => Task.CompletedTask;
     }
 
     private DtoViewModel CreateRawDto(CreationData data, bool addTableColumns = false, Action<DtoViewModel>? initialize = null)
@@ -376,10 +360,10 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
         await createHandler(data);
         await createResult(data);
 
-        Task createParams(CreationData data) => throw new NotImplementedException();
-        Task createValidator(CreationData data) => throw new NotImplementedException();
-        Task createHandler(CreationData data) => throw new NotImplementedException();
-        Task createResult(CreationData data) => throw new NotImplementedException();
+        Task createParams(CreationData data) => Task.CompletedTask;
+        Task createValidator(CreationData data) => Task.CompletedTask;
+        Task createHandler(CreationData data) => Task.CompletedTask;
+        Task createResult(CreationData data) => Task.CompletedTask;
     }
 
     private struct CreationData
@@ -400,31 +384,4 @@ internal sealed class FunctionalityService : IFunctionalityService, IFunctionali
 
         internal FunctionalityViewModel ViewModel { get; }
     }
-
-    #endregion Generate Families
-
-    Task<IDbContextTransaction> IAsyncTransactionalService.BeginTransactionAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.BeginTransactionAsync(cancellationToken);
-
-    Task<Result> IAsyncTransactionalService.CommitTransactionAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.CommitTransactionAsync(cancellationToken);
-
-    public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
-        => throw new NotImplementedException();
-
-    public void ResetChanges()
-        => this._writeDbContext.ResetChanges();
-
-    Task IAsyncTransactionalService.RollbackTransactionAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.Database.RollbackTransactionAsync(cancellationToken);
-
-    public Task<Result<int>> SaveChangesAsync()
-        => this._writeDbContext.SaveChangesResultAsync();
-
-    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel)
-        => viewModel.Check()
-            .ArgumentNotNull()
-            .NotNull(x => x.Name)
-            .NotNull(x => x.NameSpace)
-            .Build().ToAsync();
 }

@@ -35,7 +35,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesSer
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 
     public Task<CqrsQueryViewModel> CreateAsync()
-        => Task.FromResult(new CqrsQueryViewModel());
+        => Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandller = true, HasPartialOnInitialize = true });
 
     public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true)
         => this.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this._writeDbContext, model, persist, persist);

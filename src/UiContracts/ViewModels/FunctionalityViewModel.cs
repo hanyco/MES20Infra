@@ -21,9 +21,9 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public DtoViewModel DetailsViewModel { get; set; }
 
-    public CqrsQueryViewModel GetAllQueryViewModel { get; set; }
+    public CqrsQueryViewModel GetAllQuery { get; set; }
 
-    public CqrsQueryViewModel GetByIdQueryViewModel { get; set; }
+    public CqrsQueryViewModel GetByIdQuery { get; set; }
 
     public CqrsCommandViewModel InsertCommand { get; set; }
 

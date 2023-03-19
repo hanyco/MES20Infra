@@ -1,4 +1,10 @@
-﻿namespace InfraTestProject.Tests;
+﻿using System.ComponentModel;
+
+using Library.Threading.MultistepProgress;
+
+using Xunit.Abstractions;
+
+namespace InfraTestProject.Tests;
 
 public abstract class ServiceTestBase<TService, TServiceFixture> : IClassFixture<TServiceFixture>
     where TServiceFixture : ServicesFixture<TService>

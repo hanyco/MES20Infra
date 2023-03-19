@@ -39,7 +39,8 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Command;
 
-    public Task<CqrsCommandViewModel> CreateAsync() => throw new NotImplementedException();
+    public Task<CqrsCommandViewModel> CreateAsync()
+        => Task.FromResult(new CqrsCommandViewModel { HasPartialHandller = true, HasPartialOnInitialize = true });
 
     public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true)
     {
@@ -48,22 +49,6 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         _ = this._writeDbContext.Remove(entry.Entity);
         return (Result)(await this.SubmitChangesAsync(persist: persist) > 0);
     }
-
-    //public CqrsCommandViewModel FillByDbEntity(CqrsCommandViewModel model,
-    //    CqrsSegregate sergregate,
-    //    Module module,
-    //    Dto parameterDto,
-    //    IEnumerable<Property> parameterDtoProperties,
-    //    Dto resultDto,
-    //    IEnumerable<Property> resultDtoProperties)
-    //{
-    //    _ = this._mapper.Map(sergregate, model);
-    //    model.Module = this._converter.ToViewModel(module);
-    //    model.ParamDto = this._converter.FillByDbEntity(parameterDto, parameterDtoProperties);
-    //    model.ResultDto = this._converter.FillByDbEntity(resultDto, resultDtoProperties);
-    //    return model;
-    //}
-
     public Task<CqrsCommandViewModel> FillByDbEntity(
         CqrsCommandViewModel model,
         long id,
@@ -86,16 +71,6 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     public Task<CqrsCommandViewModel?> GetByIdAsync(long id)
         => this.GetByIdAsync(id, this.GetAllQuery(), x => this._converter.ToViewModel(x).As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
-
-    //public async Task<IReadOnlyList<CqrsCommandViewModel>> GetCommandsByDtoIdAsync(long dtoId)
-    //{
-    //    var query = from cmd in this.GetAllQuery()
-    //                where cmd.ParamDtoId == dtoId || cmd.ResultDtoId == dtoId
-    //                select cmd;
-    //    var dbResult = await query.ToListAsync();
-    //    var result = this._converter.ToViewModel(dbResult).Cast<CqrsCommandViewModel>().ToList();
-    //    return result;
-    //}
 
     public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true)
         => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
@@ -129,13 +104,13 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     public Task<Result<CqrsCommandViewModel>> ValidateAsync(CqrsCommandViewModel item)
         => item.Check()
-               .NotNull(() => "Please fill the form.")
+               .ArgumentNotNull()
                .NotNull(x=>x.Name)
                .NotNull(x => x.ParamDto)
                .NotNull(x => x.ParamDto.Id)
                .NotNull(x => x.ResultDto)
                .NotNull(x => x.ResultDto.Id)
-               .BuildAll().ToAsync();
+               .Build().ToAsync();
 
     private IQueryable<CqrsSegregate> GetAllQuery()
     {
