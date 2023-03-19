@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 
+using Contracts.ViewModels;
+
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
@@ -161,7 +163,7 @@ public partial class BlazorPageGeneratorPage
             return;
         }
 
-        var scope = this.ActionScopeBegin("Loading...");
+        using var scope = this.ActionScopeBegin("Loading...");
         var id = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView)?.Id;
         Check.NotNull(id, () => "Please select a page to edit.");
         var viewModel = await this._service.GetByIdAsync(id.Value);

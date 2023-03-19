@@ -13,7 +13,7 @@ public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraV
     private string? _description;
     private Guid? _guid;
     private TId? _id;
-    private string? _name;
+    protected string? _name;
 
     public virtual string? Description
     {

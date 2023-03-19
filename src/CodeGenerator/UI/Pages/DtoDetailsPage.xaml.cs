@@ -2,6 +2,8 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
+using Contracts.ViewModels;
+
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Pages;
 using HanyCo.Infra.UI.Services;
@@ -150,7 +152,7 @@ public partial class DtoDetailsPage
                                  "Depending on the size of the database, this operation may take few seconds.", isCancallable: true);
         _ = this.RefreshFormState();
 
-        _ = scope.End();
+        scope.End();
     }
 
     private void DtoDetailsPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -191,7 +193,7 @@ public partial class DtoDetailsPage
         {
             this.Debug("Generating code...");
             this.GenerateCodeButton.IsEnabled = false;
-            this.ComponentCodeResultUserControl.Codes = this._codeService.GenerateCodes(this.ViewModel!);
+            this.ComponentCodeResultUserControl.Codes = this._codeService.GenerateCodes(this.ViewModel!).ThrowOnFail(this.Title);
             this.Debug("Code generated.");
         }
         finally

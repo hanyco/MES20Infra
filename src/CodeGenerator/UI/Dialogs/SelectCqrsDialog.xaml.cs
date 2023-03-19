@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 
+using Contracts.ViewModels;
+
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 

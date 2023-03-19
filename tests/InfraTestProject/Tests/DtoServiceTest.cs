@@ -1,5 +1,6 @@
-﻿using HanyCo.Infra.UI.Services;
-using HanyCo.Infra.UI.ViewModels;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.UI.Services;
 
 using Library.Results;
 

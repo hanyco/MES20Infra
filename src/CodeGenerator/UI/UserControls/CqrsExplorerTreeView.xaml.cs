@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;

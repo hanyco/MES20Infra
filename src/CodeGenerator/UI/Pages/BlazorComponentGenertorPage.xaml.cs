@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
@@ -98,7 +99,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
             ((IStatefulPage)this).IsViewModelChanged = false;
             await this.BindComponentTreeView();
             this.IsEditMode = true;
-            _ = scope.End(saveResult);
+            scope.End(saveResult);
             return Result<int>.CreateSuccess(1);
         }
     }
@@ -183,7 +184,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         await this.ResetFormAsync();
         this.ViewModel = await getViewModel();
         this.IsEditMode = true;
-        _ = scope.End();
+        scope.End();
 
         async Task<UiComponentViewModel?> getViewModel()
         {
@@ -212,7 +213,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
         this.IsEditMode = false;
 
-        _ = scope.End();
+        scope.End();
     }
 
     private async void NewBlazorComponentButton_Click(object sender, RoutedEventArgs e)
@@ -227,7 +228,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         var scope = this.ActionScopeBegin("Creating new component...");
         this.ViewModel = await this._codeService.CreateNewComponentByDtoAsync(dto);
         this.IsEditMode = true;
-        _ = scope.End();
+        scope.End();
     }
 
     private async void NewBlazorComponentUnboundButton_Click(object sender, RoutedEventArgs e)

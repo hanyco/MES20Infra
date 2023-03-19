@@ -221,9 +221,12 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         _ = this.ResultDtoComboBox.BindItemsSource(resultDtos, nameof(ModuleViewModel.Name), this.ViewModel?.ResultDto);
     }
 
-    private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
-        => e.Item = this._moduleService;
+    //private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
+    //    => e.Item = this._moduleService;
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         => this.IsViewModelChanged = true;
+
+    private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
+        => e.Item = this._moduleService;
 }

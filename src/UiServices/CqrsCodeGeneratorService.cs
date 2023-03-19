@@ -1,5 +1,7 @@
 ﻿using System.IO;
 
+using Contracts.ViewModels;
+
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.AggregatedModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;

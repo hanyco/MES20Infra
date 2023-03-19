@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Interfaces;

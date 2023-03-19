@@ -1,8 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 
+using HanyCo.Infra.UI.ViewModels;
+
 using Library.Helpers.CodeGen;
 
-namespace HanyCo.Infra.UI.ViewModels;
+namespace Contracts.ViewModels;
 
 public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
 {
@@ -49,6 +51,12 @@ public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
             return this._module!;
         }
         set => this.SetProperty(ref this._module, value);
+    }
+
+    public override string? Name
+    {
+        get => base.Name;
+        set => this.SetProperty(ref _name, value, orderPropertyNames: new[] { nameof(this.FullName) });
     }
 
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }

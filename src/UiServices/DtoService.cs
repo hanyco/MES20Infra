@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
@@ -138,7 +139,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         static Result<DtoViewModel> validate(DtoViewModel viewModel)
             => viewModel.Check()
-                    .NotNull(x => x.Id)
+                    //.NotNull(x => x.Id)
                     .NotNull(x => x.Module)
                     .NotNullOrEmpty(x => x.Name)
                     .NotNullOrEmpty(x => x.NameSpace)
