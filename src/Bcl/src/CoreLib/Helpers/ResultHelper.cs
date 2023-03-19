@@ -59,6 +59,19 @@ public static class ResultHelper
     public static TResult OnSucceed<TResult>([DisallowNull] this TResult result, [DisallowNull] Func<TResult> next) where TResult : ResultBase 
         => result == true ? next() : result;
 
+    public static TResult OnSucceed<TResult>([DisallowNull] this TResult result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    {
+        if (result == true)
+            action(result);
+        return result;
+    }
+    public static TResult OnFailure<TResult>([DisallowNull] this TResult result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    {
+        if (result == false)
+            action(result);
+        return result;
+    }
+
     public static Result<Stream> SerializeToXmlFile<T>(this Result<Stream> result, string filePath)
     {
         Validations.Check.IfArgumentNotNull(filePath);
@@ -66,6 +79,9 @@ public static class ResultHelper
     }
 
     public static Result ThrowOnFail([DisallowNull] this Result result, object? owner = null, string? instruction = null)
+        => InnerThrowOnFail(result, owner, instruction);
+
+    public static TResult ThrowOnFail<TResult>([DisallowNull] this TResult result, object? owner = null, string? instruction = null) where TResult : ResultBase
         => InnerThrowOnFail(result, owner, instruction);
 
     public static Result<TValue> ThrowOnFail<TValue>([DisallowNull] this Result<TValue> result, object? owner = null, string? instruction = null)

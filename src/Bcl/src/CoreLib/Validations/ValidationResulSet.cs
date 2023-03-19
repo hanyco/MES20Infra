@@ -104,7 +104,11 @@ public sealed class ValidationResultSet<TValue> : IBuilder<Result<TValue>>
         => this.AddRule(x => x, _ => this.Value is not null, onError, () => new NullValueValidationException(this._valueName));
 
     public ValidationResultSet<TValue> NotNull(Func<string> onErrorMessage)
-        => this.AddRule(x => x, _ => this.Value is not null, null, () => new NullValueValidationException(onErrorMessage() ?? this._valueName));
+        => this.AddRule(x => x, _ => this.Value is not null, null, () =>
+        {
+            var message = onErrorMessage?.Invoke();
+            return message.IsNullOrEmpty() ? new NullValueValidationException(this._valueName) : new NullValueValidationException(message, null);
+        });
 
     public ValidationResultSet<TValue> NotNull(Expression<Func<TValue, object?>> propertyExpression)
         => this.AddRule(propertyExpression, x => x is not null, null, x => new NullValueValidationException(x));
