@@ -1,12 +1,17 @@
 ﻿#nullable disable
 
+using Contracts.ViewModels;
+
+using Library.Data.SqlServer.Dynamics;
+
 namespace HanyCo.Infra.UI.ViewModels;
 
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
     private long _moduleId;
     private string _nameSpace;
-    private DtoViewModel _rootDto;
+    //x private DtoViewModel _rootDto;
+    private DbObjectViewModel _dbObject;
 
     public UiComponentViewModel BlazorDetailsComponent { get; set; }
 
@@ -28,7 +33,10 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
 
-    public DtoViewModel RootDto { get => this._rootDto; set => this.SetProperty(ref this._rootDto, value); }
+    //x public DtoViewModel RootDto { get => this._rootDto; set => this.SetProperty(ref this._rootDto, value); }
+    public DbObjectViewModel DbObject { get => this._dbObject; set => this.SetProperty(ref this._dbObject, value); }
+
+    public Table DbTable { get; set; } = null;
 
     public CqrsCommandViewModel UpdateCommand { get; set; }
 }

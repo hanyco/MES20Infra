@@ -2,6 +2,7 @@
 using System.Globalization;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
@@ -298,8 +299,8 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         }
 
         var result = this._mapper.Map<UiComponentViewModel>(entity)
-            .ForMember(x => x.UiProperties.AddRange(this.ToViewModel(entity.UiComponentProperties)))
-            .ForMember(x => x.UiActions.AddRange(this.ToViewModel(entity.UiComponentActions)))
+            .ForMember(x => x.UiProperties!.AddRange(this.ToViewModel(entity.UiComponentProperties)))
+            .ForMember(x => x.UiActions!.AddRange(this.ToViewModel(entity.UiComponentActions)))
             .ForMember(x => x.PageDataContext = this.ToViewModel(entity.PageDataContext))
             .ForMember(x => x.PageDataContextProperty = this.ToViewModel(entity.PageDataContextProperty));
 
@@ -343,7 +344,6 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         => entity is null ? null : this._mapper.Map<PropertyViewModel>(entity)
             .ForMember(x => x.TypeFullName = entity.TypeFullName!)
             .ForMember(x => x.Type = PropertyTypeHelper.FromPropertyTypeId(entity.PropertyType))
-            //!? Using `Convert` method to convert DTO, causes recursive infinite method-call.
             .ForMember(x => x.Dto = InnerToViewModel(entity.Dto));
     
     [return: NotNullIfNotNull(nameof(entity))]
