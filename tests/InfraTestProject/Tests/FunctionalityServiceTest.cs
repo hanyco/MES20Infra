@@ -4,6 +4,7 @@ using HanyCo.Infra.UI.ViewModels;
 using InfraTestProject.Fixtures;
 
 using Library.Data.SqlServer.Dynamics;
+using Library.Logging;
 using Library.Threading.MultistepProgress;
 
 using Xunit.Abstractions;
@@ -14,7 +15,7 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
 {
     private readonly IUnitTestLogger _logger;
 
-    public FunctionalityServiceTest(FunctionalityServiceFixture fixture, ITestOutputHelper output) : base(fixture) 
+    public FunctionalityServiceTest(FunctionalityServiceFixture fixture, ITestOutputHelper output) : base(fixture)
         => this._logger = IUnitTestLogger.New(output).HandleReporterEvents(DI.GetService<IMultistepProcess>());
 
     [Fact(DisplayName = "Main Test")]
@@ -23,9 +24,11 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
     {
         var model = initializeModel();
 
-        this._logger.Log("Test is starting...");
+        using var blockLogger = CodeBlockLogger.New(this._logger, "Test is starting...", "Test is ended.");
         _ = await this.Service.GenerateAsync(model).ThrowOnFailAsync();
-        this._logger.Log("Test is ended.");
+        //this._logger.Log("Test is starting...");
+        //_ = await this.Service.GenerateAsync(model).ThrowOnFailAsync();
+        //this._logger.Log("Test is ended.");
 
         static FunctionalityViewModel initializeModel()
         {

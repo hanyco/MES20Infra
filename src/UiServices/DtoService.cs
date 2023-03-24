@@ -95,7 +95,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the CQRS Segregate and try again.");
-            return Result.CreateFail(message);
+            return Result.CreateFailure(message);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_UiComponent_Property"))
         {
@@ -103,7 +103,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the UI Component property and try again.");
-            return Result.CreateFail(message);
+            return Result.CreateFailure(message);
         }
 
         static Result<DtoViewModel> validate(DtoViewModel model) 

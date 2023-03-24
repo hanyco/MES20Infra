@@ -64,7 +64,7 @@ public sealed class BlazorComponentService :
         }
         catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("infra.UiPageComponent") ?? false)
         {
-            return Result.CreateFail(new NotificationMessage("This component is used in a page. Please remove the component from that page. Then try again.", "Unable to delete this component.", "Unable to delete"));
+            return Result.CreateFailure(new NotificationMessage("This component is used in a page. Please remove the component from that page. Then try again.", "Unable to delete this component.", "Unable to delete"));
         }
     }
 
