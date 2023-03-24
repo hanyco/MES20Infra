@@ -24,11 +24,8 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
     {
         var model = initializeModel();
 
-        using var blockLogger = CodeBlockLogger.New(this._logger, "Test is starting...", "Test is ended.");
+        using var blockLogger = this._logger.InfoBlock("Test is starting...", "Test is ended.");
         _ = await this.Service.GenerateAsync(model).ThrowOnFailAsync();
-        //this._logger.Log("Test is starting...");
-        //_ = await this.Service.GenerateAsync(model).ThrowOnFailAsync();
-        //this._logger.Log("Test is ended.");
 
         static FunctionalityViewModel initializeModel()
         {

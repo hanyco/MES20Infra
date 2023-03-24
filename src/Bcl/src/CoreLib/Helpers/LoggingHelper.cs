@@ -19,12 +19,12 @@ public static class LoggingHelper
     public static void Info(this ILoggerContainer container, [DisallowNull] object message, [CallerMemberName] object? sender = null, DateTime? time = null)
         => container?.Logger?.Info(message, sender, time);
 
-    public static TLogger LogBlock<TLogger>([DisallowNull] this TLogger logger, [DisallowNull] in Action action, in (object Message, LogLevel Level)? finallMessage = null)
+    public static TLogger LogBlock<TLogger>([DisallowNull] this TLogger logger, [DisallowNull] in Action action, in (object Message, LogLevel Level)? finialMessage = null)
             where TLogger : ILogger
     {
         Check.IfArgumentNotNull(action);
         action();
-        if (finallMessage is { } message)
+        if (finialMessage is { } message)
         {
             logger.Log(message.Message, message.Level);
         }
