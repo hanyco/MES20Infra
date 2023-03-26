@@ -8,6 +8,7 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
 using Library.Data.SqlServer.Dynamics;
+using Library.DesignPatterns.Markers;
 using Library.Exceptions;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
@@ -64,43 +65,51 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     {
         Check.IfArgumentNotNull(viewModel);
 
-        if (!validate(viewModel).TryParse(out var validationChecks))
+        if (!validate(viewModel, token).TryParse(out var validationChecks))
         {
             return validationChecks!;
         }
 
-        this._reporter.Report(description: "Initializing...");
-        var data = await initialize(viewModel, viewModel.DbTable is not null ? null : this._readDbContext.Database.GetConnectionString());
+        this._reporter.Report(description: getTitle("Initializing..."));
+        // If `viewModel.DbTable` is empty then the connection string: `this._readDbContext.Database.GetConnectionString()` will be used to fill `viewModel.DbTable`.
+        // Otherwise, `viewModel.DbTable` will be directly used (to be used in Unit Test).
+        var connectionString = viewModel.DbTable is not null ? null : this._readDbContext.Database.GetConnectionString();
+        var initResult = await initialize(viewModel, connectionString, token);
 
-        var process = MultistepProcessRunner<CreationData>.New(data, this._reporter)
-            .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
-            .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
+        if (!initResult.IsSucceed)
+        {
+            return Result<FunctionalityViewModel?>.From(initResult, default);
+        }
+        var (data, tokenSource) = initResult.Value;
+        var process = initSteps(data);
 
-            .AddStep(this.CreateInsertCommand, getTitle($"Creating `Insert{data.ViewModel.Name}Command`…"))
-            .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
-            .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
-
-            .AddStep(this.CreateListComponent, getTitle($"Creating `{data.ViewModel.Name}ListComponent`…"))
-            .AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
-            .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
-
-            .AddStep(this.CreateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"));
-
-        var result = await process.RunAsync(token);
-        var message = result.Result.Message.IsNullOrEmpty()
-            ? result.Result.IsSucceed 
-                ? "Functionality view model is created." 
-                : "An error occurred while creating functionality view model"
-            : result.Result.Message;
+        this._reporter.Report(description: getTitle("Running..."));
+        var result = await process.RunAsync(tokenSource.Token);
+        var message = finalize(result);
+        tokenSource.Dispose();
         this._reporter.Report(description: getTitle(message));
-
         return result.Result!;
 
-        string getTitle(string description)
-            => $"{data.ViewModel.Name} - {description}";
+        string getTitle(in string description)
+            => $"Functionality Generator: {description}";
 
-        static async Task<CreationData> initialize(FunctionalityViewModel viewModel, string? connectionString)
+        static Result<FunctionalityViewModel> validate(in FunctionalityViewModel model, CancellationToken token)
+            => model.Check()
+                    .RuleFor(_ => !token.IsCancellationRequested, () => "Cancelled by parent")
+                    .ArgumentNotNull()
+                    .NotNull(x => x.DbObject)
+                    .NotNull(x => x.Name)
+                    .NotNull(x => x.NameSpace)
+                    .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
+                    .Build();
+
+        static async Task<Result<(CreationData Data, CancellationTokenSource TokenSource)>> initialize(FunctionalityViewModel viewModel, string? connectionString, CancellationToken token)
         {
+            if (token.IsCancellationRequested)
+            {
+                return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateFailure("Cancelled by parent", default);
+            }
+
             var dataResult = viewModel;
             Table dbTable;
             if (viewModel.DbTable is not null)
@@ -110,25 +119,45 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
             else
             {
                 var db = await Database.GetDatabaseAsync(connectionString!);
-                dbTable = db.NotNull(() => "Database not found.")
+                dbTable = db.NotNull(() => new ObjectNotFoundException("Database not found."))
                     .Tables[dataResult.DbObject.Name!].NotNull(() => new ObjectNotFoundException($"Table name `{dataResult.DbObject}` not found."));
             }
-            var data = new CreationData(dataResult, dbTable);
-            return data;
+            var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            var result = new CreationData(dataResult, dbTable, cancellationTokenSource);
+            return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateSuccess((result, cancellationTokenSource));
         }
 
-        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model)
-            => model.Check()
-                .ArgumentNotNull()
-                .NotNull(x => x.DbObject)
-                .NotNull(x => x.Name)
-                .NotNull(x => x.NameSpace)
-                .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
-                .Build();
+        MultistepProcessRunner<CreationData> initSteps(in CreationData data)
+            => MultistepProcessRunner<CreationData>.New(data, this._reporter)
+                .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
+                .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
+
+                .AddStep(this.CreateInsertCommand, getTitle($"Creating `Insert{data.ViewModel.Name}Command`…"))
+                .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
+                .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
+
+                .AddStep(this.CreateListComponent, getTitle($"Creating `{data.ViewModel.Name}ListComponent`…"))
+                .AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
+                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+
+                .AddStep(this.CreateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"));
+
+        static string finalize(in CreationData result)
+            => !result.Result.Message.IsNullOrEmpty()
+                    ? result.Result.Message
+                    : result.CancellationTokenSource.IsCancellationRequested
+                        ? "Generating process is cancelled."
+                        : result.Result.IsSucceed ? "Functionality view model is created." : "An error occurred while creating functionality view model";
     }
 
     public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
         => throw new NotImplementedException();
+
+    private static void Cancel(in CreationData data, in string reason)
+    {
+        data.CancellationTokenSource.Cancel();
+        data.SetResult(false, reason);
+    }
 
     private async Task CreateBlazorPage(CreationData data)
     {
@@ -276,7 +305,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
 
     private async Task CreateInsertCommand(CreationData data)
     {
-        var command =await _commandService.CreateAsync();
+        var command = await this._commandService.CreateAsync();
         data.ViewModel.InsertCommand = new() { Category = CqrsSegregateCategory.Create, Comment = data.COMMENT, };
         await createParams(data);
         await createValidator(data);
@@ -366,13 +395,15 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         Task createResult(CreationData data) => Task.CompletedTask;
     }
 
-    private struct CreationData
+    private class CreationData : IDisposable
     {
         internal readonly string COMMENT = "Auto-generated by Functionality Service.";
         private Result<FunctionalityViewModel>? _result;
 
-        internal CreationData(FunctionalityViewModel result, Table dbTable)
-            => (this.ViewModel, this.DbTable) = (result, dbTable);
+        internal CreationData(FunctionalityViewModel result, Table dbTable, CancellationTokenSource tokenSource)
+            => (this.ViewModel, this.DbTable, this.CancellationTokenSource) = (result, dbTable, tokenSource);
+
+        public CancellationTokenSource CancellationTokenSource { get; }
 
         public Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
 
@@ -383,5 +414,11 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         internal string? GetByIdQueryName { get; set; }
 
         internal FunctionalityViewModel ViewModel { get; }
+
+        public void Dispose()
+            => this.CancellationTokenSource.Dispose();
+
+        [DarkMethod]
+        internal void SetResult(bool isSucceed, in string? message = null) => this._result = new(this.ViewModel) { Message = message, Succeed = isSucceed };
     }
 }

@@ -19,13 +19,18 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
         => this._logger = IUnitTestLogger.New(output).HandleReporterEvents(DI.GetService<IMultistepProcess>());
 
     [Fact(DisplayName = "Main Test")]
-    [Trait(nameof(FunctionalityServiceTest), "Main Test")]
+    [Trait("_Active Tests", "Current")]
     public async Task Generate_MainTest_Async()
     {
+        // Assign
         var model = initializeModel();
+        var tokenSource = new CancellationTokenSource();
 
-        using var blockLogger = this._logger.InfoBlock("Test is starting...", "Test is ended.");
-        _ = await this.Service.GenerateAsync(model).ThrowOnFailAsync();
+        // Act
+        var actual = await this.Service.GenerateAsync(model, tokenSource.Token).ThrowOnFailAsync();
+
+        // Assert
+        Assert.True(actual);
 
         static FunctionalityViewModel initializeModel()
         {
