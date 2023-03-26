@@ -26,6 +26,7 @@ namespace Services;
 internal sealed partial class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
     , IBusinesService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSaveService, ILoggerContainer
 {
+    #region Fields & Properties
     private readonly ICqrsCommandService _commandService;
     private readonly IEntityViewModelConverter _converter;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService;
@@ -35,18 +36,21 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     private readonly InfraReadDbContext _readDbContext;
     private readonly IMultistepProcess _reporter;
     private readonly InfraWriteDbContext _writeDbContext;
+    public ILogger Logger { get; }
+    #endregion
 
+    #region Ctors
     public FunctionalityService(
-        InfraReadDbContext readDbContext,
-        InfraWriteDbContext writeDbContext,
-        IEntityViewModelConverter converter,
-        IDtoService dtoService,
-        ICqrsQueryService queryService,
-        ICqrsCommandService commandService,
-        ICqrsCodeGeneratorService cqrsCodeService,
-        IModuleService moduleService,
-        IMultistepProcess reporter,
-        ILogger logger)
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext writeDbContext,
+    IEntityViewModelConverter converter,
+    IDtoService dtoService,
+    ICqrsQueryService queryService,
+    ICqrsCommandService commandService,
+    ICqrsCodeGeneratorService cqrsCodeService,
+    IModuleService moduleService,
+    IMultistepProcess reporter,
+    ILogger logger)
     {
         (this._readDbContext, this._writeDbContext) = (readDbContext, writeDbContext);
         this._converter = converter;
@@ -57,18 +61,23 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         this._cqrsCodeService = cqrsCodeService;
         this._moduleService = moduleService;
         this._reporter = reporter;
-    }
-
-    public ILogger Logger { get; }
-
+    } 
+    #endregion
+    
     public async Task<Result<FunctionalityViewModel?>> GenerateAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
+        #region Validation Checks
+
         Check.IfArgumentNotNull(viewModel);
 
         if (!validate(viewModel, token).TryParse(out var validationChecks))
         {
             return validationChecks!;
         }
+
+        #endregion Validation Checks
+
+        #region Initializaions
 
         this._reporter.Report(description: getTitle("Initializing..."));
         // If `viewModel.DbTable` is empty then the connection string: `this._readDbContext.Database.GetConnectionString()` will be used to fill `viewModel.DbTable`.
@@ -83,23 +92,39 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         var (data, tokenSource) = initResult.Value;
         var process = initSteps(data);
 
+        #endregion Initializaions
+
+        #region Execution
+
         this._reporter.Report(description: getTitle("Running..."));
-        var result = await process.RunAsync(tokenSource.Token);
-        var message = finalize(result);
+        var processResult = await process.RunAsync(tokenSource.Token);
+
+        #endregion Execution
+
+        #region Finalization
+
+        var message = finalize(processResult);
         tokenSource.Dispose();
         this._reporter.Report(description: getTitle(message));
-        return result.Result!;
+        var result = processResult.Result;
+
+        #endregion Finalization
+
+        return result!;
+
+        #region Local Methods
 
         string getTitle(in string description)
             => $"Functionality Generator: {description}";
 
-        static Result<FunctionalityViewModel> validate(in FunctionalityViewModel model, CancellationToken token)
+        static Result<FunctionalityViewModel?> validate(in FunctionalityViewModel model, CancellationToken token)
             => model.Check()
-                    .RuleFor(_ => !token.IsCancellationRequested, () => "Cancelled by parent")
+                    .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
                     .ArgumentNotNull()
-                    .NotNull(x => x.DbObject)
                     .NotNull(x => x.Name)
                     .NotNull(x => x.NameSpace)
+                    .NotNull(x => x.DbObject)
+                    .NotNull(x => x.DbObject.Name)
                     .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
                     .Build();
 
@@ -148,6 +173,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
                     : result.CancellationTokenSource.IsCancellationRequested
                         ? "Generating process is cancelled."
                         : result.Result.IsSucceed ? "Functionality view model is created." : "An error occurred while creating functionality view model";
+
+        #endregion Local Methods
     }
 
     public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
@@ -241,7 +268,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
                 .With(x => x.DbObject = data.ViewModel.DbObject)
                 .With(x => x.FriendlyName = data.GetAllQueryName.SplitCamelCase().Merge(" "))
                 .With(x => x.Comment = data.COMMENT)
-                .IfTrue(data.ViewModel.ModuleId != 0, async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
+                .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
         }
 
         Task createParams(CreationData data)
@@ -280,7 +307,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
                 .With(x => x.DbObject = data.ViewModel.DbObject)
                 .With(x => x.FriendlyName = data.GetByIdQueryName.SplitCamelCase().Merge(" "))
                 .With(x => x.Comment = data.COMMENT)
-                .IfTrue(data.ViewModel.ModuleId != 0, async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
+                .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
         }
 
         Task createParams(CreationData data)
