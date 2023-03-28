@@ -5,6 +5,7 @@ using HanyCo.Infra.UI.Controls.Pages;
 using HanyCo.Infra.UI.Pages;
 
 using Library.EventsArgs;
+using Library.Helpers;
 using Library.Threading.MultistepProgress;
 using Library.Windows;
 using Library.Wpf.Dialogs;
@@ -126,8 +127,8 @@ public partial class MainWindow
             if (e.Item.Max != 0)
             {
                 this.StatusProgressBar.Visibility = Visibility.Visible;
-                this.StatusProgressBar.Maximum = e.Item.Max;
-                this.StatusProgressBar.Value = e.Item.Current;
+                this.StatusProgressBar.Maximum = e.Item.Max.ToInt(0);
+                this.StatusProgressBar.Value = e.Item.Current.ToInt(0);
             }
             if (!e.Item.Description.IsNullOrEmpty())
             {

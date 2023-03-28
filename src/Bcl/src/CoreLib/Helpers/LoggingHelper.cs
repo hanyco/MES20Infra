@@ -110,7 +110,11 @@ public static class LoggingHelper
         }
 
         void Reporter_Reported(object? sender, ItemActedEventArgs<ProgressData> e)
-            => logger.Log($"{e.Item.Current:00}-{e.Item.Max:00} - {e.Item.Description}");
+            => logger.Log(e.Item switch
+            {
+                (_, null, null) => e.Item.Description!,
+                _ => $"{e.Item.Current:00}-{e.Item.Max:00} - {e.Item.Description}"
+            }, sender: e.Item.Sender);
     }
 
     public static void Info(this ILoggerContainer container, [DisallowNull] object message, [CallerMemberName] object? sender = null, DateTime? time = null)
@@ -169,12 +173,13 @@ public static class LoggingHelper
         };
         return message.IsNullOrEmpty() ? string.Empty : (format?.ReplaceAll(
             (LogFormat.LONG_DATE, (logRecord.Time ?? DateTime.Now).ToLocalString().Add(1) ?? string.Empty),
-            (LogFormat.SHORT_TIME, (logRecord.Time ?? DateTime.Now).ToShortTimeString().Add(1) ?? string.Empty),
+            (LogFormat.SHORT_TIME, (logRecord.Time ?? DateTime.Now).ToShortTimeString() ?? string.Empty),
             (LogFormat.LEVEL, logRecord.Level.ToString().Add(1) ?? string.Empty),
-            (LogFormat.MESSAGE, message.Add(1) ?? string.Empty),
+            (LogFormat.MESSAGE, message ?? string.Empty),
             (LogFormat.NEW_LINE, Environment.NewLine),
-            (LogFormat.SENDER, (logRecord.Sender?.ToString() ?? string.Empty).Add(1) ?? string.Empty),
-            (LogFormat.STACK_TRACE, (logRecord.StackTrace?.ToString() ?? string.Empty).Add(1) ?? string.Empty))) ?? string.Empty;
+            (LogFormat.SENDER, (logRecord.Sender?.ToString() ?? string.Empty).Add(1, before: true) ?? string.Empty),
+            (LogFormat.STACK_TRACE, (logRecord.StackTrace?.ToString() ?? string.Empty).Add(1) ?? string.Empty))
+            .Replace("  ", " ")) ?? string.Empty;
     }
 
     //public static string Reformat(this LogRecord logRecord, string? format = LogFormat.DEFAULT_FORMAT)

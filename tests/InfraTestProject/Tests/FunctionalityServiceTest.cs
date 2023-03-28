@@ -23,9 +23,9 @@ public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, F
     public async Task Generate_MainTest_Async()
     {
         // Assign
-        var model = initializeModel();
         var tokenSource = new CancellationTokenSource();
-
+        var model = initializeModel();
+        
         // Act
         var actual = await this.Service.GenerateAsync(model, tokenSource.Token).ThrowOnFailAsync();
 

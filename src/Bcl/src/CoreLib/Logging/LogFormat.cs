@@ -10,5 +10,5 @@ public readonly struct LogFormat
     public const string STACK_TRACE = "stackTrace";
     public const string NEW_LINE = "newLine";
     public const string FORMAT_DEFAULT = $"{LONG_DATE}|{LEVEL}|{SENDER}|{MESSAGE}";
-    public const string FORMAT_SHORT   = $"{SHORT_TIME}{SENDER}:{MESSAGE}";
+    public const string FORMAT_SHORT   = $"{SHORT_TIME}|{SENDER}|{MESSAGE}";
 }

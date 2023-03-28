@@ -27,6 +27,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     , IBusinesService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSaveService, ILoggerContainer
 {
     #region Fields & Properties
+
     private readonly ICqrsCommandService _commandService;
     private readonly IEntityViewModelConverter _converter;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService;
@@ -37,9 +38,11 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     private readonly IMultistepProcess _reporter;
     private readonly InfraWriteDbContext _writeDbContext;
     public ILogger Logger { get; }
-    #endregion
+
+    #endregion Fields & Properties
 
     #region Ctors
+
     public FunctionalityService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
@@ -61,9 +64,10 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         this._cqrsCodeService = cqrsCodeService;
         this._moduleService = moduleService;
         this._reporter = reporter;
-    } 
-    #endregion
-    
+    }
+
+    #endregion Ctors
+
     public async Task<Result<FunctionalityViewModel?>> GenerateAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
         #region Validation Checks
@@ -114,8 +118,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
 
         #region Local Methods
 
-        string getTitle(in string description)
-            => $"Functionality Generator: {description}";
+        ProgressData getTitle(in string description)
+            => new(Description: description, Sender: nameof(FunctionalityService));
 
         static Result<FunctionalityViewModel?> validate(in FunctionalityViewModel model, CancellationToken token)
             => model.Check()
@@ -153,7 +157,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         }
 
         MultistepProcessRunner<CreationData> initSteps(in CreationData data)
-            => MultistepProcessRunner<CreationData>.New(data, this._reporter)
+            => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
 
@@ -261,7 +265,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         {
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
             var query = await this._queryService.CreateAsync();
-            data.ViewModel.GetAllQuery = query.Fluent()
+            data.ViewModel.GetAllQuery = query
                 .With(x => x.Name = $"{data.GetAllQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
                 .With(x => x.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries"))
@@ -300,7 +304,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         {
             data.GetByIdQueryName = $"GetById{data.DbTable.Name}Query";
             var query = await this._queryService.CreateAsync();
-            data.ViewModel.GetByIdQuery = query.Fluent()
+            data.ViewModel.GetByIdQuery = query
                 .With(x => x.Name = $"{data.GetByIdQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
                 .With(x => x.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries"))
@@ -333,7 +337,9 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     private async Task CreateInsertCommand(CreationData data)
     {
         var command = await this._commandService.CreateAsync();
-        data.ViewModel.InsertCommand = new() { Category = CqrsSegregateCategory.Create, Comment = data.COMMENT, };
+        data.ViewModel.InsertCommand = command
+            .With(x => x.Category = CqrsSegregateCategory.Create)
+            .With(x => x.Comment = data.COMMENT);
         await createParams(data);
         await createValidator(data);
         await createHandler(data);
