@@ -268,7 +268,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
     [MemberNotNull(nameof(ViewModel))]
     private void ValidateForm(bool toGenerateCode)
     {
-        _ = this.ViewModel.NotNull(() => new ValidationException("Please create/edit a component.")).Check(true)
+        _ = this.ViewModel.NotNull(() => new ValidationException("Please create/edit a component.")).Check(CheckBehavior.ThrowOnFail)
                           .NotNull(x => this.ViewModel)
                           .NotNull(x => this.ViewModel.Name)
                           .NotNull(x => this.ViewModel.NameSpace);

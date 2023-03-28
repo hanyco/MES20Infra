@@ -30,5 +30,5 @@ internal sealed class UnitTestLogger : IUnitTestLogger
     public LogLevel LogLevel { get; set; }
 
     public void Log([DisallowNull] object message, LogLevel level = LogLevel.Info, [CallerMemberName] object? sender = null, DateTime? time = null, string? stackTrace = null)
-        => this._output.WriteLine($"[{DateTime.Now.ToShortTimeString()}] [{message}]");
+        => this._output.WriteLine(LoggingHelper.Reformat(new LogRecord(message, level, sender, time, stackTrace), LogFormat.FORMAT_SHORT));
 }

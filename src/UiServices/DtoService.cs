@@ -339,10 +339,10 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
     {
         Check.IfArgumentNotNull(viewModel);
 
-        var result = viewModel.Check()
+        var result = viewModel.Check(CheckBehavior.GatherAll)
             .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
             .RuleFor(x => x.Module?.Id is not null or 0, () => "Module name cannot be null.")
-            .BuildAll();
+            .Build();
         if (!result.IsSucceed)
         {
             return result;

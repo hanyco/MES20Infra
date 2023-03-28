@@ -159,7 +159,7 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
 
         if (item.IsClaimBased)
         {
-            result = result.Check(item.ClaimSet?.Any() is true, $"{nameof(item.ClaimSet)} has no items.");
+            //result = result.Check(item.ClaimSet?.Any() is true, $"{nameof(item.ClaimSet)} has no items.");
         }
         return result.ToResult().ToAsync();
     }
