@@ -139,12 +139,12 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         }
         var selectedViewModel = this.CommandsTreeView.GetSelectedValue<CqrsCommandViewModel>();
         Check.If(selectedViewModel?.Id is not null, () => new ValidationException("Please select a Command."));
-        _ = await this.Logger.LogBlockAsync("Loading…", async () =>
+        _ = await this.Logger.LogBlockAsync(async () =>
         {
             var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
             Check.NotNull(viewModel, () => "ID not found");
             this.ViewModel = viewModel.HandlePropertyChanges(this.ViewModel_PropertyChanged);
-        });
+        }, "Loading…");
     }
 
     private async void NewCommandButton_Click(object sender, RoutedEventArgs e)

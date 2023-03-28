@@ -95,7 +95,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async void GenerateCodeButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = this.ViewModel.Check(true).NotNull()
+        _ = this.ViewModel.Check(CheckBehavior.ThrowOnFail).NotNull()
             .NotNull(x => x.ParamDto)
             .NotNull(x => x.ParamDto.Id)
             .NotNull(x => x.ResultDto)

@@ -17,8 +17,8 @@ public class MultistepProcessRunner<TState>
     }
 
     private MultistepProcessRunner(in TState state,
-        Action<(int Max, int Current, string? Description)> reporter,
-        Action<(int Max, int Current, string? Description)>? subReporter = null)
+        Action<ProgressData> reporter,
+        Action<ProgressData>? subReporter = null)
         : this(state,
               IMultistepProcess.New().With(x => x.Reported += (_, e) => reporter?.Invoke(e.Item)),
               subReporter is null ? null :
@@ -85,7 +85,7 @@ public class MultistepProcessRunner<TState>
                 break;
             }
 
-            this._reporter.Report(step.Description, this._max, this._current += step.ProgressCount);
+            this._reporter.Report(new(this._max, this._current += step.ProgressCount, step.Description));
             this._state = await step.AsyncAction((this._state, this._subReporter));
         }
         this._reporter.End();

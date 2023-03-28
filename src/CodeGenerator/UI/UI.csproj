@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
+        <LangVersion>preview</LangVersion>
+        <EnablePreviewFeatures>true</EnablePreviewFeatures>
+        <OutputType>WinExe</OutputType>
 		<UseWPF>true</UseWPF>
 		<AssemblyName>HanyCo Infrastructure</AssemblyName>
 		<RootNamespace>HanyCo.Infra.UI</RootNamespace>

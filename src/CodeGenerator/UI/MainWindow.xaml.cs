@@ -113,14 +113,14 @@ public partial class MainWindow
         }
     }
 
-    private void ReportHost_Ended(object? sender, ItemActedEventArgs<string?> e)
+    private void ReportHost_Ended(object? sender, ItemActedEventArgs<ProgressData?> e)
         => this.RunInControlThread(() =>
         {
             this.StatusProgressBar.Visibility = Visibility.Collapsed;
             this.log(e.Item ?? "Ready.");
         });
 
-    private void ReportHost_Reported(object? sender, ItemActedEventArgs<(int Max, int Current, string? Description)> e)
+    private void ReportHost_Reported(object? sender, ItemActedEventArgs<ProgressData> e)
         => this.RunInControlThread(() =>
         {
             if (e.Item.Max != 0)

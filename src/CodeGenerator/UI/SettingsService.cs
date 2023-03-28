@@ -51,7 +51,7 @@ internal static class SettingsService
 
     private static void Validate(SettingsModel settings)
     {
-        _ = settings.Check(true).NotNull().NotNull(x => x.connectionString);
+        _ = settings.Check(CheckBehavior.ThrowOnFail).NotNull().NotNull(x => x.connectionString);
         _ = ConnectionStringBuilder.Validate(settings.connectionString);
     }
 }
