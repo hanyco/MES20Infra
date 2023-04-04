@@ -18,7 +18,8 @@ namespace Services;
 internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
-    IResetChanges
+    IResetChanges,
+    IAsyncReadService<CqrsCommandViewModel>
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IMapper _mapper;

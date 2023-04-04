@@ -35,6 +35,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     private readonly IEntityViewModelConverter _converter;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService;
     private readonly IDtoService _dtoService;
+    private readonly IDtoCodeService _dtoCodeService;
     private readonly IModuleService _moduleService;
     private readonly ICqrsQueryService _queryService;
     private readonly InfraReadDbContext _readDbContext;
@@ -51,6 +52,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
     IDtoService dtoService,
+    IDtoCodeService dtoCodeService,
     ICqrsQueryService queryService,
     ICqrsCommandService commandService,
     ICqrsCodeGeneratorService cqrsCodeService,
@@ -62,6 +64,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         this._converter = converter;
         this.Logger = logger;
         this._dtoService = dtoService;
+        this._dtoCodeService = dtoCodeService;
         this._queryService = queryService;
         this._commandService = commandService;
         this._cqrsCodeService = cqrsCodeService;
@@ -177,6 +180,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         var result = new Codes();
+        //_dtoCodeService.GetAllAsync()
         return new(result);
     }
 
