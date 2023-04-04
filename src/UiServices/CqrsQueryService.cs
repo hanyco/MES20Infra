@@ -110,7 +110,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesSer
                               select c;
             var dbQuery = await querysQuery.FirstOrDefaultAsync();
             var cqrsQueryViewModel = this._converter.ToViewModel(dbQuery);
-            return cqrsQueryViewModel.As<CqrsQueryViewModel>()!;
+            return cqrsQueryViewModel.CastAs<CqrsQueryViewModel>()!;
         }
 
         async Task<IEnumerable<PropertyViewModel>> getProps(long? paramDtoId)
@@ -142,7 +142,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesSer
                     where qry.Id == id
                     select qry;
         var dbResult = await query.FirstOrDefaultAsync();
-        return this._converter.ToViewModel(dbResult).As<CqrsQueryViewModel>();
+        return this._converter.ToViewModel(dbResult).CastAs<CqrsQueryViewModel>();
     }
 
     public async Task<IReadOnlyList<CqrsQueryViewModel>> GetQueriesByDtoIdAsync(long dtoId)

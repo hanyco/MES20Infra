@@ -33,7 +33,7 @@ public partial class EntitySecurityDescriptorViewUserControl
                 this.DataContext = new ObservableCollection<SecurityDescriptorViewModel>();
             }
 
-            return this.DataContext.To<ObservableCollection<SecurityDescriptorViewModel>>();
+            return this.DataContext.CastTo<ObservableCollection<SecurityDescriptorViewModel>>();
         }
         set => this.DataContext = value;
     }

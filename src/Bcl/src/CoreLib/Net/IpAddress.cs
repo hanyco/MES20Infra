@@ -175,7 +175,7 @@ public sealed class IpAddress : IComparable<IpAddress>, IEquatable<IpAddress>, I
     /// <list type="table"><listheader><term> Value</term><description> Meaning</description></listheader><item><term> Less than zero</term><description> This instance precedes <paramref name="other" /> in the sort order.</description></item><item><term> Zero</term><description> This instance occurs in the same position in the sort order as <paramref name="other" />.</description></item><item><term> Greater than zero</term><description> This instance follows <paramref name="other" /> in the sort order.</description></item></list>
     /// </returns>
     public int CompareTo(IpAddress? other)
-        => other is null ? -1 : Merge(this._parts).Replace(".", "").ToLong().CompareTo(Merge(other._parts).Replace(".", "").ToLong());
+        => other is null ? -1 : Merge(this._parts).Replace(".", "").CastToLong().CompareTo(Merge(other._parts).Replace(".", "").CastToLong());
 
     /// <summary>
     ///     Indicates whether the current object is equal to another object of the same type.

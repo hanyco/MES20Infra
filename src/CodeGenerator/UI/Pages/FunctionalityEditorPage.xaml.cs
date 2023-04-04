@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Services;
@@ -46,7 +47,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         get => this.DataContext is FunctionalityViewModel result ? result : null;
         set
         {
-            if (this.DataContext.As<FunctionalityViewModel>() == value)
+            if (this.DataContext.CastAs<FunctionalityViewModel>() == value)
             {
                 return;
             }

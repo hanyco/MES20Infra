@@ -13,7 +13,6 @@ using Library.Data.SqlServer.Dynamics;
 using Library.DesignPatterns.Markers;
 using Library.Exceptions;
 using Library.Exceptions.Validations;
-using Library.Helpers;
 using Library.Interfaces;
 using Library.Results;
 using Library.Threading.MultistepProgress;
@@ -34,6 +33,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     private readonly ICqrsCommandService _commandService;
     private readonly IEntityViewModelConverter _converter;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService;
+    private readonly IDtoCodeService _dtoCodeService;
     private readonly IDtoService _dtoService;
     private readonly IModuleService _moduleService;
     private readonly ICqrsQueryService _queryService;
@@ -51,6 +51,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
     IDtoService dtoService,
+    IDtoCodeService dtoCodeService,
     ICqrsQueryService queryService,
     ICqrsCommandService commandService,
     ICqrsCodeGeneratorService cqrsCodeService,
@@ -62,6 +63,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         this._converter = converter;
         this.Logger = logger;
         this._dtoService = dtoService;
+        this._dtoCodeService = dtoCodeService;
         this._queryService = queryService;
         this._commandService = commandService;
         this._cqrsCodeService = cqrsCodeService;
@@ -89,7 +91,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
 
         if (!initResult.IsSucceed)
         {
-            return Result<FunctionalityViewModel?>.From(initResult, default);
+            return Result<FunctionalityViewModel>.From(initResult, default!)!;
         }
         var (data, tokenSource) = initResult.Value;
         var process = initSteps(data);
@@ -104,8 +106,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         this._reporter.Report(description: getTitle(message));
         var result = processResult.Result;
 
-
-        return result;
+        return result!;
 
         #region Local Methods
 
@@ -149,7 +150,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
 
         MultistepProcessRunner<CreationData> initSteps(in CreationData data)
             => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
-                .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
+                .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel!.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
 
                 .AddStep(this.CreateInsertCommand, getTitle($"Creating `Insert{data.ViewModel.Name}Command`…"))
@@ -177,6 +178,13 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         var result = new Codes();
+        var buffer = this._dtoCodeService.GenerateCodes(viewModel.DetailsViewModel, arguments);
+        if (buffer.IsFailure)
+        {
+            return buffer;
+        }
+
+        result += buffer;
         return new(result);
     }
 
@@ -194,7 +202,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         {
             var rawDto = this.CreateRawDto(data, true);
             var pageViewModel = rawDto
-                .With(x => x.Name = $"Get{data.ViewModel.DbObject.Name}ViewModel")
+                .WithName($"Get{data.ViewModel.DbObject.Name}ViewModel")
                 .With(x => x.IsViewModel = true);
             pageViewModel.Properties.Add(new()
             {
@@ -241,7 +249,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         {
             var rawDto = this.CreateRawDto(data, true);
             data.ViewModel.DetailsViewModel = rawDto
-                .With(x => x.Name = $"Get{data.ViewModel.DbObject.Name}DetailsViewModel")
+                .WithName($"Get{data.ViewModel.DbObject.Name}DetailsViewModel")
                 .With(x => x.IsViewModel = true);
             return Task.CompletedTask;
         }
@@ -262,7 +270,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
             var query = await this._queryService.CreateAsync();
             data.ViewModel.GetAllQuery = query
-                .With(x => x.Name = $"{data.GetAllQueryName}ViewModel")
+                .WithName($"{data.GetAllQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
                 .With(x => x.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries"))
                 .With(x => x.DbObject = data.ViewModel.DbObject)
@@ -275,8 +283,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         {
             var rawDto = this.CreateRawDto(data, false);
             data.ViewModel.GetAllQuery.ParamDto = rawDto
-                .With(x => x.IsParamsDto = true)
-                .With(x => x.Name = $"{data.GetAllQueryName}Params");
+                .WithName($"{data.GetAllQueryName}Params")
+                .With(x => x.IsParamsDto = true);
             return Task.CompletedTask;
         }
 
@@ -284,8 +292,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         {
             var rawDto = this.CreateRawDto(data, true);
             data.ViewModel.GetAllQuery.ResultDto = rawDto
-                .With(x => x.IsResultDto = true)
-                .With(x => x.Name = $"GetAll{data.GetAllQueryName}Result");
+                .WithName($"GetAll{data.GetAllQueryName}Result")
+                .With(x => x.IsResultDto = true);
             return Task.CompletedTask;
         }
     }
@@ -301,7 +309,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
             data.GetByIdQueryName = $"GetById{data.DbTable.Name}Query";
             var query = await this._queryService.CreateAsync();
             data.ViewModel.GetByIdQuery = query
-                .With(x => x.Name = $"{data.GetByIdQueryName}ViewModel")
+                .WithName($"{data.GetByIdQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
                 .With(x => x.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries"))
                 .With(x => x.DbObject = data.ViewModel.DbObject)
@@ -313,8 +321,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         Task createParams(CreationData data)
         {
             var rawDto = this.CreateRawDto(data, false)
+                .WithName($"GetById{data.DbTable.Name}Params")
                 .With(x => x.IsParamsDto = true)
-                .With(x => x.Name = $"GetById{data.DbTable.Name}Params")
                 .With(x => x.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long }));
             data.ViewModel.GetByIdQuery.ParamDto = rawDto;
             return Task.CompletedTask;
@@ -323,8 +331,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         Task createResult(CreationData data)
         {
             var rawDto = this.CreateRawDto(data, true)
-                .With(x => x.IsResultDto = true)
-                .With(x => x.Name = $"GetById{data.DbTable.Name}Result");
+                .WithName($"GetById{data.DbTable.Name}Result")
+                .With(x => x.IsResultDto = true);
             data.ViewModel.GetByIdQuery.ResultDto = rawDto;
             return Task.CompletedTask;
         }
@@ -347,8 +355,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         Task createParams(CreationData data)
         {
             var dto = this.CreateRawDto(data, true)
-                .With(x => x.IsParamsDto = true)
-                .With(x => x.Name = $"Insert{data.DbTable.Name}Params");
+                .WithName($"Insert{data.DbTable.Name}Params")
+                .With(x => x.IsParamsDto = true);
             var idProp = dto.Properties.FirstOrDefault(y => y.Name?.EqualsTo("id") is true);
             if (idProp != null)
             {
@@ -360,8 +368,8 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         Task createResult(CreationData data)
         {
             var rawDto = this.CreateRawDto(data, false)
+                .WithName($"Insert{data.DbTable.Name}Result")
                 .With(x => x.IsResultDto = true)
-                .With(x => x.Name = $"Insert{data.DbTable.Name}Result")
                 .With(x => x.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long }));
             data.ViewModel.InsertCommand.ResultDto = rawDto;
             return Task.CompletedTask;
@@ -378,7 +386,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         {
             var rawDto = this.CreateRawDto(data, true);
             data.ViewModel.ListViewModel = rawDto
-                .With(x => x.Name = $"Get{data.ViewModel.DbObject.Name}ListViewModel")
+                .WithName($"Get{data.ViewModel.DbObject.Name}ListViewModel")
                 .With(x => x.IsViewModel = true);
             return Task.CompletedTask;
         }
@@ -433,14 +441,14 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
 
         internal CancellationTokenSource CancellationTokenSource { get; }
 
-        [NotNull]
-        internal Result<FunctionalityViewModel?> Result => this._result ??= new(this.ViewModel);
-
         internal Table DbTable { get; }
 
         internal string? GetAllQueryName { get; set; }
 
         internal string? GetByIdQueryName { get; set; }
+
+        [NotNull]
+        internal Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
 
         internal FunctionalityViewModel ViewModel { get; }
 
@@ -448,7 +456,17 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
             => this.CancellationTokenSource.Dispose();
 
         [DarkMethod]
-        internal void SetResult(bool isSucceed, in string? message = null) 
+        internal void SetResult(bool isSucceed, in string? message = null)
             => this._result = new(this.ViewModel) { Message = message, Succeed = isSucceed };
+    }
+}
+
+static file class Extensions
+{
+    public static TViewModel WithName<TViewModel>(this TViewModel model, string name)
+        where TViewModel : InfraViewModelBase<long?>
+    {
+        model.Name = name;
+        return model;
     }
 }

@@ -108,7 +108,7 @@ public partial class MainWindow
 
     private void PageHostFrame_Navigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
     {
-        if (e.Content.As<PageBase>() is { } page)
+        if (e.Content.CastAs<PageBase>() is { } page)
         {
             this.Title = $"{page.Title} - {ApplicationHelper.ApplicationTitle}";
         }
@@ -127,8 +127,8 @@ public partial class MainWindow
             if (e.Item.Max != 0)
             {
                 this.StatusProgressBar.Visibility = Visibility.Visible;
-                this.StatusProgressBar.Maximum = e.Item.Max.ToInt(0);
-                this.StatusProgressBar.Value = e.Item.Current.ToInt(0);
+                this.StatusProgressBar.Maximum = e.Item.Max.CastToInt(0);
+                this.StatusProgressBar.Value = e.Item.Current.CastToInt(0);
             }
             if (!e.Item.Description.IsNullOrEmpty())
             {

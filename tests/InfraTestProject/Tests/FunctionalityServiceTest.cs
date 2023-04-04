@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.UI.Services;
+﻿using Contracts.Services;
+
+using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Data.SqlServer.Dynamics;

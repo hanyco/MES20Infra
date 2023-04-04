@@ -35,7 +35,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         }
         if (dto?.DbObjectId.IsNullOrEmpty() is false)
         {
-            result.DbObject = new(string.Empty, dto.DbObjectId.ToLong());
+            result.DbObject = new(string.Empty, dto.DbObjectId.CastToLong());
         }
         if (properties?.Any() is true)
         {

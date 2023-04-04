@@ -18,7 +18,8 @@ namespace Services;
 internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
-    IResetChanges
+    IResetChanges,
+    IAsyncReadService<CqrsCommandViewModel>
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IMapper _mapper;
@@ -64,13 +65,13 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         string? resultDtoName = null)
         => this.GetByIdAsync(model.Id!.Value, this.GetAllQuery()
                .Include(x => x.Module).Include(x => x.ParamDto)
-               .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
+               .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).CastAs<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
 
     public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync()
         => this.GetAllAsync(this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
     public Task<CqrsCommandViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync(id, this.GetAllQuery(), x => this._converter.ToViewModel(x).As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
+        => this.GetByIdAsync(id, this.GetAllQuery(), x => this._converter.ToViewModel(x).CastAs<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
     public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true)
         => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();

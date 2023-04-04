@@ -16,7 +16,7 @@ public class BlazorComponentUserControlBase : AsyncDataBindUserControl
 
     public UiComponentViewModel? ViewModel
     {
-        get => this.DataContext.As<UiComponentViewModel>();
+        get => this.DataContext.CastAs<UiComponentViewModel>();
         set => this.DataContext = value;
     }
 

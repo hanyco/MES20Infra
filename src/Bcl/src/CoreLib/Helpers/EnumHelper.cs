@@ -185,7 +185,7 @@ public static class EnumHelper
     /// <param name="value"> The value. </param>
     /// <returns> </returns>
     public static TEnum ToEnum<TEnum>(string value)
-        where TEnum : Enum => Enum.Parse(typeof(TEnum), value).To<TEnum>();
+        where TEnum : Enum => Enum.Parse(typeof(TEnum), value).CastTo<TEnum>();
 
     /// <summary>
     ///     Converts to enum.
@@ -194,7 +194,7 @@ public static class EnumHelper
     /// <param name="value"> The value. </param>
     /// <returns> </returns>
     public static TEnum ToEnum<TEnum>(int value)
-        => Enum.Parse(typeof(TEnum), Enum.GetName(typeof(TEnum), value)!).To<TEnum>();
+        => Enum.Parse(typeof(TEnum), Enum.GetName(typeof(TEnum), value)!).CastTo<TEnum>();
 
     /// <summary>
     ///     Tries the parse.

@@ -60,7 +60,7 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
     }
 
     public int CompareTo(object? obj)
-        => this.CompareTo(obj.As<BootstrapPosition>());
+        => this.CompareTo(obj.CastAs<BootstrapPosition>());
 
     public bool Equals(BootstrapPosition? other)
         => this.CompareTo(other) == 0;

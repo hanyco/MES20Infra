@@ -52,7 +52,7 @@ public partial class DtoDetailsPage
 
     public DtoViewModel? ViewModel
     {
-        get => this.DataContext.As<DtoViewModel>();
+        get => this.DataContext.CastAs<DtoViewModel>();
         set
         {
             if (!value?.Equals(this.DataContext) ?? this.DataContext is not null)
@@ -109,7 +109,7 @@ public partial class DtoDetailsPage
         var tableNode = this.DatabaseExplorerUserControl.SelectedDbObjectNode;
         Check.NotNull(tableNode, () => "Please select a table");
 
-        var columns = tableNode.Children?.First()?.Children?.Select(x => x?.Value?.As<DbColumnViewModel>());
+        var columns = tableNode.Children?.First()?.Children?.Select(x => x?.Value?.CastAs<DbColumnViewModel>());
         this.ViewModel = this._service.CreateByDbTable(DbTableViewModel.FromDbObjectViewModel(tableNode!), columns.Compact());
         this.Debug("DTO initialized.");
     }
@@ -119,7 +119,7 @@ public partial class DtoDetailsPage
 
     private async void DeleteDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        var dto = this.CqrsExplorerTreeView.SelectedItem.As<DtoViewModel>();
+        var dto = this.CqrsExplorerTreeView.SelectedItem.CastAs<DtoViewModel>();
         Check.NotNull(dto, () => new ValidationException("Please select a DTO"));
 
         if (MsgBox2.AskWithWarn(
@@ -168,7 +168,7 @@ public partial class DtoDetailsPage
 
     private void DtoExplorerTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var viewModel = e.NewValue.As<TreeViewItem>()?.DataContext.As<InfraViewModelBase>();
+        var viewModel = e.NewValue.CastAs<TreeViewItem>()?.DataContext.CastAs<InfraViewModelBase>();
         this.DeleteDtoButton.IsEnabled = viewModel is DtoViewModel;
         this.EditDtoButton.IsEnabled = viewModel is DtoViewModel;
     }
@@ -180,7 +180,7 @@ public partial class DtoDetailsPage
             return;
         }
 
-        var dto = this.CqrsExplorerTreeView.SelectedItem.As<DtoViewModel>();
+        var dto = this.CqrsExplorerTreeView.SelectedItem.CastAs<DtoViewModel>();
         Check.NotNull(dto, () => "Please select a DTO");
         var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value);
         this.ViewModel = viewModel.NotNull(() => new NotFoundValidationException("Entity not found."));

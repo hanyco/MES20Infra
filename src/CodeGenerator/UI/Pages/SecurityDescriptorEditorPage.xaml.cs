@@ -33,7 +33,7 @@ public partial class SecurityDescriptorEditorPage
                 this.DataContext = new SecurityDescriptorEditorPageViewModel();
             }
 
-            return this.DataContext.As<SecurityDescriptorEditorPageViewModel>()!;
+            return this.DataContext.CastAs<SecurityDescriptorEditorPageViewModel>()!;
         }
     }
 
@@ -113,7 +113,7 @@ public partial class SecurityDescriptorEditorPage
         }, this.Logger, "Saving…", "Item saved.");
 
     private void SecDescsListView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) =>
-        this.ViewModel.HighlightedSecurityDescriptor = e.NewValue.As<SecurityDescriptorViewModel>();
+        this.ViewModel.HighlightedSecurityDescriptor = e.NewValue.CastAs<SecurityDescriptorViewModel>();
 }
 
 public class SecurityDescriptorEditorPageViewModel : NotifyPropertyChanged

@@ -32,7 +32,7 @@ public class HtmlTableBody : HtmlElementBase<HtmlTableBody>, IHtmlElement, IPare
 
     public void Bind()
     {
-        var me = this.As<IHtmlElement>()!;
+        var me = this.CastAs<IHtmlElement>()!;
         me.Children.Clear();
         _ = me.Children.AddRange(this.Children);
     }
@@ -90,7 +90,7 @@ public class HtmlTableHead : HtmlElementBase<HtmlTableHead>, IHtmlElement, IPare
 
     public void Bind()
     {
-        var me = this.As<IHtmlElement>()!;
+        var me = this.CastAs<IHtmlElement>()!;
         me.Children.Clear();
         var row = new HtmlTableRow();
         _ = row.Heads.AddRange(this.Children);
@@ -125,7 +125,7 @@ public class HtmlTableRow : HtmlElementBase<HtmlTableRow>, IHtmlElement, IParent
 
     public void Bind()
     {
-        var me = this.As<IHtmlElement>()!;
+        var me = this.CastAs<IHtmlElement>()!;
         me.Children.Clear();
         _ = me.Children.AddRange(this.Heads);
         _ = me.Children.AddRange(this.Children);

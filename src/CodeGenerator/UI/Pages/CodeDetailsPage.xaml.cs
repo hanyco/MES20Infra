@@ -122,7 +122,7 @@ public partial class CodeDetailsPage
 
     private async void CqrsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var selectedValue = e.NewValue.As<TreeViewItem>()?.DataContext;
+        var selectedValue = e.NewValue.CastAs<TreeViewItem>()?.DataContext;
         if (selectedValue is not null and CqrsViewModelBase viewModel)
         {
             this.GenerateCommandButton.IsEnabled = true;
@@ -145,7 +145,7 @@ public partial class CodeDetailsPage
 
     private async void GenerateCommandButton_Click(object sender, RoutedEventArgs e)
     {
-        var selectedValue = this.CqrsTreeView.SelectedValue.As<TreeViewItem>()?.DataContext;
+        var selectedValue = this.CqrsTreeView.SelectedValue.CastAs<TreeViewItem>()?.DataContext;
         if (selectedValue is not null and CqrsViewModelBase viewModel)
         {
             await this.FillCodeAsync(viewModel);
@@ -176,7 +176,7 @@ public partial class CodeDetailsPage
 
     private async void SaveToFileButton_Click(object sender, RoutedEventArgs e)
     {
-        Code code = this.CodesComboBox.SelectedItem.As<Code>().NotNull(() => "No code found.");
+        Code code = this.CodesComboBox.SelectedItem.CastAs<Code>().NotNull(() => "No code found.");
         
         var asPartial = code.IsPartial ? ".partial" : "";
         var filePath = $"{code.Name}{asPartial}.cs";

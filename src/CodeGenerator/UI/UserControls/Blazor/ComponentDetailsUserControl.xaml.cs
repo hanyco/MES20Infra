@@ -76,7 +76,7 @@ public partial class ComponentDetailsUserControl
             this.ViewModel.PageDataContextProperty.ValidateOnPropertySet = false;
         }
 
-        this.ViewModel!.PageDataContextProperty = this.PageDataContextPropertyComboBox.SelectedItem.As<PropertyViewModel>();
+        this.ViewModel!.PageDataContextProperty = this.PageDataContextPropertyComboBox.SelectedItem.CastAs<PropertyViewModel>();
         if (this.ViewModel?.PageDataContextProperty is not null)
         {
             this.ViewModel.PageDataContextProperty.ValidateOnPropertySet = true;

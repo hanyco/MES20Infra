@@ -66,7 +66,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var paramDto = CodeGenDto.New($"{tableName}ParamDto");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.CastAs<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = paramDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -110,7 +110,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.CastAs<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = resultDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -135,7 +135,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.CastAs<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = resultDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -160,7 +160,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var paramDto = CodeGenDto.New($"{tableName}ParamDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.CastAs<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = paramDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }

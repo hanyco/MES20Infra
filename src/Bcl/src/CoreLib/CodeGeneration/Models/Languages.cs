@@ -28,7 +28,7 @@ public readonly struct Languages : IEnumerable<Language>, IEquatable<Languages>
     public IEnumerator<Language> GetEnumerator()
     {
         var me = this;
-        return this.GetType().GetFields().Where(x => x.FieldType == typeof(Language)).Select(x => x.To<System.Reflection.FieldInfo>().GetValue(me).To<Language>()).GetEnumerator();
+        return this.GetType().GetFields().Where(x => x.FieldType == typeof(Language)).Select(x => x.CastTo<System.Reflection.FieldInfo>().GetValue(me).CastTo<Language>()).GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()

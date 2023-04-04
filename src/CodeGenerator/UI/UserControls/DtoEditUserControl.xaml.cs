@@ -36,7 +36,7 @@ public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirec
         set => this.SetValue(SelectedPropertyProperty, value);
     }
 
-    public DtoViewModel? ViewModel => this.DataContext.As<DtoViewModel>();
+    public DtoViewModel? ViewModel => this.DataContext.CastAs<DtoViewModel>();
 
     public async Task BindAsync()
     {
@@ -134,7 +134,7 @@ public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirec
         {
             return;
         }
-        this.SelectedProperty = e.AddedItems[0].As<PropertyViewModel>();
+        this.SelectedProperty = e.AddedItems[0].CastAs<PropertyViewModel>();
         if (this.SelectedProperty is null)
         {
             return;

@@ -143,7 +143,7 @@ public static class ObjectHelper
         where TAttribute : Attribute =>
         property is null
                 ? throw new ArgumentNullException(nameof(property))
-                : property.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault().As<TAttribute>();
+                : property.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault().CastAs<TAttribute>();
 
     /// <summary>
     /// Gets the attribute.
@@ -221,7 +221,7 @@ public static class ObjectHelper
         var field = obj?.GetType().GetFields().FirstOrDefault(fld => string.Compare(fld.Name, fieldName, StringComparison.Ordinal) == 0);
         return field switch
         {
-            not null => field.GetValue(obj)!.To<TFieldType>(),
+            not null => field.GetValue(obj)!.CastTo<TFieldType>(),
             null => throw new ObjectNotFoundException("Field not found")
         };
     }
@@ -244,7 +244,7 @@ public static class ObjectHelper
     {
         var methodInfo = obj.ArgumentNotNull(nameof(obj)).GetType().GetMethod(name, bindingFlags);
         return methodInfo is not null
-            ? Cast.As<TDelegate>(Delegate.CreateDelegate(typeof(TDelegate), obj, methodInfo))
+            ? Caster.CastAs<TDelegate>(Delegate.CreateDelegate(typeof(TDelegate), obj, methodInfo))
             : null;
     }
 
@@ -263,7 +263,7 @@ public static class ObjectHelper
     {
         var methodInfo = objType.GetMethod(name, bindingFlags);
         return methodInfo is not null
-            ? Cast.As<TDelegate>(Delegate.CreateDelegate(typeof(TDelegate), null, methodInfo))
+            ? Caster.CastAs<TDelegate>(Delegate.CreateDelegate(typeof(TDelegate), null, methodInfo))
             : null;
     }
 
@@ -447,7 +447,7 @@ public static class ObjectHelper
     /// <param name="value">The value.</param>
     /// <returns><c>true</c> if [is null or empty string] [the specified value]; otherwise, <c>false</c>.</returns>
     public static bool IsNullOrEmptyString([NotNullWhen(false)] in object value)
-        => string.IsNullOrEmpty(Cast.ToString(value));
+        => string.IsNullOrEmpty(Caster.CastToString(value));
 
     public static dynamic props(this object o)
         => _propsExpando.GetOrCreateValue(o);
