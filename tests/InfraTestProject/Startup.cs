@@ -16,7 +16,7 @@ using UiServices;
 
 namespace InfraTestProject;
 
-public static class TestStartup
+public sealed class Startup
 {
     public static IServiceProvider GetServiceProvider()
     {
@@ -26,20 +26,31 @@ public static class TestStartup
         DI.Initialize(result);
         return result;
     }
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddUnitTestServices();
+        var result = services.BuildServiceProvider();
+        DI.Initialize(result);
+    }
 }
 
 internal static class ServiceCollectionExtensions
 {
     public static void AddUnitTestServices(this IServiceCollection services)
     {
-        var inMemoryDatabaseRoot = new InMemoryDatabaseRoot();
         _ = services
-                .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule))
+                .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule));
+        
+        _ = services
                 .AddScoped<IMapper, Mapper>()
                 .AddScoped<ILogger, EmptyLogger>()
+                .AddSingleton(IMultistepProcess.New());
+        
+        var inMemoryDatabaseRoot = new InMemoryDatabaseRoot();
+        _ = services
                 .AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot)
                                                                      .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)))
-                .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot))
-                .AddSingleton(IMultistepProcess.New());
+                .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot));
     }
 }

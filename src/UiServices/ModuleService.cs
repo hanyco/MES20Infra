@@ -25,15 +25,15 @@ internal sealed class ModuleService : IBusinesService, IModuleService
     public Task<ModuleViewModel?> GetByIdAsync(long id)
         => this.GetByIdAsync<ModuleViewModel, Module>(id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<IEnumerable<Module>> GetChildEntitiesAsync(Module entity)
+    public IAsyncEnumerable<Module> GetChildEntitiesAsync(Module entity)
         => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id);
 
-    public async Task<IEnumerable<Module>> GetChildEntitiesByIdAsync(long parentId)
+    public IAsyncEnumerable<Module> GetChildEntitiesByIdAsync(long parentId)
     {
         var query = from child in this._readDbContext.Modules
                     where child.ParentId == parentId
                     select child;
-        var dbResult = await query.ToListAsync();
+        var dbResult = query.AsAsyncEnumerable();
         return dbResult;
     }
 
@@ -48,12 +48,12 @@ internal sealed class ModuleService : IBusinesService, IModuleService
         return dbResult;
     }
 
-    public async Task<IEnumerable<Module>> GetRootEntitiesAsync()
+    public IAsyncEnumerable<Module> GetRootEntitiesAsync()
     {
         var query = from m in this._readDbContext.Modules
                     where m.ParentId == null
                     select m;
-        var dbResult = await query.ToListAsync();
+        var dbResult = query.AsAsyncEnumerable();
         return dbResult;
     }
 }

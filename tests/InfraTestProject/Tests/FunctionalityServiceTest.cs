@@ -1,54 +1,71 @@
 ﻿using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
-using InfraTestProject.Fixtures;
-
 using Library.Data.SqlServer.Dynamics;
-using Library.Logging;
-using Library.Threading.MultistepProgress;
-
-using Xunit.Abstractions;
 
 namespace InfraTestProject.Tests;
 
-public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, FunctionalityServiceFixture>
+public sealed class FunctionalityServiceTest //: FunctionalityServiceTestBase<IFunctionalityService, FunctionalityServiceFixture>
 {
-    private readonly IUnitTestLogger _logger;
+    private readonly IFunctionalityCodeService _codeService;
+    private readonly IFunctionalityService _service;
 
-    public FunctionalityServiceTest(FunctionalityServiceFixture fixture, ITestOutputHelper output) : base(fixture)
-        => this._logger = IUnitTestLogger.New(output).HandleReporterEvents(DI.GetService<IMultistepProcess>());
+    //public FunctionalityServiceTest(FunctionalityServiceFixture fixture, ITestOutputHelper output) : base(fixture, output)
+    //{
+    //    this._codeService = fixture.GetService<IFunctionalityCodeService>();
+    //}
+    public FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
+    {
+        this._service = service;
+        this._codeService = codeService;
+    }
 
-    [Fact(DisplayName = "Main Test")]
+    [Fact]
     [Trait("_Active Tests", "Current")]
-    public async Task Generate_MainTest_Async()
+    public void GenerateCodeTest()
     {
         // Assign
-        var tokenSource = new CancellationTokenSource();
-        var model = initializeModel();
-        
+        _ = new CancellationTokenSource();
+        _ = CreateModel();
+
         // Act
-        var actual = await this.Service.GenerateAsync(model, tokenSource.Token).ThrowOnFailAsync();
+        var actual = this._codeService.GenerateCodes(null!);
 
         // Assert
         Assert.True(actual);
+    }
 
-        static FunctionalityViewModel initializeModel()
+    [Fact]
+    [Trait("_Active Tests", "Current")]
+    public async Task GenerateModelTest()
+    {
+        // Assign
+        var tokenSource = new CancellationTokenSource();
+        var model = CreateModel();
+
+        // Act
+        var actual = await this._service.GenerateAsync(model, tokenSource.Token);
+
+        // Assert
+        Assert.True(actual);
+    }
+
+    private static FunctionalityViewModel CreateModel()
+    {
+        const string CS = "InMemoryConnectionString";
+        var model = new FunctionalityViewModel()
         {
-            const string CS = "InMemoryConnectionString";
-            var model = new FunctionalityViewModel()
-            {
-                DbTable = new(null!, "Person", "dbo", CS),
-                DbObject = new("Person") { Id = 1 },
-                Name = "TestFunctionality",
-                NameSpace = "CodeGen.UnitTest",
-                ModuleId = 1,
-            };
-            model.DbTable.Columns = new(new Column[]
-            {
+            DbTable = new(null!, "Person", "dbo", CS),
+            DbObject = new("Person") { Id = 1 },
+            Name = "TestFunctionality",
+            NameSpace = "CodeGen.UnitTest",
+            ModuleId = 1,
+        };
+        model.DbTable.Columns = new(new Column[]
+        {
                 new(model.DbTable, "Name", CS) { DataType = "nvarchar", MaxLength = 50, },
                 new(model.DbTable, "Age", CS) { DataType = "int" },
-            });
-            return model;
-        }
+        });
+        return model;
     }
 }

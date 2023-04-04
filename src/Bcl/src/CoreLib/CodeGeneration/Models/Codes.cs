@@ -7,8 +7,7 @@ namespace Library.CodeGeneration.Models;
 
 [Fluent]
 [Immutable]
-//public sealed class Codes : SpecializedListBase<Code?, Codes>, IIndexable<string, Code?>, IIndexable<Language, Codes>, IIndexable<bool, Codes>, IEnumerable<Code?>
-public sealed class Codes : ReadOnlyCollection<Code?>, IIndexable<string, Code?>, IIndexable<Language, Codes>, IIndexable<bool, Codes>, IEnumerable<Code?>
+public sealed class Codes : ReadOnlyCollection<Code?>, IIndexable<string, Code?>, IIndexable<Language, Codes>, IEnumerable<Code?>
 {
     public Codes(IEnumerable<Code?> items)
         : base(items.ToList())
@@ -20,11 +19,11 @@ public sealed class Codes : ReadOnlyCollection<Code?>, IIndexable<string, Code?>
     {
     }
 
-    public Code? this[string name] => this.FirstOrDefault(x => x.Name == name);
+    public Code? this[string name] => this.FirstOrDefault(x => x?.Name == name);
 
-    public Codes this[Language language] => new(this.Where(x => x.Language == language));
+    public Codes this[Language language] => new(this.Where(x => x?.Language == language));
 
-    public Codes this[bool isPartial] => new(this.Where(x => x.IsPartial == isPartial));
+    //public Codes this[bool isPartial] => new(this.Where(x => x?.IsPartial == isPartial));
 
     public Code ComposeAll(string? separator = null)
     {

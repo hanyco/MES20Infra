@@ -1,4 +1,6 @@
-﻿using Contracts.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -11,6 +13,7 @@ using Library.Data.SqlServer.Dynamics;
 using Library.DesignPatterns.Markers;
 using Library.Exceptions;
 using Library.Exceptions.Validations;
+using Library.Helpers;
 using Library.Interfaces;
 using Library.Results;
 using Library.Threading.MultistepProgress;
@@ -70,19 +73,14 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
 
     public async Task<Result<FunctionalityViewModel?>> GenerateAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        #region Validation Checks
-
+        //! Validation Checks
         Check.IfArgumentNotNull(viewModel);
-
         if (!validate(viewModel, token).TryParse(out var validationChecks))
         {
             return validationChecks!;
         }
 
-        #endregion Validation Checks
-
-        #region Initializaions
-
+        //! Initialize
         this._reporter.Report(description: getTitle("Initializing..."));
         // If `viewModel.DbTable` is empty then the connection string: `this._readDbContext.Database.GetConnectionString()` will be used to fill `viewModel.DbTable`.
         // Otherwise, `viewModel.DbTable` will be directly used (to be used in Unit Test).
@@ -96,25 +94,18 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         var (data, tokenSource) = initResult.Value;
         var process = initSteps(data);
 
-        #endregion Initializaions
-
-        #region Execution
-
+        //! Process
         this._reporter.Report(description: getTitle("Running..."));
         var processResult = await process.RunAsync(tokenSource.Token);
 
-        #endregion Execution
-
-        #region Finalization
-
+        //! Finalize
         var message = finalize(processResult);
         tokenSource.Dispose();
         this._reporter.Report(description: getTitle(message));
         var result = processResult.Result;
 
-        #endregion Finalization
 
-        return result!;
+        return result;
 
         #region Local Methods
 
@@ -149,7 +140,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
             {
                 var db = await Database.GetDatabaseAsync(connectionString!);
                 dbTable = db.NotNull(() => new ObjectNotFoundException("Database not found."))
-                    .Tables[dataResult.DbObject.Name!].NotNull(() => new ObjectNotFoundException($"Table name `{dataResult.DbObject}` not found."));
+                            .Tables[dataResult.DbObject.Name!].NotNull(() => new ObjectNotFoundException($"Table name `{dataResult.DbObject}` not found."));
             }
             var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
             var result = new CreationData(dataResult, dbTable, cancellationTokenSource);
@@ -176,13 +167,18 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
                     ? result.Result.Message
                     : result.CancellationTokenSource.IsCancellationRequested
                         ? "Generating process is cancelled."
-                        : result.Result.IsSucceed ? "Functionality view model is created." : "An error occurred while creating functionality view model";
+                        : result.Result.IsSucceed
+                            ? "Functionality view model is created."
+                            : "An error occurred while creating functionality view model";
 
         #endregion Local Methods
     }
 
     public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
-        => throw new NotImplementedException();
+    {
+        var result = new Codes();
+        return new(result);
+    }
 
     private static void Cancel(in CreationData data, in string reason)
     {
@@ -396,8 +392,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
 
     private DtoViewModel CreateRawDto(CreationData data, bool addTableColumns = false, Action<DtoViewModel>? initialize = null)
     {
-        var rawDto = () => this._dtoService.CreateByDbTable(DbTableViewModel.FromDbTable(data.DbTable), Enumerable.Empty<DbColumnViewModel>());
-        var detailsViewModel = rawDto()
+        var detailsViewModel = this._dtoService.CreateByDbTable(DbTableViewModel.FromDbTable(data.DbTable), Enumerable.Empty<DbColumnViewModel>())
             .With(x => x.Comment = data.COMMENT)
             .With(x => x.Module.Id = data.ViewModel.ModuleId)
             .With(x => x.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"))
@@ -436,9 +431,10 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         internal CreationData(FunctionalityViewModel result, Table dbTable, CancellationTokenSource tokenSource)
             => (this.ViewModel, this.DbTable, this.CancellationTokenSource) = (result, dbTable, tokenSource);
 
-        public CancellationTokenSource CancellationTokenSource { get; }
+        internal CancellationTokenSource CancellationTokenSource { get; }
 
-        public Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
+        [NotNull]
+        internal Result<FunctionalityViewModel?> Result => this._result ??= new(this.ViewModel);
 
         internal Table DbTable { get; }
 
@@ -452,6 +448,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
             => this.CancellationTokenSource.Dispose();
 
         [DarkMethod]
-        internal void SetResult(bool isSucceed, in string? message = null) => this._result = new(this.ViewModel) { Message = message, Succeed = isSucceed };
+        internal void SetResult(bool isSucceed, in string? message = null) 
+            => this._result = new(this.ViewModel) { Message = message, Succeed = isSucceed };
     }
 }
