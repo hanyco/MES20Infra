@@ -35,6 +35,7 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     private readonly ICqrsCodeGeneratorService _cqrsCodeService;
     private readonly IDtoCodeService _dtoCodeService;
     private readonly IDtoService _dtoService;
+    private readonly IDtoCodeService _dtoCodeService;
     private readonly IModuleService _moduleService;
     private readonly ICqrsQueryService _queryService;
     private readonly InfraReadDbContext _readDbContext;
