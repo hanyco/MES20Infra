@@ -271,7 +271,7 @@ public sealed class MsgBox2 : InternalMessageBox2, IMessageNotifyProvider
             onOpened,
             timeoutAction,
             timeout,
-            ex.Data["Owner"].CastAs<Window>() ?? window,
+            ex.Data["Owner"].Cast().As<Window>() ?? window,
             controls);
     }
 
@@ -322,12 +322,12 @@ public sealed class MsgBox2 : InternalMessageBox2, IMessageNotifyProvider
             onOpened,
             timeoutAction,
             timeout,
-            ex.Owner.CastAs<Window>() ?? window,
+            ex.Owner.Cast().As<Window>() ?? window,
             controls);
     }
 
     public static (TaskDialogButton Button, TaskDialog Parent) GetOnButtonClick(object? sender, EventArgs? e)
-            => (sender.CastAs<TaskDialogButton>()!, sender.CastAs<TaskDialogButton>()!.HostingDialog.CastAs<TaskDialog>()!);
+            => (sender.Cast().As<TaskDialogButton>()!, sender.Cast().As<TaskDialogButton>()!.HostingDialog.Cast().As<TaskDialog>()!);
 
     /// <summary>
     /// </summary>
@@ -381,7 +381,7 @@ public sealed class MsgBox2 : InternalMessageBox2, IMessageNotifyProvider
             inBackgroundTaskDialogButton.Click += (s, _) =>
             {
                 isBackgroundWorking = true;
-                s.CastAs<TaskDialogButton>()?.HostingDialog.CastAs<TaskDialog>()?.Close();
+                s.Cast().As<TaskDialogButton>()?.HostingDialog.Cast().As<TaskDialog>()?.Close();
             };
             controls.Add(inBackgroundTaskDialogButton);
         }
@@ -392,10 +392,10 @@ public sealed class MsgBox2 : InternalMessageBox2, IMessageNotifyProvider
             cancellationRequestedTaskDialogButton.Click += (s, __) =>
             {
                 isCancellationRequested = true;
-                var btn = s.CastAs<TaskDialogButton>();
+                var btn = s.Cast().As<TaskDialogButton>();
                 if (cancellingPromptText is not null)
                 {
-                    var taskDialog = btn!.HostingDialog!.CastAs<TaskDialog>();
+                    var taskDialog = btn!.HostingDialog!.Cast().As<TaskDialog>();
                     taskDialog!.Text = cancellingPromptText;
                     taskDialog!.ProgressBar.State = TaskDialogProgressBarState.Paused;
                 }
@@ -408,7 +408,7 @@ public sealed class MsgBox2 : InternalMessageBox2, IMessageNotifyProvider
         if (showOkButton && isCancallable && supportsBackgroundWorking)
         {
             okButton = new TaskDialogButton("fakeButton", "OK");
-            okButton.Click += (s, __) => s.CastAs<TaskDialogButton>()!.HostingDialog.CastAs<TaskDialog>()!.Close(TaskDialogResult.Ok);
+            okButton.Click += (s, __) => s.Cast().As<TaskDialogButton>()!.HostingDialog.Cast().As<TaskDialog>()!.Close(TaskDialogResult.Ok);
             controls.Add(okButton);
         }
 

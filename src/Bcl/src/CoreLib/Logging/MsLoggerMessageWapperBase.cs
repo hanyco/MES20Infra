@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Library.Logging;
 
-public class MsLoggerMessageWrapperOptions : IOptions { }
+public sealed class MsLoggerMessageWrapperOptions : IOptions { }
 
 public abstract class MsLoggerMessageWrapperBase<TMsLoggerMessageWapper> : IConfigurable<TMsLoggerMessageWapper, MsLoggerMessageWrapperOptions>
     where TMsLoggerMessageWapper : MsLoggerMessageWrapperBase<TMsLoggerMessageWapper>
@@ -32,7 +32,7 @@ public abstract class MsLoggerMessageWrapperBase<TMsLoggerMessageWapper> : IConf
     public TMsLoggerMessageWapper Configure(Action<MsLoggerMessageWrapperOptions> configure)
     {
         configure.ArgumentNotNull()(this.Options);
-        return this.CastAs<TMsLoggerMessageWapper>()!;
+        return this.Cast().As<TMsLoggerMessageWapper>()!;
     }
 
     public virtual void Debug(string log) => this._debug(this._logger, log, null);

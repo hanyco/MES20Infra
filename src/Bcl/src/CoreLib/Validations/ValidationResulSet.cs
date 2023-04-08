@@ -15,7 +15,7 @@ public static class Validation
     public static TValue ArgumentNotNull<TValue>([NotNull] this TValue? value, [CallerArgumentExpression(nameof(value))] string argName = null!)
         => Check(value, CheckBehavior.ThrowOnFail).ArgumentNotNull();
 
-    public static ValidationResultSet<TValue> Check<TValue>(this TValue value, CheckBehavior behavior = CheckBehavior.ReturnFirstFailure, [CallerArgumentExpression(nameof(value))] string argName = null!)
+    public static ValidationResultSet<TValue> Check<TValue>(this TValue value, CheckBehavior behavior = CheckBehavior.ThrowOnFail, [CallerArgumentExpression(nameof(value))] string argName = null!)
         => new(value, behavior, argName);
 
     [return: NotNull]

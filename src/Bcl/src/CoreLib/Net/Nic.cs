@@ -2,7 +2,7 @@
 
 namespace Library.Net;
 
-public class Nic
+public sealed class Nic
 {
     private long _bytesReceivedLast;
     private long _bytesSentLast;
@@ -20,7 +20,7 @@ public class Nic
         var interfaceStats = this.NetworkInterface.GetIPv4Statistics();
         var result = interfaceStats.BytesSent - this._bytesSentLast;
         this._bytesSentLast = interfaceStats.BytesSent;
-        return result.ToInt() / 1024;
+        return result.Cast().ToInt() / 1024;
     }
 
     public int GetDownloadSpeed()
@@ -28,6 +28,6 @@ public class Nic
         var interfaceStats = this.NetworkInterface.GetIPv4Statistics();
         var result = interfaceStats.BytesSent - this._bytesReceivedLast;
         this._bytesReceivedLast = interfaceStats.BytesReceived;
-        return result.ToInt();
+        return result.Cast().ToInt();
     }
 }

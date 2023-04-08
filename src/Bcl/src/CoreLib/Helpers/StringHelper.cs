@@ -720,7 +720,7 @@ public static class StringHelper
     }
 
     public static IEnumerable<int> ToInt(in IEnumerable<string> array)
-        => array.Where(str => IsNumber(str)).Select(str => str.ToInt());
+        => array.Where(str => IsNumber(str)).Select(str => str.Cast().ToInt());
 
     public static IEnumerable<string> ToLower(this IEnumerable<string> strings)
         => strings.Select(str => str.ToLower());
