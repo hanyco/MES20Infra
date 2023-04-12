@@ -62,7 +62,7 @@ public partial class BlazorPageGeneratorPage
 
     public UiPageViewModel? ViewModel
     {
-        get => this.DataContext.CastAs<UiPageViewModel>();
+        get => this.DataContext.Cast().As<UiPageViewModel>();
         set
         {
             if (this.ViewModel is not null)
@@ -237,7 +237,7 @@ public partial class BlazorPageGeneratorPage
         {
             return;
         }
-        var selectedComponent = this.PageComponentLisView.SelectedItem.CastAs<UiComponentViewModel>();
+        var selectedComponent = this.PageComponentLisView.SelectedItem.Cast().As<UiComponentViewModel>();
         if (selectedComponent is null)
         {
             return;

@@ -65,13 +65,13 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         string? resultDtoName = null)
         => this.GetByIdAsync(model.Id!.Value, this.GetAllQuery()
                .Include(x => x.Module).Include(x => x.ParamDto)
-               .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).CastAs<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
+               .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
 
     public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync()
         => this.GetAllAsync(this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
     public Task<CqrsCommandViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync(id, this.GetAllQuery(), x => this._converter.ToViewModel(x).CastAs<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
+        => this.GetByIdAsync(id, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
     public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true)
         => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
@@ -103,9 +103,8 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         return Result<CqrsCommandViewModel>.CreateSuccess(model);
     }
 
-    public Task<Result<CqrsCommandViewModel>> ValidateAsync(CqrsCommandViewModel item)
-        => item.Check()
-               .ArgumentNotNull()
+    public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item)
+        => item.ArgumentNotNull().Check()
                .NotNull(x=>x.Name)
                .NotNull(x => x.ParamDto)
                .NotNull(x => x.ParamDto.Id)
@@ -115,7 +114,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     private IQueryable<CqrsSegregate> GetAllQuery()
     {
-        var type = CqrsSegregateType.Command.ToInt();
+        var type = CqrsSegregateType.Command.Cast().ToInt();
         var query = from cmd in this._readDbContext.CqrsSegregates
                     where cmd.SegregateType == type
                     select cmd;

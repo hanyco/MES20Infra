@@ -106,14 +106,14 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onTableSelected(Node<DbObjectViewModel>? node)
         {
-            var dbTable = node?.Value.CastAs<DbTableViewModel>();
+            var dbTable = node?.Value.Cast().As<DbTableViewModel>();
             var children = node?.Children?.First()?.Children;
-            var list = (children?.Select(x => x?.Value?.CastAs<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>()).ToList();
+            var list = (children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>()).ToList();
             var dbColumns = list;
             return (dbTable, dbColumns);
         }
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onColumnSelected(Node<DbObjectViewModel>? node) 
-            => (null, EnumerableHelper.ToEnumerable(node?.Value.CastAs<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());
+            => (null, EnumerableHelper.ToEnumerable(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());
 
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onUnknownSelected(Node<DbObjectViewModel>? node) 
             => (null, Enumerable.Empty<DbColumnViewModel>());

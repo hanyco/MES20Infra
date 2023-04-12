@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Services;
 
-internal partial class FunctionalityService
+partial class FunctionalityService
 {
     Task<IDbContextTransaction> IAsyncTransactionalService.BeginTransactionAsync(CancellationToken cancellationToken)
         => this._writeDbContext.BeginTransactionAsync(cancellationToken);

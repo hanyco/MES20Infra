@@ -96,7 +96,7 @@ public sealed class BlazorTableBody : HtmlTableBody, IBlazorComponent, IHasInner
 
     public new void Bind()
     {
-        var me = this.CastAs<IHtmlElement>()!;
+        var me = this.Cast().As<IHtmlElement>()!;
         me.Children.Clear();
         me.Children.Add(this.DataTemplateRow);
     }

@@ -16,7 +16,7 @@ public partial class PropertyDetailsUserControl
 
     public PropertyViewModel? ViewModel
     {
-        get => this.DataContext.CastAs<PropertyViewModel>();
+        get => this.DataContext.Cast().As<PropertyViewModel>();
         set => this.DataContext = value;
     }
 

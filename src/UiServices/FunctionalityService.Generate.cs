@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 using Contracts.Services;
 using Contracts.ViewModels;
@@ -35,9 +36,9 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     private readonly ICqrsCodeGeneratorService _cqrsCodeService;
     private readonly IDtoCodeService _dtoCodeService;
     private readonly IDtoService _dtoService;
-    private readonly IDtoCodeService _dtoCodeService;
     private readonly IModuleService _moduleService;
     private readonly ICqrsQueryService _queryService;
+    private readonly ICqrsCodeGeneratorService _queryCodeService;
     private readonly InfraReadDbContext _readDbContext;
     private readonly IMultistepProcess _reporter;
     private readonly InfraWriteDbContext _writeDbContext;
@@ -50,17 +51,21 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
     public FunctionalityService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
+    
     IEntityViewModelConverter converter,
     IDtoService dtoService,
     IDtoCodeService dtoCodeService,
     ICqrsQueryService queryService,
     ICqrsCommandService commandService,
     ICqrsCodeGeneratorService cqrsCodeService,
+
+    ICqrsCodeGeneratorService queryCodeService,
+
     IModuleService moduleService,
     IMultistepProcess reporter,
     ILogger logger)
     {
-        (this._readDbContext, this._writeDbContext) = (readDbContext, writeDbContext);
+        (this._readDbContext, this._writeDbContext, this._queryCodeService) = (readDbContext, writeDbContext, queryCodeService);
         this._converter = converter;
         this.Logger = logger;
         this._dtoService = dtoService;
@@ -176,18 +181,18 @@ internal sealed partial class FunctionalityService : IFunctionalityService, IFun
         #endregion Local Methods
     }
 
-    public Result<Codes> GenerateCodes(in FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default) => Async(() =>
     {
         var result = new Codes();
-        var buffer = this._dtoCodeService.GenerateCodes(viewModel.DetailsViewModel, arguments);
-        if (buffer.IsFailure)
-        {
-            return buffer;
-        }
+        //var buffer = this._queryCodeService.GenerateAllCodes();
+        //if (buffer.IsFailure)
+        //{
+        //    return buffer;
+        //}
 
-        result += buffer;
-        return new(result);
-    }
+        //result += buffer;
+        return new Result<Codes>(result);
+    }, token);
 
     private static void Cancel(in CreationData data, in string reason)
     {

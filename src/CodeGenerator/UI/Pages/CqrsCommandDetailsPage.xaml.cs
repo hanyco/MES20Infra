@@ -50,7 +50,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     public CqrsCommandViewModel? ViewModel
     {
-        get => this.DataContext.CastAs<CqrsCommandViewModel>();
+        get => this.DataContext.Cast().As<CqrsCommandViewModel>();
         set => this.DataContext = value;
     }
 
@@ -76,7 +76,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private void CommandsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var cCommand = e.NewValue.CastAs<TreeViewItem>()?.DataContext.CastAs<CqrsCommandViewModel>();
+        var cCommand = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<CqrsCommandViewModel>();
         this.EditCommandButton.IsEnabled = this.DeleteCommandButton.IsEnabled = cCommand is not null;
     }
 

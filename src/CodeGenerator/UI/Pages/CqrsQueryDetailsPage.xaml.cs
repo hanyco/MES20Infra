@@ -47,7 +47,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     public CqrsQueryViewModel? ViewModel
     {
-        get => this.DataContext.CastAs<CqrsQueryViewModel>();
+        get => this.DataContext.Cast().As<CqrsQueryViewModel>();
         set => this.DataContext = value;
     }
 
@@ -157,7 +157,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private void QueriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var cQuery = e.NewValue.CastAs<TreeViewItem>()?.DataContext.CastAs<CqrsQueryViewModel>();
+        var cQuery = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<CqrsQueryViewModel>();
         this.EditQueryButton.IsEnabled = this.DeleteQueryButton.IsEnabled = cQuery is not null;
     }
 

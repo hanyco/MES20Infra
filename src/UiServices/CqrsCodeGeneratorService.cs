@@ -25,7 +25,7 @@ namespace Services;
 [Service]
 internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 {
-    public IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsCqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config)
+    public IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config)
     {
         var (entityName, _, _, _) = parameters.ArgumentNotNull();
         config ??= new();
@@ -66,7 +66,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var paramDto = CodeGenDto.New($"{tableName}ParamDto");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.CastAs<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = paramDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -110,7 +110,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.CastAs<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = resultDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -135,7 +135,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.CastAs<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = resultDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -160,7 +160,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         var paramDto = CodeGenDto.New($"{tableName}ParamDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.CastAs<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = paramDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -179,7 +179,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     }
 
     //UNDONE CQRS Code Generator Service SaveToDatabaseAsync.
-    public Task SaveToDatabaseAsync(CqrsCqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config)
+    public Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config)
         => throw new NotImplementedException();
 
     public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null)

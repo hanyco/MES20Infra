@@ -55,6 +55,6 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases
         protected virtual Partials OnGetValidPartials()
             => Partials.OnInitialize;
         protected virtual Partials OnGetPartials()
-            => this.CastAs<ISupportsPartiality>()!.Partials;
+            => this.Cast().As<ISupportsPartiality>()!.Partials;
     }
 }

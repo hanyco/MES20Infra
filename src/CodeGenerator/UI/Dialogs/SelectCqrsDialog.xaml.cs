@@ -72,13 +72,13 @@ public partial class SelectCqrsDialog
             ? result(false, null)
             : (args.Entities == LoadEntity.Dto, args.Entities == LoadEntity.Queries, args.Entities == LoadEntity.Commands, dlg.SelectedItem) switch
             {
-                (true, _, _, DtoViewModel item) => result(true, item.CastAs<TViewModel>()),
+                (true, _, _, DtoViewModel item) => result(true, item.Cast().As<TViewModel>()),
                 (true, _, _, _) => result(true, null),
 
-                (_, true, _, CqrsViewModelBase item) => result(true, item.CastAs<TViewModel>()),
+                (_, true, _, CqrsViewModelBase item) => result(true, item.Cast().As<TViewModel>()),
                 (_, true, _, _) => result(true, null),
 
-                (_, _, true, CqrsViewModelBase item) => result(true, item.CastAs<TViewModel>()),
+                (_, _, true, CqrsViewModelBase item) => result(true, item.Cast().As<TViewModel>()),
                 (_, _, true, _) => result(true, null),
 
                 _ => throw new global::System.NotImplementedException()

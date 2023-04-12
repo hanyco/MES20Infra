@@ -5,7 +5,7 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface IFunctionalityCodeService : IBusinesService, ICodeGeneratorService<FunctionalityViewModel>
+public interface IFunctionalityCodeService : IBusinesService, IAsyncCodeGeneratorService<FunctionalityViewModel>
 {
     
 }

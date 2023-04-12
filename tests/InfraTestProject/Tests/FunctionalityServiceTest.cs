@@ -7,15 +7,11 @@ using Library.Data.SqlServer.Dynamics;
 
 namespace InfraTestProject.Tests;
 
-public sealed class FunctionalityServiceTest //: FunctionalityServiceTestBase<IFunctionalityService, FunctionalityServiceFixture>
+public sealed class FunctionalityServiceTest
 {
     private readonly IFunctionalityCodeService _codeService;
     private readonly IFunctionalityService _service;
 
-    //public FunctionalityServiceTest(FunctionalityServiceFixture fixture, ITestOutputHelper output) : base(fixture, output)
-    //{
-    //    this._codeService = fixture.GetService<IFunctionalityCodeService>();
-    //}
     public FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
     {
         this._service = service;
@@ -24,14 +20,14 @@ public sealed class FunctionalityServiceTest //: FunctionalityServiceTestBase<IF
 
     [Fact]
     [Trait("_Active Tests", "Current")]
-    public void GenerateCodeTest()
+    public async void GenerateCodeTest()
     {
         // Assign
-        _ = new CancellationTokenSource();
+        var cts = new CancellationTokenSource();
         _ = CreateModel();
 
         // Act
-        var actual = this._codeService.GenerateCodes(null!);
+        var actual =await this._codeService.GenerateCodesAsync(null!, token: cts.Token);
 
         // Assert
         Assert.True(actual);

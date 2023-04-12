@@ -53,3 +53,8 @@ public interface ICodeGeneratorService<TViewModel>
 {
     Result<Codes> GenerateCodes(in TViewModel viewModel, GenerateCodesParameters? arguments = null);
 }
+
+public interface IAsyncCodeGeneratorService<TViewModel>
+{
+    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default);
+}

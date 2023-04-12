@@ -47,7 +47,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         get => this.DataContext is FunctionalityViewModel result ? result : null;
         set
         {
-            if (this.DataContext.CastAs<FunctionalityViewModel>() == value)
+            if (this.DataContext.Cast().As<FunctionalityViewModel>() == value)
             {
                 return;
             }

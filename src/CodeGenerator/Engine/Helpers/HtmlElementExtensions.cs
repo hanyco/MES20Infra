@@ -110,7 +110,7 @@ public static class HtmlElementExtensions
 
             foreach (var child in orderedData)
             {
-                child.CastAs<IBindable>()?.Bind();
+                child.Cast().As<IBindable>()?.Bind();
                 var colSpan = setupChildCodeStatement(statementBuilder, ref colIndex, ref lastRow, child, manageRow);
                 colIndex += colSpan;
             }

@@ -73,7 +73,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     public UiComponentViewModel? ViewModel
     {
-        get => this.DataContext.CastAs<UiComponentViewModel>();
+        get => this.DataContext.Cast().As<UiComponentViewModel>();
         set
         {
             if (this.ViewModel is not null)
@@ -128,7 +128,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         => await this.LoadBlazorComponent();
 
     private void ComponentTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        => this.SelectedComponent = e.NewValue.CastAs<TreeViewItem>()?.DataContext.CastAs<UiComponentViewModel>();
+        => this.SelectedComponent = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<UiComponentViewModel>();
 
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
