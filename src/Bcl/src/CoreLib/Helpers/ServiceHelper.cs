@@ -225,7 +225,7 @@ public static class ServiceHelper
                 {
                     await transaction.CommitAsync();
                 }
-                saveResult = await (saveChanges is not null ? saveChanges() : CodeHelper.CatchResult(() => dbContext.SaveChangesAsync()));
+                saveResult = await (saveChanges is not null ? saveChanges() : CodeHelper.CatchResultAsync(() => dbContext.SaveChangesAsync()));
                 if (saveResult.IsSucceed && onCommitted is not null)
                 {
                     onCommitted(model, entity);
@@ -264,19 +264,6 @@ public static class ServiceHelper
 
     #region RegisterServices
 
-    //public static IServiceCollection RegisterServices<TService>(this IServiceCollection services, Assembly assembly)
-    //{
-    //    var srvs = assembly.GetTypes().Where(t => t.IsClass && t.GetInterfaces().Contains(typeof(TService)));
-    //    foreach (var srv in srvs)
-    //    {
-    //        var infcs = srv.GetInterfaces().Where(t => t.GetInterfaces().Contains(typeof(TService)));
-    //        foreach (var infc in infcs)
-    //        {
-    //            _ = services.AddScoped(infc, srv);
-    //        }
-    //    }
-    //    return services;
-    //}
     public static IServiceCollection RegisterServices<TService>(this IServiceCollection services, Assembly assembly)
         => RegisterServices<TService>(services, assembly, assembly);
 

@@ -79,7 +79,7 @@ public partial class BlazorPageGeneratorPage
 
     private async void AddComponentToPageButton_Click(object sender, RoutedEventArgs e)
     {
-        var scope = this.ActionScopeBegin();
+        var scope = this.BeginActionScope();
         if (this.ViewModel is null)
         {
             return;
@@ -110,7 +110,7 @@ public partial class BlazorPageGeneratorPage
     {
         var pages = await this._service.GetAllAsync();
         _ = this.PageTreeView.BindItems(pages);
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private async Task CreatePage()
@@ -129,7 +129,7 @@ public partial class BlazorPageGeneratorPage
         this.ViewModel = viewModel;
         await this.BindAllComponentsView();
         this.IsEditMode = true;
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private void DeleteBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
@@ -147,7 +147,7 @@ public partial class BlazorPageGeneratorPage
         var deleteResult = await this._service.DeleteAsync(page).ThrowOnFailAsync(this.Title);
         this.IsEditMode = false;
         await this.BindPageTreeViewAsync();
-        this.ActionScopeEnd(deleteResult);
+        this.EndActionScope(deleteResult);
     }
 
     private void EditBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
@@ -163,7 +163,7 @@ public partial class BlazorPageGeneratorPage
             return;
         }
 
-        using var scope = this.ActionScopeBegin("Loading...");
+        using var scope = this.BeginActionScope("Loading...");
         var id = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView)?.Id;
         Check.NotNull(id, () => "Please select a page to edit.");
         var viewModel = await this._service.GetByIdAsync(id.Value);
@@ -179,7 +179,7 @@ public partial class BlazorPageGeneratorPage
 
     private Task GenerateCodeAsync()
     {
-        var scope = this.ActionScopeBegin("Generating code…");
+        var scope = this.BeginActionScope("Generating code…");
         var model = this.ViewModel!;
         _ = this._service.CheckValidator(model);
         this.ComponentCodeResultUserControl.Codes = this._service.GenerateCodes(model, new(model.GenerateMainCode, model.GeneratePartialCode, model.GenerateUiCode));
@@ -204,7 +204,7 @@ public partial class BlazorPageGeneratorPage
     private async void Page_BindingData(object sender, EventArgs e)
     {
         await this.BindPageTreeViewAsync();
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private void PageComponentLisView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -255,7 +255,7 @@ public partial class BlazorPageGeneratorPage
         this.ViewModel = null;
         this.IsEditMode = false;
         await this.BindPageTreeViewAsync();
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private void SaveBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
@@ -290,7 +290,7 @@ public partial class BlazorPageGeneratorPage
         var viewModel = this.ViewModel;
         var code = this._service.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
         _ = await code.SaveToFileAsync();
-        this.ActionScopeEnd("Codes saved.");
+        this.EndActionScope("Codes saved.");
     }
 
     private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)

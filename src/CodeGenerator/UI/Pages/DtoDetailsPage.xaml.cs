@@ -140,7 +140,7 @@ public partial class DtoDetailsPage
 
     private void DtoDetailsPage_Binding(object sender, EventArgs e)
     {
-        var scope = this.ActionScopeBegin("Initializing... Please wait.");
+        var scope = this.BeginActionScope("Initializing... Please wait.");
         _ = MsgBox2.ShowProgress(new (Func<Task> Operation, string Description)[]
                                  {
                                      (new Func<Task>(() => this.DatabaseExplorerUserControl.InitailizeAsync(this._dbTableService, this._reporter)), "Exploring database tables…"),
@@ -184,7 +184,7 @@ public partial class DtoDetailsPage
         Check.NotNull(dto, () => "Please select a DTO");
         var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value);
         this.ViewModel = viewModel.NotNull(() => new NotFoundValidationException("Entity not found."));
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private void GenerateCodeButton_Click(object sender, RoutedEventArgs e)
@@ -209,13 +209,13 @@ public partial class DtoDetailsPage
     private void NewDtoButton_Click(object sender, RoutedEventArgs e)
     {
         this.ViewModel = new DtoViewModel();// { Id = --this._dtoId };
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private async void RefreshDatabaseButton_Click(object sender, RoutedEventArgs e)
     {
         await this.RebindDataAsync();
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     /// <summary>
@@ -269,7 +269,7 @@ public partial class DtoDetailsPage
         this.ViewModel = null;
         _ = this.RefreshFormState();
         this._service.ResetChanges();
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private async void SaveCodeButton_Click(object sender, RoutedEventArgs e)
@@ -280,7 +280,7 @@ public partial class DtoDetailsPage
         }
 
         var result = await this._codeService.SaveSourceToDiskAsync(this.ViewModel, this.ValidateFormAsync).ThrowOnFailAsync(this.Title);
-        _ = this.ActionScopeEnd(result);
+        _ = this.EndActionScope(result);
     }
 
     private async void SaveDtoButton_Click(object sender, RoutedEventArgs e)
@@ -337,7 +337,7 @@ public partial class DtoDetailsPage
             .SetOwnerToDefault();
         if (hostDialog.Show() is not true)
         {
-            this.ActionScopeEnd();
+            this.EndActionScope();
             return;
         }
         _ = x.SelectedItems.ForEachEager(this.ViewModel.SecurityDescriptors.Add);

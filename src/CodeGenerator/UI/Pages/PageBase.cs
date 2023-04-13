@@ -25,5 +25,5 @@ public class PageBase : Library.Wpf.Bases.LibPageBase, ILoggerContainer
         => await this.OnValidateFormAsync();
 
     private void PageBase_Loaded(object sender, System.Windows.RoutedEventArgs e)
-        => this.ActionScopeEnd();
+        => this.EndActionScope();
 }
