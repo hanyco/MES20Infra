@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.UI.Dialogs;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -74,7 +76,7 @@ public partial class ComponentDetailsUserControl
             this.ViewModel.PageDataContextProperty.ValidateOnPropertySet = false;
         }
 
-        this.ViewModel!.PageDataContextProperty = this.PageDataContextPropertyComboBox.SelectedItem.As<PropertyViewModel>();
+        this.ViewModel!.PageDataContextProperty = this.PageDataContextPropertyComboBox.SelectedItem.Cast().As<PropertyViewModel>();
         if (this.ViewModel?.PageDataContextProperty is not null)
         {
             this.ViewModel.PageDataContextProperty.ValidateOnPropertySet = true;

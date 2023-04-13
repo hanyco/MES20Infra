@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    xmlns:models="clr-namespace:HanyCo.Infra.UI.ViewModels;assembly=Contracts"
     d:DataContext="{d:DesignInstance models:DtoViewModel,
                                      IsDesignTimeCreatable=True}"
     d:DesignHeight="450"
@@ -37,12 +37,11 @@
                 Grid.ColumnSpan="3"
                 d:Text="Table Name"
                 Style="{StaticResource Heading1}"
-                Text="{Binding FullName}" />
-            <!--<usercontrols:FieldPanel Title="Name:" Grid.Row="1">
-                <usercontrols:FieldPanel.AdditionalContent>
-                    <TextBox Style="{StaticResource LongTextBox}" Text="{Binding Name}" />
-                </usercontrols:FieldPanel.AdditionalContent>
-            </usercontrols:FieldPanel>-->
+                Text="{Binding FullName, Mode=OneWay}" />
+            <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LabelBlock}" Text="Name:" />
+                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding Name}" />
+            </StackPanel>
             <StackPanel
                 Grid.Row="1"
                 Grid.RowSpan="3"

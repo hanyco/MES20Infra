@@ -44,7 +44,7 @@ public static class CodeHelper
         }
         catch (Exception ex)
         {
-            return Result.CreateFail(ex.GetBaseException().Message, ex);
+            return Result.CreateFailure(ex.GetBaseException().Message, ex);
         }
     }
 
@@ -57,7 +57,7 @@ public static class CodeHelper
         }
         catch (Exception ex)
         {
-            return Result<TResult?>.CreateFail(ex.GetBaseException().Message, ex, defaultResult)!;
+            return Result<TResult?>.CreateFailure(ex.GetBaseException().Message, ex, defaultResult)!;
         }
     }
 
@@ -68,7 +68,7 @@ public static class CodeHelper
     /// <param name="func">         The function.</param>
     /// <param name="defaultResult">The default result.</param>
     /// <returns></returns>
-    public static async Task<Result<TResult?>> CatchResult<TResult>(this Func<Task<TResult>> func, TResult? defaultResult = default)
+    public static async Task<Result<TResult?>> CatchResultAsync<TResult>( Func<Task<TResult>> func, TResult? defaultResult = default)
     {
         try
         {
@@ -77,7 +77,7 @@ public static class CodeHelper
         }
         catch (Exception ex)
         {
-            return Result<TResult?>.CreateFail(ex.GetBaseException().Message, defaultResult);
+            return Result<TResult?>.CreateFailure(ex.GetBaseException().Message, defaultResult);
         }
     }
 
@@ -365,7 +365,7 @@ public static class CodeHelper
     /// <exception cref="InvalidOperationException"></exception>
     public static TDelegate GetDelegate<TType, TDelegate>(in string methodName)
         => (TDelegate)(ISerializable)Delegate.CreateDelegate(typeof(TDelegate),
-                                                             typeof(TType).GetMethod(methodName) ?? Throw<MethodInfo>(new Exceptions.InvalidOperationException()));
+            typeof(TType).GetMethod(methodName) ?? Throw<MethodInfo>(new Exceptions.InvalidOperationException()));
 
     /// <summary>
     /// Gets the function.
@@ -442,8 +442,42 @@ public static class CodeHelper
     public static Task ToVoidAsync<TValue>(this Task<TValue> task)
         => task;
 
+    public static Result TryInvoke(this Action action)
+    {
+        Check.IfArgumentNotNull(action);
+        try
+        {
+            action();
+            return Result.Success;
+        }
+        catch(Exception ex)
+        {
+            return Result.CreateFailure(ex);
+        }
+    }
+
+    public static Result<TValue?> TryInvoke<TValue>(this Func<TValue> action)
+    {
+        Check.IfArgumentNotNull(action);
+        try
+        {
+            return Result<TValue>.CreateFailure(action());
+        }
+        catch (Exception ex)
+        {
+            return Result<TValue>.CreateFailure(ex);
+        }
+    }
+
     public static TInstance With<TInstance>(this TInstance instance, in Action<TInstance>? action)
-            => instance.Fluent(action);
+        => instance.Fluent(action);
+
+    public static async Task<TInstance> WithAsync<TInstance>(this Task<TInstance> instanceAsync, Action<TInstance>? action)
+    {
+        var result = await instanceAsync;
+        action?.Invoke(result);
+        return result;
+    }
 
     public static TInstance With<TInstance>(this TInstance instance, in Action? action)
         => instance.Fluent(action);
@@ -451,3 +485,5 @@ public static class CodeHelper
     public static TInstance With<TInstance>(this TInstance instance, in object? obj)
         => instance.Fluent(obj);
 }
+
+public record TryWithRecord<TValue>(Result<TValue> Result);

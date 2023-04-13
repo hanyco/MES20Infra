@@ -53,11 +53,22 @@ public abstract record ResultBase(in bool? Succeed = null,
         => this.ToString();
 
     protected static (bool? Succeed, object? Status, string? Message, IEnumerable<(object Id, object Error)>? Errors, ImmutableDictionary<string, object>? ExtraData) Combine(params ResultBase[] results)
-        => (results.All(x => x.Succeed == null) ? null : results.All(x => x.IsSucceed),
-            results.LastOrDefault(x => x.Status is not null)?.Status,
-            results.LastOrDefault(x => !x.Message.IsNullOrEmpty())?.Message,
-            results.SelectMany(x => EnumerableHelper.DefaultIfEmpty(x?.Errors)),
-            results.SelectMany(x => EnumerableHelper.DefaultIfEmpty(x.ExtraData)).ToImmutableDictionary());
+    {
+        bool? isSucceed = results.All(x => x.Succeed == null) ? null : results.All(x => x.IsSucceed);
+        var status = results.LastOrDefault(x => x.Status is not null)?.Status;
+        var message = results.LastOrDefault(x => !x.Message.IsNullOrEmpty())?.Message;
+        var errors = results.SelectMany(x => EnumerableHelper.DefaultIfEmpty(x?.Errors));
+        var extraData = results.SelectMany(x => EnumerableHelper.DefaultIfEmpty(x.ExtraData)).ToImmutableDictionary();
+
+        var statusBuffer = results.Where(x => x.Status is not null).Select(x => x.Status).ToList();
+        if (statusBuffer.Count > 1)
+        {
+            errors = errors.AddRangeImmuted(statusBuffer.Select(x => ((object)null!, x!)));
+            status = null;
+        }
+
+        return (isSucceed, status, message, errors, extraData);
+    }
 }
 
 public record Result(in bool? Succeed = null,
@@ -75,13 +86,13 @@ public record Result(in bool? Succeed = null,
     private static Result? _success;
     public static Result Empty => _empty ??= NewEmpty();
 
-    public static Result Fail => _fail ??= CreateFail();
+    public static Result Failure => _fail ??= CreateFailure();
 
     public static Result Success => _success ??= CreateSuccess();
 
-    public static Result CreateFail(in object? status = null, in string? message = null, in IEnumerable<(object Id, object Error)>? errors = null, in ImmutableDictionary<string, object>? extraData = null)
+    public static Result CreateFailure(in object? status = null, in string? message = null, in IEnumerable<(object Id, object Error)>? errors = null, in ImmutableDictionary<string, object>? extraData = null)
         => new(false, status, message, Errors: errors, extraData);
-    public static Result CreateFail(in string? message, in IEnumerable<(object Id, object Error)>? errors)
+    public static Result CreateFailure(in string? message, in IEnumerable<(object Id, object Error)>? errors)
         => new(false, null, message, Errors: errors);
 
     public static Result CreateSuccess(in object? status = null, in string? message = null)
@@ -91,7 +102,7 @@ public record Result(in bool? Succeed = null,
         => new();
 
     public static explicit operator Result(bool b)
-        => b ? Success : Fail;
+        => b ? Success : Failure;
 
     public static Result operator +(Result left, Result right)
     {
@@ -100,11 +111,11 @@ public record Result(in bool? Succeed = null,
         return result;
     }
 
-    public static Result CreateFail(in string message, in Exception error)
-        => CreateFail(null, message, EnumerableHelper.ToEnumerable(((object)0, (object)error)));
+    public static Result CreateFailure(in string message, in Exception error)
+        => CreateFailure(error, message);
 
-    public static Result CreateFail(Exception error)
-        => CreateFail(null, null, EnumerableHelper.ToEnumerable(((object)0, (object)error)));
+    public static Result CreateFailure(Exception error)
+        => CreateFailure(error, null);
 
     public static Result Combine(params Result[] results)
     {
@@ -112,7 +123,6 @@ public record Result(in bool? Succeed = null,
         var result = new Result(data.Succeed, data.Status, data.Message, data.Errors, data.ExtraData);
         return result;
     }
-
 }
 
 public record Result<TValue>(in TValue Value,
@@ -125,8 +135,8 @@ public record Result<TValue>(in TValue Value,
     , IAdditionOperators<Result<TValue>, ResultBase, Result<TValue>>
     , IEquatable<Result<TValue>>
 {
-    private static Result<TValue?>? _fail;
-    public static Result<TValue?> Fail => _fail ??= CreateFail();
+    private static Result<TValue?>? _failure;
+    public static Result<TValue?> Failure => _failure ??= CreateFailure();
 
     public static Result<TValue> New(in TValue value,
         in bool? succeed = null,
@@ -135,14 +145,14 @@ public record Result<TValue>(in TValue Value,
         in IEnumerable<(object Id, object Error)>? errors = null,
         in ImmutableDictionary<string, object>? extraData = null)
         => new(value, succeed, status, message, errors, extraData);
-    public static Result<TValue?> CreateFail(in TValue? value = default,
+    public static Result<TValue?> CreateFailure(in TValue? value = default,
         in object? status = null,
         in string? message = null,
         in IEnumerable<(object Id, object Error)>? errors = null,
         in ImmutableDictionary<string, object>? extraData = null)
         => new(value, false, status, message, errors, extraData);
 
-    public static Result<TValue?> CreateFail(in TValue? value,
+    public static Result<TValue?> CreateFailure(in TValue? value,
         in object? status,
         in string? message,
         in (object Id, object Error) error)
@@ -181,14 +191,14 @@ public record Result<TValue>(in TValue Value,
     public static Result<TValue> From(in Result result, in TValue value)
         => new(value, result.Succeed, result.Status, result.Message, result.Errors, result.ExtraData);
 
-    public static Result<TValue?> CreateFail(in string message, in Exception ex, in TValue? value)
-        => CreateFail(value, null, message, EnumerableHelper.ToEnumerable(((object)0, (object)ex)));
+    public static Result<TValue?> CreateFailure(in string message, in Exception ex, in TValue? value)
+        => CreateFailure(value, ex, message);
 
-    public static Result<TValue?> CreateFail(in Exception error, in TValue? value = default)
-        => CreateFail(value, null, null, EnumerableHelper.ToEnumerable(((object)0, (object)error)));
+    public static Result<TValue?> CreateFailure(in Exception error, in TValue? value = default)
+        => CreateFailure(value, error, null);
 
-    public static Result<TValue?> CreateFail(in string message, in TValue value)
-        => CreateFail(value, null, message);
+    public static Result<TValue?> CreateFailure(in string message, in TValue value)
+        => CreateFailure(value, null, message);
 
     public Result<TValue> WithValue(in TValue value)
         => this with { Value = value };

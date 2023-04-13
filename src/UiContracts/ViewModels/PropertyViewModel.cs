@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 
+using Contracts.ViewModels;
+
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 
@@ -60,7 +62,7 @@ public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescript
         {
             if (this._type is PropertyType.None && this.DbObject is not null)
             {
-                var dbType = this.DbObject.As<DbColumnViewModel>()?.DbType;
+                var dbType = this.DbObject.Cast().As<DbColumnViewModel>()?.DbType;
                 if (!dbType.IsNullOrEmpty())
                 {
                     this._type = PropertyTypeHelper.FromDbType(dbType);

@@ -200,12 +200,7 @@ public static class EnumerableHelper
     {
         Check.IfArgumentNotNull(items);
 
-        var result = new List<T>();
-        foreach (var item in items)
-        {
-            result.Add(item);
-        }
-        return result.AsReadOnly();
+        return Array.AsReadOnly(items.ToArray());
     }
 
     /// <summary>
@@ -297,6 +292,10 @@ public static class EnumerableHelper
         }
         return list;
     }
+
+    [return: NotNull]
+    public static IEnumerable<T> ClearImmuted<T>(this IEnumerable<T>? source)
+        => Enumerable.Empty<T>();
 
     public static IEnumerable<TItem> Collect<TItem>(IEnumerable<TItem> items)
         where TItem : IParent<TItem>
@@ -732,4 +731,17 @@ public static class EnumerableHelper
             { Length: 2 } => aggregator(items[0], items[1]),
             [var item, .. var others] => aggregator(item, InnerAggregate(others, aggregator, defaultValue))
         };
+
+    public static IEnumerable<T> WithCancellation<T>(this IEnumerable<T> query, CancellationToken cancellationToken = default)
+    {
+        if (query is null)
+        {
+            yield break;
+        }
+        var enumerator = query.GetEnumerator();
+        while (!cancellationToken.IsCancellationRequested && enumerator.MoveNext())
+        {
+            yield return enumerator.Current;
+        }
+    }
 }

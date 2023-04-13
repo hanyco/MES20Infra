@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
@@ -72,7 +73,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     public UiComponentViewModel? ViewModel
     {
-        get => this.DataContext.As<UiComponentViewModel>();
+        get => this.DataContext.Cast().As<UiComponentViewModel>();
         set
         {
             if (this.ViewModel is not null)
@@ -93,12 +94,12 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         {
             this.SaveToDbButton.IsEnabled = false;
             this.ValidateForm(false);
-            var scope = this.ActionScopeBegin("Saving...");
+            var scope = this.BeginActionScope("Saving...");
             var saveResult = await this._service.SaveViewModelAsync(this.ViewModel).ThrowOnFailAsync();
             ((IStatefulPage)this).IsViewModelChanged = false;
             await this.BindComponentTreeView();
             this.IsEditMode = true;
-            _ = scope.End(saveResult);
+            scope.End(saveResult);
             return Result<int>.CreateSuccess(1);
         }
     }
@@ -120,14 +121,14 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
     {
         await this.ResetFormAsync();
         await this.BindComponentTreeView();
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private async void ComponentTreeView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         => await this.LoadBlazorComponent();
 
     private void ComponentTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        => this.SelectedComponent = e.NewValue.As<TreeViewItem>()?.DataContext.As<UiComponentViewModel>();
+        => this.SelectedComponent = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<UiComponentViewModel>();
 
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
@@ -145,7 +146,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         this.Debug($"Component {this.SelectedComponent.Name} deleted.");
         await this.ResetFormAsync();
         await this.BindComponentTreeView();
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private async void EditBlazorComponentButton_Click(object sender, RoutedEventArgs e)
@@ -178,12 +179,12 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         Check.NotNull(this.SelectedComponent, () => "Please select a component to edit.");
         _ = await this.AskToSaveAsync().BreakOnFail();
 
-        var scope = ActionScope.Begin(this);
+        var scope = this.BeginActionScope();
         this.EditBlazorComponentButton.IsEnabled = false;
         await this.ResetFormAsync();
         this.ViewModel = await getViewModel();
         this.IsEditMode = true;
-        _ = scope.End();
+        scope.End();
 
         async Task<UiComponentViewModel?> getViewModel()
         {
@@ -202,7 +203,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     private async void Me_BindingData(object sender, EventArgs e)
     {
-        var scope = this.ActionScopeBegin("Initializing…");
+        var scope = this.BeginActionScope("Initializing…");
 
         this.ComponentDetailsUserControl.Initialize(this._codeService, this._moduleService);
         this.ComponentPropertiesUserControl.Initialize(this._codeService);
@@ -212,7 +213,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
         this.IsEditMode = false;
 
-        _ = scope.End();
+        scope.End();
     }
 
     private async void NewBlazorComponentButton_Click(object sender, RoutedEventArgs e)
@@ -224,17 +225,17 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
             return;
         }
 
-        var scope = this.ActionScopeBegin("Creating new component...");
+        var scope = this.BeginActionScope("Creating new component...");
         this.ViewModel = await this._codeService.CreateNewComponentByDtoAsync(dto);
         this.IsEditMode = true;
-        _ = scope.End();
+        scope.End();
     }
 
     private async void NewBlazorComponentUnboundButton_Click(object sender, RoutedEventArgs e)
     {
         this.ViewModel = await this._codeService.CreateNewComponentAsync();
         this.IsEditMode = true;
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private async Task ResetFormAsync()
@@ -244,7 +245,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         this.IsEditMode = false;
         ((IStatefulPage)this).IsViewModelChanged = false;
         this.ComponentCodeResultUserControl.Codes = null;
-        this.ActionScopeEnd();
+        this.EndActionScope();
     }
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
@@ -267,7 +268,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
     [MemberNotNull(nameof(ViewModel))]
     private void ValidateForm(bool toGenerateCode)
     {
-        _ = this.ViewModel.NotNull(() => new ValidationException("Please create/edit a component.")).Check(true)
+        _ = this.ViewModel.NotNull(() => new ValidationException("Please create/edit a component.")).Check(CheckBehavior.ThrowOnFail)
                           .NotNull(x => this.ViewModel)
                           .NotNull(x => this.ViewModel.Name)
                           .NotNull(x => this.ViewModel.NameSpace);

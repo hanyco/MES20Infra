@@ -2,8 +2,12 @@
 
 using System.Collections;
 
+using Library.DesignPatterns.Markers;
+
 namespace Library.Coding;
 
+[Fluent]
+[Obsolete("Subject to remove", true)]
 public readonly struct Args<T> : IReadOnlyList<T>
 {
     private readonly List<T> _arguments = new();

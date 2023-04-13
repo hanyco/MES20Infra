@@ -34,7 +34,8 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesSer
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 
-    public Task<CqrsQueryViewModel> CreateAsync() => throw new NotImplementedException();
+    public Task<CqrsQueryViewModel> CreateAsync()
+        => Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandller = true, HasPartialOnInitialize = true });
 
     public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true)
         => this.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this._writeDbContext, model, persist, persist);
@@ -109,7 +110,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesSer
                               select c;
             var dbQuery = await querysQuery.FirstOrDefaultAsync();
             var cqrsQueryViewModel = this._converter.ToViewModel(dbQuery);
-            return cqrsQueryViewModel.As<CqrsQueryViewModel>()!;
+            return cqrsQueryViewModel.Cast().As<CqrsQueryViewModel>()!;
         }
 
         async Task<IEnumerable<PropertyViewModel>> getProps(long? paramDtoId)
@@ -141,7 +142,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesSer
                     where qry.Id == id
                     select qry;
         var dbResult = await query.FirstOrDefaultAsync();
-        return this._converter.ToViewModel(dbResult).As<CqrsQueryViewModel>();
+        return this._converter.ToViewModel(dbResult).Cast().As<CqrsQueryViewModel>();
     }
 
     public async Task<IReadOnlyList<CqrsQueryViewModel>> GetQueriesByDtoIdAsync(long dtoId)
@@ -214,7 +215,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesSer
 
     private IQueryable<CqrsSegregate> GetAllQuery()
     {
-        var type = CqrsSegregateType.Query.ToInt();
+        var type = CqrsSegregateType.Query.Cast().ToInt();
         var query = from qry in this._readDbContext.CqrsSegregates
                     where qry.SegregateType == type
                     select qry;

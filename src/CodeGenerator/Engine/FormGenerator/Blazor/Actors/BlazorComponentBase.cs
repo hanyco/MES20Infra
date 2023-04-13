@@ -279,7 +279,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
 
         TBlazorComponent validate(GenerateCodesParameters arguments)
         {
-            _ = this.Check(true)
+            _ = this.Check(CheckBehavior.ThrowOnFail)
                     .NotNull(() => new ValidationException("Please initialize a new component."))
                     .NotNull(x => x.Name)
                     .NotNull(x => x.NameSpace);

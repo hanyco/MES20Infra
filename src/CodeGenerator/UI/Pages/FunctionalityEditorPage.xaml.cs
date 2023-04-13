@@ -1,17 +1,19 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 
+using Contracts.Services;
+using Contracts.ViewModels;
+
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.DesignPatterns.Markers;
+using Library.EventsArgs;
 using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
-using Library.Helpers;
 
 namespace HanyCo.Infra.UI.Pages;
 
@@ -45,7 +47,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         get => this.DataContext is FunctionalityViewModel result ? result : null;
         set
         {
-            if (this.DataContext.As<FunctionalityViewModel>() == value)
+            if (this.DataContext.Cast().As<FunctionalityViewModel>() == value)
             {
                 return;
             }
@@ -60,6 +62,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             {
                 value.PropertyChanged += this.ViewModel_PropertyChanged;
             }
+            this.SetIsViewModelChanged(false);
         }
     }
 
@@ -87,26 +90,19 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
     private async Task GenerateCodesAsync()
     {
-        _ = await this.ValidateFormAsync();
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync();
 
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title, "Error in generating code");
-        var scope = this.ActionScopeBegin("Generating code...");
-        var model = this.ViewModel!;
-        var generateResult = await this._service.GenerateAsync(model).ThrowOnFailAsync(this.Title);
-        this.ViewModel = generateResult;
-        _ = scope.End(generateResult);
-        MsgBox2.Inform("Codes generated", generateResult.ToString());
+        var scope = this.BeginActionScope("Generating code...");
+        this.ViewModel = await this._service.GenerateAsync(this.ViewModel!).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
         => await this.GenerateCodesAsync();
 
-    private async void Me_BindingData(object sender, EventArgs e)
-        => await this.ModuleComboBox.InitializeAsync(this._moduleService);
+    private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
+        => e.Item = this._moduleService;
 
-    private void ModuleComboBox_Initializing(object sender, Library.EventsArgs.InitialItemEventArgs<IModuleService> e) => e.Item = this._moduleService;
-
-    private void ModuleComboBox_SelectedModuleChanged(object sender, Library.EventsArgs.ItemActedEventArgs<ModuleViewModel> e)
+    private void ModuleComboBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
     {
         this.CheckIfInitiated();
 
@@ -130,7 +126,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
         if (isSelected && this._dtoExplorerTreeView.SelectedItem is DtoViewModel { } dto)
         {
-            this.ViewModel.RootDto = dto;
+            this.ViewModel.DbObject = dto.DbObject;
         }
     }
 

@@ -1,10 +1,12 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 using Library.Validations;
 
 namespace Library.Helpers;
 
 [DebuggerStepThrough]
+[StackTraceHidden]
 public static class FluencyHelper
 {
     public static async Task<TInstance> Async<TInstance>(this Fluency<TInstance> instance, Func<Task> funcAsync)
@@ -110,7 +112,7 @@ public static class FluencyHelper
     }
 
     public static Fluency<TResult> With<TResult>(this Fluency<TResult> instance, in Func<TResult, TResult>? func)
-        => func is null ? instance : Fluency<TResult>.From(func(instance.Value));
+        => func is null ? instance : Fluency<TResult>.New(func(instance.Value));
 
     public static Fluency<TResult> WithNew<TInstance, TResult>(this Fluency<TInstance> instance, in Func<TInstance, TResult> action)
             => action(instance);

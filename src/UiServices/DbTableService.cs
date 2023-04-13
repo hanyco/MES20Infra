@@ -37,7 +37,7 @@ internal sealed class DbTableService : IDbTableService
                 foreach (var table in tables.Where(x => x.Schema == schema))
                 {
                     var value = new DbTableViewModel(table.Name, table.Id, table.Schema);
-                    reporter?.Report(max, index++, $"Reading `{value}`...");
+                    reporter?.Report(new(max, index++, $"Reading `{value}`..."));
                     tableNode = new(value, table.Name);
 
                     tableColumnsNode = new(new("Columns"));

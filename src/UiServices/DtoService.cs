@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
@@ -33,7 +34,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IPropertyService _propertyService;
-    private readonly InfraReadDbContext _readDbContext;
+    private readonly InfraReadDbContext db;
     private readonly ISecurityDescriptorService _securityDescriptor;
     private readonly InfraWriteDbContext _writeDbContext;
 
@@ -43,7 +44,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                       ISecurityDescriptorService securityDescriptor,
                       IPropertyService propertyService)
     {
-        this._readDbContext = readDbContext;
+        this.db = readDbContext;
         this._writeDbContext = writeDbContext;
         this._converter = converter;
         this._securityDescriptor = securityDescriptor;
@@ -77,13 +78,16 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
     public async Task<Result> DeleteAsync(DtoViewModel model, bool persist)
     {
-        Check.IfArgumentNotNull(model);
+        if (!validate(model).TryParse(out var validationResult))
+        {
+            return validationResult;
+        }
 
         try
         {
-            await deleteProperties(model);
-            await deleteDto(model);
-            return await this.SubmitChangesAsync(persist: persist).ThrowOnFailAsync();
+            _ = await this._propertyService.DeleteByParentIdAsync(model.Id!.Value, false);
+            _ = this._writeDbContext.RemoveById<DtoEntity>(model.Id!.Value);
+            return await this.SubmitChangesAsync(persist: persist);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_CqrsSegregate_Dto"))
         {
@@ -91,7 +95,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the CQRS Segregate and try again.");
-            return Result.CreateFail(message);
+            return Result.CreateFailure(message);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_UiComponent_Property"))
         {
@@ -99,17 +103,14 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the UI Component property and try again.");
-            return Result.CreateFail(message);
+            return Result.CreateFailure(message);
         }
 
-        async Task deleteDto(DtoViewModel dto)
-        {
-            _ = this._writeDbContext.RemoveById<DtoEntity>(dto.Id!.Value);
-            await Task.CompletedTask;
-        }
-
-        async Task deleteProperties(DtoViewModel dto)
-            => await this._propertyService.DeleteByParentIdAsync(dto.Id!.Value, false);
+        static Result<DtoViewModel> validate(DtoViewModel model) 
+            => model.Check()
+                    .ArgumentNotNull()
+                    .NotNull(x => x.Id)
+                    .Build();
     }
 
     public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
@@ -136,9 +137,9 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return result;
         }
 
-        static Result<DtoViewModel> validate(DtoViewModel viewModel) 
+        static Result<DtoViewModel?> validate(DtoViewModel viewModel)
             => viewModel.Check()
-                    .NotNull(x => x.Id)
+                    //.NotNull(x => x.Id)
                     .NotNull(x => x.Module)
                     .NotNullOrEmpty(x => x.Name)
                     .NotNullOrEmpty(x => x.NameSpace)
@@ -147,22 +148,22 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync()
     {
-        var query = from dto in this._readDbContext.Dtos
+        var query = from dto in this.db.Dtos
                     select dto;
 
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this.db.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
 
     public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels)
     {
-        var rawQuery = from dto in this._readDbContext.Dtos
+        var rawQuery = from dto in this.db.Dtos
                        select dto;
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
 
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this.db.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToReadOnlySet();
         return result;
 
@@ -201,10 +202,31 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         async Task<DtoEntity?> getDto(long id)
         {
-            var query = from x in this._readDbContext.Dtos.Include(x => x.Module)
+            var query = from x in this.db.Dtos.Include(x => x.Module)
                         where x.Id == id
                         select x;
-            var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock);
+            DtoEntity? dbResult = await query.FirstOrDefaultLockAsync(this.db.AsyncLock);
+
+            //! MOHAMMAD: 💀 Sample code. Don't remove the following lines 💀
+            //var q1 = EF.CompileAsyncQuery((InfraReadDbContext db, long id) => db.Dtos.FirstOrDefault(x => x.Id == id));
+            //var a = await q1(this.db, id);
+
+            //var q2 = this.db.CompileAsyncQuery((InfraReadDbContext db, long id) => db.Dtos.FirstOrDefault(x => x.Id == id));
+            //var b = await q2(id);
+
+            //var q3 = this.db.CompileAsyncQuery(db => db.Dtos.FirstOrDefault(x => x.Id == id));
+            //var c = await q3();
+
+            //string name = "Ali";
+            //var q4 = EF.CompileAsyncQuery((InfraReadDbContext db, string name) => db.Dtos.Where(x => x.Name == name));
+            //var e = await q4(this.db, name).ToListAsync();
+
+            //var q5 = db.CompileAsyncQuery((InfraReadDbContext db, string name) => db.Dtos.Where(x => x.Name == name));
+            //var f = await q5(name).ToListAsync();
+
+            //var q6 = db.CompileAsyncQuery(db => db.Dtos.Where(x => x.Name == name));
+            //var g = await q6().ToListAsync();
+
             return dbResult;
         }
 
@@ -216,13 +238,13 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                     ? new List<SecurityDescriptorViewModel>()
                     : await this._securityDescriptor.GetByEntityIdAsync(dbResult.Guid);
     }
-
+    
     public async Task<IReadOnlyList<DtoViewModel>> GetByModuleId(long id)
     {
-        var query = from dto in this._readDbContext.Dtos
+        var query = from dto in this.db.Dtos
                     where dto.ModuleId == id
                     select dto;
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this.db.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
@@ -277,7 +299,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         var entity = this.ToDbEntity(viewModel);
         this.ResetChanges();
 
-        await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync();
+        await using var transaction = await this._writeDbContext.BeginTransactionAsync();
         await removeDeletedProperties(viewModel.DeletedProperties);
         await updateDto(viewModel, entity.Dto);
         await updateProperties(entity.PropertyViewModels, entity.Dto);
@@ -338,21 +360,25 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
     {
         Check.IfArgumentNotNull(viewModel);
 
-        var result = viewModel.Check()
+        var result = viewModel.Check(CheckBehavior.GatherAll)
             .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
             .RuleFor(x => x.Module?.Id is not null or 0, () => "Module name cannot be null.")
-            .BuildAll();
+            .Build();
         if (!result.IsSucceed)
         {
             return result;
         }
 
-        var query = from dto in this._readDbContext.Dtos
+        var query = from dto in this.db.Dtos
                     where dto.Name == viewModel!.Name && dto.Id != viewModel.Id
                     select dto.Id;
         _ = result.Check(await query.AnyAsync(), "DTO name already exists.", ObjectDuplicateValidationException.ErrorCode);
-        var duplicates = viewModel!.Properties.GroupBy(x => x.Name).Where(g => g.Count() > 1).Select(y => y.Key).Compact().ToList();
-        _ = result.Check(duplicates.Count > 0, $"{duplicates.Merge(",")} property name(s are) is duplicated.", ObjectDuplicateValidationException.ErrorCode);
+        var duplicates = viewModel!.Properties
+            .GroupBy(x => x.Name)
+            .Where(g => g.Count() > 1)
+            .Select(y => y.Key)
+            .Compact().ToList();
+        _ = result.Check(duplicates.Count != 0, $"{duplicates.Merge(",")} property name(s) are|is duplicated.", ObjectDuplicateValidationException.ErrorCode);
         return result;
     }
 

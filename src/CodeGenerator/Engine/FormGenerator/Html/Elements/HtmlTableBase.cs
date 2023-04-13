@@ -14,6 +14,6 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements
         public HtmlTableHead Head { get; set; }
 
         public virtual THtmlTable Reset()
-            => Fluent(this, () => this.Head.Reset()).As<THtmlTable>()!;
+            => Fluent(this, () => this.Head.Reset()).Cast().As<THtmlTable>()!;
     }
 }
