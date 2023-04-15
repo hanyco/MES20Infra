@@ -18,6 +18,7 @@ using Library.CodeGeneration.Models;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Helpers.CodeGen;
+using Library.Results;
 using Library.Validations;
 
 namespace Services;
@@ -51,13 +52,14 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         }
     }
 
-    public async Task<Codes> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
-            => viewModel.ArgumentNotNull() switch
-            {
-                CqrsQueryViewModel queryViewModel => await GenerateQueryAsync(queryViewModel),
-                CqrsCommandViewModel commandViewModel => await GenerateCommandAsync(commandViewModel),
-                _ => throw new NotSupportedException()
-            };
+    public async Task<Result<Codes>> +-------------------------------------------------------n
+        (CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
+        => new(viewModel.ArgumentNotNull() switch
+        {
+            CqrsQueryViewModel queryViewModel => await GenerateQueryAsync(queryViewModel, token),
+            CqrsCommandViewModel commandViewModel => await GenerateCommandAsync(commandViewModel, token),
+            _ => throw new NotSupportedException()
+        });
 
     public Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parameters)
     {
@@ -212,7 +214,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     private static CodeGenDto ExtractResultDto(in CqrsViewModelBase viewModel)
         => ConvertViewModelToCodeGen(viewModel.ResultDto);
 
-    private static async Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel)
+    private static async Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken? token = default)
     {
         Check.IfArgumentNotNull(commandViewModel?.Name);
 
@@ -231,7 +233,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return await Task.FromResult(query.GenerateCode());
     }
 
-    private static async Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel)
+    private static async Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken? token = default)
     {
         Check.IfArgumentNotNull(queryViewModel?.Name);
 

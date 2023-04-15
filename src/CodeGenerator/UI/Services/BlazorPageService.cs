@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HanyCo.Infra.UI.Services.Imp;
 
 internal sealed class BlazorPageService : IBusinesService, IBlazorPageService
-    , IAsyncViewModelFiller<UiPageViewModel>
+    //x, IAsyncViewModelFiller<UiPageViewModel>
     , IAsyncSaveService
     , IResetChanges
     , IAsyncValidator<UiPageViewModel>

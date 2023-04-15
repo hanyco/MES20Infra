@@ -1,7 +1,7 @@
 ﻿using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Services;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Data.SqlServer.Dynamics;
 
@@ -42,7 +42,7 @@ public sealed class FunctionalityServiceTest
         var model = CreateModel();
 
         // Act
-        var actual = await this._service.GenerateAsync(model, tokenSource.Token);
+        var actual = await this._service.GenerateViewModelAsync(model, tokenSource.Token);
 
         // Assert
         Assert.True(actual);

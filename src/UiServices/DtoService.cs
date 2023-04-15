@@ -261,7 +261,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync();
         await insertDto(viewModel, entity.Dto);
         await insertProperties(entity.PropertyViewModels, entity.Dto.Id);
-        var result = await this.SubmitChangesAsync(persist, transaction).With(_ => viewModel.Id = entity.Dto.Id);
+        var result = await this.SubmitChangesAsync(persist, transaction).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 
         async Task insertDto(DtoViewModel viewModel, DtoEntity dto)
@@ -269,7 +269,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             _ = await this._writeDbContext.ReAttach(dto.Module!).DbContext
                                           .Dtos.Add(dto)
                                           .SaveChangesAsync()
-                                          .With(_ => viewModel.Guid = dto.Guid);
+                                          .With((Task<int> _) => viewModel.Guid = dto.Guid);
             await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false);
         }
         async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId)
@@ -303,7 +303,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         await removeDeletedProperties(viewModel.DeletedProperties);
         await updateDto(viewModel, entity.Dto);
         await updateProperties(entity.PropertyViewModels, entity.Dto);
-        var result = await this.SubmitChangesAsync(persist, transaction).With(_ => viewModel.Id = entity.Dto.Id);
+        var result = await this.SubmitChangesAsync(persist, transaction).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 
         async Task updateDto(DtoViewModel viewModel, DtoEntity dto)

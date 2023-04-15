@@ -3,14 +3,15 @@
 using Library.CodeGeneration.Models;
 using Library.Collections;
 using Library.Interfaces;
+using Library.Results;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface ICqrsCodeGeneratorService : IBusinesService
+public interface ICqrsCodeGeneratorService : IBusinesService//, IAsyncCqrsCodeGeneratorService
 {
     IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config = null);
 
-    Task<Codes> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null);
+    Task<Result<Codes>> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default);
 
     Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parameters);
 

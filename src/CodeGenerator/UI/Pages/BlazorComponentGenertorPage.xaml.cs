@@ -90,7 +90,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     public async Task<Result<int>> SaveAsync()
     {
-        using (Final.Block(() => this.SaveToDbButton.IsEnabled = true))
+        try
         {
             this.SaveToDbButton.IsEnabled = false;
             this.ValidateForm(false);
@@ -101,6 +101,10 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
             this.IsEditMode = true;
             scope.End(saveResult);
             return Result<int>.CreateSuccess(1);
+        }
+        finally
+        {
+            this.SaveToDbButton.IsEnabled = true;
         }
     }
 

@@ -93,7 +93,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         _ = await this.ValidateFormAsync().ThrowOnFailAsync();
 
         var scope = this.BeginActionScope("Generating code...");
-        this.ViewModel = await this._service.GenerateAsync(this.ViewModel!).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
+        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel!).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)

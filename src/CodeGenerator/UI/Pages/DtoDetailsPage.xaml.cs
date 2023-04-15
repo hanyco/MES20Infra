@@ -303,9 +303,13 @@ public partial class DtoDetailsPage
         //x     this.Debug(ENDING_MESSAGE);
         //x }
 
-        using (Final.Block(() => this.SaveDtoButton.IsEnabled = true))
+        try
         {
             _ = await Lock(this, save);
+        }
+        finally
+        {
+            this.SaveDtoButton.IsEnabled = true;
         }
 
         async Task<Result<DtoViewModel>> save()

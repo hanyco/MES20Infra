@@ -1,10 +1,14 @@
 ﻿#nullable disable
 
-using Contracts.ViewModels;
+using System.Collections;
+using System.Runtime.CompilerServices;
 
+using HanyCo.Infra.UI.ViewModels;
+
+using Library.CodeGeneration.Models;
 using Library.Data.SqlServer.Dynamics;
 
-namespace HanyCo.Infra.UI.ViewModels;
+namespace Contracts.ViewModels;
 
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
@@ -39,4 +43,22 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public Table DbTable { get; set; } = null;
 
     public CqrsCommandViewModel UpdateCommand { get; set; }
+
+    public FunctionalityViewModelCodes Codes { get; } = new();
+}
+
+public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
+{
+    private readonly Dictionary<string, Codes> _allCodes = new();
+
+    public Codes GetAllQueryCodes { get => this.get(); set => this.set(value); }
+
+    private void set(Codes value, [CallerMemberName] string propName = null)
+        => this._allCodes[propName] = value;
+
+    private Codes get([CallerMemberName] string propName = null)
+        => this._allCodes[propName];
+
+    public IEnumerator<Codes> GetEnumerator() => this._allCodes.Select(x => x.Value).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)this.GetAllQueryParamsCodes).GetEnumerator();
 }
