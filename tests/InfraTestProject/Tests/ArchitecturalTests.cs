@@ -2,6 +2,8 @@
 
 using HanyCo.Infra.Markers;
 
+using Library.Interfaces;
+
 using UiServices;
 
 namespace InfraTestProject.Tests;
