@@ -173,7 +173,7 @@ internal sealed partial class FunctionalityService
         {
             Cancel(arg, codes);
         }
-        arg.ViewModel.Codes = codes;
+        //ToDo arg.ViewModel.Codes = codes;
     }
 
     private async Task CreateDeleteCommand(CreationData data)

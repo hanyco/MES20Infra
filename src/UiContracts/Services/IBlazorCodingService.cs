@@ -8,7 +8,7 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface IBlazorCodingService : IBusinesService
+public interface IBlazorCodingService : IBusinessService
 {
     /// <summary>
     /// Creates a new component asynchronously.

@@ -6,7 +6,7 @@ using Library.Validations;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface ISecurityDescriptorService : IBusinesService, IAsyncCrudService<SecurityDescriptorViewModel, Id>, IAsyncValidator<SecurityDescriptorViewModel>
+public interface ISecurityDescriptorService : IBusinessService, IAsyncCrudService<SecurityDescriptorViewModel, Id>, IAsyncValidator<SecurityDescriptorViewModel>
 {
     //Task DeleteByEntityIdAsync(Guid entityId, bool persist = true);
     IAsyncEnumerable<SecurityDescriptorViewModel> AssignToEntityIdAsync(Guid entityId, IEnumerable<Id>? securityDescriptorIds, bool persist = true);

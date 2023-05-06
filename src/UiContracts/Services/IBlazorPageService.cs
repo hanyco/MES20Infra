@@ -9,7 +9,7 @@ using Library.Validations;
 namespace HanyCo.Infra.UI.Services;
 
 public interface IBlazorPageService
-    : IBusinesService
+    : IBusinessService
     , IAsyncCrudService<UiPageViewModel>
     , IValidator<UiPageViewModel>
     , ICodeGeneratorService<UiPageViewModel>

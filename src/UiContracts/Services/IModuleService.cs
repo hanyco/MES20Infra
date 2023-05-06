@@ -5,7 +5,7 @@ using Library.Interfaces;
 namespace HanyCo.Infra.UI.Services
 {
     public interface IModuleService
-        : IBusinesService
+        : IBusinessService
         , IAsyncReadService<ModuleViewModel>
         , IHierarchicalDbEntityService<Module>
     {

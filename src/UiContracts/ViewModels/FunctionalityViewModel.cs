@@ -47,7 +47,7 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public FunctionalityViewModelCodes Codes { get; } = new();
 }
 
-public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
+public sealed class FunctionalityViewModelCodes
 {
     private readonly Dictionary<string, Codes> _allCodes = new();
 
@@ -58,7 +58,4 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
 
     private Codes get([CallerMemberName] string propName = null)
         => this._allCodes[propName];
-
-    public IEnumerator<Codes> GetEnumerator() => this._allCodes.Select(x => x.Value).GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)this.GetAllQueryParamsCodes).GetEnumerator();
 }

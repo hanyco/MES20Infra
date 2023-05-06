@@ -4,7 +4,7 @@ using Library.Interfaces;
 
 namespace Contracts.Services;
 
-public interface ICqrsCommandService : IBusinesService, IAsyncSaveService, IAsyncCrudService<CqrsCommandViewModel>, IAsyncCreator<CqrsCommandViewModel>
+public interface ICqrsCommandService : IBusinessService, IAsyncSaveService, IAsyncCrudService<CqrsCommandViewModel>, IAsyncCreator<CqrsCommandViewModel>
 {
     Task<CqrsCommandViewModel> FillByDbEntity(CqrsCommandViewModel model,
         long id,

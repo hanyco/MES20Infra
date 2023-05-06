@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal sealed class ModuleService : IBusinesService, IModuleService
+internal sealed class ModuleService : IBusinessService, IModuleService
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _readDbContext;

@@ -7,7 +7,7 @@ using Library.Results;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface ICqrsCodeGeneratorService : IBusinesService//, IAsyncCqrsCodeGeneratorService
+public interface ICqrsCodeGeneratorService : IBusinessService//, IAsyncCqrsCodeGeneratorService
 {
     IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config = null);
 
