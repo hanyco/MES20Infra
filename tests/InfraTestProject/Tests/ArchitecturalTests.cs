@@ -2,6 +2,8 @@
 
 using HanyCo.Infra.Markers;
 
+using Library.Interfaces;
+
 using UiServices;
 
 namespace InfraTestProject.Tests;
@@ -12,7 +14,7 @@ public sealed class ArchitecturalTests
     public void _01_ServiceClassMustBeDecoratedByServiceAttribute()
     {
         var asm = typeof(ServicesModule).Assembly;
-        var serviceClasses = asm.GetTypes().Where(x => x.i));
+        var serviceClasses = asm.GetTypes().Where(x => ObjectHelper.IsInheritedOrImplemented(x, typeof(IService)));
         var badBoys = serviceClasses.Where(x => x.GetCustomAttribute<ServiceAttribute>() == null);
 
         foreach (var serviceClass in badBoys)
