@@ -9,6 +9,7 @@ using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
@@ -34,7 +35,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IPropertyService _propertyService;
-    private readonly InfraReadDbContext db;
+    private readonly InfraReadDbContext _db;
     private readonly ISecurityDescriptorService _securityDescriptor;
     private readonly InfraWriteDbContext _writeDbContext;
 
@@ -44,7 +45,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
                       ISecurityDescriptorService securityDescriptor,
                       IPropertyService propertyService)
     {
-        this.db = readDbContext;
+        this._db = readDbContext;
         this._writeDbContext = writeDbContext;
         this._converter = converter;
         this._securityDescriptor = securityDescriptor;
@@ -148,22 +149,22 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync()
     {
-        var query = from dto in this.db.Dtos
+        var query = from dto in this._db.Dtos
                     select dto;
 
-        var dbResult = await query.ToListLockAsync(this.db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
 
     public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels)
     {
-        var rawQuery = from dto in this.db.Dtos
+        var rawQuery = from dto in this._db.Dtos
                        select dto;
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
 
-        var dbResult = await query.ToListLockAsync(this.db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToReadOnlySet();
         return result;
 
@@ -202,10 +203,10 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         async Task<DtoEntity?> getDto(long id)
         {
-            var query = from x in this.db.Dtos.Include(x => x.Module)
+            var query = from x in this._db.Dtos.Include(x => x.Module)
                         where x.Id == id
                         select x;
-            DtoEntity? dbResult = await query.FirstOrDefaultLockAsync(this.db.AsyncLock);
+            DtoEntity? dbResult = await query.FirstOrDefaultLockAsync(this._db.AsyncLock);
 
             //! MOHAMMAD: 💀 Sample code. Don't remove the following lines 💀
             //var q1 = EF.CompileAsyncQuery((InfraReadDbContext db, long id) => db.Dtos.FirstOrDefault(x => x.Id == id));
@@ -241,10 +242,10 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
     
     public async Task<IReadOnlyList<DtoViewModel>> GetByModuleId(long id)
     {
-        var query = from dto in this.db.Dtos
+        var query = from dto in this._db.Dtos
                     where dto.ModuleId == id
                     select dto;
-        var dbResult = await query.ToListLockAsync(this.db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
@@ -369,7 +370,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return result;
         }
 
-        var query = from dto in this.db.Dtos
+        var query = from dto in this._db.Dtos
                     where dto.Name == viewModel!.Name && dto.Id != viewModel.Id
                     select dto.Id;
         _ = result.Check(await query.AnyAsync(), "DTO name already exists.", ObjectDuplicateValidationException.ErrorCode);

@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.UI.Services.Imp;
 
-internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinesService, ICqrsQueryService
+internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessService, ICqrsQueryService
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IMapper _mapper;

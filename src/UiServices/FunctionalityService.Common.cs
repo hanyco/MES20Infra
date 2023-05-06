@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace Services;
 
 internal partial class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
-    , IBusinesService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSaveService, ILoggerContainer
+    , IBusinessService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSaveService, ILoggerContainer
 {
     #region Fields & Properties
 

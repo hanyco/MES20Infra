@@ -5,7 +5,7 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface IPropertyService : IBusinesService, IAsyncCrudService<PropertyViewModel>
+public interface IPropertyService : IBusinessService, IAsyncCrudService<PropertyViewModel>
 {
     Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true);
 

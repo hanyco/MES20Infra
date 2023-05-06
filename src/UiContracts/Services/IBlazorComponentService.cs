@@ -5,7 +5,7 @@ using Library.Validations;
 namespace HanyCo.Infra.UI.Services
 {
     public interface IBlazorComponentService
-        : IBusinesService
+        : IBusinessService
         , IAsyncCrudService<UiComponentViewModel>
     {
         Task<IEnumerable<UiComponentViewModel>> GetByPageDataContextIdAsync(long dtoId);

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections;
+using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -6,7 +7,6 @@ using System.Runtime.CompilerServices;
 using Library.DesignPatterns.Creational;
 using Library.DesignPatterns.Creational.Exceptions;
 using Library.Exceptions;
-using Library.Interfaces;
 using Library.Types;
 using Library.Validations;
 
@@ -15,8 +15,6 @@ namespace Library.Helpers;
 public static class ObjectHelper
 {
     private static readonly ConditionalWeakTable<object, Dynamic.Expando> _propsExpando = new();
-    public static dynamic props(this object o)
-        => _propsExpando.GetOrCreateValue(o);
 
     /// <summary>
     /// Checks the database null.
@@ -26,12 +24,11 @@ public static class ObjectHelper
     /// <param name="defaultValue">The default value.</param>
     /// <param name="converter">   The converter.</param>
     /// <returns></returns>
-    public static T CheckDbNull<T>(in object o, in T defaultValue, in Func<object, T> converter)
+    public static T CheckDbNull<T>(in object? o, in T defaultValue, in Func<object, T> converter)
         => IsDbNull(o) ? defaultValue : converter.Invoke(o);
 
-    
     public static bool Contains(in object? obj, Type type)
-            => obj is not null && obj.GetType()
+        => obj is not null && obj.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .Any(property => property.PropertyType.FindInterfaces((m, filterCriteria) => m.FullName == type.FullName, null).Any());
 
@@ -65,7 +62,8 @@ public static class ObjectHelper
     /// an instance of TSingleton./&gt; After generating instance, searches for a method named:
     /// "InitializeComponents". If found will be called.
     /// </remarks>
-    public static TSingleton? GenerateSingletonInstance<TSingleton>(Func<TSingleton>? createInstance = null, Action<TSingleton>? initializeInstance = null)
+    [return: NotNull]
+    public static TSingleton GenerateSingletonInstance<TSingleton>(Func<TSingleton>? createInstance = null, Action<TSingleton>? initializeInstance = null)
         where TSingleton : class, ISingleton<TSingleton>
     {
         //! If (T) has implemented CreateInstance as a static method, use it to create an instance
@@ -85,7 +83,7 @@ public static class ObjectHelper
             if (constructor is null)
             {
                 throw new SingletonException(
-                    $"The class must have a static method: \"{typeof(TSingleton)} CreateInstance()\" or a private/protected parameter-less constructor.");
+                    $"""The class must have a static method: "{typeof(TSingleton)} CreateInstance()" or a private/protected parameter-less constructor.""");
             }
 
             result = constructor.Invoke(EnumerableHelper.EmptyArray<object>()) as TSingleton;
@@ -93,7 +91,7 @@ public static class ObjectHelper
             //! Just to make sure that the code will work.
             if (result is null)
             {
-                return null;
+                throw new SingletonException("Couldn't create instance.");
             }
         }
 
@@ -163,10 +161,7 @@ public static class ObjectHelper
     /// <returns></returns>
     public static TAttribute? GetAttribute<TType, TAttribute>(in TAttribute? defaultValue, in bool inherited)
         where TAttribute : Attribute
-    {
-        var attributes = typeof(TType).GetCustomAttributes(typeof(TAttribute), inherited);
-        return attributes.Length > 0 ? (TAttribute)attributes[0] : defaultValue;
-    }
+        => typeof(TType).GetCustomAttributes(typeof(TAttribute), inherited).Cast<TAttribute>().FirstOrDefault();
 
     /// <summary>
     /// Gets the attribute.
@@ -176,10 +171,7 @@ public static class ObjectHelper
     /// <returns></returns>
     public static TAttribute? GetAttribute<TType, TAttribute>()
         where TAttribute : Attribute
-    {
-        var attributes = typeof(TType).GetCustomAttributes(typeof(TAttribute), false);
-        return attributes.Length > 0 ? (TAttribute)attributes[0] : null;
-    }
+        => typeof(TType).GetCustomAttributes(typeof(TAttribute), false).Cast<TAttribute>().FirstOrDefault();
 
     /// <summary>
     /// Gets the attribute.
@@ -299,8 +291,7 @@ public static class ObjectHelper
         if (!properties.Any())
         {
             properties = type.GetProperties(searchPrivates
-                ? BindingFlags.Instance | BindingFlags.Static |
-                  BindingFlags.Public | BindingFlags.NonPublic
+                ? BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic
                 : BindingFlags.Default);
         }
 
@@ -380,10 +371,8 @@ public static class ObjectHelper
     /// Determines whether [is database null] [the specified o].
     /// </summary>
     /// <param name="o">The o.</param>
-    /// <returns>
-    ///   <c>true</c> if [is database null] [the specified o]; otherwise, <c>false</c>.
-    /// </returns>
-    public static bool IsDbNull(in object? o)
+    /// <returns><c>true</c> if [is database null] [the specified o]; otherwise, <c>false</c>.</returns>
+    public static bool IsDbNull([NotNullWhen(false)] in object? o)
         => o is null or DBNull;
 
     /// <summary>
@@ -407,6 +396,15 @@ public static class ObjectHelper
     public static bool IsIn<TSource>(in TSource item, params TSource[] range)
         => range.Contains(item);
 
+    /// <summary>
+    /// Determines whether an instance of a specified type can be assigned to a variable
+    ///     of the current type.
+    /// </summary>
+    /// <param name="obj"> The object.</param>
+    /// <param name="type">The type.</param>
+    /// <returns>
+    /// <c>true</c> if [is inherited or implemented] [the specified object]; otherwise, <c>false</c>.
+    /// </returns>
     public static bool IsInheritedOrImplemented(in object? obj, [DisallowNull] in Type type)
         => obj != null && type.ArgumentNotNull().IsAssignableFrom(obj.GetType());
 
@@ -418,7 +416,7 @@ public static class ObjectHelper
     public static bool IsNull([NotNullWhen(false)] in object? value)
         => value is null;
 
-    public static bool IsNull<TStruct>(this TStruct @struct) where TStruct : struct
+    public static bool IsDefault<TStruct>(this TStruct @struct) where TStruct : struct
         => @struct.Equals(default(TStruct));
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this Guid? guid)
@@ -429,6 +427,43 @@ public static class ObjectHelper
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this Id id)
         => id == Guid.Empty;
+
+    public static dynamic props(this object o)
+        => _propsExpando.GetOrCreateValue(o);
+
+    /// <summary>
+    /// Search deeply for specific objects
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="roots">      The roots.</param>
+    /// <param name="getChildren">The get children.</param>
+    /// <param name="isTarget">   The is target.</param>
+    /// <returns>The objects</returns>
+    public static IEnumerable<T> RecursiveSearchFor<T>(IEnumerable<T> roots, Func<T, IEnumerable> getChildren, Func<T, bool> isTarget)
+    {
+        foreach (var root in roots)
+        {
+            foreach (var result in lookForRecursive((root, root), getChildren, isTarget))
+            {
+                yield return result;
+            }
+        }
+
+        static IEnumerable<T> lookForRecursive((T Child, T Root) item, Func<T, IEnumerable> getChildren, Func<T, bool> isTarget)
+        {
+            if ((!item.Child?.Equals(item.Root) ?? item.Root is null) && isTarget(item.Child))
+            {
+                yield return item.Root;
+            }
+            foreach (T child in getChildren(item.Child))
+            {
+                foreach (var result in lookForRecursive((child, item.Root), getChildren, isTarget))
+                {
+                    yield return result;
+                }
+            }
+        }
+    }
 
     public static IEnumerable<T> Repeat<T>(T value, int count)
     {

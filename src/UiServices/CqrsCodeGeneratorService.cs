@@ -52,8 +52,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         }
     }
 
-    public async Task<Result<Codes>> +-------------------------------------------------------n
-        (CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
+    public async Task<Result<Codes>> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
         => new(viewModel.ArgumentNotNull() switch
         {
             CqrsQueryViewModel queryViewModel => await GenerateQueryAsync(queryViewModel, token),
@@ -186,13 +185,14 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 
     public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null)
     {
-        var codes = await this.GenerateCodeAsync(viewModel, config);
+        var codesResult = await this.GenerateCodeAsync(viewModel, config).ThrowOnFailAsync();
+        var codes = codesResult.Value.Compact();
         if (codes?.Any() is not true)
         {
             return;
         }
 
-        foreach (var code in codes.Compact())
+        foreach (var code in codes)
         {
             await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement);
         }

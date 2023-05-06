@@ -8,8 +8,8 @@ namespace InfraTestProject.Tests;
 
 public sealed class DtoServiceTest
 {
-    private readonly IDtoService _service;
     private readonly IModuleService _moduleService;
+    private readonly IDtoService _service;
 
     public DtoServiceTest(IDtoService service, IModuleService moduleService)
     {
