@@ -87,7 +87,7 @@ public sealed class DtoServiceTest
     [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _70_GetAllByCategoryAsyncTest()
     {
-        _ = await this.InsertDtoAsync(x =>
+        _ = await insertDtoAsync(x =>
         {
             var model = x.Model;
             model.IsParamsDto = x.Index % 3 == 0;
@@ -111,6 +111,25 @@ public sealed class DtoServiceTest
 
         var actual5 = await this._service.GetAllByCategoryAsync(false, false, false);
         Assert.Equal(0, actual5.Count);
+
+        async Task<Result<int>> insertDtoAsync(Func<(DtoViewModel Model, int Index), (DtoViewModel Model, bool canContiniue)> process)
+        {
+            var module = await this._moduleService.GetByIdAsync(1);
+            var canContinue = true;
+            var index = 0;
+            while (canContinue)
+            {
+                var model = new DtoViewModel { Name = $"DTO {index}", Module = module! };
+                var (Model, canGoOn) = process((model, index++));
+                if (!canGoOn)
+                {
+                    break;
+                }
+
+                _ = await this._service.InsertAsync(Model, persist: false);
+            }
+            return await this._service.SaveChangesAsync();
+        }
     }
 
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
@@ -118,24 +137,5 @@ public sealed class DtoServiceTest
         var module = await this._moduleService.GetByIdAsync(1);
         var model = new DtoViewModel { Name = dtoName, Module = module! };
         return await this._service.InsertAsync(model);
-    }
-
-    private async Task<Result<int>> InsertDtoAsync(Func<(DtoViewModel Model, int Index), (DtoViewModel Model, bool canContiniue)> process)
-    {
-        var module = await this._moduleService.GetByIdAsync(1);
-        var canContinue = true;
-        var index = 0;
-        while (canContinue)
-        {
-            var model = new DtoViewModel { Name = $"DTO {index}", Module = module! };
-            var (Model, canGoOn) = process((model, index++));
-            if (!canGoOn)
-            {
-                break;
-            }
-
-            _ = await this._service.InsertAsync(Model, persist: false);
-        }
-        return await this._service.SaveChangesAsync();
     }
 }

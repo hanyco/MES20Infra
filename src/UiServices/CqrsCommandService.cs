@@ -50,6 +50,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         _ = this._writeDbContext.Remove(entry.Entity);
         return (Result)(await this.SubmitChangesAsync(persist: persist) > 0);
     }
+
     public Task<CqrsCommandViewModel> FillByDbEntity(
         CqrsCommandViewModel model,
         long id,
@@ -63,18 +64,18 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         string? moduleName = null,
         string? paramDtoName = null,
         string? resultDtoName = null)
-        => this.GetByIdAsync(model.Id!.Value, this.GetAllQuery()
+        => ServiceHelper.GetByIdAsync(this, model.Id!.Value, this.GetAllQuery()
                .Include(x => x.Module).Include(x => x.ParamDto)
                .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
 
     public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync()
-        => this.GetAllAsync(this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
+        => ServiceHelper.GetAllAsync(this,GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
     public Task<CqrsCommandViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync(id, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
+        => ServiceHelper.GetByIdAsync(this, id, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
     public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true)
-        => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
+        => ServiceHelper.InsertAsync(this,_writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
@@ -105,7 +106,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item)
         => item.ArgumentNotNull().Check()
-               .NotNull(x=>x.Name)
+               .NotNull(x => x.Name)
                .NotNull(x => x.ParamDto)
                .NotNull(x => x.ParamDto.Id)
                .NotNull(x => x.ResultDto)

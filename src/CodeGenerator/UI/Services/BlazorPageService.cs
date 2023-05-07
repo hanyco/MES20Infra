@@ -10,11 +10,10 @@ using Library.Exceptions.Validations;
 using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
-using Library.Wpf.Bases;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace HanyCo.Infra.UI.Services;
 
 internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
     //x, IAsyncViewModelFiller<UiPageViewModel>
@@ -41,7 +40,7 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
     public ILogger Logger { get; }
 
     public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true)
-        => this.DeleteAsync<UiPageViewModel, UiPage>(this._writeDbContext, model, persist, null, this.Logger);
+        => ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
 
     public async Task<UiPageViewModel?> FillViewModelAsync(UiPageViewModel? model)
     {
@@ -86,27 +85,13 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
     }
 
     public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync()
-        => this.GetAllAsync<UiPageViewModel, UiPage>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => ServiceHelper.GetAllAsync<UiPageViewModel, UiPage>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<UiPageViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync(id, this._readDbContext.UiPages
-            .Include(x => x.Dto)
-            .Include(x => x.Module)
-
-            .Include(x => x.UiPageComponents)
-            .ThenInclude(x => x.UiComponent)
-
-            .Include(x => x.UiPageComponents)
-            .ThenInclude(x => x.UiComponent.PageDataContext)
-
-            .Include(x => x.UiPageComponents)
-            .ThenInclude(x => x.UiComponent.PageDataContextProperty)
-
-            .Include(x => x.UiPageComponents)
-            .ThenInclude(x => x.Position), this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => ServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiPages.Include(x => x.Dto).Include(x => x.Module).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContext).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContextProperty).Include(x => x.UiPageComponents).ThenInclude(x => x.Position), this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<Result<UiPageViewModel>> InsertAsync(UiPageViewModel model, bool persist = true)
-        => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, persist, onCommitted: (m, e) => m.Id = e.Id).ModelResult();
+        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist, onCommitted: (m, e) => m.Id = e.Id).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();

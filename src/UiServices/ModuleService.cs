@@ -20,10 +20,10 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         => (this._readDbContext, this._converter) = (readDbContext, converter);
 
     public Task<IReadOnlyList<ModuleViewModel>> GetAllAsync()
-        => this.GetAllAsync<ModuleViewModel, Module>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => ServiceHelper.GetAllAsync<ModuleViewModel, Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<ModuleViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync<ModuleViewModel, Module>(id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => ServiceHelper.GetByIdAsync<ModuleViewModel, Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public IAsyncEnumerable<Module> GetChildEntitiesAsync(Module entity)
         => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id);

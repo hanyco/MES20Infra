@@ -11,9 +11,9 @@ using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace HanyCo.Infra.UI.Services;
 
-public sealed class BlazorComponentService : 
+public sealed class BlazorComponentService :
     IBlazorComponentService,
     IAsyncValidator<UiComponentViewModel>,
     IAsyncSaveService,
@@ -91,10 +91,10 @@ public sealed class BlazorComponentService :
     }
 
     public Task<IReadOnlyList<UiComponentViewModel>> GetAllAsync()
-        => this.GetAllAsync<UiComponentViewModel, UiComponent>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => ServiceHelper.GetAllAsync<UiComponentViewModel, UiComponent>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<UiComponentViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync(id, this._readDbContext.UiComponents
+        => ServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiComponents
             .Include(x => x.UiComponentActions)
             .Include(x => x.UiComponentProperties)
             .Include(x => x.UiPageComponents)
@@ -112,7 +112,7 @@ public sealed class BlazorComponentService :
     }
 
     public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true)
-        => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id).ModelResult();
+        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
