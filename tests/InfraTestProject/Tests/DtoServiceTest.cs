@@ -1,20 +1,28 @@
 ﻿using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Services;
+using HanyCo.Infra.UI.ViewModels;
 
+using Library.Coding;
 using Library.Results;
+
+using Xunit.Abstractions;
 
 namespace InfraTestProject.Tests;
 
 public sealed class DtoServiceTest
 {
+    private readonly IDtoCodeService _codeService;
     private readonly IModuleService _moduleService;
+    private readonly ITestOutputHelper _output;
     private readonly IDtoService _service;
 
-    public DtoServiceTest(IDtoService service, IModuleService moduleService)
+    public DtoServiceTest(ITestOutputHelper output, IDtoService service, IModuleService moduleService, IDtoCodeService codeService)
     {
+        this._output = output;
         this._service = service;
         this._moduleService = moduleService;
+        this._codeService = codeService;
     }
 
     [Fact]
@@ -76,7 +84,7 @@ public sealed class DtoServiceTest
     }
 
     [Fact]
-    [Trait(nameof(DtoServiceTest), "CRUD Test")]
+    [Trait(nameof(DtoServiceTest), "Operational Test")]
     public async Task _60_CreateDtoTestAsync()
     {
         var model = await this._service.CreateAsync();
@@ -130,6 +138,43 @@ public sealed class DtoServiceTest
             }
             return await this._service.SaveChangesAsync();
         }
+    }
+
+    [Fact]
+    [Trait(nameof(DtoServiceTest), "Operational Test")]
+    public void _80_CodeGenerationTest()
+    {
+        // Assign
+        var dtoModel = this.CreateByDbTable();
+
+        // Act
+        var codes = this._codeService.GenerateCodes(dtoModel);
+
+        // Assert
+        if (!codes.IsSucceed)
+        {
+            Assert.Fail(codes.ToString());
+        }
+        else if (codes.Value.Count != 1)
+        {
+            Assert.Fail("No code generated.");
+        }
+        else if (codes.Value?[0]?.Statement is null)
+        {
+            Assert.Fail("Code statement is empty");
+        }
+    }
+
+    private DtoViewModel CreateByDbTable()
+    {
+        return this._service.CreateByDbTable(new("Person", objectId(), "unit_test"),
+            new DbColumnViewModel[] {
+                new("Name", objectId(), "nvarchar", false),
+                new("Age", objectId(),"int", false)
+            }).With(x => x.NameSpace = "unittest");
+
+        static long objectId() 
+            => NumberHelper.RandomNumber(10000);
     }
 
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
