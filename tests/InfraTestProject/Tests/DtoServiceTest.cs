@@ -194,10 +194,12 @@ public sealed class DtoServiceTest
                     new("Age", NumberHelper.RandomNumber(10000),"int", false)
                 }
             )
-            .With(x => x.NameSpace = "unittest");
+        .With(x => x.NameSpace = "unittest")
+        .With(x => x.Module = _moduleService.GetByIdAsync(1).Result!);
 
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
     {
+
         var module = await this._moduleService.GetByIdAsync(1);
         var model = new DtoViewModel { Name = dtoName, Module = module! };
         return await this._service.InsertAsync(model);

@@ -1,5 +1,7 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
+using InfraTestProject.Tests;
+
 using Library.Interfaces;
 using Library.Logging;
 using Library.Mapping;
@@ -32,6 +34,17 @@ public sealed class Startup
         services.AddUnitTestServices();
         var result = services.BuildServiceProvider();
         DI.Initialize(result);
+        InitializeDatabase();
+    }
+
+    private void InitializeDatabase()
+    {
+        var db = DI.GetService<InfraWriteDbContext>();
+        db.Database.EnsureDeleted();
+        db.Database.EnsureCreated();
+        db.Modules.Add(new() { Guid = Guid.NewGuid(), Name = "Unit Test Module 1"});
+        db.Modules.Add(new() { Guid = Guid.NewGuid(), Name = "Unit Test Module 2" });
+        db.SaveChanges();
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using HanyCo.Infra.UI.Services;
+using HanyCo.Infra.UI.ViewModels;
 
 namespace InfraTestProject.Tests;
 
@@ -6,10 +7,7 @@ public sealed class ModuleServiceTest
 {
     private readonly IModuleService _service;
 
-    public ModuleServiceTest(IModuleService service)
-    {
-        this._service = service;
-    }
+    public ModuleServiceTest(IModuleService service) => this._service = service;
 
     [Fact]
     [Trait(nameof(ModuleServiceTest), "CRUD Test")]
