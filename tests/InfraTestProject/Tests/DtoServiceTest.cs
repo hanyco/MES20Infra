@@ -142,7 +142,7 @@ public sealed class DtoServiceTest
 
     [Fact]
     [Trait(nameof(DtoServiceTest), "Operational Test")]
-    public void _80_CodeGenerationTest()
+    public void _80_Generate_Code_From_Scratch()
     {
         // Assign
         var dtoModel = this.CreateByDbTable();
@@ -165,17 +165,36 @@ public sealed class DtoServiceTest
         }
     }
 
-    private DtoViewModel CreateByDbTable()
+    [Fact]
+    public async Task _81_Load_DTO_And_Generate_CodeAsync()
     {
-        return this._service.CreateByDbTable(new("Person", objectId(), "unit_test"),
-            new DbColumnViewModel[] {
-                new("Name", objectId(), "nvarchar", false),
-                new("Age", objectId(),"int", false)
-            }).With(x => x.NameSpace = "unittest");
-
-        static long objectId() 
-            => NumberHelper.RandomNumber(10000);
+        var dtoToSave = this.CreateByDbTable();
+        var saveResult = await this._service.InsertAsync(dtoToSave);
+        var id = saveResult.Value.Id!.Value;
+        var dtoToGenCode = await this._service.GetByIdAsync(id);
+        var codes = this._codeService.GenerateCodes(dtoToGenCode!);
+        if (!codes.IsSucceed)
+        {
+            Assert.Fail(codes.ToString());
+        }
+        else if (codes.Value.Count != 1)
+        {
+            Assert.Fail("No code generated.");
+        }
+        else if (codes.Value?[0]?.Statement is null)
+        {
+            Assert.Fail("Code statement is empty");
+        }
     }
+
+    private DtoViewModel CreateByDbTable()
+        => this._service.CreateByDbTable(new("Person", NumberHelper.RandomNumber(10000), "unit_test"),
+                new DbColumnViewModel[] {
+                    new("Name", NumberHelper.RandomNumber(10000), "nvarchar", false),
+                    new("Age", NumberHelper.RandomNumber(10000),"int", false)
+                }
+            )
+            .With(x => x.NameSpace = "unittest");
 
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
     {
