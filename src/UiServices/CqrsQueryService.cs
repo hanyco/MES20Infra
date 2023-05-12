@@ -1,9 +1,10 @@
 ﻿using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.UI.Services;
+using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.Exceptions.Validations;
 using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
@@ -11,9 +12,9 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace Services;
 
-internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessService, ICqrsQueryService
+internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessService, ICqrsQueryService, IValidator<CqrsQueryViewModel>
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IMapper _mapper;
@@ -38,7 +39,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         => Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandller = true, HasPartialOnInitialize = true });
 
     public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true)
-        => ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this,_writeDbContext, model, persist, persist);
+        => ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
 
     public async Task<int> DeleteByIdAsync(long id)
         => await this._writeDbContext.RemoveById<CqrsSegregate>(id).SaveChangesAsync();
@@ -49,8 +50,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         string? moduleName = null,
         string? paramDtoName = null,
         string? resultDtoName = null)
-        => MapperExtensions
-        .ForMember(this._mapper.Map(dbQuery, @this)!, x => x.Module = new(dbQuery.ModuleId, moduleName ?? dbQuery.Module.Name))
+        => this._mapper.Map(dbQuery, @this)!.ForMember(x => x.Module = new(dbQuery.ModuleId, moduleName ?? dbQuery.Module.Name))
         .ForMember(x => x.ParamDto = new(dbQuery.ParamDtoId, paramDtoName ?? dbQuery.ParamDto.Name) { NameSpace = dbQuery.ParamDto.NameSpace ?? string.Empty })
         .ForMember(x => x.ResultDto = new(dbQuery.ResultDtoId, resultDtoName ?? dbQuery.ResultDto.Name) { NameSpace = dbQuery.ResultDto.NameSpace ?? string.Empty })
         .ForMember(x => x.Category = CqrsSegregateCategory.Read);
@@ -160,7 +160,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         CqrsSegregate? segregate = null;
         try
         {
-            Validate(model);
+            _ = this.CheckValidator(model);
 
             segregate = this._converter.ToDbEntity(model)!;
 
@@ -171,7 +171,10 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         }
         finally
         {
-            _ = this._writeDbContext.Detach(segregate!);
+            if (segregate != null)
+            {
+                _ = this._writeDbContext.Detach(segregate);
+            }
         }
     }
 
@@ -180,7 +183,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         CqrsSegregate? segregate = null;
         try
         {
-            Validate(model);
+            _ = this.CheckValidator(model);
 
             segregate = this._converter.ToDbEntity(model)!;
 
@@ -205,13 +208,15 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         }
     }
 
-    private static void Validate(CqrsQueryViewModel @this)
-    {
-        Check.NotNull(@this, () => new ValidationException("Please fill the form.", "Form is empty."));
-        Check.NotNull(@this.Name);
-        Check.NotNull(@this.ParamDto?.Id);
-        Check.NotNull(@this.ResultDto?.Id);
-    }
+    public Result<CqrsQueryViewModel> Validate(in CqrsQueryViewModel model)
+        => model.Check()
+                .NotNull()
+                .NotNull(x => x.Name)
+                .NotNull(x => x.ParamDto)
+                .NotNull(x => x.ParamDto.Id)
+                .NotNull(x => x.ResultDto)
+                .NotNull(x => x.ResultDto.Id)
+                .Build()!;
 
     private IQueryable<CqrsSegregate> GetAllQuery()
     {
