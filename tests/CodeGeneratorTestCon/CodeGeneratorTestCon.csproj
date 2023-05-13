@@ -9,7 +9,7 @@
 	</PropertyGroup>-->
 	<PropertyGroup>
         <OutputType>Exe</OutputType>
-        <Configurations>Debug;Release;Release Infra</Configurations>
+        <Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
         <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     </PropertyGroup>
     <PropertyGroup>

@@ -10,10 +10,13 @@
 	<PropertyGroup>
 		<AssemblyName>HanyCo.Infra.CodeGeneration</AssemblyName>
 		<RootNamespace>HanyCo.Infra.CodeGeneration</RootNamespace>
-		<Configurations>Debug;Release;Release Infra</Configurations>
+		<Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
+	  <DefineConstants>DEBUG;TRACE</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="CodeGenerator\Models\Components\ApiControllers\**" />

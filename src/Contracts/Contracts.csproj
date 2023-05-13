@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<Configurations>Debug;Release</Configurations>
+		<Configurations>Debug;Release;Debug Unit Test</Configurations>
 	</PropertyGroup>
 	<PropertyGroup>
 		<AssemblyName>HanyCo.Infra.Contracts</AssemblyName>
@@ -10,6 +10,10 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
+	  <DefineConstants>DEBUG;TRACE</DefineConstants>
 	</PropertyGroup>
 
 	<!--<ItemGroup>
