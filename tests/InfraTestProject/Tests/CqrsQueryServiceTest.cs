@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.UI.Services;
+﻿using Contracts.Services;
+
+using HanyCo.Infra.UI.Services;
 
 using InfraTestProject.Helpers;
 
@@ -8,9 +10,9 @@ namespace InfraTestProject.Tests;
 
 public sealed class CqrsQueryServiceTest
 {
+    private readonly IModuleService _moduleService;
     private readonly ITestOutputHelper _output;
     private readonly ICqrsQueryService _service;
-    private readonly IModuleService _moduleService;
 
     public CqrsQueryServiceTest(ITestOutputHelper output, ICqrsQueryService service, IModuleService moduleService)
     {
@@ -20,30 +22,41 @@ public sealed class CqrsQueryServiceTest
     }
 
     [Fact]
-    public async Task _30_InsertAsync()
+    public async Task _10_GetAllAsync()
     {
-        // Assign
-        var sampleQuery = await _service.CreateAsync();
-        sampleQuery.Name = "Unit Test CQRS Query 1";
-        sampleQuery.Module = await _moduleService.GetByIdAsync(1);
-
-
         // Act
-        var insetResult = await this._service.InsertAsync(sampleQuery);
-        var actual = insetResult.Value;
+        var actual = await this._service.GetAllAsync();
 
         // Assert
-        insetResult.CheckAssertion();
-        Assert.True(actual.Id > 0);
+        Assert.NotNull(actual);
     }
 
     [Fact]
-    public async Task _10_GetByIdAsync()
+    
+    [Fact]
+    public async Task _20_GetByIdAsync()
     {
         // Act
         var actual = await this._service.GetByIdAsync(1);
 
         // Assert
         Assert.NotNull(actual);
+    }
+
+    [Fact]
+    public async Task _30_InsertAsync()
+    {
+        // Assign
+        var sampleQuery = await this._service.CreateAsync();
+        sampleQuery.Name = "Unit Test CQRS Query 1";
+        sampleQuery.Module = await this._moduleService.GetByIdAsync(1);
+
+        // Act
+        var insetResult = await this._service.InsertAsync(sampleQuery);
+        var actual = insetResult.Value;
+
+        // Assert
+        _ = insetResult.CheckAssertion();
+        Assert.True(actual.Id > 0);
     }
 }

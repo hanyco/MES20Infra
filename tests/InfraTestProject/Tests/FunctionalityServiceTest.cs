@@ -1,8 +1,6 @@
 ﻿using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.UI.Services;
-
 using Library.Data.SqlServer.Dynamics;
 
 namespace InfraTestProject.Tests;
