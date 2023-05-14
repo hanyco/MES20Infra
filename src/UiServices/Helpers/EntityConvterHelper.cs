@@ -1,7 +1,10 @@
-﻿using HanyCo.Infra.UI.Services;
+﻿using Contracts.Services;
+
 using HanyCo.Infra.UI.ViewModels;
+
 using Library.Interfaces;
 using Library.Mapping;
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace HanyCo.Infra.UI.Helpers;
