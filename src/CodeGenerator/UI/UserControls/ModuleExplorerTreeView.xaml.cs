@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using HanyCo.Infra.UI.Services;
+
+using Contracts.Services;
 
 namespace HanyCo.Infra.UI.UserControls;
 
