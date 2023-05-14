@@ -5,7 +5,7 @@ using Library.Collections;
 using Library.Interfaces;
 using Library.Results;
 
-namespace HanyCo.Infra.UI.Services;
+namespace Contracts.Services;
 
 public interface ICqrsCodeGeneratorService : IBusinessService//, IAsyncCqrsCodeGeneratorService
 {
@@ -23,9 +23,9 @@ public interface ICqrsCodeGeneratorService : IBusinessService//, IAsyncCqrsCodeG
 
     Codes GenerateUpdateCode(in CqrsCodeGenerateCrudParams parameters);
 
-    Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config);
+    Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config, CancellationToken token = default);
 
-    Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null);
+    Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default);
 }
 
 public record CqrsCodeGenerateCrudParams(in Node<DbObjectViewModel> Table, in string CqrsNameSpace, in string DtoNameSpace);

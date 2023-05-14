@@ -6,7 +6,7 @@ using HanyCo.Infra.UI.ViewModels;
 using Library.Interfaces;
 using Library.Validations;
 
-namespace HanyCo.Infra.UI.Services;
+namespace Contracts.Services;
 
 public interface IBlazorPageService
     : IBusinessService
