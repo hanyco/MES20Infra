@@ -3,8 +3,8 @@
 [AttributeUsage(AttributeTargets.All)]
 public sealed class SecurityDescriptorAttribute : Attribute
 {
-    public SecurityDescriptorAttribute(Guid guid) =>
-            this.Guid = guid;
+    public SecurityDescriptorAttribute(Guid guid)
+        => this.Guid = guid;
 
     public Guid Guid { get; }
 }
