@@ -2,6 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using Contracts.Services;
+
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;

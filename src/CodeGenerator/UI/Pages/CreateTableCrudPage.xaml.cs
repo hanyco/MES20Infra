@@ -1,8 +1,12 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Forms;
+
+using Contracts.Services;
+
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
+
 using Library.Collections;
 using Library.Exceptions.Validations;
 using Library.Validations;

@@ -1,11 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
-using HanyCo.Infra.UI.Services;
+
+using Contracts.Services;
+
 using HanyCo.Infra.UI.ViewModels;
+
 using Library.ComponentModel;
 using Library.Exceptions.Validations;
 using Library.Validations;
 using Library.Wpf.Dialogs;
+
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace HanyCo.Infra.UI.Pages;
