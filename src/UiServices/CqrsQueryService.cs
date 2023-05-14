@@ -35,14 +35,14 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 
-    public Task<CqrsQueryViewModel> CreateAsync()
+    public Task<CqrsQueryViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandller = true, HasPartialOnInitialize = true });
 
-    public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true)
+    public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
         => ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
 
-    public async Task<int> DeleteByIdAsync(long id)
-        => await this._writeDbContext.RemoveById<CqrsSegregate>(id).SaveChangesAsync();
+    public async Task<int> DeleteByIdAsync(long id, CancellationToken token = default)
+        => await this._writeDbContext.RemoveById<CqrsSegregate>(id).SaveChangesAsync(token);
 
     public CqrsQueryViewModel FillByDbEntity(
         CqrsQueryViewModel @this,
@@ -57,14 +57,14 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
 
     public CqrsQueryViewModel FillByDbEntity(
         CqrsQueryViewModel @this,
-        CqrsSegregate sergregate,
+        CqrsSegregate segregate,
         Module infraModule,
         Dto parameterDto,
         IEnumerable<Property> parameterDtoProperties,
         Dto resultDto,
         IEnumerable<Property> resultDtoProperties)
     {
-        _ = this._mapper.Map(sergregate, @this);
+        _ = this._mapper.Map(segregate, @this);
         @this.Module = this._converter.ToViewModel(infraModule);
         @this.ParamDto = this._converter.FillByDbEntity(parameterDto, parameterDtoProperties);
         @this.ResultDto = this._converter.FillByDbEntity(resultDto, resultDtoProperties);
@@ -76,7 +76,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         long dbQueryId,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null)
+        string? resultDtoName = null, CancellationToken token = default)
     {
         var segrQuery = from cq in this._readDbContext.CqrsSegregates
                                                       .Include(x => x.Module)
@@ -84,14 +84,14 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
                                                       .Include(x => x.ResultDto)
                         where cq.Id == dbQueryId
                         select cq;
-        var dbResult = await segrQuery.FirstOrDefaultAsync();
+        var dbResult = await segrQuery.FirstOrDefaultAsync(cancellationToken: token);
         return this.FillByDbEntity(@this, dbResult!, moduleName, paramDtoName, resultDtoName);
     }
 
     public async Task<CqrsQueryViewModel> FillViewModelAsync(CqrsQueryViewModel model,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null)
+        string? resultDtoName = null, CancellationToken token = default)
     {
         var query = await getCQuery();
 
@@ -105,10 +105,10 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
 
         async Task<CqrsQueryViewModel> getCQuery()
         {
-            var querysQuery = from c in this.GetAllQuery().Include(x => x.Module).Include(x => x.ParamDto).Include(x => x.ResultDto)
-                              where c.Id == model.Id
-                              select c;
-            var dbQuery = await querysQuery.FirstOrDefaultAsync();
+            var queriesQuery = from c in this.GetAllQuery().Include(x => x.Module).Include(x => x.ParamDto).Include(x => x.ResultDto)
+                               where c.Id == model.Id
+                               select c;
+            var dbQuery = await queriesQuery.FirstOrDefaultAsync(cancellationToken: token);
             var cqrsQueryViewModel = this._converter.ToViewModel(dbQuery);
             return cqrsQueryViewModel.Cast().As<CqrsQueryViewModel>()!;
         }
@@ -122,13 +122,13 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
             var paramPropsQuery = from p in this._readDbContext.Properties
                                   where p.ParentEntityId == paramDtoId
                                   select p;
-            var dbParamProps = await paramPropsQuery.ToListAsync();
+            var dbParamProps = await paramPropsQuery.ToListAsync(cancellationToken: token);
             var paramProps = this._converter.ToViewModel(dbParamProps);
             return paramProps!;
         }
     }
 
-    public async Task<IReadOnlyList<CqrsQueryViewModel>> GetAllAsync()
+    public async Task<IReadOnlyList<CqrsQueryViewModel>> GetAllAsync(CancellationToken token = default)
     {
         var query = this.GetAllQuery();
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
@@ -136,16 +136,16 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         return result;
     }
 
-    public async Task<CqrsQueryViewModel?> GetByIdAsync(long id)
+    public async Task<CqrsQueryViewModel?> GetByIdAsync(long id, CancellationToken token = default)
     {
         var query = from qry in this.GetAllQuery()
                     where qry.Id == id
                     select qry;
-        var dbResult = await query.FirstOrDefaultAsync();
+        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: token);
         return this._converter.ToViewModel(dbResult).Cast().As<CqrsQueryViewModel>();
     }
 
-    public async Task<IReadOnlyList<CqrsQueryViewModel>> GetQueriesByDtoIdAsync(long dtoId)
+    public async Task<IReadOnlyList<CqrsQueryViewModel>> GetQueriesByDtoIdAsync(long dtoId, CancellationToken token = default)
     {
         var query = from qry in this.GetAllQuery()
                     where qry.ParamDtoId == dtoId || qry.ResultDtoId == dtoId
@@ -155,7 +155,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         return result;
     }
 
-    public async Task<Result<CqrsQueryViewModel>> InsertAsync(CqrsQueryViewModel model, bool persist = true)
+    public async Task<Result<CqrsQueryViewModel>> InsertAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
     {
         CqrsSegregate? segregate = null;
         try
@@ -165,7 +165,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
             segregate = this._converter.ToDbEntity(model)!;
 
             _ = this._writeDbContext.Add(segregate);
-            var result = await this._writeDbContext.SaveChangesAsync();
+            var result = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
             model.Id = segregate.Id;
             return Result<CqrsQueryViewModel>.CreateSuccess(model);
         }
@@ -178,7 +178,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         }
     }
 
-    public async Task<Result<CqrsQueryViewModel>> UpdateAsync(long id, CqrsQueryViewModel model, bool persist = true)
+    public async Task<Result<CqrsQueryViewModel>> UpdateAsync(long id, CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
     {
         CqrsSegregate? segregate = null;
         try
@@ -198,7 +198,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
                     .SetModified(x => x.Comment)
                     .SetModified(x => x.SegregateType)
                     .SetModified(x => x.CqrsNameSpace);
-            var result = await this._writeDbContext.SaveChangesAsync();
+            var result = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
             model.Id = segregate.Id;
             return Result<CqrsQueryViewModel>.CreateSuccess(model);
         }

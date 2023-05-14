@@ -1,5 +1,6 @@
 ﻿using System.IO;
 
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
@@ -11,7 +12,6 @@ using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
@@ -180,12 +180,12 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     }
 
     //UNDONE CQRS Code Generator Service SaveToDatabaseAsync.
-    public Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config)
+    public Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config, CancellationToken token = default)
         => throw new NotImplementedException();
 
-    public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null)
+    public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
-        var codesResult = await this.GenerateCodeAsync(viewModel, config).ThrowOnFailAsync();
+        var codesResult = await this.GenerateCodeAsync(viewModel, config, token).ThrowOnFailAsync();
         var codes = codesResult.Value.Compact();
         if (codes?.Any() is not true)
         {
@@ -194,7 +194,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 
         foreach (var code in codes)
         {
-            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement);
+            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, token);
         }
     }
 
@@ -214,7 +214,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     private static CodeGenDto ExtractResultDto(in CqrsViewModelBase viewModel)
         => ConvertViewModelToCodeGen(viewModel.ResultDto);
 
-    private static async Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken? token = default)
+    private static Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken? token = default)
     {
         Check.IfArgumentNotNull(commandViewModel?.Name);
 
@@ -230,10 +230,10 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                                             commandHandler,
                                             commandParam,
                                             commandResult);
-        return await Task.FromResult(query.GenerateCode());
+        return Task.FromResult(query.GenerateCode());
     }
 
-    private static async Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken? token = default)
+    private static Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken? token = default)
     {
         Check.IfArgumentNotNull(queryViewModel?.Name);
 
@@ -252,6 +252,6 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                                           queryHandler,
                                           queryParam,
                                           queryResult);
-        return await Task.FromResult(query.GenerateCode());
+        return Task.FromResult(query.GenerateCode());
     }
 }

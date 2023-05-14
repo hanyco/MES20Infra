@@ -40,10 +40,10 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Command;
 
-    public Task<CqrsCommandViewModel> CreateAsync()
+    public Task<CqrsCommandViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new CqrsCommandViewModel { HasPartialHandller = true, HasPartialOnInitialize = true });
 
-    public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true)
+    public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(model?.Id);
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
@@ -63,29 +63,30 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         CqrsCommandViewModel model,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null)
+        string? resultDtoName = null,
+        CancellationToken token = default)
         => ServiceHelper.GetByIdAsync(this, model.Id!.Value, this.GetAllQuery()
                .Include(x => x.Module).Include(x => x.ParamDto)
                .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
 
-    public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync()
-        => ServiceHelper.GetAllAsync(this,GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
+    public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync(CancellationToken token = default)
+        => ServiceHelper.GetAllAsync(this, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
-    public Task<CqrsCommandViewModel?> GetByIdAsync(long id)
+    public Task<CqrsCommandViewModel?> GetByIdAsync(long id, CancellationToken token = default)
         => ServiceHelper.GetByIdAsync(this, id, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
-    public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true)
-        => ServiceHelper.InsertAsync(this,_writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
+    public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
+        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
 
-    public async Task<Result<int>> SaveChangesAsync()
+    public async Task<Result<int>> SaveChangesAsync(CancellationToken token = default)
         => await this._writeDbContext.SaveChangesResultAsync();
 
-    public async Task<Result<CqrsCommandViewModel>> UpdateAsync(long id, CqrsCommandViewModel model, bool persist = true)
+    public async Task<Result<CqrsCommandViewModel>> UpdateAsync(long id, CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
-        _ = await this.ValidateAsync(model);
+        _ = await this.ValidateAsync(model, token);
         Check.IfArgumentNotNull(model.Id);
         var segregate = this._converter.ToDbEntity(model)!;
         _ = this._writeDbContext.Attach(segregate)
@@ -104,7 +105,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         return Result<CqrsCommandViewModel>.CreateSuccess(model);
     }
 
-    public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item)
+    public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)
         => item.ArgumentNotNull().Check()
                .NotNull(x => x.Name)
                .NotNull(x => x.ParamDto)
