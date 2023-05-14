@@ -1,7 +1,7 @@
-﻿using Contracts.ViewModels;
+﻿using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Dialogs;
-using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 namespace HanyCo.Infra.UI.Pages.Blazor;

@@ -1,13 +1,13 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Pages.ControlProperties;
-using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Data.Models;
