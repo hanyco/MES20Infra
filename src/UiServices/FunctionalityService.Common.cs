@@ -80,7 +80,7 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     public Task<Result<int>> SaveChangesAsync()
         => this._writeDbContext.SaveChangesResultAsync();
 
-    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel)
+    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken)
         => viewModel.Check()
             .ArgumentNotNull()
             .NotNull(x => x.Name)
