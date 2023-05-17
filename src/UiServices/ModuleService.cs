@@ -18,16 +18,16 @@ internal sealed class ModuleService : IBusinessService, IModuleService
     public ModuleService(InfraReadDbContext readDbContext, IEntityViewModelConverter converter)
         => (this._readDbContext, this._converter) = (readDbContext, converter);
 
-    public Task<IReadOnlyList<ModuleViewModel>> GetAllAsync()
+    public Task<IReadOnlyList<ModuleViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
         => ServiceHelper.GetAllAsync<ModuleViewModel, Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<ModuleViewModel?> GetByIdAsync(long id)
+    public Task<ModuleViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         => ServiceHelper.GetByIdAsync<ModuleViewModel, Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public IAsyncEnumerable<Module> GetChildEntitiesAsync(Module entity)
+    public IAsyncEnumerable<Module> GetChildEntitiesAsync(Module entity, CancellationToken cancellationToken = default)
         => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id);
 
-    public IAsyncEnumerable<Module> GetChildEntitiesByIdAsync(long parentId)
+    public IAsyncEnumerable<Module> GetChildEntitiesByIdAsync(long parentId, CancellationToken cancellationToken = default)
     {
         var query = from child in this._readDbContext.Modules
                     where child.ParentId == parentId
@@ -36,7 +36,7 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         return dbResult;
     }
 
-    public async Task<Module?> GetParentEntityAsync(long childId)
+    public async Task<Module?> GetParentEntityAsync(long childId, CancellationToken cancellationToken = default)
     {
         var query = from child in this._readDbContext.Modules
                     from parent in this._readDbContext.Modules
@@ -47,7 +47,7 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         return dbResult;
     }
 
-    public IAsyncEnumerable<Module> GetRootEntitiesAsync()
+    public IAsyncEnumerable<Module> GetRootEntitiesAsync(CancellationToken cancellationToken = default)
     {
         var query = from m in this._readDbContext.Modules
                     where m.ParentId == null

@@ -11,7 +11,7 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace Services;
 
 internal sealed class PropertyService : IPropertyService
     , IAsyncValidator<PropertyViewModel>
@@ -31,7 +31,7 @@ internal sealed class PropertyService : IPropertyService
         this._securityService = securityService;
     }
 
-    public async Task<Result> DeleteAsync(PropertyViewModel model, bool persist = true)
+    public async Task<Result> DeleteAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         Check.IfArgumentNotNull(model?.Id);
 
@@ -46,13 +46,13 @@ internal sealed class PropertyService : IPropertyService
         return Result.Success;
     }
 
-    public async Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true)
+    public async Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true, CancellationToken cancellationToken = default)
     {
         var dbProperties = await queryProperties(parentId);
         await removeProperties(dbProperties);
         return await this.SubmitChangesAsync(persist: persist) > 0;
 
-        async Task<IEnumerable<Property>> queryProperties(long parentId)
+        async Task<IEnumerable<Property>> queryProperties(long parentId, CancellationToken cancellationToken = default)
         {
             var query = from x in this._writeDbContext.Properties
                         where x.ParentEntityId == parentId
@@ -61,7 +61,7 @@ internal sealed class PropertyService : IPropertyService
             return dbResult;
         }
 
-        async Task removeProperties(IEnumerable<Property> dbProperties)
+        async Task removeProperties(IEnumerable<Property> dbProperties, CancellationToken cancellationToken = default)
         {
             foreach (var prop in dbProperties)
             {
@@ -70,7 +70,7 @@ internal sealed class PropertyService : IPropertyService
         }
     }
 
-    public async Task<IReadOnlyList<PropertyViewModel>> GetAllAsync()
+    public async Task<IReadOnlyList<PropertyViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var query = from x in this._readDbContext.Properties
                     select x;
@@ -79,7 +79,7 @@ internal sealed class PropertyService : IPropertyService
         return result;
     }
 
-    public async Task<IReadOnlyList<PropertyViewModel>> GetByDtoIdAsync(long dtoId)
+    public async Task<IReadOnlyList<PropertyViewModel>> GetByDtoIdAsync(long dtoId, CancellationToken cancellationToken = default)
     {
         var dtoIdQuery = from x in this._readDbContext.Properties
                          where x.Id == dtoId
@@ -88,7 +88,7 @@ internal sealed class PropertyService : IPropertyService
         return await this.GetByParentIdAsync(parentId.Value);
     }
 
-    public async Task<PropertyViewModel?> GetByIdAsync(long id)
+    public async Task<PropertyViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
         var query = from x in this._readDbContext.Properties.Include(x => x.Dto)
                     where x.Id == id
@@ -99,7 +99,7 @@ internal sealed class PropertyService : IPropertyService
         return result;
     }
 
-    public async Task<IReadOnlyList<PropertyViewModel>> GetByParentIdAsync(long parentId)
+    public async Task<IReadOnlyList<PropertyViewModel>> GetByParentIdAsync(long parentId, CancellationToken cancellationToken = default)
     {
         var query = from x in this._readDbContext.Properties.Include(x => x.Dto)
                     where x.ParentEntityId == parentId
@@ -109,7 +109,7 @@ internal sealed class PropertyService : IPropertyService
         return viewModels;
     }
 
-    public async Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId)
+    public async Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId, CancellationToken cancellationToken = default)
     {
         var query = from d in this._readDbContext.Properties
                     where d.ParentEntityId == parentId
@@ -118,7 +118,7 @@ internal sealed class PropertyService : IPropertyService
         return dbResult;
     }
 
-    public async Task<Result<PropertyViewModel>> InsertAsync(PropertyViewModel model, bool persist = true)
+    public async Task<Result<PropertyViewModel>> InsertAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         return await this.SaveChangesAsync(model, persist, manipulate);
         void manipulate(Property property) => this._writeDbContext.Properties.Add(property);
@@ -127,10 +127,10 @@ internal sealed class PropertyService : IPropertyService
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
 
-    public async Task<Result<int>> SaveChangesAsync()
+    public async Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await this._writeDbContext.SaveChangesResultAsync();
 
-    public async Task<Result<PropertyViewModel>> UpdateAsync(long id, PropertyViewModel model, bool persist = true)
+    public async Task<Result<PropertyViewModel>> UpdateAsync(long id, PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         return await this.SaveChangesAsync(model, persist, manipulate);
         void manipulate(Property property) =>
@@ -144,7 +144,7 @@ internal sealed class PropertyService : IPropertyService
                                            .SetModified(x => x.TypeFullName);
     }
 
-    public async Task<Result<PropertyViewModel>> ValidateAsync(PropertyViewModel item)
+    public async Task<Result<PropertyViewModel>> ValidateAsync(PropertyViewModel item, CancellationToken cancellationToken = default)
     {
         Check.NotNull(item);
 
@@ -155,7 +155,7 @@ internal sealed class PropertyService : IPropertyService
         }
         if (item.ParentEntityId == 0)
         {
-            errors.Add((RequiredValidationException.ErrorCode, "Parent entity Id cannot be null or 0"));
+            errors.Add((ValidationExceptionBase.ErrorCode, "Parent entity Id cannot be null or 0"));
         }
         if (item.SecurityDescriptors?.Any() is true)
         {
@@ -168,7 +168,7 @@ internal sealed class PropertyService : IPropertyService
         return await Task.FromResult(result);
     }
 
-    private async Task<Result<PropertyViewModel>> SaveChangesAsync(PropertyViewModel model, bool persist, Action<Property> manipulate)
+    private async Task<Result<PropertyViewModel>> SaveChangesAsync(PropertyViewModel model, bool persist, Action<Property> manipulate, CancellationToken cancellationToken = default)
     {
         _ = await this.CheckValidatorAsync(model);
         var property = this._converter.ToDbEntity(model)!;
