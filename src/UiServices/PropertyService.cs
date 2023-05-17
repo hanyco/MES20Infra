@@ -38,7 +38,7 @@ internal sealed class PropertyService : IPropertyService
         _ = this._writeDbContext.RemoveById<Property>(model.Id.Value);
         if (model.Guid is not null)
         {
-            await this._securityService.UnassignEntity(model.Guid.Value, persist: false);
+            await this._securityService.UnassignEntity(model.Guid.Value, persist: false, token: cancellationToken);
         }
 
         _ = await this.SubmitChangesAsync(persist: persist);
@@ -48,8 +48,8 @@ internal sealed class PropertyService : IPropertyService
 
     public async Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true, CancellationToken cancellationToken = default)
     {
-        var dbProperties = await queryProperties(parentId);
-        await removeProperties(dbProperties);
+        var dbProperties = await queryProperties(parentId, cancellationToken);
+        await removeProperties(dbProperties, cancellationToken);
         return await this.SubmitChangesAsync(persist: persist) > 0;
 
         async Task<IEnumerable<Property>> queryProperties(long parentId, CancellationToken cancellationToken = default)
@@ -57,7 +57,7 @@ internal sealed class PropertyService : IPropertyService
             var query = from x in this._writeDbContext.Properties
                         where x.ParentEntityId == parentId
                         select new Property() { Id = x.Id, Guid = x.Guid };
-            var dbResult = await query.ToListAsync();
+            var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
             return dbResult;
         }
 
@@ -65,7 +65,7 @@ internal sealed class PropertyService : IPropertyService
         {
             foreach (var prop in dbProperties)
             {
-                _ = await this.DeleteAsync(new() { Id = prop.Id, Guid = prop.Guid });
+                _ = await this.DeleteAsync(new() { Id = prop.Id, Guid = prop.Guid }, cancellationToken: cancellationToken);
             }
         }
     }
@@ -74,7 +74,7 @@ internal sealed class PropertyService : IPropertyService
     {
         var query = from x in this._readDbContext.Properties
                     select x;
-        var dbResult = await query.ToListAsync();
+        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
         var result = this._converter.ToViewModel(dbResult).Compact().ToReadOnlyList();
         return result;
     }
@@ -84,8 +84,8 @@ internal sealed class PropertyService : IPropertyService
         var dtoIdQuery = from x in this._readDbContext.Properties
                          where x.Id == dtoId
                          select x.DtoId;
-        var parentId = await dtoIdQuery.FirstAsync();
-        return await this.GetByParentIdAsync(parentId.Value);
+        var parentId = await dtoIdQuery.FirstAsync(cancellationToken: cancellationToken);
+        return await this.GetByParentIdAsync(parentId.Value, cancellationToken);
     }
 
     public async Task<PropertyViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
@@ -93,7 +93,7 @@ internal sealed class PropertyService : IPropertyService
         var query = from x in this._readDbContext.Properties.Include(x => x.Dto)
                     where x.Id == id
                     select x;
-        var dbResult = await query.FirstOrDefaultAsync();
+        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         var sec = dbResult is null ? null : await this._securityService.GetByEntityIdAsync(dbResult.Guid);
         var result = this._converter.ToViewModel<PropertyViewModel, Property>(dbResult, sec);
         return result;
@@ -105,7 +105,7 @@ internal sealed class PropertyService : IPropertyService
                     where x.ParentEntityId == parentId
                     select x;
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var viewModels = await this._converter.ToViewModelAsync<PropertyViewModel, Property>(dbResult, this._securityService).ToListCompactAsync();
+        var viewModels = await this._converter.ToViewModelAsync<PropertyViewModel, Property>(dbResult, this._securityService).ToListCompactAsync(cancellationToken: cancellationToken);
         return viewModels;
     }
 
@@ -114,13 +114,13 @@ internal sealed class PropertyService : IPropertyService
         var query = from d in this._readDbContext.Properties
                     where d.ParentEntityId == parentId
                     select d;
-        var dbResult = await query.ToListAsync();
+        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
         return dbResult;
     }
 
     public async Task<Result<PropertyViewModel>> InsertAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        return await this.SaveChangesAsync(model, persist, manipulate);
+        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken);
         void manipulate(Property property) => this._writeDbContext.Properties.Add(property);
     }
 
@@ -132,7 +132,7 @@ internal sealed class PropertyService : IPropertyService
 
     public async Task<Result<PropertyViewModel>> UpdateAsync(long id, PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        return await this.SaveChangesAsync(model, persist, manipulate);
+        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken);
         void manipulate(Property property) =>
             this._writeDbContext.Properties.Attach(property)
                                            .SetModified(x => x.Name)
@@ -175,7 +175,7 @@ internal sealed class PropertyService : IPropertyService
         manipulate(property);
         if (persist)
         {
-            _ = await this._writeDbContext.SaveChangesAsync();
+            _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: cancellationToken);
         }
 
         return Result<PropertyViewModel>.CreateSuccess(model);

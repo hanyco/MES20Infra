@@ -214,7 +214,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     private static CodeGenDto ExtractResultDto(in CqrsViewModelBase viewModel)
         => ConvertViewModelToCodeGen(viewModel.ResultDto);
 
-    private static Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken? token = default)
+    private static Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(commandViewModel?.Name);
 
@@ -233,7 +233,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return Task.FromResult(query.GenerateCode());
     }
 
-    private static Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken? token = default)
+    private static Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(queryViewModel?.Name);
 

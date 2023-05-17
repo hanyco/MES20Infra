@@ -106,7 +106,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return Result.CreateFailure(message);
         }
 
-        static Result<DtoViewModel> validate(DtoViewModel model, CancellationToken token = default)
+        static Result<DtoViewModel?> validate(DtoViewModel model, CancellationToken token = default)
             => model.Check()
                     .ArgumentNotNull()
                     .NotNull(x => x.Id)

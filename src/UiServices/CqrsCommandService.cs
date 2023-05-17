@@ -56,8 +56,8 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         long id,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null)
-        => this.FillViewModelAsync(model, moduleName, paramDtoName, resultDtoName);
+        string? resultDtoName = null, CancellationToken cancellationToken = default)
+        => this.FillViewModelAsync(model, moduleName, paramDtoName, resultDtoName, cancellationToken);
 
     public Task<CqrsCommandViewModel> FillViewModelAsync(
         CqrsCommandViewModel model,
