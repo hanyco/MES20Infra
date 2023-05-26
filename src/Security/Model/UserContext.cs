@@ -23,11 +23,11 @@ internal sealed class UserContext : IUserContext
     public bool IsLoggedIn => this._httpContextAccessor.HttpContext?.User?.Claims?.Any() ?? false;
 
     public string UserName => this.GetClaimValue(nameof(this.UserName)).ToString()!;
-    public long UserId => this.GetClaimValue(nameof(this.UserId)).ToLong();
-    public long CompanyId => this.GetClaimValue(nameof(this.CompanyId)).ToLong();
+    public long UserId => this.GetClaimValue(nameof(this.UserId)).Cast().ToLong();
+    public long CompanyId => this.GetClaimValue(nameof(this.CompanyId)).Cast().ToLong();
     public DateTime LastSignedInTime => Convert.ToDateTime(this.GetClaimValue(nameof(this.LastSignedInTime)));
 
-    public long PrinicipalId => this.GetClaimValue(nameof(this.PrinicipalId)).ToLong();
+    public long PrinicipalId => this.GetClaimValue(nameof(this.PrinicipalId)).Cast().ToLong();
 
     [return: NotNull]
     private object GetClaimValue(string claimType) =>

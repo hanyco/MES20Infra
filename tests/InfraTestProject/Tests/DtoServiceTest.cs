@@ -1,14 +1,29 @@
-﻿using HanyCo.Infra.UI.Services;
+﻿using Contracts.Services;
+using Contracts.ViewModels;
+
+using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.Coding;
 using Library.Results;
+
+using Xunit.Abstractions;
 
 namespace InfraTestProject.Tests;
 
-public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixture>
+public sealed class DtoServiceTest
 {
-    public DtoServiceTest(DtoServiceFixture fixture) : base(fixture)
+    private readonly IDtoCodeService _codeService;
+    private readonly IModuleService _moduleService;
+    private readonly ITestOutputHelper _output;
+    private readonly IDtoService _service;
+
+    public DtoServiceTest(ITestOutputHelper output, IDtoService service, IModuleService moduleService, IDtoCodeService codeService)
     {
+        this._output = output;
+        this._service = service;
+        this._moduleService = moduleService;
+        this._codeService = codeService;
     }
 
     [Fact]
@@ -19,17 +34,17 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
         var model2 = await this.InsertDtoAsync("DTO 2");
         var model3 = await this.InsertDtoAsync("DTO 3");
 
-        var actual1 = await this.Service.GetByIdAsync(model1.Value.Id!.Value);
+        var actual1 = await this._service.GetByIdAsync(model1.Value.Id!.Value);
         Assert.NotNull(actual1);
         Assert.NotNull(actual1.Id);
         Assert.Equal(model1.Value.Name, actual1.Name);
 
-        var actual2 = await this.Service.GetByIdAsync(model2.Value.Id!.Value);
+        var actual2 = await this._service.GetByIdAsync(model2.Value.Id!.Value);
         Assert.NotNull(actual2);
         Assert.NotNull(actual2.Id);
         Assert.Equal(model2.Value.Name, actual2.Name);
 
-        var actual3 = await this.Service.GetByIdAsync(model3.Value.Id!.Value);
+        var actual3 = await this._service.GetByIdAsync(model3.Value.Id!.Value);
         Assert.NotNull(actual3);
         Assert.NotNull(actual3.Id);
         Assert.Equal(model3.Value.Name, actual3.Name);
@@ -51,8 +66,8 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     {
         var model = (await this.InsertDtoAsync("Test DTO")).Value;
         model.Name = "Update Test";
-        _ = await this.Fixture.Service.UpdateAsync(model.Id!.Value, model);
-        var actual = await this.Fixture.Service.GetByIdAsync(model.Id!.Value);
+        _ = await this._service.UpdateAsync(model.Id!.Value, model);
+        var actual = await this._service.GetByIdAsync(model.Id!.Value);
         Assert.NotNull(actual);
         Assert.NotNull(actual.Id);
         Assert.Equal(model.Name, actual.Name);
@@ -64,16 +79,16 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     {
         var model = (await this.InsertDtoAsync("Test DTO")).Value;
         model.Name = "Delete Test";
-        this.Fixture.Service.DeleteAsync(model).Wait();
-        var actual = await this.Fixture.Service.GetByIdAsync(model.Id!.Value);
+        this._service.DeleteAsync(model).Wait();
+        var actual = await this._service.GetByIdAsync(model.Id!.Value);
         Assert.Null(actual);
     }
 
     [Fact]
-    [Trait(nameof(DtoServiceTest), "CRUD Test")]
+    [Trait(nameof(DtoServiceTest), "Operational Test")]
     public async Task _60_CreateDtoTestAsync()
     {
-        var model = await this.Fixture.Service.CreateAsync();
+        var model = await this._service.CreateAsync();
         Assert.NotNull(model);
     }
 
@@ -81,7 +96,7 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
     [Trait(nameof(DtoServiceTest), "CRUD Test")]
     public async Task _70_GetAllByCategoryAsyncTest()
     {
-        _ = await this.InsertDtoAsync(x =>
+        _ = await insertDtoAsync(x =>
         {
             var model = x.Model;
             model.IsParamsDto = x.Index % 3 == 0;
@@ -91,45 +106,103 @@ public sealed class DtoServiceTest : ServiceTestBase<IDtoService, DtoServiceFixt
             return (model, x.Index < 30);
         });
 
-        var actual1 = await this.Fixture.Service.GetAllByCategoryAsync(true, false, false);
+        var actual1 = await this._service.GetAllByCategoryAsync(true, false, false);
         Assert.Equal(10, actual1.Count);
 
-        var actual2 = await this.Fixture.Service.GetAllByCategoryAsync(false, true, false);
+        var actual2 = await this._service.GetAllByCategoryAsync(false, true, false);
         Assert.Equal(8, actual2.Count);
 
-        var actual3 = await this.Fixture.Service.GetAllByCategoryAsync(false, false, true);
+        var actual3 = await this._service.GetAllByCategoryAsync(false, false, true);
         Assert.Equal(6, actual3.Count);
 
-        var actual4 = await this.Fixture.Service.GetAllByCategoryAsync(true, true, true);
+        var actual4 = await this._service.GetAllByCategoryAsync(true, true, true);
         Assert.Equal(18, actual4.Count);
 
-        var actual5 = await this.Fixture.Service.GetAllByCategoryAsync(false, false, false);
+        var actual5 = await this._service.GetAllByCategoryAsync(false, false, false);
         Assert.Equal(0, actual5.Count);
+
+        async Task<Result<int>> insertDtoAsync(Func<(DtoViewModel Model, int Index), (DtoViewModel Model, bool canContiniue)> process)
+        {
+            var module = await this._moduleService.GetByIdAsync(1);
+            var canContinue = true;
+            var index = 0;
+            while (canContinue)
+            {
+                var model = new DtoViewModel { Name = $"DTO {index}", Module = module! };
+                var (Model, canGoOn) = process((model, index++));
+                if (!canGoOn)
+                {
+                    break;
+                }
+
+                _ = await this._service.InsertAsync(Model, persist: false);
+            }
+            return await this._service.SaveChangesAsync();
+        }
     }
+
+    [Fact]
+    [Trait(nameof(DtoServiceTest), "Operational Test")]
+    public void _80_Generate_Code_From_Scratch()
+    {
+        // Assign
+        var dtoModel = this.CreateByDbTable();
+
+        // Act
+        var codes = this._codeService.GenerateCodes(dtoModel);
+
+        // Assert
+        if (!codes.IsSucceed)
+        {
+            Assert.Fail(codes.ToString());
+        }
+        else if (codes.Value.Count != 1)
+        {
+            Assert.Fail("No code generated.");
+        }
+        else if (codes.Value?[0]?.Statement is null)
+        {
+            Assert.Fail("Code statement is empty");
+        }
+    }
+
+    [Fact]
+    public async Task _81_Load_DTO_And_Generate_CodeAsync()
+    {
+        var dtoToSave = this.CreateByDbTable();
+        var saveResult = await this._service.InsertAsync(dtoToSave);
+        var id = saveResult.Value.Id!.Value;
+        var dtoToGenCode = await this._service.GetByIdAsync(id);
+        var codes = this._codeService.GenerateCodes(dtoToGenCode!);
+        if (!codes.IsSucceed)
+        {
+            Assert.Fail(codes.ToString());
+        }
+        else if (codes.Value.Count != 1)
+        {
+            Assert.Fail("No code generated.");
+        }
+        else if (codes.Value?[0]?.Statement is null)
+        {
+            Assert.Fail("Code statement is empty");
+        }
+    }
+
+    private DtoViewModel CreateByDbTable()
+        => this._service.CreateByDbTable(new("Person", NumberHelper.RandomNumber(10000), "unit_test"),
+                new DbColumnViewModel[] {
+                    new("Name", NumberHelper.RandomNumber(10000), "nvarchar", false),
+                    new("Age", NumberHelper.RandomNumber(10000),"int", false)
+                }
+            )
+        .With(x => x.NameSpace = "unittest")
+        .With(x => x.Module = _moduleService.GetByIdAsync(1).Result!);
 
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
     {
-        var module = await this.Fixture.GetService<IModuleService>().GetByIdAsync(1);
+
+        var module = await this._moduleService.GetByIdAsync(1);
         var model = new DtoViewModel { Name = dtoName, Module = module! };
-        return await this.Fixture.Service.InsertAsync(model);
-    }
-
-    private async Task<Result<int>> InsertDtoAsync(Func<(DtoViewModel Model, int Index), (DtoViewModel Model, bool canContiniue)> process)
-    {
-        var module = await this.Fixture.GetService<IModuleService>().GetByIdAsync(1);
-        var canContinue = true;
-        var index = 0;
-        while (canContinue)
-        {
-            var model = new DtoViewModel { Name = $"DTO {index}", Module = module! };
-            var (Model, canContiniue) = process((model, index++));
-            if (!canContiniue)
-            {
-                break;
-            }
-
-            _ = await this.Fixture.Service.InsertAsync(Model, persist: false);
-        }
-        return await this.Fixture.Service.SaveChangesAsync();
+        return await this._service.InsertAsync(model);
     }
 }

@@ -3,10 +3,13 @@
 		<AssemblyName>HanyCo.Infrastructure</AssemblyName>
 		<RootNamespace>HanyCo.Infra</RootNamespace>
 		<Description>سرویس‌های عمومی مورد استفاده در کل سیستم</Description>
-		<Configurations>Debug;Release;Release Infra</Configurations>
+		<Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>TRACE;DEBUG</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
+	  <DefineConstants>TRACE;DEBUG</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Text\**" />

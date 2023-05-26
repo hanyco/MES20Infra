@@ -1,6 +1,7 @@
 ﻿using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -13,10 +14,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
+[Service]
 internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
-    IResetChanges
+    IResetChanges,
+    IAsyncReadService<CqrsCommandViewModel>
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IMapper _mapper;
@@ -37,9 +40,10 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Command;
 
-    public Task<CqrsCommandViewModel> CreateAsync() => throw new NotImplementedException();
+    public Task<CqrsCommandViewModel> CreateAsync(CancellationToken token = default)
+        => Task.FromResult(new CqrsCommandViewModel { HasPartialHandller = true, HasPartialOnInitialize = true });
 
-    public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true)
+    public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(model?.Id);
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
@@ -47,66 +51,42 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         return (Result)(await this.SubmitChangesAsync(persist: persist) > 0);
     }
 
-    //public CqrsCommandViewModel FillByDbEntity(CqrsCommandViewModel model,
-    //    CqrsSegregate sergregate,
-    //    Module module,
-    //    Dto parameterDto,
-    //    IEnumerable<Property> parameterDtoProperties,
-    //    Dto resultDto,
-    //    IEnumerable<Property> resultDtoProperties)
-    //{
-    //    _ = this._mapper.Map(sergregate, model);
-    //    model.Module = this._converter.ToViewModel(module);
-    //    model.ParamDto = this._converter.FillByDbEntity(parameterDto, parameterDtoProperties);
-    //    model.ResultDto = this._converter.FillByDbEntity(resultDto, resultDtoProperties);
-    //    return model;
-    //}
-
     public Task<CqrsCommandViewModel> FillByDbEntity(
         CqrsCommandViewModel model,
         long id,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null)
-        => this.FillViewModelAsync(model, moduleName, paramDtoName, resultDtoName);
+        string? resultDtoName = null, CancellationToken cancellationToken = default)
+        => this.FillViewModelAsync(model, moduleName, paramDtoName, resultDtoName, cancellationToken);
 
     public Task<CqrsCommandViewModel> FillViewModelAsync(
         CqrsCommandViewModel model,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null)
-        => this.GetByIdAsync(model.Id!.Value, this.GetAllQuery()
+        string? resultDtoName = null,
+        CancellationToken token = default)
+        => ServiceHelper.GetByIdAsync(this, model.Id!.Value, this.GetAllQuery()
                .Include(x => x.Module).Include(x => x.ParamDto)
-               .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
+               .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock)!;
 
-    public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync()
-        => this.GetAllAsync(this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
+    public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync(CancellationToken token = default)
+        => ServiceHelper.GetAllAsync(this, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
-    public Task<CqrsCommandViewModel?> GetByIdAsync(long id)
-        => this.GetByIdAsync(id, this.GetAllQuery(), x => this._converter.ToViewModel(x).As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
+    public Task<CqrsCommandViewModel?> GetByIdAsync(long id, CancellationToken token = default)
+        => ServiceHelper.GetByIdAsync(this, id, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
-    //public async Task<IReadOnlyList<CqrsCommandViewModel>> GetCommandsByDtoIdAsync(long dtoId)
-    //{
-    //    var query = from cmd in this.GetAllQuery()
-    //                where cmd.ParamDtoId == dtoId || cmd.ResultDtoId == dtoId
-    //                select cmd;
-    //    var dbResult = await query.ToListAsync();
-    //    var result = this._converter.ToViewModel(dbResult).Cast<CqrsCommandViewModel>().ToList();
-    //    return result;
-    //}
-
-    public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true)
-        => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
+    public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
+        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
 
-    public async Task<Result<int>> SaveChangesAsync()
+    public async Task<Result<int>> SaveChangesAsync(CancellationToken token = default)
         => await this._writeDbContext.SaveChangesResultAsync();
 
-    public async Task<Result<CqrsCommandViewModel>> UpdateAsync(long id, CqrsCommandViewModel model, bool persist = true)
+    public async Task<Result<CqrsCommandViewModel>> UpdateAsync(long id, CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
-        _ = await this.ValidateAsync(model);
+        _ = await this.ValidateAsync(model, token);
         Check.IfArgumentNotNull(model.Id);
         var segregate = this._converter.ToDbEntity(model)!;
         _ = this._writeDbContext.Attach(segregate)
@@ -125,15 +105,18 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         return Result<CqrsCommandViewModel>.CreateSuccess(model);
     }
 
-    public Task<Result<CqrsCommandViewModel>> ValidateAsync(CqrsCommandViewModel item)
-        => (Check.MustBeNotNull(item, () => "Please fill the form.")
-          + Check.MustBeNotNull(item, item.Name)
-          + Check.MustBeNotNull(item, item.ParamDto?.Id)
-          + Check.MustBeNotNull(item, item.ResultDto?.Id)).ToAsync();
+    public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)
+        => item.ArgumentNotNull().Check()
+               .NotNull(x => x.Name)
+               .NotNull(x => x.ParamDto)
+               .NotNull(x => x.ParamDto.Id)
+               .NotNull(x => x.ResultDto)
+               .NotNull(x => x.ResultDto.Id)
+               .Build().ToAsync();
 
     private IQueryable<CqrsSegregate> GetAllQuery()
     {
-        var type = CqrsSegregateType.Command.ToInt();
+        var type = CqrsSegregateType.Command.Cast().ToInt();
         var query = from cmd in this._readDbContext.CqrsSegregates
                     where cmd.SegregateType == type
                     select cmd;

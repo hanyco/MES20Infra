@@ -2,6 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using Contracts.Services;
+
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
@@ -47,7 +49,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     public CqrsQueryViewModel? ViewModel
     {
-        get => this.DataContext.As<CqrsQueryViewModel>();
+        get => this.DataContext.Cast().As<CqrsQueryViewModel>();
         set => this.DataContext = value;
     }
 
@@ -95,7 +97,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async void GenerateCodeButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = this.ViewModel.Check(true).NotNull()
+        _ = this.ViewModel.Check(CheckBehavior.ThrowOnFail).NotNull()
             .NotNull(x => x.ParamDto)
             .NotNull(x => x.ParamDto.Id)
             .NotNull(x => x.ResultDto)
@@ -157,7 +159,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private void QueriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var cQuery = e.NewValue.As<TreeViewItem>()?.DataContext.As<CqrsQueryViewModel>();
+        var cQuery = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<CqrsQueryViewModel>();
         this.EditQueryButton.IsEnabled = this.DeleteQueryButton.IsEnabled = cQuery is not null;
     }
 

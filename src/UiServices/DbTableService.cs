@@ -11,11 +11,11 @@ namespace Services;
 
 internal sealed class DbTableService : IDbTableService
 {
-    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(IMultistepProcess? reporter, string connectionString)
+    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(IMultistepProcess? reporter, string connectionString, CancellationToken token = default)
     {
         reporter?.Report(description: "Please wait a while.");
         var db = await Database.GetDatabaseAsync(connectionString);
-        Check.NotNull(db,() => new NotFoundValidationException("Database not found. 💀"));
+        Check.NotNull(db, () => new NotFoundValidationException("Database not found. 💀"));
 
         List<Node<DbObjectViewModel>> result = new();
         Node<DbObjectViewModel> schemaNode;
@@ -37,7 +37,7 @@ internal sealed class DbTableService : IDbTableService
                 foreach (var table in tables.Where(x => x.Schema == schema))
                 {
                     var value = new DbTableViewModel(table.Name, table.Id, table.Schema);
-                    reporter?.Report(max, index++, $"Reading `{value}`...");
+                    reporter?.Report(new(max, index++, $"Reading `{value}`..."));
                     tableNode = new(value, table.Name);
 
                     tableColumnsNode = new(new("Columns"));
@@ -52,7 +52,7 @@ internal sealed class DbTableService : IDbTableService
 
                 result.Add(schemaNode);
             }
-        });
+        }, token);
         reporter?.End();
         return result.AsReadOnly();
     }

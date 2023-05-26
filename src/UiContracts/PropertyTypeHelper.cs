@@ -1,5 +1,6 @@
-﻿using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.ViewModels;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Validations;
 
@@ -20,7 +21,7 @@ public static class PropertyTypeHelper
             "datetime" or "datetime2" or "datetimeoffset" or "date" => PropertyType.DateTime,
             "uniqueidentifier" => PropertyType.Guid,
             "varbinary" => PropertyType.ByteArray,
-            _ => throw new NotSupportedException(),
+            _ => throw new NotSupportedException("Not supported Db Type"),
         };
 
     public static PropertyType FromPropertyTypeId(int propertyId)

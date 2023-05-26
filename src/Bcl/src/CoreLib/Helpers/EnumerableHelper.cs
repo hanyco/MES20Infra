@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Library.Collections;
+using Library.Exceptions;
 using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
@@ -13,13 +14,6 @@ namespace Library.Helpers;
 
 public static class EnumerableHelper
 {
-    //public static IList<KeyValuePair<TKey, TValue>> Add<TKey, TValue>([DisallowNull] this IList<KeyValuePair<TKey, TValue>> list, in TKey key, in TValue value)
-    //{
-    //    Check.IfArgumentNotNull(list);
-    //    list.Add(new(key, value));
-    //    return list;
-    //}
-
     /// <summary>
     /// Adds an item to the System.Collections.Generic.ICollection`1.
     /// </summary>
@@ -200,12 +194,7 @@ public static class EnumerableHelper
     {
         Check.IfArgumentNotNull(items);
 
-        var result = new List<T>();
-        foreach (var item in items)
-        {
-            result.Add(item);
-        }
-        return result.AsReadOnly();
+        return Array.AsReadOnly(items.ToArray());
     }
 
     /// <summary>
@@ -298,6 +287,10 @@ public static class EnumerableHelper
         return list;
     }
 
+    [return: NotNull]
+    public static IEnumerable<T> ClearImmuted<T>(this IEnumerable<T>? source)
+        => Enumerable.Empty<T>();
+
     public static IEnumerable<TItem> Collect<TItem>(IEnumerable<TItem> items)
         where TItem : IParent<TItem>
     {
@@ -312,10 +305,6 @@ public static class EnumerableHelper
         }
     }
 
-    public static IEnumerable<TItem> Collect<TItem>(this TItem root)
-        where TItem : IParent<TItem>
-        => Collect(ToEnumerable(root));
-
     public static IEnumerable<TSource> Compact<TSource>(this IEnumerable<TSource?>? items)
         where TSource : class => items is null
         ? Enumerable.Empty<TSource>()
@@ -326,7 +315,7 @@ public static class EnumerableHelper
 
     public static int CountNotEnumerated<T>(this IEnumerable<T> source)
     {
-        (var succeed, var count) = TryCountNotEnumerated(source);
+        (var succeed, var count) = TryCountNonEnumerated(source);
         return succeed ? count : throw new Exceptions.Validations.InvalidOperationValidationException();
     }
 
@@ -342,7 +331,8 @@ public static class EnumerableHelper
     public static T[] EmptyArray<T>()
         => Array.Empty<T>();
 
-    public static object Equal<T>(IEnumerable<T> enum1, IEnumerable<T> enum2, bool ignoreIndexes) => ignoreIndexes
+    public static bool Equal<T>(IEnumerable<T> enum1, IEnumerable<T> enum2, bool ignoreIndexes)
+        => ignoreIndexes
             ? !enum1.ArgumentNotNull().Except(enum2).Any() && !enum2.ArgumentNotNull().Except(enum1).Any()
             : enum1.SequenceEqual(enum2);
 
@@ -350,23 +340,18 @@ public static class EnumerableHelper
         => items.Where(x => !exceptor(x));
 
     public static IEnumerable<TItem> Exclude<TItem>(this IEnumerable<TItem> source, Func<TItem, bool> exclude)
-            => source.Where(x => !exclude(x));
+        => source.Where(x => !exclude(x));
 
     public static IEnumerable<T> FindDuplicates<T>(this IEnumerable<T> items)
     {
         var buffer = new HashSet<T>();
-        foreach (var item in items)
-        {
-            if (!buffer.Add(item))
-            {
-                yield return item;
-            }
-        }
+        return items.Where(x => !buffer.Add(x));
     }
 
     //! Not fast enough. Lost in benchmark.
     //x public static IEnumerable<T> FindDuplicates<T>(in IEnumerable<T> items)
     //x     => items.ArgumentNotNull(nameof(items)).GroupBy(x => x).Where(g => g.Count() > 1).Select(y => y.Key);
+
     public static T Fold<T>(this IEnumerable<T> items, Func<(T Result, T Current), T> folder, T initialValue)
     {
         var result = initialValue;
@@ -523,6 +508,31 @@ public static class EnumerableHelper
     public static string MergeToString<T>(this IEnumerable<T> source)
         => source.Aggregate(new StringBuilder(), (current, item) => current.Append(item)).ToString();
 
+    public static IEnumerable<int> Range(int start, int end, int step = 1)
+    {
+        Check.NotValid(step, x => x != 0, () => new ArgumentOutOfRangeException(nameof(step)));
+        if (step > 0 && start > end)
+        {
+            throw new InvalidArgumentException(nameof(step));
+        }
+        if (step < 0 && start < end)
+        {
+            throw new InvalidArgumentException(nameof(step));
+        }
+
+        Func<int, bool> endCondition = step > 0 ? i => i <= end : i => i >= end;
+
+        for (var i = start; endCondition(i); i += step)
+        {
+            yield return i;
+        }
+        var a = 5..10;
+    }
+
+    public static IEnumerable<int> Range(int end, int step = 1)
+        => Range(0, end, step);
+
+    [Obsolete("Subject to delete", true)]
     public static async IAsyncEnumerable<int> RangeAsync(int start, int count)
     {
         await Task.Yield();
@@ -710,7 +720,23 @@ public static class EnumerableHelper
     public static IReadOnlySet<T> ToReadOnlySet<T>([DisallowNull] this IEnumerable<T> items)
         => ImmutableList.CreateRange(items).ToHashSet();
 
-    public static TryMethodResult<int> TryCountNotEnumerated<T>([DisallowNull] this IEnumerable<T> source)
+    /// <summary>
+    /// Attempts to determine the number of elements in a sequence without forcing an
+    /// enumeration.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements of source.</typeparam>
+    /// <param name="source">A sequence that contains elements to be counted.</param>
+    /// <returns>
+    /// <para>
+    /// true if the count of source can be determined without enumeration; otherwise,
+    /// false.
+    /// </para>
+    /// <para>
+    /// When this method returns, contains the count of source if successful, or zero
+    /// if the method failed to determine the count.
+    /// </para>
+    /// </returns>
+    public static TryMethodResult<int> TryCountNonEnumerated<T>([DisallowNull] this IEnumerable<T> source)
         => TryMethodResult<int>.TryParseResult(source.TryGetNonEnumeratedCount(out var count), count);
 
     public static async IAsyncEnumerable<TItem> WhereAsync<TItem>([DisallowNull] this IAsyncEnumerable<TItem> asyncItems, Func<TItem, bool>? func, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -724,12 +750,27 @@ public static class EnumerableHelper
         }
     }
 
-    private static T InnerAggregate<T>(this T[] items, Func<T, T?, T> aggregator, T defaultValue = default!)
-        => items switch
+    public static IEnumerable<T> WithCancellation<T>(this IEnumerable<T> query, CancellationToken cancellationToken = default)
+    {
+        if (query is null)
         {
-            [] => defaultValue,
-            [var item] => item,
-            { Length: 2 } => aggregator(items[0], items[1]),
-            [var item, .. var others] => aggregator(item, InnerAggregate(others, aggregator, defaultValue))
-        };
-}
+            yield break;
+        }
+        var enumerator = query.GetEnumerator();
+        while (!cancellationToken.IsCancellationRequested && enumerator.MoveNext())
+        {
+            yield return enumerator.Current;
+        }
+    }
+
+    private static T InnerAggregate<T>(this T[] items, Func<T, T?, T> aggregator, T defaultValue = default!)
+            => items switch
+            {
+                [] => defaultValue,
+                [var item] => item,
+                { Length: 2 } => aggregator(items[0], items[1]),
+                [var item, .. var others] => aggregator(item, InnerAggregate(others, aggregator, defaultValue))
+            };
+    public static IEnumerable<T> IfEmpty<T>(this IEnumerable<T?>? items, IEnumerable<T> defaultValues)
+        => items?.Any() is true ? items : defaultValues;
+ }

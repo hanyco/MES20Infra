@@ -1,13 +1,15 @@
-﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Interfaces;
 using Library.Validations;
 
-namespace HanyCo.Infra.UI.Services;
+namespace Contracts.Services;
 
 public interface IBlazorPageService
-    : IBusinesService
+    : IBusinessService
     , IAsyncCrudService<UiPageViewModel>
     , IValidator<UiPageViewModel>
     , ICodeGeneratorService<UiPageViewModel>

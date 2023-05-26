@@ -1,8 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Autofac.Core;
-
-using Contracts.Services;
+﻿using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
@@ -14,10 +10,10 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace Services;
 
-internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDescriptorService,
-    IAsyncSaveService, IResetChanges
+internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
+    IAsyncSaveService, IResetChanges, IAsyncWriteService<SecurityDescriptorViewModel>
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _readDbContext;
@@ -37,7 +33,7 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
     {
         Check.IfArgumentNotNull(model);
         _ = this._writeDbContext.SecurityDescriptors.Remove(new() { Id = model.Id });
-        return (Result)(persist && (await this._writeDbContext.SaveChangesAsync()) > 0);
+        return (Result)(persist && await this._writeDbContext.SaveChangesAsync() > 0);
     }
 
     public Task DeleteByEntityIdAsync(Guid entityId, bool persist = true) => Task.CompletedTask;
@@ -78,25 +74,25 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
     public async Task<Result<SecurityDescriptorViewModel>> InsertAsync(SecurityDescriptorViewModel model, bool persist = true)
     {
         _ = await this.CheckValidatorAsync(model);
-        var entity = await insertSecurityDescriptor(model, false);
+        //var entity = await insertSecurityDescriptor(model, false);
         //await this.MaintainStrategy(model);
         _ = await this.SubmitChangesAsync(persist: persist);
-        model.Id = entity.Id;
+        //model.Id = entity.Id;
 
         return Result<SecurityDescriptorViewModel>.CreateSuccess(model);
 
-        async Task<SecurityDescriptor> insertSecurityDescriptor(SecurityDescriptorViewModel model, bool persist)
-        {
-            var (_, (_, e)) = await this.InsertAsync<SecurityDescriptorViewModel, SecurityDescriptor, Guid>(
-                this._writeDbContext,
-                model,
-                this._converter.ToDbEntity,
-                this.ValidateAsync,
-                persist,
-                onCommitted: (m, e) => m.Id = e.Id);
-            e.EntitySecurities.Clear();
-            return e;
-        }
+        //async Task<SecurityDescriptor> insertSecurityDescriptor(SecurityDescriptorViewModel model, bool persist)
+        //{
+        //    var (_, (_, e)) = await this.InsertAsync<SecurityDescriptorViewModel, SecurityDescriptor, Guid>(
+        //        this._writeDbContext,
+        //        model,
+        //        this._converter.ToDbEntity,
+        //        this.ValidateAsync,
+        //        persist,
+        //        onCommitted: (m, e) => m.Id = e.Id);
+        //    e.EntitySecurities.Clear();
+        //    return e;
+        //}
     }
 
     public void ResetChanges() =>
@@ -104,11 +100,12 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
 
     public async Task<Result<int>> SaveChangesAsync()
         => await this._writeDbContext.SaveChangesResultAsync();
+
     public async Task SetSecurityDescriptorsAsync<TEntity>(TEntity entity, bool persist = true) where TEntity : IHasSecurityDescriptor
     {
         if (entity?.Guid is { } guid && entity.SecurityDescriptors?.Any() is true)
         {
-            await this.AssignToEntityIdAsync(guid, entity.SecurityDescriptors.Select(x => x.Id), false).ToEnumerableAsync();
+            _ = await this.AssignToEntityIdAsync(guid, entity.SecurityDescriptors.Select(x => x.Id), false).ToEnumerableAsync();
         }
     }
 
@@ -128,8 +125,8 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
 
         async Task<SecurityDescriptor> updateSecurityDescriptor(SecurityDescriptorViewModel model)
         {
-            var (_, (_, e)) = await this.UpdateAsync<SecurityDescriptorViewModel, SecurityDescriptor, Guid>(
-                this._writeDbContext,
+            var (_, (_, e)) = await ServiceHelper.UpdateAsync<SecurityDescriptorViewModel, SecurityDescriptor, Guid>(
+                this, this._writeDbContext,
                 model,
                 this._converter.ToDbEntity,
                 this.ValidateAsync,
@@ -144,7 +141,7 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
         }
     }
 
-    public Task<Result<SecurityDescriptorViewModel>> ValidateAsync([NotNull] SecurityDescriptorViewModel item)
+    public Task<Result<SecurityDescriptorViewModel?>> ValidateAsync(SecurityDescriptorViewModel? item)
     {
         Check.IfArgumentNotNull(item);
 
@@ -159,38 +156,23 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
 
         if (item.IsClaimBased)
         {
-            result = result.Check(item.ClaimSet?.Any() is true, $"{nameof(item.ClaimSet)} has no items.");
+            //result = result.Check(item.ClaimSet?.Any() is true, $"{nameof(item.ClaimSet)} has no items.");
         }
         return result.ToResult().ToAsync();
     }
 
-    //private async Task MaintainStrategy(SecurityDescriptorViewModel model)
-    //{
-    //    var task = model switch
-    //    {
-    //        { IsNoSec: true } => Task.CompletedTask,
-    //        { IsClaimBased: true } => insertClaims(model),
-    //        _ => Task.CompletedTask
-    //    };
-    //    await task;
+    Task<Result> IAsyncWriteService<SecurityDescriptorViewModel, long>.DeleteAsync(SecurityDescriptorViewModel model, bool persist)
+        => throw new NotImplementedException();
 
-    //    async Task insertClaims(SecurityDescriptorViewModel model)
-    //    {
-    //        foreach (var claim in model.ClaimSet)
-    //        {
-    //            _ = await this.InsertAsync<ClaimViewModel, SecurityClaim, Guid>(
-    //                    this._writeDbContext,
-    //                    claim,
-    //                    this._converter.ToDbEntity,
-    //                    persist: false,
-    //                    onCommitting: x => x.Fluent(x.SecurityDescriptorId = model.Id));
-    //        }
-    //    }
-    //}
+    Task<Result<SecurityDescriptorViewModel>> IAsyncWriteService<SecurityDescriptorViewModel, long>.InsertAsync(SecurityDescriptorViewModel model, bool persist)
+        => throw new NotImplementedException();
 
-    private IQueryable<SecurityDescriptor> SelectAll() =>
-            from x in this._readDbContext.SecurityDescriptors
-            select x;
+    Task<Result<SecurityDescriptorViewModel>> IAsyncWriteService<SecurityDescriptorViewModel, long>.UpdateAsync(long id, SecurityDescriptorViewModel model, bool persist)
+        => throw new NotImplementedException();
+
+    private IQueryable<SecurityDescriptor> SelectAll()
+        => from x in this._readDbContext.SecurityDescriptors
+           select x;
 
     private IQueryable<SecurityDescriptor> SelectByEntityId(Guid entityId)
         => from x in this.SelectFullAll()
@@ -198,7 +180,7 @@ internal sealed class SecurityDescriptorService : IBusinesService, ISecurityDesc
            where y.EntityId == entityId
            select x;
 
-    private IQueryable<SecurityDescriptor> SelectFullAll() =>
-        from x in this.SelectAll().Include(x => x.SecurityClaims).Include(x => x.EntitySecurities)
-        select x;
+    private IQueryable<SecurityDescriptor> SelectFullAll()
+        => from x in this.SelectAll().Include(x => x.SecurityClaims).Include(x => x.EntitySecurities)
+           select x;
 }

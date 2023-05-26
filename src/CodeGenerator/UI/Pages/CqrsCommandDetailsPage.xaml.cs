@@ -6,7 +6,6 @@ using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.EventsArgs;
@@ -50,7 +49,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     public CqrsCommandViewModel? ViewModel
     {
-        get => this.DataContext.As<CqrsCommandViewModel>();
+        get => this.DataContext.Cast().As<CqrsCommandViewModel>();
         set => this.DataContext = value;
     }
 
@@ -76,7 +75,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private void CommandsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var cCommand = e.NewValue.As<TreeViewItem>()?.DataContext.As<CqrsCommandViewModel>();
+        var cCommand = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<CqrsCommandViewModel>();
         this.EditCommandButton.IsEnabled = this.DeleteCommandButton.IsEnabled = cCommand is not null;
     }
 
@@ -139,12 +138,12 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         }
         var selectedViewModel = this.CommandsTreeView.GetSelectedValue<CqrsCommandViewModel>();
         Check.If(selectedViewModel?.Id is not null, () => new ValidationException("Please select a Command."));
-        _ = await this.Logger.LogBlockAsync("Loading…", async () =>
+        _ = await this.Logger.LogBlockAsync(async () =>
         {
             var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
             Check.NotNull(viewModel, () => "ID not found");
             this.ViewModel = viewModel.HandlePropertyChanges(this.ViewModel_PropertyChanged);
-        });
+        }, "Loading…");
     }
 
     private async void NewCommandButton_Click(object sender, RoutedEventArgs e)
@@ -221,9 +220,12 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         _ = this.ResultDtoComboBox.BindItemsSource(resultDtos, nameof(ModuleViewModel.Name), this.ViewModel?.ResultDto);
     }
 
-    private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
-        => e.Item = this._moduleService;
+    //private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
+    //    => e.Item = this._moduleService;
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         => this.IsViewModelChanged = true;
+
+    private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
+        => e.Item = this._moduleService;
 }

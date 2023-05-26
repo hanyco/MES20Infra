@@ -7,12 +7,42 @@
     <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
+
+    <Configurations>Debug;Release;Debug Unit Test</Configurations>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
+    <NoWarn>1701;1702;CM1001</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
+    <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
+    <NoWarn>1701;1702;CM1001</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
+    <NoWarn>1701;1702;CM1001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Fixtures\**" />
+    <EmbeddedResource Remove="Fixtures\**" />
+    <None Remove="Fixtures\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Tests\FunctionalityCodeService.cs" />
+    <Compile Remove="Tests\FunctionalityServiceTestBase.cs" />
+    <Compile Remove="Tests\_ServiceTestBase.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="Xunit.DependencyInjection" Version="8.7.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -29,6 +59,10 @@
     <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Internals\Data\Data.csproj" />
     <ProjectReference Include="..\..\src\UiServices\Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Library.Helpers" />
   </ItemGroup>
 
 </Project>

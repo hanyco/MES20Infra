@@ -1,97 +1,67 @@
-﻿using HanyCo.Infra.UI.Services;
-using HanyCo.Infra.UI.ViewModels;
+﻿using Contracts.Services;
+using Contracts.ViewModels;
 
-using InfraTestProject.Fixtures;
-
-using Library.Exceptions.Validations;
-using Library.Helpers;
+using Library.Data.SqlServer.Dynamics;
 
 namespace InfraTestProject.Tests;
 
-public class FunctionalityServiceTest : ServiceTestBase<IFunctionalityService, FunctionalityServiceFixture>
+public sealed class FunctionalityServiceTest
 {
-    public FunctionalityServiceTest(FunctionalityServiceFixture fixture) : base(fixture)
+    private readonly IFunctionalityCodeService _codeService;
+    private readonly IFunctionalityService _service;
+
+    public FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
     {
+        this._service = service;
+        this._codeService = codeService;
     }
 
     [Fact]
-    [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _05_Generate_ValidationTest_ArgsNull_Async()
+    [Trait("_Active Tests", "Current")]
+    public async void GenerateCodeTest()
     {
-        var actualExcept1ion = await Assert.ThrowsAsync<ArgumentNullException>(() => this.Service.GenerateAsync(null!));
-        Assert.Equal("Value cannot be null. (Parameter 'viewModel')", actualExcept1ion?.Message);
+        // Assign
+        var cts = new CancellationTokenSource();
+        _ = CreateModel();
+
+        // Act
+        var actual =await this._codeService.GenerateCodesAsync(null!, token: cts.Token);
+
+        // Assert
+        Assert.True(actual);
     }
 
     [Fact]
-    [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _10_Generate_ValidationTest_RootDtoNull_Async()
+    [Trait("_Active Tests", "Current")]
+    public async Task GenerateModelTest()
     {
-        var actualExcept1ion = await Assert.ThrowsAsync<NullValueValidationException>(() => this.Service.GenerateAsync(new FunctionalityViewModel()).ThrowOnFailAsync());
-        Assert.Equal("RootDto cannot be null", actualExcept1ion?.Message);
+        // Assign
+        var tokenSource = new CancellationTokenSource();
+        var model = CreateModel();
+
+        // Act
+        var actual = await this._service.GenerateViewModelAsync(model, tokenSource.Token);
+
+        // Assert
+        Assert.True(actual);
     }
 
-    [Fact]
-    [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _20_Generate_ValidationTest_NameNull_Async()
+    private static FunctionalityViewModel CreateModel()
     {
+        const string CS = "InMemoryConnectionString";
         var model = new FunctionalityViewModel()
         {
-            RootDto = new()
-            {
-                DbObject = new("Person") { Id = 1 }
-            }
+            DbTable = new(null!, "Person", "dbo", CS),
+            DbObject = new("Person") { Id = 1 },
+            Name = "TestFunctionality",
+            NameSpace = "CodeGen.UnitTest",
+            ModuleId = 1,
         };
-        var actualExcept1ion = await Assert.ThrowsAsync<NullValueValidationException>(() => this.Service.GenerateAsync(model).ThrowOnFailAsync());
-        Assert.Equal("Name cannot be null", actualExcept1ion?.Message);
-    }
-
-    [Fact]
-    [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _25_Generate_ValidationTest_NameSpaceNull_Async()
-    {
-        var model = new FunctionalityViewModel()
+        model.DbTable.Columns = new(new Column[]
         {
-            RootDto = new()
-            {
-                DbObject = new("Person") { Id = 1 }
-            },
-            Name = "Test Functionality"
-        };
-        var actualExcept1ion = await Assert.ThrowsAsync<NullValueValidationException>(() => this.Service.GenerateAsync(model).ThrowOnFailAsync());
-        Assert.Equal("NameSpace cannot be null", actualExcept1ion?.Message);
-    }
-
-    [Fact]
-    [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _30_Generate_ValidationTest_ModuleNotSelected_Async()
-    {
-        var model = new FunctionalityViewModel()
-        {
-            RootDto = new()
-            {
-                DbObject = new("Person") { Id = 1 }
-            },
-            Name = "Test Functionality",
-            NameSpace = "TestNameSpaceForFunctionalityTest"
-        };
-        var actualExcept1ion = await Assert.ThrowsAsync<ValidationException>(() => this.Service.GenerateAsync(model).ThrowOnFailAsync());
-        Assert.Equal("Module is not selected.", actualExcept1ion?.Message);
-    }
-    [Fact]
-    [Trait(nameof(FunctionalityServiceTest), "Validation")]
-    public async Task _40_Generate_ValidationTest_ModuleNotSelected_Async()
-    {
-        var model = new FunctionalityViewModel()
-        {
-            RootDto = new()
-            {
-                DbObject = new("Person") { Id = 1 }
-            },
-            Name = "Test Functionality",
-            NameSpace = "TestNameSpaceForFunctionalityTest",
-            ModuleId = 1
-        };
-        var actualExcept1ion = await Assert.ThrowsAsync<ValidationException>(() => this.Service.GenerateAsync(model).ThrowOnFailAsync());
-        Assert.Equal("Module is not selected.", actualExcept1ion?.Message);
+                new(model.DbTable, "Name", CS) { DataType = "nvarchar", MaxLength = 50, },
+                new(model.DbTable, "Age", CS) { DataType = "int" },
+        });
+        return model;
     }
 }

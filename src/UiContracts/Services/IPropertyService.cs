@@ -3,15 +3,15 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.Interfaces;
 
-namespace HanyCo.Infra.UI.Services;
+namespace Contracts.Services;
 
-public interface IPropertyService : IBusinesService, IAsyncCrudService<PropertyViewModel>
+public interface IPropertyService : IBusinessService, IAsyncCrudService<PropertyViewModel>
 {
-    Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true);
+    Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true, CancellationToken token = default);
 
-    Task<IReadOnlyList<PropertyViewModel>> GetByDtoIdAsync(long dtoId);
+    Task<IReadOnlyList<PropertyViewModel>> GetByDtoIdAsync(long dtoId, CancellationToken token = default);
 
-    Task<IReadOnlyList<PropertyViewModel>> GetByParentIdAsync(long parentId);
+    Task<IReadOnlyList<PropertyViewModel>> GetByParentIdAsync(long parentId, CancellationToken token = default);
 
-    Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId);
+    Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId, CancellationToken token = default);
 }

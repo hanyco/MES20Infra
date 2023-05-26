@@ -1,19 +1,21 @@
-﻿using HanyCo.Infra.UI.ViewModels;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.UI.ViewModels;
 
 using Library.Interfaces;
 
-namespace HanyCo.Infra.UI.Services;
+namespace Contracts.Services;
 
 /// <summary>
 /// The DTO service.
 /// </summary>
-public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>, IAsyncSaveService, IResetChanges, IAsyncCreator<DtoViewModel>
+public interface IDtoService : IBusinessService, IAsyncCrudService<DtoViewModel>, IAsyncSaveService, IResetChanges, IAsyncCreator<DtoViewModel>
 {
     /// <summary>
     /// Gets a new DtoViewModel.
     /// </summary>
     /// <returns>A DtoViewModel.</returns>
-    new Task<DtoViewModel> CreateAsync() 
+    new Task<DtoViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });
 
     /// <summary>
@@ -31,19 +33,19 @@ public interface IDtoService : IBusinesService, IAsyncCrudService<DtoViewModel>,
     /// <param name="resultDtos">if set to <c>true</c> [result dtos].</param>
     /// <param name="viewModels">if set to <c>true</c> [view models].</param>
     /// <returns></returns>
-    public Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels);
+    public Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels, CancellationToken token = default);
 
     /// <summary>
     /// Gets the DTOs by module id.
     /// </summary>
     /// <param name="id">The id.</param>
     /// <returns>A Task.</returns>
-    Task<IReadOnlyList<DtoViewModel>> GetByModuleId(long id);
+    Task<IReadOnlyList<DtoViewModel>> GetByModuleId(long id, CancellationToken token = default);
 
     /// <summary>
     /// Gets the properties by dto id async.
     /// </summary>
     /// <param name="dtoId">The dto id.</param>
     /// <returns>A Task.</returns>
-    Task<IReadOnlyList<PropertyViewModel>> GetPropertiesByDtoIdAsync(long dtoId);
+    Task<IReadOnlyList<PropertyViewModel>> GetPropertiesByDtoIdAsync(long dtoId, CancellationToken token = default);
 }

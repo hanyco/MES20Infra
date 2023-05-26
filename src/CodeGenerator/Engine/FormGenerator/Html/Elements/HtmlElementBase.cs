@@ -93,7 +93,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         };
 
     public bool Equals(THtmlElement? other)
-        => this.Equals(other?.As<object>());
+        => this.Equals(other?.Cast().As<object>());
 
     public virtual Code GenerateUiCode(in GenerateCodesParameters? arguments = null)
     {
@@ -321,5 +321,5 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
     { }
 
     private THtmlElement This()
-        => this.As<THtmlElement>()!;
+        => this.Cast().As<THtmlElement>()!;
 }

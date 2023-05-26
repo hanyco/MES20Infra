@@ -2,7 +2,9 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-using HanyCo.Infra.UI.Services;
+using Contracts.Services;
+using Contracts.ViewModels;
+
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.ComponentModel;
@@ -34,7 +36,7 @@ public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirec
         set => this.SetValue(SelectedPropertyProperty, value);
     }
 
-    public DtoViewModel? ViewModel => this.DataContext.As<DtoViewModel>();
+    public DtoViewModel? ViewModel => this.DataContext.Cast().As<DtoViewModel>();
 
     public async Task BindAsync()
     {
@@ -132,7 +134,7 @@ public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirec
         {
             return;
         }
-        this.SelectedProperty = e.AddedItems[0].As<PropertyViewModel>();
+        this.SelectedProperty = e.AddedItems[0].Cast().As<PropertyViewModel>();
         if (this.SelectedProperty is null)
         {
             return;

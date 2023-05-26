@@ -44,7 +44,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var user = await this.GetUserByIdAsync(userId);
         if (!user.IsSucceed)
         {
-            return Result.Fail;
+            return Result.Failure;
         }
         var claim = this.GetOrCreate(claimType, claimValue, true);
 
@@ -57,12 +57,12 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var user = await this.GetUserByIdAsync(userId);
         if (!user.IsSucceed)
         {
-            return Result.CreateFail(message: "User not found");
+            return Result.CreateFailure(message: "User not found");
         }
         var role = await this.GetRoleByIdAsync(roleId);
         if (!role.IsSucceed)
         {
-            return Result.CreateFail(message: "Role not found");
+            return Result.CreateFailure(message: "Role not found");
         }
         var result = await this._userManager.AddToRoleAsync(user!, role.Value!.Name);
         return result.ToResult();
@@ -73,7 +73,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var user = await this.FindByNameAsync(userName);
         if (!user.IsSucceed)
         {
-            return Result.Fail;
+            return Result.Failure;
         }
         var result = await this._userManager.ResetPasswordAsync(user!, token, newPassword);
         return result.ToResult();
@@ -84,7 +84,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var findUserResult = await this.FindByNameAsync(userName);
         if (!findUserResult.IsSucceed)
         {
-            return Result.CreateFail(message: findUserResult?.Message ?? "User not found.");
+            return Result.CreateFailure(message: findUserResult?.Message ?? "User not found.");
         }
 
         var confirmEmailResult = await this._userManager.ConfirmEmailAsync(findUserResult!, token);
@@ -114,7 +114,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var user = await this.GetUserByIdAsync(userId.ToString());
         if (user is null or { Value: null })
         {
-            return Result.Fail;
+            return Result.Failure;
         }
         var result = await this._userManager.DeleteAsync(user!);
         return result.ToResult();
@@ -166,7 +166,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var user = await this.GetUserByIdAsync(userId);
         if (!user.IsSucceed)
         {
-            return Result.Fail;
+            return Result.Failure;
         }
         var claim = this.GetOrCreate(claimType, Permission.FullAccess.ToString());
         var result = await this._userManager.RemoveClaimAsync(user!, claim);
@@ -178,17 +178,17 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var user = await this.GetUserByIdAsync(userId);
         if (!user.IsSucceed)
         {
-            return Result.CreateFail(message: "User not found");
+            return Result.CreateFailure(message: "User not found");
         }
         var role = await this.GetRoleByIdAsync(roleId);
 
         if (!role.IsSucceed)
         {
-            return Result.CreateFail(message: "Role not found");
+            return Result.CreateFailure(message: "Role not found");
         }
         if (!await this._userManager.IsInRoleAsync(user!, role.Value!.Name))
         {
-            return Result.Fail;
+            return Result.Failure;
         }
 
         var result = await this._userManager.RemoveFromRoleAsync(user!, role.Value!.Name);
@@ -200,7 +200,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var user = await this.FindByNameAsync(userName);
         if (!user.IsSucceed)
         {
-            return Result.CreateFail(message: user?.Message ?? "User not found.");
+            return Result.CreateFailure(message: user?.Message ?? "User not found.");
         }
 
         _ = await this._userManager.GeneratePasswordResetTokenAsync(user!);
@@ -238,7 +238,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var dbUser = await this.GetUserByIdAsync(user.Id.ToString());
         if (!dbUser.IsSucceed)
         {
-            return Result.Fail;
+            return Result.Failure;
         }
         var idnUser = dbUser.Value!;
         idnUser.UserName = user.UserName;
@@ -256,7 +256,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         Check.IfArgumentNotNull(userName);
 
         var user = await this._userManager.FindByNameAsync(userName);
-        return user is null ? Result<InfraIdentityUser>.Fail : Result<InfraIdentityUser?>.CreateSuccess(user);
+        return user is null ? Result<InfraIdentityUser>.Failure : Result<InfraIdentityUser?>.CreateSuccess(user);
     }
 
     private Claim GetOrCreate(string claimType, string? claimValue, bool createIfNotFound = true)
@@ -277,12 +277,12 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
     {
         Check.IfArgumentNotNull(roleId);
         var role = await this._roleManager.FindByIdAsync(roleId);
-        return role is null ? Result<InfraIdentityRole>.Fail : Result<InfraIdentityRole?>.CreateSuccess(role);
+        return role is null ? Result<InfraIdentityRole>.Failure : Result<InfraIdentityRole?>.CreateSuccess(role);
     }
 
     private async Task<Result<InfraIdentityUser?>> GetUserByIdAsync(string userId)
         => await this.Fluent(() => this._userManager.FindByIdAsync(userId),
-            user => user is null ? Result<InfraIdentityUser>.Fail : Result<InfraIdentityUser?>.CreateSuccess(user));
+            user => user is null ? Result<InfraIdentityUser>.Failure : Result<InfraIdentityUser?>.CreateSuccess(user));
 
     private async Task<Result> SendConfirmationMailAsync(string userName, string confirmationToken) // UNDONE: Not done yet.
         => await Task.FromResult(Result.CreateSuccess(message: "Confirmation mail sent, if the email address was valid."));

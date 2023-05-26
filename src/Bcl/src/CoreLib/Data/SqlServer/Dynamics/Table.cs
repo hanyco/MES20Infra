@@ -12,7 +12,7 @@ using static Library.Data.SqlServer.SqlStatementBuilder;
 
 namespace Library.Data.SqlServer.Dynamics;
 
-public class Table : SqlObject<Table, Database>, IEnumerable
+public sealed class Table : SqlObject<Table, Database>, IEnumerable
 {
     private Columns? _columns;
 
@@ -22,7 +22,7 @@ public class Table : SqlObject<Table, Database>, IEnumerable
     }
 
     public Row this[int index] => this.Rows.ElementAt(index);
-    public Columns Columns => this._columns ??= this.GetColumns();
+    public Columns Columns { get => this._columns ??= this.GetColumns(); set => _columns = value; }
     public DateTime CreateDate { get; set; }
     public long Id { get; set; }
     public DateTime ModifyDate { get; set; }
@@ -213,7 +213,7 @@ public class Table : SqlObject<Table, Database>, IEnumerable
                     Precision = reader.Field("precision", v => DBNull.Value.Equals(v) ? 0 : Convert.ToInt32(v)),
                     Position = reader.Field("column_id", v => DBNull.Value.Equals(v) ? 0 : Convert.ToInt32(v)),
                     DataType = reader.Field("system_type", Convert.ToString),
-                    UniqueId = string.Concat(reader["object_id"].ToLong().ToString("000000000000"), reader["column_id"].ToInt().ToString("000")).ToLong(),
+                    UniqueId = string.Concat(reader["object_id"].Cast().ToLong().ToString("000000000000"), reader["column_id"].Cast().ToInt().ToString("000")).Cast().ToLong(),
                 });
             }
 

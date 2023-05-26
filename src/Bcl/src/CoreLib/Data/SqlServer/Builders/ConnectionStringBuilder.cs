@@ -7,7 +7,7 @@ using Library.Validations;
 namespace Library.Data.SqlServer.Builders;
 
 [Fluent]
-public class ConnectionStringBuilder : IValidatable<ConnectionStringBuilder>, IBuilder<string>
+public sealed class ConnectionStringBuilder : IValidatable<ConnectionStringBuilder>, IBuilder<string>
 {
     private readonly SqlConnectionStringBuilder _builder;
 
@@ -41,7 +41,7 @@ public class ConnectionStringBuilder : IValidatable<ConnectionStringBuilder>, IB
             .IfTrue(isEncrypt.HasValue, builder => builder.IsEncrypted(isEncrypt!.Value))
             .IfTrue(isUserInstance.HasValue, builder => builder.IsUserInstance(isUserInstance!.Value))
             .IfTrue(isReadOnly.HasValue, builder => builder.IsReadOnly(isReadOnly!.Value)).GetValue()
-            .BuildAll();
+            .Build();
 
     public static ConnectionStringBuilder Create()
         => new();
@@ -58,7 +58,7 @@ public class ConnectionStringBuilder : IValidatable<ConnectionStringBuilder>, IB
     public ConnectionStringBuilder AttachDbFilename(string value)
         => this.Fluent(() => this._builder.AttachDBFilename = value);
 
-    public string BuildAll()
+    public string Build()
         => this._builder.ConnectionString;
 
     public ConnectionStringBuilder ConnectTimeout(int value)

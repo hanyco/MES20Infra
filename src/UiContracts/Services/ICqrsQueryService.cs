@@ -5,16 +5,16 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface ICqrsQueryService : IBusinesService, IAsyncCrudService<CqrsQueryViewModel>, IAsyncCreator<CqrsQueryViewModel>
+public interface ICqrsQueryService : IBusinessService, IAsyncCrudService<CqrsQueryViewModel>, IAsyncCreator<CqrsQueryViewModel>
 {
-    Task<int> DeleteByIdAsync(long id);
+    Task<int> DeleteByIdAsync(long id, CancellationToken token = default);
 
-    Task<CqrsQueryViewModel> FillByDbEntity(CqrsQueryViewModel @this, long dbQueryId, string? moduleName = null, string? paramDtoName = null, string? resultDtoName = null);
+    Task<CqrsQueryViewModel> FillByDbEntity(CqrsQueryViewModel @this, long dbQueryId, string? moduleName = null, string? paramDtoName = null, string? resultDtoName = null, CancellationToken token = default);
 
     CqrsQueryViewModel FillByDbEntity(CqrsQueryViewModel @this, CqrsSegregate dbQuery, string? moduleName = null, string? paramDtoName = null, string? resultDtoName = null);
 
     CqrsQueryViewModel FillByDbEntity(CqrsQueryViewModel @this,
-        CqrsSegregate sergregate,
+        CqrsSegregate segregate,
         Module infraModule,
         Internals.Data.DataSources.Dto parameterDto,
         IEnumerable<Property> parameterDtoProperties,
@@ -24,7 +24,7 @@ public interface ICqrsQueryService : IBusinesService, IAsyncCrudService<CqrsQuer
     Task<CqrsQueryViewModel> FillViewModelAsync(CqrsQueryViewModel model,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null);
+        string? resultDtoName = null, CancellationToken token = default);
 
-    Task<IReadOnlyList<CqrsQueryViewModel>> GetQueriesByDtoIdAsync(long dtoId);
+    Task<IReadOnlyList<CqrsQueryViewModel>> GetQueriesByDtoIdAsync(long dtoId, CancellationToken token = default);
 }

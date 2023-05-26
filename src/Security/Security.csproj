@@ -11,6 +11,7 @@
 		<AssemblyName>HanyCo.Infra.Security</AssemblyName>
 		<Description>سرویس‌های امنیتی مورد استفاده در کل سیستم</Description>
 		<RootNamespace>HanyCo.Infra.Security</RootNamespace>
+		<Configurations>Debug;Release;Debug Unit Test</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>

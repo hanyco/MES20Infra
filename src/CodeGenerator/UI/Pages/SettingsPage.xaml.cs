@@ -17,11 +17,11 @@ public partial class SettingsPage
         => this.InitializeComponent();
 
     public SettingsModel ViewModel
-        => this.DataContext.As<SettingsModel>()!;
+        => this.DataContext.Cast().As<SettingsModel>()!;
 
     private void OpenConnectionStringBoxButton_Click(object sender, RoutedEventArgs e)
     {
-        var settings = this.DataContext.As<SettingsModel>()!;
+        var settings = this.DataContext.Cast().As<SettingsModel>()!;
         var (isOk, connectionString) = ConnectionStringDialog.ShowDlg(settings.connectionString);
         if (isOk is true && connectionString is not null)
         {

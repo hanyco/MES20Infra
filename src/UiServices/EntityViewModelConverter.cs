@@ -1,6 +1,8 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
@@ -11,7 +13,7 @@ using Library.Validations;
 
 using Services.Helpers;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace Services;
 
 internal sealed class EntityViewModelConverter : IEntityViewModelConverter
 {
@@ -32,7 +34,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         }
         if (dto?.DbObjectId.IsNullOrEmpty() is false)
         {
-            result.DbObject = new(string.Empty, dto.DbObjectId.ToLong());
+            result.DbObject = new(string.Empty, dto.DbObjectId.Cast().ToLong());
         }
         if (properties?.Any() is true)
         {
@@ -68,7 +70,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
 
     public UiComponentAction? ToDbEntity(UiComponentActionViewModel? model)
         => model is null ? null : this._mapper.Map<UiComponentAction>(model)
-            .ForMember(x => x.TriggerTypeId = model.TriggerType.ToInt())
+            .ForMember(x => x.TriggerTypeId = model.TriggerType.Cast().ToInt())
             .ForMember(x => x.CqrsSegregateId = model.CqrsSegregate?.Id)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!);
 
@@ -76,7 +78,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         => model is null ? null : this._mapper.Map<UiComponentProperty>(model)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!)
             .ForMember(x => x.PropertyId = model.Property?.Id)
-            .ForMember(x => x.ControlTypeId = model.ControlType?.ToInt() ?? 0);
+            .ForMember(x => x.ControlTypeId = model.ControlType?.Cast().ToInt() ?? 0);
 
     public SecurityClaim? ToDbEntity(ClaimViewModel? model)
         => model is null ? null : this._mapper.Map<SecurityClaim>(model)
@@ -155,14 +157,14 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         var result = this._mapper.MapExcept<PropertyViewModel, Property>(viewModel, x => new { x.Id })
                                  .ForMember(x => x.ParentEntityId = viewModel.ParentEntityId)
                                  .ForMember(x => x.DbObjectId = viewModel.DbObject?.ObjectId.ToString(CultureInfo.CurrentCulture) ?? string.Empty)
-                                 .ForMember(x => x.PropertyType = viewModel.Type.ToInt())
-                                 .ForMember(x => Functional.IfTrue(x.Id < 0, () => x.Id = 0).Fluent().IfTrue(viewModel.Id > 0, () => x.Id = viewModel.Id!.Value))
+                                 .ForMember(x => x.PropertyType = viewModel.Type.Cast().ToInt())
+                                 .ForMember(x => (x.Id < 0).IfTrue(() => x.Id = 0).Fluent().IfTrue(viewModel.Id > 0, () => x.Id = viewModel.Id!.Value))
                                  .ForMember(x => x.DtoId = viewModel.Dto?.Id);
         return result;
     }
 
-    public Property? ToDbEntity(PropertyViewModel? model, long parentId) =>
-        this.ToDbEntity(model?.ForMember(x => x.ParentEntityId = parentId));
+    public Property? ToDbEntity(PropertyViewModel? model, long parentId)
+        => this.ToDbEntity(model?.ForMember(x => x.ParentEntityId = parentId));
 
     public Dto? ToDbEntity(DtoViewModel? viewModel)
     {
@@ -250,9 +252,9 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
             return null;
         }
 
-        var result = this._mapper.Map<DtoViewModel>(entity);
+        var result = this.InnerToViewModel(entity);
 
-        if (entity.Properties?.Any() is true)
+        if (entity.Properties is not null and { Count: > 0 })
         {
             _ = result.Properties!.AddRange(entity.Properties.Select(this.ToViewModel));
         }
@@ -268,8 +270,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
     }
 
     public IEnumerable<ModuleViewModel?> ToViewModel(IEnumerable<Module?> entities)
-        =>
-        entities.Select(this.ToViewModel);
+        => entities.Select(this.ToViewModel);
 
     public IEnumerable<UiBootstrapPositionViewModel?> ToViewModel(IEnumerable<UiBootstrapPosition?> entities)
         => throw new NotImplementedException();
@@ -297,8 +298,8 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         }
 
         var result = this._mapper.Map<UiComponentViewModel>(entity)
-            .ForMember(x => x.UiProperties.AddRange(this.ToViewModel(entity.UiComponentProperties)))
-            .ForMember(x => x.UiActions.AddRange(this.ToViewModel(entity.UiComponentActions)))
+            .ForMember(x => x.UiProperties!.AddRange(this.ToViewModel(entity.UiComponentProperties)))
+            .ForMember(x => x.UiActions!.AddRange(this.ToViewModel(entity.UiComponentActions)))
             .ForMember(x => x.PageDataContext = this.ToViewModel(entity.PageDataContext))
             .ForMember(x => x.PageDataContextProperty = this.ToViewModel(entity.PageDataContextProperty));
 
@@ -342,8 +343,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         => entity is null ? null : this._mapper.Map<PropertyViewModel>(entity)
             .ForMember(x => x.TypeFullName = entity.TypeFullName!)
             .ForMember(x => x.Type = PropertyTypeHelper.FromPropertyTypeId(entity.PropertyType))
-            //!? Using `Convert` method to convert DTO, causes recursive infinite method-call.
-            .ForMember(x => x.Dto = entity.Dto is null ? null : new() { Id = entity.Dto.Id, Name = entity.Dto.Name, NameSpace = entity.Dto.NameSpace ?? string.Empty });
+            .ForMember(x => x.Dto = this.InnerToViewModel(entity.Dto));
 
     public IEnumerable<SecurityDescriptorViewModel?> ToViewModel(IEnumerable<SecurityDescriptor?> entities)
         => entities.Select(this.ToViewModel);
@@ -413,11 +413,11 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         return result;
     }
 
-    public IEnumerable<FunctionalityViewModel?> ToViewModel(IEnumerable<Functionality?> entities) 
-        => entities.Select(ToViewModel);
+    public IEnumerable<FunctionalityViewModel?> ToViewModel(IEnumerable<Functionality?> entities)
+        => entities.Select(this.ToViewModel);
 
     public FunctionalityViewModel? ToViewModel(Functionality? entity)
-        => entity is null ? null : _mapper.Map<FunctionalityViewModel>(entity);
+        => entity is null ? null : this._mapper.Map<FunctionalityViewModel>(entity);
 
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType)
         => model is null
@@ -426,6 +426,10 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
                               .ForMember(x => x.ModuleId = model.Module.Id.GetValueOrDefault())
                               .ForMember(x => x.ParamDtoId = model.ParamDto.Id!.Value)
                               .ForMember(x => x.ResultDtoId = model.ResultDto.Id!.Value)
-                              .ForMember(x => x.SegregateType = segregateType.ToInt())
-                              .ForMember(x => x.CategoryId = model.Category.ToInt());
+                              .ForMember(x => x.SegregateType = segregateType.Cast().ToInt())
+                              .ForMember(x => x.CategoryId = model.Category.Cast().ToInt());
+
+    [return: NotNullIfNotNull(nameof(entity))]
+    private DtoViewModel? InnerToViewModel(Dto? entity)
+        => entity is null ? null : this._mapper.Map<DtoViewModel>(entity);
 }

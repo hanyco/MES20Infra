@@ -1,14 +1,17 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Serialization;
 
-using Library.Exceptions.Validations;
+using Library.Exceptions;
 using Library.Logging;
 using Library.Results;
 using Library.Validations;
 
 namespace Library.Helpers;
 
+[DebuggerStepThrough]
+[StackTraceHidden]
 public static class ResultHelper
 {
     public static async Task<TResult> BreakOnFail<TResult>(this Task<TResult> task)
@@ -56,8 +59,34 @@ public static class ResultHelper
         return result;
     }
 
-    public static TResult OnSucceed<TResult>([DisallowNull] this TResult result, [DisallowNull] Func<TResult> next) where TResult : ResultBase 
-        => result is true ? next() : result;
+    public static TResult OnDone<TResult>([DisallowNull] this TResult result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    {
+        action(result);
+        return result;
+    }
+
+    public static TResult OnFailure<TResult>([DisallowNull] this TResult result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    {
+        if (result == false)
+        {
+            action(result);
+        }
+
+        return result;
+    }
+
+    public static TResult OnSucceed<TResult>([DisallowNull] this TResult result, [DisallowNull] Func<TResult> next) where TResult : ResultBase
+            => result == true ? next() : result;
+
+    public static TResult OnSucceed<TResult>([DisallowNull] this TResult result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    {
+        if (result == true)
+        {
+            action(result);
+        }
+
+        return result;
+    }
 
     public static Result<Stream> SerializeToXmlFile<T>(this Result<Stream> result, string filePath)
     {
@@ -66,6 +95,9 @@ public static class ResultHelper
     }
 
     public static Result ThrowOnFail([DisallowNull] this Result result, object? owner = null, string? instruction = null)
+        => InnerThrowOnFail(result, owner, instruction);
+
+    public static TResult ThrowOnFail<TResult>([DisallowNull] this TResult result, object? owner = null, string? instruction = null) where TResult : ResultBase
         => InnerThrowOnFail(result, owner, instruction);
 
     public static Result<TValue> ThrowOnFail<TValue>([DisallowNull] this Result<TValue> result, object? owner = null, string? instruction = null)
@@ -97,9 +129,6 @@ public static class ResultHelper
         return Result<TValue1>.From(result, value1);
     }
 
-    public static Result<StreamWriter> ToStreamWriter(this Result<Stream> result)
-        => new(new(result.Value));
-
     public static Result<string> ToText(this Result<Stream> result)
     {
         var stream = result.Value;
@@ -107,17 +136,14 @@ public static class ResultHelper
         return new(reader.ReadToEnd());
     }
 
-    public static Result<XmlWriter> ToXmlWriter(this Result<Stream> result, bool indent = true)
-        => new(XmlWriter.Create(result.ToStreamWriter(), new XmlWriterSettings { Indent = indent }));
-
     public static bool TryParse<TResult>([DisallowNull] this TResult input, [NotNull] out TResult result) where TResult : ResultBase
         => (result = input.ArgumentNotNull()).IsSucceed;
+    
+    //! Compiler Error CS1988: Async methods cannot have `ref`, `in` or `out` parameters
+    //x public static async Task<bool> TryAsync<TResult>([DisallowNull] this Task<TResult> input, out TResult result) where TResult : ResultBase
+    //x     => (result = await input).IsSucceed;
 
-    //!? Compiler Error CS1988: Async methods cannot have `ref`, `in` or `out` parameters
-    ////public static async Task<bool> TryAsync<TResult>([DisallowNull] this Task<TResult> input, out TResult result) where TResult : ResultBase
-    ////    => (result = await input).IsSucceed;
-
-    private static TResult InnerCheck<TResult>(TResult result, bool condition, object? errorMessage, object errorId)
+    private static TResult InnerCheck<TResult>(TResult result, bool condition, object? errorMessage, object? errorId)
             where TResult : ResultBase => condition
             ? (result with
             {
@@ -140,7 +166,7 @@ public static class ResultHelper
             ?? result.Status switch
             {
                 Exception ex => ex.With(x => x.Source = owner?.ToString()),
-                _ => new ValidationException(result.ToString(), instruction ?? result.Message, owner: owner)
+                _ => new CommonException(result.ToString(), instruction ?? result.Message, owner: owner)
             };
         Throw(exception);
         return result;

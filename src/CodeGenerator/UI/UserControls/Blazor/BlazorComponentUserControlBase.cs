@@ -1,4 +1,5 @@
-﻿using HanyCo.Infra.UI.Services;
+﻿using Contracts.Services;
+
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Wpf.Windows.Controls;
@@ -16,7 +17,7 @@ public class BlazorComponentUserControlBase : AsyncDataBindUserControl
 
     public UiComponentViewModel? ViewModel
     {
-        get => this.DataContext.As<UiComponentViewModel>();
+        get => this.DataContext.Cast().As<UiComponentViewModel>();
         set => this.DataContext = value;
     }
 

@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.Internals.Data.DataSources;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -14,7 +16,7 @@ public partial class PropertyDetailsUserControl
 
     public PropertyViewModel? ViewModel
     {
-        get => this.DataContext.As<PropertyViewModel>();
+        get => this.DataContext.Cast().As<PropertyViewModel>();
         set => this.DataContext = value;
     }
 

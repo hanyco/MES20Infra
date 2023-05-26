@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<AssemblyName>HanyCo.Infra.Internals.Data</AssemblyName>
 		<RootNamespace>HanyCo.Infra.Internals.Data</RootNamespace>
+		<Configurations>Debug;Release;Debug Unit Test</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>

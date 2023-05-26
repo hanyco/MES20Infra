@@ -1,5 +1,8 @@
 ﻿using System.IO;
 
+using Contracts.Services;
+using Contracts.ViewModels;
+
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.AggregatedModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
@@ -9,13 +12,13 @@ using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Helpers.CodeGen;
+using Library.Results;
 using Library.Validations;
 
 namespace Services;
@@ -23,48 +26,48 @@ namespace Services;
 [Service]
 internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 {
-    public IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsCqrsGenerateCodesParams parametes, CqrsCodeGenerateCodesConfig? config)
+    public IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config)
     {
-        var (entityName, _, _, _) = parametes.ArgumentNotNull();
+        var (entityName, _, _, _) = parameters.ArgumentNotNull();
         config ??= new();
         if (config.ShouldGenerateGetAll)
         {
-            yield return new($"GetAll{StringHelper.Pluralize(entityName)}", this.GenerateGetAllCode(parametes));
+            yield return new($"GetAll{StringHelper.Pluralize(entityName)}", this.GenerateGetAllCode(parameters));
         }
         if (config.ShouldGenerateGetById)
         {
-            yield return new($"Get{entityName}ById", this.GenerateGetByIdCode(parametes));
+            yield return new($"Get{entityName}ById", this.GenerateGetByIdCode(parameters));
         }
         if (config.ShouldGenerateCreate)
         {
-            yield return new($"Create{entityName}", this.GenerateCreateCode(parametes));
+            yield return new($"Create{entityName}", this.GenerateCreateCode(parameters));
         }
         if (config.ShouldGenerateUpdate)
         {
-            yield return new($"Update{entityName}", this.GenerateUpdateCode(parametes));
+            yield return new($"Update{entityName}", this.GenerateUpdateCode(parameters));
         }
         if (config.ShouldGenerateDelete)
         {
-            yield return new($"Delete{entityName}", this.GenerateDeleteCode(parametes));
+            yield return new($"Delete{entityName}", this.GenerateDeleteCode(parameters));
         }
     }
 
-    public async Task<Codes> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
-            => viewModel.ArgumentNotNull() switch
-            {
-                CqrsQueryViewModel queryViewModel => await GenerateQueryAsync(queryViewModel),
-                CqrsCommandViewModel commandViewModel => await GenerateCommandAsync(commandViewModel),
-                _ => throw new NotSupportedException()
-            };
+    public async Task<Result<Codes>> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
+        => new(viewModel.ArgumentNotNull() switch
+        {
+            CqrsQueryViewModel queryViewModel => await GenerateQueryAsync(queryViewModel, token),
+            CqrsCommandViewModel commandViewModel => await GenerateCommandAsync(commandViewModel, token),
+            _ => throw new NotSupportedException()
+        });
 
-    public Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var paramDto = CodeGenDto.New($"{tableName}ParamDto");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = paramDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -82,9 +85,9 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateDeleteCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateDeleteCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var paramDto = CodeGenDto.New($"{tableName}ParamDto").AddProp(typeof(Guid), "Id");
         var param = CodeGenCommandParameter.New().AddProp(paramDto, "Dto");
@@ -101,14 +104,14 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateGetAllCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateGetAllCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name.NotNull().Trim();
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = resultDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -126,14 +129,14 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateGetByIdCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateGetByIdCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var resultDto = CodeGenDto.New($"{tableName}ResultDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = resultDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -151,14 +154,14 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         return query.GenerateCode();
     }
 
-    public Codes GenerateUpdateCode(in CqrsCodeGenerateCrudParams parametes)
+    public Codes GenerateUpdateCode(in CqrsCodeGenerateCrudParams parameters)
     {
-        (var table, var cqrsNameSpace, var dtoNameSpace) = parametes.ArgumentNotNull();
+        (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
         var tableName = table.Value.Name!.Trim();
         var paramDto = CodeGenDto.New($"{tableName}ParamDto").AddProp(typeof(Guid), "Id");
         foreach (var child in table.Children.First().Children)
         {
-            var column = child.Value.As<DbColumnViewModel>()!;
+            var column = child.Value.Cast().As<DbColumnViewModel>()!;
             var type = new CodeGenType(PropertyTypeHelper.FromDbType(column.DbType).ToFullTypeName());
             _ = paramDto.AddProp(type, column.Name!, isNullable: column.IsNullable);
         }
@@ -177,20 +180,21 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     }
 
     //UNDONE CQRS Code Generator Service SaveToDatabaseAsync.
-    public Task SaveToDatabaseAsync(CqrsCqrsGenerateCodesParams parametes, CqrsCodeGenerateCodesConfig config)
+    public Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config, CancellationToken token = default)
         => throw new NotImplementedException();
 
-    public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null)
+    public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
-        var codes = await this.GenerateCodeAsync(viewModel, config);
+        var codesResult = await this.GenerateCodeAsync(viewModel, config, token).ThrowOnFailAsync();
+        var codes = codesResult.Value.Compact();
         if (codes?.Any() is not true)
         {
             return;
         }
 
-        foreach (var code in codes.Compact())
+        foreach (var code in codes)
         {
-            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement);
+            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, token);
         }
     }
 
@@ -210,7 +214,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
     private static CodeGenDto ExtractResultDto(in CqrsViewModelBase viewModel)
         => ConvertViewModelToCodeGen(viewModel.ResultDto);
 
-    private static async Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel)
+    private static Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(commandViewModel?.Name);
 
@@ -226,10 +230,10 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                                             commandHandler,
                                             commandParam,
                                             commandResult);
-        return await Task.FromResult(query.GenerateCode());
+        return Task.FromResult(query.GenerateCode());
     }
 
-    private static async Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel)
+    private static Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(queryViewModel?.Name);
 
@@ -248,6 +252,6 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                                           queryHandler,
                                           queryParam,
                                           queryResult);
-        return await Task.FromResult(query.GenerateCode());
+        return Task.FromResult(query.GenerateCode());
     }
 }
