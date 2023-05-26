@@ -77,8 +77,8 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     Task IAsyncTransactionalService.RollbackTransactionAsync(CancellationToken cancellationToken)
         => this._writeDbContext.Database.RollbackTransactionAsync(cancellationToken);
 
-    public Task<Result<int>> SaveChangesAsync()
-        => this._writeDbContext.SaveChangesResultAsync();
+    public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken)
+        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
     Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken)
         => viewModel.Check()

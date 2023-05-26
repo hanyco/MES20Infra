@@ -32,8 +32,6 @@ public sealed class CqrsQueryServiceTest
     }
 
     [Fact]
-    
-    [Fact]
     public async Task _20_GetByIdAsync()
     {
         // Act
