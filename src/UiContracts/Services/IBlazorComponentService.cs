@@ -6,7 +6,7 @@ namespace Contracts.Services;
 
 public interface IBlazorComponentService
     : IBusinessService
-    , IAsyncCrudService<UiComponentViewModel>
+    , IAsyncCrud<UiComponentViewModel>
 {
     Task<IEnumerable<UiComponentViewModel>> GetByPageDataContextIdAsync(long dtoId, CancellationToken token = default);
 }

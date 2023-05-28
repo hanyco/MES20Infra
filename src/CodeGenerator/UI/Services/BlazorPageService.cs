@@ -17,7 +17,7 @@ namespace HanyCo.Infra.UI.Services;
 
 internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
     //x, IAsyncViewModelFiller<UiPageViewModel>
-    , IAsyncSaveService
+    , IAsyncSaveChanges
     , IResetChanges
     , IAsyncValidator<UiPageViewModel>
     , ILoggerContainer

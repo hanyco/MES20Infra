@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace Services;
 
 internal partial class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
-    , IBusinessService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSaveService, ILoggerContainer
+    , IBusinessService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSave, ILoggerContainer
 {
     #region Fields & Properties
 
@@ -65,16 +65,16 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
 
     #endregion Ctors
 
-    Task<IDbContextTransaction> IAsyncTransactionalService.BeginTransactionAsync(CancellationToken cancellationToken)
+    Task<IDbContextTransaction> IAsyncTransactional.BeginTransactionAsync(CancellationToken cancellationToken)
         => this._writeDbContext.BeginTransactionAsync(cancellationToken);
 
-    Task<Result> IAsyncTransactionalService.CommitTransactionAsync(CancellationToken cancellationToken)
+    Task<Result> IAsyncTransactional.CommitTransactionAsync(CancellationToken cancellationToken)
         => this._writeDbContext.CommitTransactionAsync(cancellationToken);
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
 
-    Task IAsyncTransactionalService.RollbackTransactionAsync(CancellationToken cancellationToken)
+    Task IAsyncTransactional.RollbackTransactionAsync(CancellationToken cancellationToken)
         => this._writeDbContext.Database.RollbackTransactionAsync(cancellationToken);
 
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken)

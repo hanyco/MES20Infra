@@ -10,7 +10,7 @@ namespace Contracts.Services;
 
 public interface IBlazorPageService
     : IBusinessService
-    , IAsyncCrudService<UiPageViewModel>
+    , IAsyncCrud<UiPageViewModel>
     , IValidator<UiPageViewModel>
     , ICodeGeneratorService<UiPageViewModel>
 

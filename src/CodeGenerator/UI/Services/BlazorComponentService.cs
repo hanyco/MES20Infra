@@ -16,7 +16,7 @@ namespace HanyCo.Infra.UI.Services;
 public sealed class BlazorComponentService :
     IBlazorComponentService,
     IAsyncValidator<UiComponentViewModel>,
-    IAsyncSaveService,
+    IAsyncSaveChanges,
     IResetChanges
 {
     private readonly IEntityViewModelConverter _converter;

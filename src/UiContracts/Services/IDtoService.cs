@@ -9,7 +9,7 @@ namespace Contracts.Services;
 /// <summary>
 /// The DTO service.
 /// </summary>
-public interface IDtoService : IBusinessService, IAsyncCrudService<DtoViewModel>, IAsyncSaveService, IResetChanges, IAsyncCreator<DtoViewModel>
+public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyncSaveChanges, IResetChanges, IAsyncCreator<DtoViewModel>
 {
     /// <summary>
     /// Gets a new DtoViewModel.

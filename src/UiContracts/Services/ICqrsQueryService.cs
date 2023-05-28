@@ -5,7 +5,7 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface ICqrsQueryService : IBusinessService, IAsyncCrudService<CqrsQueryViewModel>, IAsyncCreator<CqrsQueryViewModel>
+public interface ICqrsQueryService : IBusinessService, IAsyncCrud<CqrsQueryViewModel>, IAsyncCreator<CqrsQueryViewModel>
 {
     Task<int> DeleteByIdAsync(long id, CancellationToken token = default);
 

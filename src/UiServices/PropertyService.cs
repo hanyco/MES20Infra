@@ -15,7 +15,7 @@ namespace Services;
 
 internal sealed class PropertyService : IPropertyService
     , IAsyncValidator<PropertyViewModel>
-    , IAsyncSaveService
+    , IAsyncSaveChanges
     , IResetChanges
 {
     private readonly IEntityViewModelConverter _converter;

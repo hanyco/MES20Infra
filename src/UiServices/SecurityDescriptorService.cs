@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Services;
 
 internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
-    IAsyncSaveService, IResetChanges, IAsyncWriteService<SecurityDescriptorViewModel>
+    IAsyncSaveChanges, IResetChanges, IAsyncWrite<SecurityDescriptorViewModel>
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _readDbContext;
@@ -36,7 +36,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
         return (Result)(persist && await this._writeDbContext.SaveChangesAsync(cancellationToken) > 0);
     }
 
-    Task<Result> IAsyncWriteService<SecurityDescriptorViewModel, long>.DeleteAsync(SecurityDescriptorViewModel model, bool persist, CancellationToken cancellationToken = default)
+    Task<Result> IAsyncWrite<SecurityDescriptorViewModel, long>.DeleteAsync(SecurityDescriptorViewModel model, bool persist, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 
     public Task DeleteByEntityIdAsync(Guid entityId, bool persist = true, CancellationToken cancellationToken = default)
@@ -99,7 +99,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
         //}
     }
 
-    Task<Result<SecurityDescriptorViewModel>> IAsyncWriteService<SecurityDescriptorViewModel, long>.InsertAsync(SecurityDescriptorViewModel model, bool persist, CancellationToken cancellationToken = default)
+    Task<Result<SecurityDescriptorViewModel>> IAsyncWrite<SecurityDescriptorViewModel, long>.InsertAsync(SecurityDescriptorViewModel model, bool persist, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 
     public void ResetChanges() =>
@@ -142,7 +142,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
         }
     }
 
-    Task<Result<SecurityDescriptorViewModel>> IAsyncWriteService<SecurityDescriptorViewModel, long>.UpdateAsync(long id, SecurityDescriptorViewModel model, bool persist, CancellationToken cancellationToken = default)
+    Task<Result<SecurityDescriptorViewModel>> IAsyncWrite<SecurityDescriptorViewModel, long>.UpdateAsync(long id, SecurityDescriptorViewModel model, bool persist, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 
     public Task<Result<SecurityDescriptorViewModel?>> ValidateAsync(SecurityDescriptorViewModel? item, CancellationToken cancellationToken = default)

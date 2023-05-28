@@ -19,7 +19,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
     IResetChanges,
-    IAsyncReadService<CqrsCommandViewModel>
+    IAsyncRead<CqrsCommandViewModel>
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IMapper _mapper;

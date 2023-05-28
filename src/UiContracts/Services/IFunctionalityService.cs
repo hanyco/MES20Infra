@@ -7,7 +7,7 @@ using Library.Results;
 
 namespace Contracts.Services;
 
-public interface IFunctionalityService : IBusinessService, IAsyncCrudService<FunctionalityViewModel>
+public interface IFunctionalityService : IBusinessService, IAsyncCrud<FunctionalityViewModel>
 {
     Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync([DisallowNull] FunctionalityViewModel model, CancellationToken token = default);
 }

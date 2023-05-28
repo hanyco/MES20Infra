@@ -6,7 +6,7 @@ using Library.Validations;
 
 namespace Contracts.Services;
 
-public interface ISecurityDescriptorService : IBusinessService, IAsyncCrudService<SecurityDescriptorViewModel, Id>, IAsyncValidator<SecurityDescriptorViewModel>
+public interface ISecurityDescriptorService : IBusinessService, IAsyncCrud<SecurityDescriptorViewModel, Id>, IAsyncValidator<SecurityDescriptorViewModel>
 {
     //Task DeleteByEntityIdAsync(Guid entityId, bool persist = true);
     IAsyncEnumerable<SecurityDescriptorViewModel> AssignToEntityIdAsync(Guid entityId, IEnumerable<Id>? securityDescriptorIds, bool persist = true, CancellationToken token = default);

@@ -30,7 +30,7 @@ using DtoEntity = HanyCo.Infra.Internals.Data.DataSources.Dto;
 namespace Services;
 
 internal sealed class DtoService : IDtoService, IDtoCodeService,
-    IAsyncValidator<DtoViewModel>, IAsyncSaveService, IResetChanges
+    IAsyncValidator<DtoViewModel>, IAsyncSaveChanges, IResetChanges
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _db;

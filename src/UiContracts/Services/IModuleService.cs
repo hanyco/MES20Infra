@@ -7,7 +7,7 @@ namespace Contracts.Services;
 
 public interface IModuleService
     : IBusinessService
-    , IAsyncReadService<ModuleViewModel>
-    , IHierarchicalDbEntityService<Module>
+    , IAsyncRead<ModuleViewModel>
+    , IHierarchicalDbEntityActor<Module>
 {
 }

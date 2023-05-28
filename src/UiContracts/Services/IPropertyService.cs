@@ -5,7 +5,7 @@ using Library.Interfaces;
 
 namespace Contracts.Services;
 
-public interface IPropertyService : IBusinessService, IAsyncCrudService<PropertyViewModel>
+public interface IPropertyService : IBusinessService, IAsyncCrud<PropertyViewModel>
 {
     Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true, CancellationToken token = default);
 
