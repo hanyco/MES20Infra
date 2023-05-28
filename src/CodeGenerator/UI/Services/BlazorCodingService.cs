@@ -73,17 +73,17 @@ internal sealed class BlazorCodingService : IBlazorCodingService
         };
     }
 
-    public Task<UiComponentViewModel> CreateNewComponentAsync()
+    public Task<UiComponentViewModel> CreateNewComponentAsync(CancellationToken cancellationToken = default)
     {
         var result = new UiComponentViewModel();
         return Task.FromResult(result);
     }
 
-    public async Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto)
+    public async Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken cancellationToken = default)
     {
         Check.IfArgumentNotNull(dto?.Id);
-        var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value)).NotNull(() => new NotFoundValidationException());
-        var propsEntity = await this._propertyService.GetDbPropertiesByParentIdAsync(dto.Id!.Value);
+        var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value, cancellationToken)).NotNull(() => new NotFoundValidationException());
+        var propsEntity = await this._propertyService.GetDbPropertiesByParentIdAsync(dto.Id!.Value, cancellationToken);
         var parsedName = entity.Name?.Replace("Dto", "Component").Replace("ViewModel", "Component") ?? string.Empty;
         var parsedNameSpace = entity.NameSpace.Replace("Dto", "Component").Replace("ViewModel", "Component");
         var result = new UiComponentViewModel
@@ -103,11 +103,11 @@ internal sealed class BlazorCodingService : IBlazorCodingService
     public UiComponentPropertyViewModel CreateUnboundProperty()
         => new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
 
-    public Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop)
+    public Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop, CancellationToken cancellationToken = default)
     {
         Check.IfArgumentNotNull(prop);
         var id = prop.Id.ArgumentNotNull(nameof(UiComponentPropertyViewModel.Id)).Value;
-        return this.GetUiComponentPropertyByIdAsync(id);
+        return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
     }
 
     public GenerateCodeResult GenerateBlazorCodeBehinds(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
@@ -142,12 +142,12 @@ internal sealed class BlazorCodingService : IBlazorCodingService
         return result;
     }
 
-    public async Task<UiComponentPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id)
+    public async Task<UiComponentPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
     {
         var query = from cp in this._readDbContext.UiComponentProperties
                     where cp.Id == id
                     select cp;
-        var result = await query.FirstOrDefaultAsync();
+        var result = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         return this._converter.ToViewModel(result);
     }
 
@@ -169,7 +169,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
             _ => false,
         };
 
-    public async Task SaveToPathAsync(UiComponentViewModel viewModel, string path, GenerateCodesParameters? arguments = null)
+    public async Task SaveToPathAsync(UiComponentViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
     {
         Check.NotNull(viewModel);
         Check.NotNull(viewModel.ClassName);
@@ -178,18 +178,18 @@ internal sealed class BlazorCodingService : IBlazorCodingService
         var codes = this.GenerateCodes(viewModel, arguments);
         foreach (var code in codes.Compact())
         {
-            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement);
+            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, cancellationToken: cancellationToken);
         }
     }
 
-    public Task SaveToPathAsync(UiPageViewModel viewModel, string path, GenerateCodesParameters? arguments = null)
+    public Task SaveToPathAsync(UiPageViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
     {
-        var page = CreatePage(viewModel);
+        var page = CreatePage(viewModel, cancellationToken);
         var codes = page.GenerateCodes(arguments);
         var writeTasks = TaskList.New();
         foreach (var code in codes.Compact())
         {
-            _ = writeTasks.Add(File.WriteAllTextAsync(Path.Combine(path, code.Name), code.Statement));
+            _ = writeTasks.Add(File.WriteAllTextAsync(Path.Combine(path, code.Name), code.Statement, cancellationToken: cancellationToken));
         }
         return writeTasks.WhenAllAsync();
     }
@@ -211,7 +211,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
         }
         return result;
 
-        static (TypePath DataContextType, TypePath? DataContextPropType) createDataContext(UiComponentViewModel model)
+        static (TypePath DataContextType, TypePath? DataContextPropType) createDataContext(UiComponentViewModel model, CancellationToken cancellationToken = default)
         {
             var dataContextType = TypePath.New(model.PageDataContext?.Name, model.PageDataContext?.NameSpace);
             var dataContextPropType = model.PageDataContextProperty is not null and { Name: not null }
@@ -226,7 +226,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
                               .SetDataContext(dataContextType)
                               .SetIsGrid(model.IsGrid);
 
-        static void setDataContext(UiComponentViewModel model, TypePath? dataContextPropType, BlazorComponent result)
+        static void setDataContext(UiComponentViewModel model, TypePath? dataContextPropType, BlazorComponent result, CancellationToken cancellationToken = default)
         {
             if (dataContextPropType is not { } prop)
             {
@@ -235,7 +235,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
             _ = result.SetDataContextProperty(prop, model.PageDataContextProperty.Name);
         }
 
-        static void createChildren<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponentBase<TBlazorComponent> engine)
+        static void createChildren<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponentBase<TBlazorComponent> engine, CancellationToken cancellationToken = default)
             where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
         {
             foreach (var prop in model.UiProperties)
@@ -343,7 +343,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
         }
     }
 
-    private static BlazorPage CreatePage(in UiPageViewModel model)
+    private static BlazorPage CreatePage(in UiPageViewModel model, CancellationToken cancellationToken = default)
     {
         Check.IfArgumentNotNull(model);
         Check.IfArgumentNotNull(model.Name, nameof(model.Name));

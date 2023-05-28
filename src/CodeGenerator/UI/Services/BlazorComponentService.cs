@@ -37,7 +37,7 @@ public sealed class BlazorComponentService :
     /// </summary>
     /// <param name="model">The identifier.</param>
     /// <returns></returns>
-    public async Task<Result> DeleteAsync(UiComponentViewModel model, bool persist = true)
+    public async Task<Result> DeleteAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         var cmpQuery = from c in this._writeDbContext.UiComponents
                        where c.Id == model.Id
@@ -47,7 +47,7 @@ public sealed class BlazorComponentService :
                            props = c.UiComponentProperties.Select(x => new { x.Id, x.PositionId }),
                            actions = c.UiComponentActions.Select(x => new { x.Id, x.PositionId }),
                        };
-        var cmp = await cmpQuery.FirstOrDefaultAsync();
+        var cmp = await cmpQuery.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         Check.NotNull(cmp, () => new NotFoundValidationException("Component not found"));
         _ = this._writeDbContext.RemoveById<UiComponent>(cmp.Id)
             .RemoveById<UiBootstrapPosition>(cmp.props.Select(x => x.PositionId))
@@ -60,7 +60,7 @@ public sealed class BlazorComponentService :
 
         try
         {
-            return await this.SaveChangesAsync();
+            return await this.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("infra.UiPageComponent") ?? false)
         {
@@ -68,7 +68,7 @@ public sealed class BlazorComponentService :
         }
     }
 
-    public async Task<UiComponentViewModel?> FillViewModelAsync(UiComponentViewModel? model)
+    public async Task<UiComponentViewModel?> FillViewModelAsync(UiComponentViewModel? model, CancellationToken cancellationToken = default)
     {
         if (model is null)
         {
@@ -83,17 +83,17 @@ public sealed class BlazorComponentService :
                        .Include(x => x.UiComponentProperties).ThenInclude(x => x.Position)
                        where c.Id == model.Id
                        select c;
-        var cmp = await cmpQuery.FirstOrDefaultAsync();
+        var cmp = await cmpQuery.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         model = this._converter.ToViewModel(cmp)!;
         _ = model?.UiProperties?.AddRange(this._converter.ToViewModel(cmp.UiComponentProperties)!);
         _ = model?.UiActions?.AddRange(this._converter.ToViewModel(cmp.UiComponentActions)!);
         return model;
     }
 
-    public Task<IReadOnlyList<UiComponentViewModel>> GetAllAsync()
+    public Task<IReadOnlyList<UiComponentViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
         => ServiceHelper.GetAllAsync<UiComponentViewModel, UiComponent>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<UiComponentViewModel?> GetByIdAsync(long id)
+    public Task<UiComponentViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         => ServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiComponents
             .Include(x => x.UiComponentActions)
             .Include(x => x.UiComponentProperties)
@@ -101,7 +101,7 @@ public sealed class BlazorComponentService :
             .Include(x => x.PageDataContext)
             .Include(x => x.PageDataContextProperty), this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public async Task<IEnumerable<UiComponentViewModel>> GetByPageDataContextIdAsync(long dataDataContextId)
+    public async Task<IEnumerable<UiComponentViewModel>> GetByPageDataContextIdAsync(long dataDataContextId, CancellationToken cancellationToken = default)
     {
         var query = from c in this._readDbContext.UiComponents
                     where c.PageDataContextId == dataDataContextId
@@ -111,16 +111,16 @@ public sealed class BlazorComponentService :
         return result!;
     }
 
-    public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true)
-        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id).ModelResult();
+    public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
 
-    public Task<Result<int>> SaveChangesAsync()
-        => this._writeDbContext.SaveChangesResultAsync();
+    public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<UiComponentViewModel>> UpdateAsync(long id, UiComponentViewModel model, bool persist = true)
+    public async Task<Result<UiComponentViewModel>> UpdateAsync(long id, UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         Check.IfArgumentNotNull(model);
         model.Id = id;
@@ -185,7 +185,7 @@ public sealed class BlazorComponentService :
         }
     }
 
-    public async Task<Result<UiComponentViewModel>> ValidateAsync(UiComponentViewModel model)
+    public async Task<Result<UiComponentViewModel>> ValidateAsync(UiComponentViewModel model, CancellationToken cancellationToken = default)
     {
         Check.NotNull(model?.Name);
 

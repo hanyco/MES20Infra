@@ -39,10 +39,10 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
 
     public ILogger Logger { get; }
 
-    public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true)
+    public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
         => ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
 
-    public async Task<UiPageViewModel?> FillViewModelAsync(UiPageViewModel? model)
+    public async Task<UiPageViewModel?> FillViewModelAsync(UiPageViewModel? model, CancellationToken cancellationToken = default)
     {
         if (model is null)
         {
@@ -52,7 +52,7 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
         {
             throw new NullValueValidationException(nameof(model.Id));
         }
-        model = await this.GetByIdAsync(id);
+        model = await this.GetByIdAsync(id, cancellationToken);
         return model;
     }
 
@@ -84,24 +84,24 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
         }
     }
 
-    public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync()
+    public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
         => ServiceHelper.GetAllAsync<UiPageViewModel, UiPage>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<UiPageViewModel?> GetByIdAsync(long id)
+    public Task<UiPageViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         => ServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiPages.Include(x => x.Dto).Include(x => x.Module).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContext).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContextProperty).Include(x => x.UiPageComponents).ThenInclude(x => x.Position), this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<Result<UiPageViewModel>> InsertAsync(UiPageViewModel model, bool persist = true)
-        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist, onCommitted: (m, e) => m.Id = e.Id).ModelResult();
+    public Task<Result<UiPageViewModel>> InsertAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
 
-    public Task<Result<int>> SaveChangesAsync()
-        => this._writeDbContext.SaveChangesResultAsync();
+    public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<UiPageViewModel>> UpdateAsync(long id, UiPageViewModel model, bool persist = true)
+    public async Task<Result<UiPageViewModel>> UpdateAsync(long id, UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        var validation = await this.ValidateAsync(model);
+        var validation = await this.ValidateAsync(model, cancellationToken);
         if (!validation.IsSucceed)
         {
             return Result<UiPageViewModel>.From(validation, model);
@@ -126,7 +126,7 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
             _ = this._writeDbContext.RemoveById<UiPageComponent>(removedComponents);
 
             var save = await this.SubmitChangesAsync(persist);
-            var result = (await this.GetByIdAsync(entity.Id))!;
+            var result = (await this.GetByIdAsync(entity.Id, cancellationToken: cancellationToken))!;
             return Result<UiPageViewModel>.From(save, result);
         }
         finally
@@ -144,6 +144,6 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
                 .NotNull(x => x.Module)
                 .NotNull(x => x.Route).Build();
 
-    public Task<Result<UiPageViewModel>> ValidateAsync(UiPageViewModel model)
+    public Task<Result<UiPageViewModel>> ValidateAsync(UiPageViewModel model, CancellationToken cancellationToken = default)
         => this.Validate(model).ToAsync();
 }

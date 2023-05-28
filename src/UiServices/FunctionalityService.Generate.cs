@@ -24,9 +24,15 @@ namespace Services;
 [Service]
 internal sealed partial class FunctionalityService
 {
+    /// <summary>
+    /// Generates a FunctionalityViewModel asynchronously.
+    /// </summary>
+    /// <param name="viewModel">The FunctionalityViewModel to generate.</param>
+    /// <param name="token">The CancellationToken to use.</param>
+    /// <returns>A Result containing the generated FunctionalityViewModel or an error.</returns>
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        //! Validation Checks
+        //! Validate the viewModel argument
         Check.IfArgumentNotNull(viewModel);
         if (!validate(viewModel, token).TryParse(out var validationChecks))
         {
@@ -38,31 +44,42 @@ internal sealed partial class FunctionalityService
         // If `viewModel.DbTable` is empty then the connection string: `this._readDbContext.Database.GetConnectionString()` will be used to fill `viewModel.DbTable`.
         // Otherwise, `viewModel.DbTable` will be directly used (to be used in Unit Test).
         var connectionString = viewModel.DbTable is not null ? null : this._readDbContext.Database.GetConnectionString();
+        // Initialize the viewModel with the connection string
         var initResult = await initialize(viewModel, connectionString, token);
+        // If the initialization fails, return the result
         if (!initResult.IsSucceed)
         {
             return Result<FunctionalityViewModel>.From(initResult, default!)!;
         }
+        // Get the data and tokenSource from the initialization result
         var (data, tokenSource) = initResult.GetValue();
+        // Initialize the steps for the process
         var process = initSteps(data);
 
         //! Process
         this._reporter.Report(description: getTitle("Running..."));
+        // Run the process with the tokenSource
         var processResult = await process.RunAsync(tokenSource.Token);
 
         //! Finalize
+        // Get the message from the finalize method
         var message = finalize(processResult);
+        // Dispose the tokenSource
         tokenSource.Dispose();
+        // Report the message
         this._reporter.Report(description: getTitle(message));
+        // Get the result from the processResult
         var result = processResult.Result;
 
         return result!;
 
         #region Local Methods
 
+        // Get the title for the description
         ProgressData getTitle(in string description)
             => new(Description: description, Sender: nameof(FunctionalityService));
 
+        // Validate the model
         static Result<FunctionalityViewModel?> validate(in FunctionalityViewModel model, CancellationToken token)
             => model.Check()
                     .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
@@ -74,30 +91,39 @@ internal sealed partial class FunctionalityService
                     .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
                     .Build();
 
+        // Initialize the viewModel with the connection string
         static async Task<Result<(CreationData Data, CancellationTokenSource TokenSource)>> initialize(FunctionalityViewModel viewModel, string? connectionString, CancellationToken token)
         {
+            // If the token is cancelled, return a failure result
             if (token.IsCancellationRequested)
             {
                 return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateFailure("Cancelled by parent", default);
             }
 
+            // Get the dataResult from the viewModel
             var dataResult = viewModel;
             Table dbTable;
+            // If viewModel.DbTable is not null, use it
             if (viewModel.DbTable is not null)
             {
                 dbTable = viewModel.DbTable;
             }
+            // Otherwise, get the database from the connection string and get the table from the database
             else
             {
                 var db = await Database.GetDatabaseAsync(connectionString!);
                 dbTable = db.NotNull(() => new ObjectNotFoundException("Database not found."))
                             .Tables[dataResult.DbObject.Name!].NotNull(() => new ObjectNotFoundException($"Table name `{dataResult.DbObject}` not found."));
             }
+            // Create a linked tokenSource from the token
             var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
             var result = new CreationData(dataResult, dbTable, cancellationTokenSource);
+            // Return a success result with the result and cancellationTokenSource
             return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateSuccess((result, cancellationTokenSource));
         }
 
+        // Initialize the steps for the process
         MultistepProcessRunner<CreationData> initSteps(in CreationData data)
             => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel!.Name)}Query`…"))
@@ -113,6 +139,7 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
                 .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"));
 
+        // Finalize the process
         static string finalize(in CreationData result)
             => !result.Result.Message.IsNullOrEmpty()
                     ? result.Result.Message
@@ -136,6 +163,8 @@ internal sealed partial class FunctionalityService
         data.CancellationTokenSource.Cancel();
         data.SetResult(result);
     }
+
+    // Rewritten code with comments
 
     private async Task CreateBlazorPage(CreationData data)
     {
