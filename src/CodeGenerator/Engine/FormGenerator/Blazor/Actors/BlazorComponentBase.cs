@@ -25,7 +25,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
     public Dictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
-    public IList<IHtmlElement> Children { get; } = new EventualList<IHtmlElement>();
+    public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
     public TypePath? DataContextType { get; private set; }
     public IList<FieldActor> Fields { get; } = new List<FieldActor>();
     public virtual string HtmlFileExtension { get; } = "razor";

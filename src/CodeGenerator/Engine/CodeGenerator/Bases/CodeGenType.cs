@@ -37,7 +37,7 @@ public record CodeGenType : ICanInherit, IPropertyContainer, IAttributeContainer
     public IEnumerable<string> Namespaces => GetNameSpaces(this.FullName);
 
     public IList<CodeGenAttr> Attributes { get; } = new List<CodeGenAttr>();
-    public IList<CodeGenProp> Properties { get; } = new EventualList<CodeGenProp>();
+    public IList<CodeGenProp> Properties { get; } = new List<CodeGenProp>();
     public IList<CodeGenType> Interfaces { get; } = new List<CodeGenType>();
     public CodeGenType? BaseClass { get; set; }
 
