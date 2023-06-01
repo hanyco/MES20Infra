@@ -18,22 +18,7 @@ public sealed class FunctionalityServiceTest
 
     [Fact]
     [Trait("_Active Tests", "Current")]
-    public async void GenerateCodeTest()
-    {
-        // Assign
-        var cts = new CancellationTokenSource();
-        _ = CreateModel();
-
-        // Act
-        var actual =await this._codeService.GenerateCodesAsync(null!, token: cts.Token);
-
-        // Assert
-        Assert.True(actual);
-    }
-
-    [Fact]
-    [Trait("_Active Tests", "Current")]
-    public async Task GenerateModelTest()
+    public async Task _10_GenerateModelTest()
     {
         // Assign
         var tokenSource = new CancellationTokenSource();
@@ -41,6 +26,21 @@ public sealed class FunctionalityServiceTest
 
         // Act
         var actual = await this._service.GenerateViewModelAsync(model, tokenSource.Token);
+
+        // Assert
+        Assert.True(actual);
+    }
+
+    [Fact]
+    [Trait("_Active Tests", "Current")]
+    public async void _20_GenerateCodeTest()
+    {
+        // Assign
+        var cts = new CancellationTokenSource();
+        _ = CreateModel();
+
+        // Act
+        var actual = await this._codeService.GenerateCodesAsync(null!, token: cts.Token);
 
         // Assert
         Assert.True(actual);

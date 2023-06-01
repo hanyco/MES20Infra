@@ -24,22 +24,17 @@ namespace Services;
 [Service]
 internal sealed partial class FunctionalityService
 {
-    /// <summary>
-    /// Generates a FunctionalityViewModel asynchronously.
-    /// </summary>
-    /// <param name="viewModel">The FunctionalityViewModel to generate.</param>
-    /// <param name="token">The CancellationToken to use.</param>
-    /// <returns>A Result containing the generated FunctionalityViewModel or an error.</returns>
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        //! Validate the viewModel argument
+        #region Validate the viewModel argument
         Check.IfArgumentNotNull(viewModel);
         if (!validate(viewModel, token).TryParse(out var validationChecks))
         {
             return validationChecks!;
         }
+        #endregion
 
-        //! Initialize
+        #region Initialize
         this._reporter.Report(description: getTitle("Initializing..."));
         // If `viewModel.DbTable` is empty then the connection string: `this._readDbContext.Database.GetConnectionString()` will be used to fill `viewModel.DbTable`.
         // Otherwise, `viewModel.DbTable` will be directly used (to be used in Unit Test).
@@ -55,21 +50,23 @@ internal sealed partial class FunctionalityService
         var (data, tokenSource) = initResult.GetValue();
         // Initialize the steps for the process
         var process = initSteps(data);
+        #endregion
 
-        //! Process
+        #region Process
         this._reporter.Report(description: getTitle("Running..."));
         // Run the process with the tokenSource
         var processResult = await process.RunAsync(tokenSource.Token);
+        #endregion
 
-        //! Finalize
-        // Get the message from the finalize method
+        #region Finalize and prepare the result
         var message = finalize(processResult);
         // Dispose the tokenSource
         tokenSource.Dispose();
         // Report the message
         this._reporter.Report(description: getTitle(message));
         // Get the result from the processResult
-        var result = processResult.Result;
+        var result = processResult.Result; 
+        #endregion
 
         return result!;
 
@@ -163,8 +160,6 @@ internal sealed partial class FunctionalityService
         data.CancellationTokenSource.Cancel();
         data.SetResult(result);
     }
-
-    // Rewritten code with comments
 
     private async Task CreateBlazorPage(CreationData data)
     {
