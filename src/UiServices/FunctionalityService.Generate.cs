@@ -27,14 +27,16 @@ internal sealed partial class FunctionalityService
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
         #region Validate the viewModel argument
-        Check.IfArgumentNotNull(viewModel);
+
         if (!validate(viewModel, token).TryParse(out var validationChecks))
         {
             return validationChecks!;
         }
-        #endregion
+
+        #endregion Validate the viewModel argument
 
         #region Initialize
+
         this._reporter.Report(description: getTitle("Initializing..."));
         // If `viewModel.DbTable` is empty then the connection string: `this._readDbContext.Database.GetConnectionString()` will be used to fill `viewModel.DbTable`.
         // Otherwise, `viewModel.DbTable` will be directly used (to be used in Unit Test).
@@ -50,23 +52,28 @@ internal sealed partial class FunctionalityService
         var (data, tokenSource) = initResult.GetValue();
         // Initialize the steps for the process
         var process = initSteps(data);
-        #endregion
+
+        #endregion Initialize
 
         #region Process
+
         this._reporter.Report(description: getTitle("Running..."));
         // Run the process with the tokenSource
         var processResult = await process.RunAsync(tokenSource.Token);
-        #endregion
+
+        #endregion Process
 
         #region Finalize and prepare the result
+
         var message = finalize(processResult);
         // Dispose the tokenSource
         tokenSource.Dispose();
         // Report the message
         this._reporter.Report(description: getTitle(message));
         // Get the result from the processResult
-        var result = processResult.Result; 
-        #endregion
+        var result = processResult.Result;
+
+        #endregion Finalize and prepare the result
 
         return result!;
 
@@ -80,13 +87,13 @@ internal sealed partial class FunctionalityService
         static Result<FunctionalityViewModel?> validate(in FunctionalityViewModel model, CancellationToken token)
             => model.Check()
                     .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
-                    .ArgumentNotNull()
+                    .ArgumentNotNull().ThrowOnFail()
                     .NotNull(x => x.Name)
                     .NotNull(x => x.NameSpace)
                     .NotNull(x => x.DbObject)
                     .NotNull(x => x.DbObject.Name)
                     .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
-                    .Build();
+                    .Build()!;
 
         // Initialize the viewModel with the connection string
         static async Task<Result<(CreationData Data, CancellationTokenSource TokenSource)>> initialize(FunctionalityViewModel viewModel, string? connectionString, CancellationToken token)
@@ -108,7 +115,7 @@ internal sealed partial class FunctionalityService
             // Otherwise, get the database from the connection string and get the table from the database
             else
             {
-                var db = await Database.GetDatabaseAsync(connectionString!);
+                var db = await Database.GetDatabaseAsync(connectionString!, cancellationToken: token);
                 dbTable = db.NotNull(() => new ObjectNotFoundException("Database not found."))
                             .Tables[dataResult.DbObject.Name!].NotNull(() => new ObjectNotFoundException($"Table name `{dataResult.DbObject}` not found."));
             }
@@ -149,18 +156,6 @@ internal sealed partial class FunctionalityService
         #endregion Local Methods
     }
 
-    private static void Cancel(in CreationData data, in string reason)
-    {
-        data.CancellationTokenSource.Cancel();
-        data.SetResult(false, reason);
-    }
-
-    private static void Cancel(in CreationData data, in Result result)
-    {
-        data.CancellationTokenSource.Cancel();
-        data.SetResult(result);
-    }
-
     private async Task CreateBlazorPage(CreationData data)
     {
         await createPageViewModel(data);
@@ -190,12 +185,14 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private async Task CreateCodes(CreationData arg)
+    private async Task CreateCodes(CreationData data)
     {
-        var codes = await this.GenerateCodesAsync(arg.ViewModel, token: arg.CancellationTokenSource.Token);
+        var codes = await this.GenerateCodesAsync(data.ViewModel, token: data.CancellationTokenSource.Token);
         if (!codes)
         {
-            Cancel(arg, codes);
+            data.CancellationTokenSource.Cancel();
+            data.SetResult(codes);
+            return;
         }
         //ToDo arg.ViewModel.Codes = codes;
     }
@@ -242,7 +239,7 @@ internal sealed partial class FunctionalityService
         async Task createViewModel(CreationData data)
         {
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
-            var query = await this._queryService.CreateAsync();
+            var query = await this._queryService.CreateAsync(token: data.CancellationTokenSource.Token);
             data.ViewModel.GetAllQuery = query
                 .With(x => x.Name = $"{data.GetAllQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
@@ -250,7 +247,7 @@ internal sealed partial class FunctionalityService
                 .With(x => x.DbObject = data.ViewModel.DbObject)
                 .With(x => x.FriendlyName = data.GetAllQueryName.SplitCamelCase().Merge(" "))
                 .With(x => x.Comment = data.COMMENT)
-                .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
+                .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: data.CancellationTokenSource.Token));
         }
 
         Task createParams(CreationData data)
@@ -281,7 +278,7 @@ internal sealed partial class FunctionalityService
         async Task createQuery(CreationData data)
         {
             data.GetByIdQueryName = $"GetById{data.DbTable.Name}Query";
-            var query = await this._queryService.CreateAsync();
+            var query = await this._queryService.CreateAsync(token: data.CancellationTokenSource.Token);
             data.ViewModel.GetByIdQuery = query
                 .With(x => x.Name = $"{data.GetByIdQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
@@ -289,7 +286,7 @@ internal sealed partial class FunctionalityService
                 .With(x => x.DbObject = data.ViewModel.DbObject)
                 .With(x => x.FriendlyName = data.GetByIdQueryName.SplitCamelCase().Merge(" "))
                 .With(x => x.Comment = data.COMMENT)
-                .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId));
+                .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: data.CancellationTokenSource.Token));
         }
 
         Task createParams(CreationData data)
@@ -314,7 +311,7 @@ internal sealed partial class FunctionalityService
 
     private async Task CreateInsertCommand(CreationData data)
     {
-        var command = await this._commandService.CreateAsync();
+        var command = await this._commandService.CreateAsync(token: data.CancellationTokenSource.Token);
         data.ViewModel.InsertCommand = command
             .With(x => x.Category = CqrsSegregateCategory.Create)
             .With(x => x.Comment = data.COMMENT);
