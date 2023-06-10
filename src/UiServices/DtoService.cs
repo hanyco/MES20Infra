@@ -20,6 +20,7 @@ using Library.Helpers.CodeGen;
 using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
+using Library.Results;
 using Library.Validations;
 using Library.Windows;
 
@@ -377,7 +378,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         var query = from dto in this._db.Dtos
                     where dto.Name == viewModel!.Name && dto.Id != viewModel.Id
                     select dto.Id;
-        _ = result.Check(await query.AnyAsync(), "DTO name already exists.", ObjectDuplicateValidationException.ErrorCode);
+        _ = result.Check(await query.AnyAsync(cancellationToken: token), "DTO name already exists.", ObjectDuplicateValidationException.ErrorCode);
         var duplicates = viewModel!.Properties
             .GroupBy(x => x.Name)
             .Where(g => g.Count() > 1)

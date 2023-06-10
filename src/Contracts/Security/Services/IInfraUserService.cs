@@ -1,4 +1,5 @@
 ﻿using HanyCo.Infra.Security.Model;
+
 using Library.Results;
 using Library.Types;
 
