@@ -71,11 +71,11 @@ internal sealed partial class FunctionalityService
         // Report the message
         this._reporter.Report(description: getTitle(message));
         // Get the result from the processResult
-        var result = processResult.Result;
+        Result<FunctionalityViewModel?> result = processResult.Result!;
 
         #endregion Finalize and prepare the result
 
-        return result!;
+        return result;
 
         #region Local Methods
 
