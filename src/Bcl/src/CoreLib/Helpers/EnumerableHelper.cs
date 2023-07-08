@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using Library.Collections;
-using Library.Exceptions;
 using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
@@ -79,7 +78,19 @@ public static class EnumerableHelper
     /// <param name="list">The list to add the items to.</param>
     /// <param name="items">The items to add to the list.</param>
     /// <returns>The list with the added items.</returns>
-    public static IList<T> AddRange<T>([DisallowNull] this IList<T> list, in IEnumerable<T> items)
+    //public static IList<T> AddRange<T>([DisallowNull] this IList<T> list, in IEnumerable<T> items)
+    //{
+    //    if (items?.Any() is true)
+    //    {
+    //        foreach (var item in items)
+    //        {
+    //            list.Add(item);
+    //        }
+    //    }
+    //    return list;
+    //}
+    public static TList AddRange<TList, TItem>([DisallowNull] this TList list, in IEnumerable<TItem> items)
+        where TList : ICollection<TItem>
     {
         if (items?.Any() is true)
         {
@@ -240,6 +251,16 @@ public static class EnumerableHelper
     public static Span<TItem> AsSpan<TItem>(this IEnumerable<TItem> items)
         => items is null ? default : MemoryExtensions.AsSpan(items.ToArray());
 
+#if NET8_0_OR_GREATER
+    [Obsolete("Use `AsImmutableArray` instead.", true)]
+#endif
+    public static ImmutableArray<TItem> AsImmutableArrayUnsafe<TItem>(this TItem[] itemArray)
+        => Unsafe.As<TItem[], ImmutableArray<TItem>>(ref itemArray);
+#if NET8_0_OR_GREATER
+    public static ImmutableArray<TItem> AsImmutableArray<TItem>(this TItem[] itemArray)
+        => ImmutableCollectionsMarshal.AsImmutableArray(itemArray);
+#endif
+
     /// <summary>
     /// Builds a read-only list from an enumerable.
     /// </summary>
@@ -372,9 +393,6 @@ public static class EnumerableHelper
     public static IEnumerable<T> ClearImmuted<T>(this IEnumerable<T>? source)
             => Enumerable.Empty<T>();
 
-    public static T[] Copy<T>(this T[] array) 
-        => array.ToEnumerable().ToArray();
-
     /// <summary> Recursively collects all items in a collection of items that implement
     /// IParent<TItem>. </summary> <param name="items">The collection of items to collect.</param>
     /// <returns>A collection of all items in the collection, including all children.</returns>
@@ -404,6 +422,9 @@ public static class EnumerableHelper
     public static bool ContainsKey<TKey, TValue>([DisallowNull] this IEnumerable<(TKey Key, TValue Value)> source, TKey key)
             => source.ArgumentNotNull().Where(kv => kv.Key?.Equals(key) ?? key is null).Any();
 
+    public static T[] Copy<T>(this T[] array)
+                    => array.ToEnumerable().ToArray();
+
     /// <summary> Counts the number of elements in a sequence that are not enumerated. </summary>
     /// <typeparam name="T">The type of the elements of source.</typeparam> <param name="source">The
     /// IEnumerable<T> to count.</param> <returns>The number of elements in the sequence that are
@@ -420,6 +441,17 @@ public static class EnumerableHelper
     [return: NotNull]
     public static IEnumerable<T> DefaultIfEmpty<T>(IEnumerable<T>? items)
             => items is null ? Enumerable.Empty<T>() : items;
+
+    public static Dictionary<TKey, TValue> DictionaryFromKeys<TKey, TValue>(IEnumerable<TKey> keys, TValue? defaultValue = default)
+                where TKey : notnull
+    {
+        var result = new Dictionary<TKey, TValue>();
+        foreach (var key in keys)
+        {
+            result.Add(key, default!);
+        }
+        return result;
+    }
 
     /// <summary>
     /// Creates an empty array.
@@ -454,6 +486,9 @@ public static class EnumerableHelper
     /// </summary>
     public static IEnumerable<TItem> Exclude<TItem>(this IEnumerable<TItem> source, Func<TItem, bool> exclude)
             => source.Where(x => !exclude(x));
+
+    public static IEnumerable<TSource> Filter<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+            => source.Where(predicate);
 
     /// <summary>
     /// Finds the duplicates in a given IEnumerable of type T.
@@ -711,11 +746,54 @@ public static class EnumerableHelper
     public static IEnumerable<(T Item, int Count)> GroupCounts<T>(in IEnumerable<T> items)
             => items.GroupBy(x => x).Select(x => (x.Key, x.Count()));
 
+    public static TEnumerable IfEach<TEnumerable, TItem>(this TEnumerable source, Func<TItem, bool> condition, Action<TItem> trueness, Action<TItem> falseness)
+            where TEnumerable : IEnumerable<TItem>
+    {
+        Check.IfArgumentNotNull(source);
+        Check.IfArgumentNotNull(condition);
+
+        foreach (var item in source)
+        {
+            if (condition(item))
+            {
+                trueness?.Invoke(item);
+            }
+            else
+            {
+                falseness?.Invoke(item);
+            }
+        }
+
+        return source;
+    }
+
     /// <summary>
     /// Returns the given items if it is not empty, otherwise returns the default values.
     /// </summary>
     public static IEnumerable<T?> IfEmpty<T>(this IEnumerable<T?>? items, [DisallowNull] IEnumerable<T?> defaultValues)
             => items?.Any() is true ? items : defaultValues;
+
+    public static IEnumerable<int> IndexesOf<T>(this IEnumerable<T> source, T item)
+    {
+        var index = 0;
+        foreach (var sourceItem in source)
+        {
+            if (EqualityComparer<T>.Default.Equals(sourceItem, item))
+            {
+                yield return index;
+            }
+            index++;
+        }
+    }
+
+    public static T[] InitializeItems<T>(this T[] items, T defaultItem)
+    {
+        for (var index = 0; index < items.Length; index++)
+        {
+            items[index] = defaultItem;
+        }
+        return items;
+    }
 
     /// <summary>
     /// Inserts an item into an IEnumerable at a specified index.
@@ -739,60 +817,63 @@ public static class EnumerableHelper
         }
     }
 
+    public static bool IsSame<T>(this IEnumerable<T>? items1, IEnumerable<T>? items2)
+        => (items1 == null && items2 == null) || (items1 != null && items2 != null && (items1.Equals(items2) || items1.SequenceEqual(items2)));
+
+    public static IEnumerable<TResult> Map<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> mapper)
+        => source.Select(mapper);
+
+    public static IEnumerable<T> Merge<T>(params IEnumerable<T>[] enumerables)
+    {
+        foreach (var enumerable in enumerables)
+        {
+            foreach (var item in enumerable)
+            {
+                yield return item;
+            }
+        }
+    }
+
     /// <summary>
     /// Merges the elements of an IEnumerable into a single string.
     /// </summary>
     public static string MergeToString<T>(this IEnumerable<T> source)
-            => source.Aggregate(new StringBuilder(), (current, item) => current.Append(item)).ToString();
+        => source.Aggregate(new StringBuilder(), (current, item) => current.Append(item)).ToString();
 
-    /// <summary>
-    /// Generates a sequence of integers within a specified range.
-    /// </summary>
-    /// <param name="start">The start of the range.</param>
-    /// <param name="end">The end of the range.</param>
-    /// <param name="step">The step between each value in the range.</param>
-    /// <returns>A sequence of integers within the specified range.</returns>
-    public static IEnumerable<int> Range(int start, int end, int step = 1)
+    public static T Pop<T>(this IList<T> list, int index = -1)
     {
-        // Check if step is not equal to 0
-        Check.NotValid(step, x => x != 0, () => new ArgumentOutOfRangeException(nameof(step)));
-        // Throw exception if step is positive and start is greater than end
-        if (step > 0 && start > end)
-        {
-            throw new InvalidArgumentException(nameof(step));
-        }
-        // Throw exception if step is negative and start is less than end
-        if (step < 0 && start < end)
-        {
-            throw new InvalidArgumentException(nameof(step));
-        }
-
-        // Create a function to check if the end condition is met
-        Func<int, bool> endCondition = step > 0 ? i => i <= end : i => i >= end;
-
-        // Loop through the range and yield the values
-        for (var i = start; endCondition(i); i += step)
-        {
-            yield return i;
-        }
-        // Create a range from 5 to 10
-        var a = 5..10;
+        var i = index >= 0 ? index : list.Count + index;
+        var result = list[i];
+        list.RemoveAt(i);
+        return result;
     }
 
-    /// <summary>
-    /// Generates a sequence of integers from 0 to the specified end value, with a specified step.
-    /// </summary>
-    public static IEnumerable<int> Range(int end, int step = 1)
-            => Range(0, end, step);
-
-    [Obsolete("Subject to delete", true)]
-    public static async IAsyncEnumerable<int> RangeAsync(int start, int count)
+    public static Result<TValue?> Pop<TKey, TValue>(this Dictionary<TKey, TValue> dic, TKey key)
+        where TKey : notnull
     {
-        await Task.Yield();
-        for (var i = 0; i < count; i++)
+        Check.IfArgumentNotNull(dic);
+
+        var result = dic.TryGetValue(key);
+        if (result)
         {
-            yield return start + i;
+            _ = dic.Remove(key);
         }
+
+        return result;
+    }
+
+    public static Result<KeyValuePair<TKey, TValue>> Pop<TKey, TValue>(this Dictionary<TKey, TValue> dic)
+        where TKey : notnull
+    {
+        Check.IfArgumentNotNull(dic);
+
+        var result = dic.LastOrDefault();
+        if (!result.IsDefault())
+        {
+            _ = dic.Remove(result.Key);
+            return Result<KeyValuePair<TKey, TValue>>.CreateSuccess(result);
+        }
+        return Result<KeyValuePair<TKey, TValue>>.CreateFailure();
     }
 
     /// <summary>
@@ -975,6 +1056,46 @@ public static class EnumerableHelper
         return dic;
     }
 
+    public static IEnumerable<T> Slice<T>(this IEnumerable<T> items, int start = 0, int end = 0, int steps = 0)
+    {
+        var index = 0;
+        var empty = () => { };
+        var getTrue = () => true;
+        var incIndex = steps switch
+        {
+            0 or 1 => empty,
+            < 1 => () => index--,
+            _ => () => index++,
+        };
+        var resIndex = steps is 0 or 1 ? empty : () => { index = 0; };
+        var shouldReturn = steps is 0 or 1 ? getTrue : () => index == 0 || steps == index;
+        var buffer = items.AsEnumerable();
+        if (steps < 0)
+        {
+            buffer = buffer.Reverse();
+        }
+
+        if (start != 0)
+        {
+            buffer = buffer.Skip(start);
+        }
+
+        if (end != 0)
+        {
+            buffer = buffer.Take(end);
+        }
+
+        foreach (var item in buffer)
+        {
+            if (shouldReturn())
+            {
+                yield return item;
+                resIndex();
+            }
+            incIndex();
+        }
+    }
+
     /// <summary>
     /// Creates an array from a single item.
     /// </summary>
@@ -983,13 +1104,6 @@ public static class EnumerableHelper
     /// <returns>An array containing the item.</returns>
     public static T[] ToArray<T>(T item)
         => ToEnumerable(item).ToArray();
-
-    public static ImmutableArray<T> ToImmutableArray<T>(IEnumerable<T> items)
-    {
-        var builder = ImmutableArray.CreateBuilder<T>();
-        builder.AddRange(items);
-        return builder.ToImmutable();
-    }
 
     public static Dictionary<TKey, TValue>? ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>>? pairs) where TKey : notnull
             => pairs?.ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -1066,6 +1180,13 @@ public static class EnumerableHelper
         return result;
     }
 
+    public static ImmutableArray<T> ToImmutableArray<T>(IEnumerable<T> items)
+    {
+        var builder = ImmutableArray.CreateBuilder<T>();
+        builder.AddRange(items);
+        return builder.ToImmutable();
+    }
+
     /// <summary>
     /// Converts an IAsyncEnumerable to a List.
     /// </summary>
@@ -1130,6 +1251,21 @@ public static class EnumerableHelper
     public static TryMethodResult<int> TryCountNonEnumerated<T>([DisallowNull] this IEnumerable<T> source)
         => TryMethodResult<int>.TryParseResult(source.TryGetNonEnumeratedCount(out var count), count);
 
+    public static TryMethodResult<TValue> TryGetValue<TKey, TValue>(this Dictionary<TKey, TValue> dic, TKey key) where TKey : notnull
+        => TryMethodResult<TValue>.TryParseResult(dic.TryGetValue(key, out var value), value);
+
+    public static Dictionary<TKey, TValue> Update<TKey, TValue>(this Dictionary<TKey, TValue> src, Dictionary<TKey, TValue> dst)
+        where TKey : notnull
+    {
+        var a = src.Keys;
+        Check.IfArgumentNotNull(dst);
+        _ = src.IfEach<Dictionary<TKey, TValue>, KeyValuePair<TKey, TValue>>(
+            x => dst.ContainsKey(x.Key)
+            , x => dst[x.Key] = x.Value
+            , x => dst.Add(x.Key, x.Value));
+        return dst;
+    }
+
     /// <summary>
     /// Asynchronously filters a sequence of values based on a predicate.
     /// </summary>
@@ -1179,6 +1315,20 @@ public static class EnumerableHelper
         }
     }
 
+    public static IEnumerable<IEnumerable<T>> Zip<T>(params IEnumerable<T>[] value)
+    {
+        var buffer = new List<T>();
+        foreach (var topLayer in value)
+        {
+            foreach (var innerLayer in topLayer)
+            {
+                buffer.Add(innerLayer);
+            }
+            yield return buffer;
+            buffer.Clear();
+        }
+    }
+
     private static T InnerAggregate<T>(this T[] items, Func<T, T?, T> aggregator, T defaultValue = default!)
         => items switch
         {
@@ -1187,12 +1337,4 @@ public static class EnumerableHelper
             { Length: 2 } => aggregator(items[0], items[1]),
             [var item, .. var others] => aggregator(item, InnerAggregate(others, aggregator, defaultValue))
         };
-    public static T[] InitializeItems<T>(this T[] items, T defaultItem)
-    {
-        for (var index = 0; index < items.Length; index++)
-        {
-            items[index] = defaultItem;
-            }
-        return items;
-    }
 }

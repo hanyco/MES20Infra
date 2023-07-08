@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
 
+using Library.Exceptions;
 using Library.Globalization;
+using Library.Validations;
 
 namespace Library.Helpers;
 
@@ -52,7 +54,8 @@ public static class NumberHelper
     }
 
     /// <summary>
-    /// Generates a random number between the given min and max values. If no min or max values are provided, the default min and max values are used.
+    /// Generates a random number between the given min and max values. If no min or max values are
+    /// provided, the default min and max values are used.
     /// </summary>
     public static int RandomNumber(int? min = null, int? max = null)
         => getRandomizerMethod(min, max)();
@@ -65,9 +68,63 @@ public static class NumberHelper
     /// <param name="max">The maximum value of the random numbers.</param>
     /// <returns>A sequence of random numbers within the specified range.</returns>
     public static IEnumerable<int> RandomNumbers(int count, int? min = null, int? max = null)
+        => Enumerable.Range(0, count).Select(_ => getRandomizerMethod(min, max)());
+
+    public static IEnumerable<int> Range(int stop)
     {
-        var random = getRandomizerMethod(min, max);
-        return Enumerable.Range(0, count).Select(_ => random());
+        var x = 0;
+        while (x < stop)
+        {
+            yield return ++x;
+        }
+    }
+
+    /// <summary>
+    /// Generates a sequence of integers within a specified range.
+    /// </summary>
+    /// <param name="start">The start of the range.</param>
+    /// <param name="end">The end of the range.</param>
+    /// <param name="step">The step between each value in the range.</param>
+    /// <returns>A sequence of integers within the specified range.</returns>
+    public static IEnumerable<int> Range(int start, int end, int step = 1)
+    {
+        // Check if step is not equal to 0
+        Check.NotValid(step, x => x != 0, () => new ArgumentOutOfRangeException(nameof(step)));
+        // Throw exception if step is positive and start is greater than end
+        if (step > 0 && start > end)
+        {
+            throw new InvalidArgumentException(nameof(step));
+        }
+        // Throw exception if step is negative and start is less than end
+        if (step < 0 && start < end)
+        {
+            throw new InvalidArgumentException(nameof(step));
+        }
+
+        // Create a function to check if the end condition is met
+        Func<int, bool> endCondition = step > 0 ? i => i <= end : i => i >= end;
+
+        // Loop through the range and yield the values
+        for (var i = start; endCondition(i); i += step)
+        {
+            yield return i;
+        }
+    }
+
+    /// <summary>
+    /// Generates a sequence of integers from 0 to the specified end value, with a specified step.
+    /// </summary>
+    public static IEnumerable<int> Range(int end, int step = 1)
+        => Range(0, end, step);
+
+    [Obsolete("Subject to delete", true)]
+    public static async IAsyncEnumerable<int> RangeAsync(int start, int count)
+    {
+        await Task.Yield();
+        for (var i = 0; i < count; i++)
+        {
+            yield return start + i;
+        }
     }
 
     /// <summary>
@@ -95,11 +152,11 @@ public static class NumberHelper
     /// <param name="decimalPlaces">The number of decimal places to use (defaults to 1).</param>
     /// <returns>A string with the converted value and the corresponding size suffix.</returns>
     public static string ToStandardMetricScale(this long value, int measure = 1000, int decimalPlaces = 1)
-    //This code converts a long value to a standard metric scale. 
-    //It takes in two parameters, measure and decimalPlaces, which are set to 1000 and 1 respectively by default. 
-    //It first checks if the value is negative, and if so, it calls the same function with the negative value. 
-    //If the measure is 1, it returns the value as a string. 
-    //Otherwise, it divides the value by the measure and increments the index until the rounded value is less than the measure. 
+    //This code converts a long value to a standard metric scale.
+    //It takes in two parameters, measure and decimalPlaces, which are set to 1000 and 1 respectively by default.
+    //It first checks if the value is negative, and if so, it calls the same function with the negative value.
+    //If the measure is 1, it returns the value as a string.
+    //Otherwise, it divides the value by the measure and increments the index until the rounded value is less than the measure.
     //Finally, it returns a string with the value and the corresponding size suffix.
     {
         //If the value is less than 0, convert it to a positive value and call the ToStandardMetricScale function with the positive value, measure, and decimalPlaces as parameters.
