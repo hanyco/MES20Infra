@@ -2,6 +2,7 @@
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Strageries.CodeDom;
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 using Library.CodeGeneration.Models;
 using Library.Validations;
@@ -21,7 +22,8 @@ public static class CodeGenerator
         var codeData = CqrsCodeCompileUnitCreatorEngine.Create(query)
                         .Select(cg =>
                         {
-                            var code = cg.GenerateCode();
+                            ICodeGeneratorUnit worker = (ICodeGeneratorUnit)cg;
+                            var code = worker.GenerateCode();
                             if (!code.IsPartial)
                             {
                                 code = code with

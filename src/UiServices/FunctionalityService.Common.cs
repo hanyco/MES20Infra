@@ -71,22 +71,6 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     Task<Result> IAsyncTransactional.CommitTransactionAsync(CancellationToken cancellationToken)
         => this._writeDbContext.CommitTransactionAsync(cancellationToken);
 
-    public void ResetChanges()
-        => this._writeDbContext.ResetChanges();
-
-    Task IAsyncTransactional.RollbackTransactionAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.Database.RollbackTransactionAsync(cancellationToken);
-
-    public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
-
-    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken)
-        => viewModel.Check()
-            .ArgumentNotNull()
-            .NotNull(x => x.Name)
-            .NotNull(x => x.NameSpace)
-            .Build().ToAsync();
-
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default)
     {
         var result = Codes.New();
@@ -103,7 +87,22 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
 
         viewModel.Codes.GetAllQueryCodes = getAllQueryCodes;
 
-
         return new(result);
     }
+
+    public void ResetChanges()
+            => this._writeDbContext.ResetChanges();
+
+    Task IAsyncTransactional.RollbackTransactionAsync(CancellationToken cancellationToken)
+        => this._writeDbContext.Database.RollbackTransactionAsync(cancellationToken);
+
+    public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken)
+        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
+
+    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken)
+        => viewModel.Check()
+            .ArgumentNotNull()
+            .NotNull(x => x.Name)
+            .NotNull(x => x.NameSpace)
+            .Build().ToAsync();
 }

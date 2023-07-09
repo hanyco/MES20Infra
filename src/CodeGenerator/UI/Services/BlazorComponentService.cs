@@ -155,7 +155,8 @@ public sealed class BlazorComponentService :
                 .Build();
             var newProps = entry.Entity.UiComponentProperties.ToReadOnlyList();
             entry.Entity.UiComponentProperties.Clear();
-            _ = newProps.ForEach(x => x.UiComponentId = entity.Id)
+            _ = newProps
+                .ForEach(x => x.UiComponentId = entity.Id)
                 .ForEach(entry.Entity.UiComponentProperties.Add)
                 .Build();
         }

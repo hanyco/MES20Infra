@@ -32,7 +32,7 @@ public sealed class FunctionalityServiceTest
     }
 
     [Fact]
-    [Trait("_Active Tests", "Current")]
+    [Trait("_Queued Tests", "Current")]
     public async void _20_GenerateCodeTest()
     {
         // Assign

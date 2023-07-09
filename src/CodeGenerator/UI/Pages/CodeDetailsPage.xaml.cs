@@ -97,14 +97,14 @@ public partial class CodeDetailsPage
         static TreeViewItem GetTreeItem(IEnumerable<CqrsQueryViewModel> segregates)
         {
             var result = new TreeViewItem { Header = "Queries" };
-            _ = segregates.ForEachItem(x => result.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() }));
+            _ = segregates.ForEach(x => result.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() })).Build();
             return result;
         }
 
         static TreeViewItem GetCommandItems(IEnumerable<CqrsCommandViewModel> segregates)
         {
             var resiult = new TreeViewItem { Header = "Commands" };
-            _ = segregates.ForEachItem(x => resiult.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() }));
+            _ = segregates.ForEach(x => resiult.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() })).Build();
             return resiult;
         }
     }
