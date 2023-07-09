@@ -5,16 +5,10 @@ using Library.Data.SqlServer.Dynamics;
 
 namespace InfraTestProject.Tests;
 
-public sealed class FunctionalityServiceTest
+public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
-    private readonly IFunctionalityCodeService _codeService;
-    private readonly IFunctionalityService _service;
-
-    public FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
-    {
-        this._service = service;
-        this._codeService = codeService;
-    }
+    private readonly IFunctionalityCodeService _codeService = codeService;
+    private readonly IFunctionalityService _service = service;
 
     [Fact]
     [Trait("_Active Tests", "Current")]
