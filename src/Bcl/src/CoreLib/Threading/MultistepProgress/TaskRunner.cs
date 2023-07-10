@@ -23,9 +23,6 @@ public sealed class TaskRunner<TArg>
         }
     }
 
-    public static Task<Result<TArg?>> RunAllAsync([DisallowNull] Func<CancellationToken, Task<TArg>> start, IEnumerable<Func<TArg, CancellationToken, Task<TArg>>>? funcs) =>
-        new TaskRunner<TArg>(start, funcs).RunAsync();
-
     public static TaskRunner<TArg> StartWith(Func<CancellationToken, Task<TArg>> start) =>
         new(start);
 
@@ -53,7 +50,7 @@ public sealed class TaskRunner<TArg>
             {
                 if (token.IsCancellationRequested)
                 {
-                    throw new OperationCancelException();
+                    Throw<OperationCancelException>();
                 }
 
                 state = await func(state, token);
@@ -95,5 +92,97 @@ public sealed class TaskRunner<TArg>
         {
             await func();
             return x;
+        }));
+
+    public TaskRunner<TArg> Then(Action<TArg> func) =>
+        this.Then(new Func<TArg, CancellationToken, Task<TArg>>((x, t) =>
+        {
+            func(x);
+            return Task.FromResult(x);
+        }));
+
+    public TaskRunner<TArg> Then(Action func) =>
+        this.Then(new Func<TArg, CancellationToken, Task<TArg>>((x, t) =>
+        {
+            func();
+            return Task.FromResult(x);
+        }));
+}
+
+public sealed class TaskRunner
+{
+    private readonly List<Func<CancellationToken, Task>> _funcList = new();
+    private readonly Func<CancellationToken, Task> _start;
+    private bool _isRunning;
+    private Action<Result>? _onEnded;
+
+    private TaskRunner([DisallowNull] Func<CancellationToken, Task> start, IEnumerable<Func<CancellationToken, Task>>? funcs = null)
+    {
+        Check.IfArgumentNotNull(start);
+        this._start = start;
+        if (funcs?.Any() ?? false)
+        {
+            this._funcList.AddRange(funcs);
+        }
+    }
+
+    public static TaskRunner StartWith(Func<CancellationToken, Task> start) =>
+        new(start);
+
+    public static TaskRunner StartWith(Func<Task> start) =>
+        StartWith(c => start());
+
+    public static TaskRunner StartWith(Action start) =>
+        StartWith(c => start.ToAsync(c));
+
+    public TaskRunner OnEnded(Action<Result>? action) =>
+        this.Fluent(this._onEnded = action);
+
+    public async Task<Result> RunAsync(CancellationToken token = default)
+    {
+        this._isRunning = true;
+        Result result = default!;
+        try
+        {
+            await this._start(token);
+            foreach (var func in this._funcList.Compact())
+            {
+                if (token.IsCancellationRequested)
+                {
+                    Throw<OperationCancelException>();
+                }
+
+                await func(token);
+            }
+            result = Result.CreateSuccess();
+        }
+        catch (Exception ex)
+        {
+            result = Result.CreateFailure(ex);
+        }
+        finally
+        {
+            this._isRunning = false;
+            this._onEnded?.Invoke(result);
+        }
+        return result;
+    }
+
+    public TaskRunner Then([DisallowNull] Func<CancellationToken, Task> func)
+    {
+        Check.If(this._isRunning, () => new CommonException());
+        Check.IfArgumentNotNull(func);
+        this._funcList.Add(func);
+        return this;
+    }
+
+    public TaskRunner Then(Func<Task> func) =>
+        this.Then(new Func<CancellationToken, Task>(_ => func()));
+
+    public TaskRunner Then(Action func) =>
+        this.Then(new Func<CancellationToken, Task>(t =>
+        {
+            func();
+            return Task.CompletedTask;
         }));
 }
