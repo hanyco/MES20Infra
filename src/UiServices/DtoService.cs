@@ -20,7 +20,6 @@ using Library.Helpers.CodeGen;
 using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
-using Library.Results;
 using Library.Validations;
 using Library.Windows;
 
@@ -55,6 +54,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
     public Task<DtoViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new DtoViewModel());
 
+    [return: NotNull]
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
     {
         var result = new DtoViewModel

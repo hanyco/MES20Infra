@@ -38,8 +38,10 @@ internal sealed partial class FunctionalityService
         #region Initialize
 
         this._reporter.Report(description: getTitle("Initializing..."));
-        // If `viewModel.DbTable` is empty then the connection string: `this._readDbContext.Database.GetConnectionString()` will be used to fill `viewModel.DbTable`.
-        // Otherwise, `viewModel.DbTable` will be directly used (to be used in Unit Test).
+        // If `viewModel.DbTable` is empty then the connection string:
+        // `this._readDbContext.Database.GetConnectionString()` will be used to fill
+        // `viewModel.DbTable`. Otherwise, `viewModel.DbTable` will be directly used (to be used in
+        // Unit Test).
         var connectionString = viewModel.DbTable is not null ? null : this._readDbContext.Database.GetConnectionString();
         // Initialize the viewModel with the connection string
         var initResult = await initialize(viewModel, connectionString, token);
@@ -71,7 +73,7 @@ internal sealed partial class FunctionalityService
         // Report the message
         this._reporter.Report(description: getTitle(message));
         // Get the result from the processResult
-        Result<FunctionalityViewModel?> result = processResult.Result!;
+        var result = processResult.Result!;
 
         #endregion Finalize and prepare the result
 
@@ -158,9 +160,9 @@ internal sealed partial class FunctionalityService
 
     private async Task CreateBlazorPage(CreationData data)
     {
-        await createPageViewModel(data);
+        await createPageViewModel();
 
-        Task createPageViewModel(CreationData data)
+        Task createPageViewModel()
         {
             var rawDto = this.RawDto(data, true);
             var pageViewModel = rawDto
@@ -199,24 +201,24 @@ internal sealed partial class FunctionalityService
 
     private async Task CreateDeleteCommand(CreationData data)
     {
-        await createParams(data);
-        await createValidator(data);
-        await createHandler(data);
-        await createResult(data);
+        await createParams();
+        await createValidator();
+        await createHandler();
+        await createResult();
 
-        Task createParams(CreationData data) => Task.CompletedTask;
-        Task createValidator(CreationData data) => Task.CompletedTask;
-        Task createHandler(CreationData data) => Task.CompletedTask;
-        Task createResult(CreationData data) => Task.CompletedTask;
+        Task createParams() => Task.CompletedTask;
+        Task createValidator() => Task.CompletedTask;
+        Task createHandler() => Task.CompletedTask;
+        Task createResult() => Task.CompletedTask;
     }
 
     private async Task CreateDetailsComponent(CreationData data)
     {
-        await createDetailsViewModel(data);
-        await createDetailsFrontCode(data);
-        await createDetailsBackendCode(data);
+        await createDetailsViewModel();
+        await createDetailsFrontCode();
+        await createDetailsBackendCode();
 
-        Task createDetailsViewModel(CreationData data)
+        Task createDetailsViewModel()
         {
             var rawDto = this.RawDto(data, true);
             data.ViewModel.DetailsViewModel = rawDto
@@ -225,23 +227,29 @@ internal sealed partial class FunctionalityService
             return Task.CompletedTask;
         }
 
-        Task createDetailsFrontCode(CreationData data) => Task.CompletedTask;
+        Task createDetailsFrontCode() => Task.CompletedTask;
 
-        Task createDetailsBackendCode(CreationData data) => Task.CompletedTask;
+        Task createDetailsBackendCode() => Task.CompletedTask;
     }
 
     private async Task CreateGetAllQuery(CreationData data)
     {
-        await createViewModel(data);
-        await createParams(data);
-        await createResult(data);
+        _ = await TaskRunner<CreationData>
+             .StartWith(data)
+             .Then(createViewModel)
+             .Then(createParams)
+             .Then(createResult)
+             .RunAsync(data.CancellationTokenSource.Token);
 
-        async Task createViewModel(CreationData data)
+        async Task createViewModel()
         {
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
             var query = await this._queryService.CreateAsync(token: data.CancellationTokenSource.Token);
-            if(data.CancellationTokenSource.IsCancellationRequested)
+            if (data.CancellationTokenSource.IsCancellationRequested)
+            {
                 return;
+            }
+
             data.ViewModel.GetAllQuery = query
                 .With(x => x.Name = $"{data.GetAllQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
@@ -252,7 +260,7 @@ internal sealed partial class FunctionalityService
                 .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: data.CancellationTokenSource.Token));
         }
 
-        Task createParams(CreationData data)
+        Task createParams()
         {
             var rawDto = this.RawDto(data, false);
             data.ViewModel.GetAllQuery.ParamDto = rawDto
@@ -261,7 +269,7 @@ internal sealed partial class FunctionalityService
             return Task.CompletedTask;
         }
 
-        Task createResult(CreationData data)
+        Task createResult()
         {
             var rawDto = this.RawDto(data, true);
             data.ViewModel.GetAllQuery.ResultDto = rawDto
@@ -273,16 +281,19 @@ internal sealed partial class FunctionalityService
 
     private async Task CreateGetByIdQuery(CreationData data)
     {
-        await createQuery(data);
-        await createParams(data);
-        await createResult(data);
+        await createQuery();
+        await createParams();
+        await createResult();
 
-        async Task createQuery(CreationData data)
+        async Task createQuery()
         {
             data.GetByIdQueryName = $"GetById{data.DbTable.Name}Query";
             var query = await this._queryService.CreateAsync(token: data.CancellationTokenSource.Token);
             if (data.CancellationTokenSource.IsCancellationRequested)
+            {
                 return;
+            }
+
             data.ViewModel.GetByIdQuery = query
                 .With(x => x.Name = $"{data.GetByIdQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
@@ -293,7 +304,7 @@ internal sealed partial class FunctionalityService
                 .With(async x => x.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: data.CancellationTokenSource.Token));
         }
 
-        Task createParams(CreationData data)
+        Task createParams()
         {
             var rawDto = this.RawDto(data, false)
                 .With(x => x.Name = $"GetById{data.DbTable.Name}Params")
@@ -303,7 +314,7 @@ internal sealed partial class FunctionalityService
             return Task.CompletedTask;
         }
 
-        Task createResult(CreationData data)
+        Task createResult()
         {
             var rawDto = this.RawDto(data, true)
                 .With(x => x.Name = $"GetById{data.DbTable.Name}Result")
@@ -315,19 +326,18 @@ internal sealed partial class FunctionalityService
 
     private async Task CreateInsertCommand(CreationData data)
     {
-        data.ViewModel.InsertCommand = await this._commandService
-            .CreateAsync(token: data.CancellationTokenSource.Token)
-            .WithAsync(x => x.Category = CqrsSegregateCategory.Create)
-            .WithAsync(x => x.Comment = data.COMMENT);
-        await createParams(data);
-        await createValidator(data);
-        await createHandler(data);
-        await createResult(data);
+        await createParams();
+        await createValidator();
+        await createHandler();
+        await createResult();
 
-        Task createValidator(CreationData data) => Task.CompletedTask;
-        Task createHandler(CreationData data) => Task.CompletedTask;
+        Task createValidator() => Task.CompletedTask;
+        async Task createHandler() => data.ViewModel.InsertCommand = await this._commandService
+                .CreateAsync(token: data.CancellationTokenSource.Token)
+                .WithAsync(x => x.Category = CqrsSegregateCategory.Create)
+                .WithAsync(x => x.Comment = data.COMMENT);
 
-        Task createParams(CreationData data)
+        Task createParams()
         {
             var dto = this.RawDto(data, true)
                 .With(x => x.Name = $"Insert{data.DbTable.Name}Params")
@@ -340,7 +350,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommand.ParamDto = dto;
             return Task.CompletedTask;
         }
-        Task createResult(CreationData data)
+        Task createResult()
         {
             var rawDto = this.RawDto(data, false)
                 .With(x => x.Name = $"Insert{data.DbTable.Name}Result")
@@ -353,11 +363,11 @@ internal sealed partial class FunctionalityService
 
     private async Task CreateListComponent(CreationData data)
     {
-        await createListViewModel(data);
-        await createListFrontCode(data);
-        await createListBackendCode(data);
+        await createListViewModel();
+        await createListFrontCode();
+        await createListBackendCode();
 
-        Task createListViewModel(CreationData data)
+        Task createListViewModel()
         {
             var rawDto = this.RawDto(data, true);
             data.ViewModel.ListViewModel = rawDto
@@ -366,43 +376,51 @@ internal sealed partial class FunctionalityService
             return Task.CompletedTask;
         }
 
-        Task createListFrontCode(CreationData data)
+        Task createListFrontCode()
             => Task.CompletedTask;
 
-        Task createListBackendCode(CreationData data)
+        Task createListBackendCode()
             => Task.CompletedTask;
     }
 
     private async Task CreateUpdateCommand(CreationData data)
     {
-        await createParams(data);
-        await createValidator(data);
-        await createHandler(data);
-        await createResult(data);
+        await createParams();
+        await createValidator();
+        await createHandler();
+        await createResult();
 
-        Task createParams(CreationData data) => Task.CompletedTask;
-        Task createValidator(CreationData data) => Task.CompletedTask;
-        Task createHandler(CreationData data) => Task.CompletedTask;
-        Task createResult(CreationData data) => Task.CompletedTask;
+        Task createParams() => Task.CompletedTask;
+        Task createValidator() => Task.CompletedTask;
+        Task createHandler() => Task.CompletedTask;
+        Task createResult() => Task.CompletedTask;
     }
 
     private DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
-        var detailsViewModel = this._dtoService.CreateByDbTable(DbTableViewModel.FromDbTable(data.DbTable), Enumerable.Empty<DbColumnViewModel>())
-            .With(x => x.Comment = data.COMMENT)
-            .With(x => x.Module.Id = data.ViewModel.ModuleId)
-            .With(x => x.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"))
-            .With(x => x.Functionality = data.ViewModel);
+        var detailsViewModel = createViewModel(data);
         if (addTableColumns)
         {
-            var columns = data.DbTable.Columns
-                .Select(DbColumnViewModel.FromDbColumn)
-                .Select(this._converter.ToPropertyViewModel)
-                .Compact().Build();
-            _ = detailsViewModel.Properties.AddRange(columns);
+            addColumns();
         }
 
         return detailsViewModel;
+
+        DtoViewModel createViewModel(CreationData data) =>
+            this._dtoService.CreateByDbTable(DbTableViewModel.FromDbTable(data.DbTable), Enumerable.Empty<DbColumnViewModel>())
+                    .With(x => x.Comment = data.COMMENT)
+                    .With(x => x.Module.Id = data.ViewModel.ModuleId)
+                    .With(x => x.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"))
+                    .With(x => x.Functionality = data.ViewModel);
+
+        void addColumns()
+        {
+            var columns = data.DbTable.Columns
+                            .Select(DbColumnViewModel.FromDbColumn)
+                            .Select(this._converter.ToPropertyViewModel)
+                            .Compact().Build();
+            _ = detailsViewModel.Properties.AddRange(columns);
+        }
     }
 
     [Immutable]

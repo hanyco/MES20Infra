@@ -1,4 +1,6 @@
-﻿using Contracts.ViewModels;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.ViewModels;
 
@@ -24,6 +26,7 @@ public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyn
     /// <param name="table">  The table.</param>
     /// <param name="columns">The columns.</param>
     /// <returns>A DtoViewModel.</returns>
+    [return: NotNull]
     DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns);
 
     /// <summary>
