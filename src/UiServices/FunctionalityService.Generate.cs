@@ -67,11 +67,9 @@ internal sealed partial class FunctionalityService
 
         #region Finalize and prepare the result
 
-        var message = finalize(processResult);
-        // Dispose the tokenSource
-        tokenSource.Dispose();
-        // Report the message
+        var message = getResultMessage(processResult);
         this._reporter.Report(description: getTitle(message));
+        tokenSource.Dispose();
         // Get the result from the processResult
         var result = processResult.Result;
 
@@ -146,7 +144,7 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"));
 
         // Finalize the process
-        static string finalize(in CreationData result)
+        static string getResultMessage(in CreationData result)
             => !result.Result.Message.IsNullOrEmpty()
                     ? result.Result.Message
                     : result.CancellationTokenSource.IsCancellationRequested
@@ -202,7 +200,6 @@ internal sealed partial class FunctionalityService
     private Task CreateDeleteCommand(CreationData data)
     {
         return TaskRunner.StartWith(createParams)
-            .Then(createParams)
             .Then(createValidator)
             .Then(createHandler)
             .Then(createResult)
@@ -243,13 +240,13 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CancellationToken token)
         {
-            data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
             var query = await this._queryService.CreateAsync(token: token);
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
+            data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
             data.ViewModel.GetAllQuery = query
                 .With(x => x.Name = $"{data.GetAllQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
@@ -280,7 +277,7 @@ internal sealed partial class FunctionalityService
         return TaskRunner.StartWith(createQuery)
             .Then(createParams)
             .Then(createResult)
-            .RunAsync();
+            .RunAsync(data.CancellationTokenSource.Token);
 
         async Task createQuery(CancellationToken token)
         {
@@ -362,7 +359,7 @@ internal sealed partial class FunctionalityService
         return TaskRunner.StartWith(createListViewModel)
             .Then(createListFrontCode)
             .Then(createListBackendCode)
-            .RunAsync();
+            .RunAsync(data.CancellationTokenSource.Token);
 
         void createListViewModel()
         {
@@ -385,7 +382,7 @@ internal sealed partial class FunctionalityService
             .Then(createValidator)
             .Then(createHandler)
             .Then(createResult)
-            .RunAsync();
+            .RunAsync(data.CancellationTokenSource.Token);
 
         Task createParams() => Task.CompletedTask;
         Task createValidator() => Task.CompletedTask;
@@ -396,12 +393,7 @@ internal sealed partial class FunctionalityService
     private DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
         var detailsViewModel = createViewModel(data);
-        if (addTableColumns)
-        {
-            addColumns();
-        }
-
-        return detailsViewModel;
+        return addTableColumns ? addColumns(detailsViewModel) : detailsViewModel;
 
         DtoViewModel createViewModel(CreationData data) =>
             this._dtoService.CreateByDbTable(DbTableViewModel.FromDbTable(data.DbTable), Enumerable.Empty<DbColumnViewModel>())
@@ -410,13 +402,14 @@ internal sealed partial class FunctionalityService
                     .With(x => x.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"))
                     .With(x => x.Functionality = data.ViewModel);
 
-        void addColumns()
+        DtoViewModel addColumns(DtoViewModel detailsViewModel)
         {
             var columns = data.DbTable.Columns
-                            .Select(DbColumnViewModel.FromDbColumn)
-                            .Select(this._converter.ToPropertyViewModel)
-                            .Compact().Build();
+                .Select(DbColumnViewModel.FromDbColumn)
+                .Select(this._converter.ToPropertyViewModel)
+                .Compact().Build();
             _ = detailsViewModel.Properties.AddRange(columns);
+            return detailsViewModel;
         }
     }
 
