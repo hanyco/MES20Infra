@@ -80,7 +80,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     }
 
     private void CqrsCommandDetailsPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-                => this.RefreshFormState();
+        => this.RefreshFormState();
 
     private async void DeleteCommandButton_Click(object sender, RoutedEventArgs e)
     {
