@@ -214,9 +214,9 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var result = await this._signInManager.PasswordSignInAsync(userId, password, isPersistent, true);
         if (!result.Succeeded)
         {
-            check(!result.IsLockedOut, "This user is locked. Please try again later.");
-            check(!result.IsNotAllowed, "This user attempting to sign-in is not allowed.");
-            check(!result.RequiresTwoFactor, "This user attempting to sign-in requires two factor authentication.");
+            check(result.IsLockedOut, "This user is locked. Please try again later.");
+            check(result.IsNotAllowed, "This user attempting to sign-in is not allowed.");
+            check(result.RequiresTwoFactor, "This user attempting to sign-in requires two factor authentication.");
             check(false, "Invalid username or password.");
         }
         var token = Guid.NewGuid().ToString(); // UNDONE: Not done yet.
@@ -264,7 +264,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var claim = this._claimManager.Claims.SingleOrDefault(x => x.Type == claimType);
         if (claim is null)
         {
-            Check.If(createIfNotFound, () => new ObjectNotFoundException("Claim type not found."));
+            Check.If(!createIfNotFound, () => new ObjectNotFoundException("Claim type not found."));
 
             claim = new Claim(claimType, claimValue ?? LibClaimDefaultValues.VALID_CLAIM_VALUE);
             this._claimManager.AddClaim(claim);

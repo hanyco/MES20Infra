@@ -204,7 +204,7 @@ public sealed class BlazorComponentService :
         var nameQuery = from c in this._readDbContext.UiComponents
                         where c.Name == model.Name && c.Id != model.Id
                         select c.Id;
-        Check.If(!await nameQuery.AnyAsync(), () => new ObjectDuplicateValidationException(nameof(model.Name)));
+        Check.If(await nameQuery.AnyAsync(cancellationToken: cancellationToken), () => new ObjectDuplicateValidationException(nameof(model.Name)));
         return new(model);
     }
 }

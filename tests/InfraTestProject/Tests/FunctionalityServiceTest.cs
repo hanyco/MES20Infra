@@ -11,7 +11,6 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     private readonly IFunctionalityService _service = service;
 
     [Fact]
-    [Trait("_Active Tests", "Current")]
     public async Task _10_GenerateModelTest()
     {
         // Assign
@@ -22,11 +21,13 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var actual = await this._service.GenerateViewModelAsync(model, tokenSource.Token);
 
         // Assert
-        Assert.True(actual);
+        if (!actual.IsSucceed)
+        {
+            Assert.Fail(actual.Message ?? $"{nameof(this._service.GenerateViewModelAsync)} failed.");
+        }
     }
 
     [Fact]
-    [Trait("_Queued Tests", "Current")]
     public async void _20_GenerateCodeTest()
     {
         // Assign

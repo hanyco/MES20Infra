@@ -53,7 +53,7 @@ public partial class EntitySecurityDescriptorViewUserControl
 
     private void DeleteItemsButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.If(this.SecurityDescriptorsListView.SelectedItems.Any(), () => new NoItemValidationException("No items selected."));
+        Check.If(!this.SecurityDescriptorsListView.SelectedItems.Any(), () => new NoItemValidationException("No items selected."));
 
         var selectedItems = this.SecurityDescriptorsListView.SelectedItems.Cast<SecurityDescriptorViewModel>().ToList();
         foreach (var item in selectedItems)

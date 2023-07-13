@@ -124,7 +124,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
             return;
         }
         var selectedViewModel = this.QueriesTreeView.GetSelectedValue<CqrsQueryViewModel>();
-        Check.If(selectedViewModel?.Id is not null, () => new ValidationException("Please select a Query."));
+        Check.If(selectedViewModel?.Id is null, () => new ValidationException("Please select a Query."));
         this.Logger.Debug("Loading...");
         var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
         Check.NotNull(viewModel, () => "ID not found");

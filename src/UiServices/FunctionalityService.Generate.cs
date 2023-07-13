@@ -240,14 +240,15 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CancellationToken token)
         {
-            var query = await this._queryService.CreateAsync(token: token);
+            var veiwModel = await this._queryService.CreateAsync(token: token);
+            //query.Name
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
-            data.ViewModel.GetAllQuery = query
+            data.ViewModel.GetAllQuery = veiwModel
                 .With(x => x.Name = $"{data.GetAllQueryName}ViewModel")
                 .With(x => x.Category = CqrsSegregateCategory.Read)
                 .With(x => x.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries"))
