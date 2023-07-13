@@ -1,11 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 
-using Contracts.ViewModels;
-
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
+using HanyCo.Infra.UI.ViewModels;
 
-namespace HanyCo.Infra.UI.ViewModels;
+namespace Contracts.ViewModels;
 
 public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescriptor
 {
@@ -17,6 +16,13 @@ public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescript
     private long _parentEntityId;
     private PropertyType _type;
     private string? _typeFullName;
+
+    public PropertyViewModel()
+    {
+    }
+
+    public PropertyViewModel(string name, PropertyType type)
+        => (this.Name, this.Type) = (name, type);
 
     public string? Comment
     {
