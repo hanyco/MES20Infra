@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Contracts.ViewModels;
+﻿using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
@@ -190,7 +188,7 @@ internal sealed partial class FunctionalityService
         var codes = await this.GenerateCodesAsync(data.ViewModel, token: data.CancellationTokenSource.Token);
         if (!codes)
         {
-            data.SetResult(codes);
+            _ = data.SetResult(codes);
             return;
         }
         //ToDo arg.ViewModel.Codes = codes;
@@ -303,29 +301,30 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private Task CreateInsertCommand(CreationData data)
+    private async Task CreateInsertCommand(CreationData data)
     {
-        return TaskRunner.StartWith(createParams)
+        data.ViewModel.InsertCommand = await this._commandService.CreateAsync(data.CancellationTokenSource.Token);
+        _ = await TaskRunner<CqrsCommandViewModel>.StartWith(data.ViewModel.InsertCommand)
+            .Then(createParams)
             .Then(createValidator)
             .Then(createHandler)
             .Then(createResult)
             .RunAsync(data.CancellationTokenSource.Token);
 
-        Task createValidator(CancellationToken token) => Task.CompletedTask;
+        static Task createValidator(CqrsCommandViewModel command, CancellationToken token) => Task.CompletedTask;
 
-        async Task createHandler(CancellationToken token)
+        async Task createHandler(CqrsCommandViewModel command, CancellationToken token)
         {
-            data.ViewModel.UpdateCommand = await this._commandService.CreateAsync(token: token);
-            data.ViewModel.UpdateCommand.Name = $"Insert{data.DbTable.Name}Command";
-            data.ViewModel.UpdateCommand.Category = CqrsSegregateCategory.Create;
-            data.ViewModel.UpdateCommand.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
-            data.ViewModel.UpdateCommand.DbObject = data.ViewModel.DbObject;
-            data.ViewModel.UpdateCommand.FriendlyName = x.Name.SplitCamelCase().Merge(" ");
-            data.ViewModel.UpdateCommand.Comment = data.COMMENT;
-            data.ViewModel.UpdateCommand.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
+            command.Name = $"Insert{data.DbTable.Name}Command";
+            command.Category = CqrsSegregateCategory.Create;
+            command.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
+            command.DbObject = data.ViewModel.DbObject;
+            command.FriendlyName = command.Name.SplitCamelCase().Merge(" ");
+            command.Comment = data.COMMENT;
+            command.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
         }
 
-        void createParams()
+        void createParams(CqrsCommandViewModel command)
         {
             var dto = this.RawDto(data, true);
             dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
@@ -336,14 +335,15 @@ internal sealed partial class FunctionalityService
             {
                 _ = dto.Properties.Remove(idProp);
             }
-            data.ViewModel.InsertCommand.ParamDto = dto;
+            command.ParamDto = dto;
         }
-        void createResult()
+
+        void createResult(CqrsCommandViewModel command)
         {
-            data.ViewModel.InsertCommand.ResultDto = this.RawDto(data, false);
-            data.ViewModel.InsertCommand.ResultDto.Name = $"Insert{data.DbTable.Name}Result";
-            data.ViewModel.InsertCommand.ResultDto.IsResultDto = true;
-            data.ViewModel.InsertCommand.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            command.ResultDto = this.RawDto(data, false);
+            command.ResultDto.Name = $"Insert{data.DbTable.Name}Result";
+            command.ResultDto.IsResultDto = true;
+            command.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
     }
 
@@ -397,15 +397,15 @@ internal sealed partial class FunctionalityService
 
     private DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
-        var detailsViewModel = createViewModel(data);
+        var detailsViewModel = create(data);
         return addTableColumns ? addColumns(detailsViewModel) : detailsViewModel;
 
-        DtoViewModel createViewModel(CreationData data) =>
+        DtoViewModel create(CreationData data) =>
             this._dtoService.CreateByDbTable(DbTableViewModel.FromDbTable(data.DbTable), Enumerable.Empty<DbColumnViewModel>())
-                    .With(x => x.Comment = data.COMMENT)
-                    .With(x => x.Module.Id = data.ViewModel.ModuleId)
-                    .With(x => x.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"))
-                    .With(x => x.Functionality = data.ViewModel);
+                .With(x => x.Comment = data.COMMENT)
+                .With(x => x.Module.Id = data.ViewModel.ModuleId)
+                .With(x => x.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"))
+                .With(x => x.Functionality = data.ViewModel);
 
         DtoViewModel addColumns(DtoViewModel detailsViewModel)
         {
@@ -418,34 +418,29 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    [Immutable]
-    private class CreationData
+    private class CreationData(FunctionalityViewModel result, Table dbTable, CancellationTokenSource tokenSource)
     {
         internal readonly string COMMENT = "Auto-generated by Functionality Service.";
         private Result<FunctionalityViewModel>? _result;
 
-        internal CreationData(FunctionalityViewModel result, Table dbTable, CancellationTokenSource tokenSource)
-            => (this.ViewModel, this.DbTable, this.CancellationTokenSource) = (result, dbTable, tokenSource);
+        internal CancellationTokenSource CancellationTokenSource { get; } = tokenSource;
 
-        internal CancellationTokenSource CancellationTokenSource { get; }
-
-        internal Table DbTable { get; }
+        internal Table DbTable { get; } = dbTable;
 
         internal string? GetAllQueryName { get; set; }
 
         internal string? GetByIdQueryName { get; set; }
 
-        [NotNull]
         internal Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
 
-        internal FunctionalityViewModel ViewModel { get; }
+        internal FunctionalityViewModel ViewModel { get; } = result;
 
         [DarkMethod(Reason = "Changes the class state.")]
-        internal void SetResult(bool isSucceed, in string? message = null)
-            => this._result = new(this.ViewModel) { Message = message, Succeed = isSucceed };
+        internal CreationData SetResult(bool isSucceed, in string? message = null)
+            => this.Fluent(this._result = new(this.ViewModel) { Message = message, Succeed = isSucceed });
 
         [DarkMethod(Reason = "Changes the class state.")]
-        internal void SetResult(Result result)
-            => this._result = Result<FunctionalityViewModel>.From(result, this.ViewModel);
+        internal CreationData SetResult(Result result)
+            => this.Fluent(this._result = Result<FunctionalityViewModel>.From(result, this.ViewModel));
     }
 }
