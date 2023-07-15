@@ -6,7 +6,7 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.UI.Services;
 
-public interface IDtoCodeService : IBusinessService, ICodeGeneratorService<DtoViewModel>
+public interface IDtoCodeService : IBusinessService, ICodeGenerator<DtoViewModel>
 {
 
 }

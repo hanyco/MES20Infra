@@ -21,7 +21,7 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public UiComponentViewModel BlazorListComponentViewModel { get; set; }
 
-    public FunctionalityViewModelCodes Codes { get; } = new();
+    public FunctionalityViewModelCodesResults CodesResults { get; } = new();
 
     //x public DtoViewModel RootDto { get => this._rootDto; set => this.SetProperty(ref this._rootDto, value); }
     public DbObjectViewModel DbObjectViewModel { get => this._dbObjectViewModel; set => this.SetProperty(ref this._dbObjectViewModel, value); }
@@ -46,10 +46,12 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public CqrsCommandViewModel UpdateCommandViewModel { get; set; }
 }
 
-public sealed class FunctionalityViewModelCodes : IEnumerable<Result<Codes>>
+public sealed class FunctionalityViewModelCodesResults : IEnumerable<Result<Codes>>
 {
     private readonly Dictionary<string, Result<Codes>> _allCodes = new();
 
+    public Result<Codes> BlazorDetailsComponentViewModel { get => this.get(); set => this.set(value); }
+    public Result<Codes> BlazorListCodes { get => this.get(); set => this.set(value); }
     public Result<Codes> DeleteCommandCodes { get => this.get(); set => this.set(value); }
     public Result<Codes> GetAllQueryCodes { get => this.get(); set => this.set(value); }
     public Result<Codes> GetByIdQueryCodes { get => this.get(); set => this.set(value); }

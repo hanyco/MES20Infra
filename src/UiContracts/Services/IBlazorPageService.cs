@@ -12,7 +12,7 @@ public interface IBlazorPageService
     : IBusinessService
     , IAsyncCrud<UiPageViewModel>
     , IValidator<UiPageViewModel>
-    , ICodeGeneratorService<UiPageViewModel>
+    , ICodeGenerator<UiPageViewModel>
 
 {
     UiPageViewModel CreateViewModel(DtoViewModel dto, string? name = null)

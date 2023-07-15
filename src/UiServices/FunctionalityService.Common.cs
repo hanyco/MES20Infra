@@ -70,35 +70,20 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
 
     #endregion Ctors
 
-    Task<IDbContextTransaction> IAsyncTransactional.BeginTransactionAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.BeginTransactionAsync(cancellationToken);
+    Task<IDbContextTransaction> IAsyncTransactional.BeginTransactionAsync(CancellationToken cancellationToken) =>
+        this._writeDbContext.BeginTransactionAsync(cancellationToken);
 
-    Task<Result> IAsyncTransactional.CommitTransactionAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.CommitTransactionAsync(cancellationToken);
+    Task<Result> IAsyncTransactional.CommitTransactionAsync(CancellationToken cancellationToken) =>
+        this._writeDbContext.CommitTransactionAsync(cancellationToken);
 
-    public async Task<IEnumerable<Result<Codes>>> GenerateCodesAsync(FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default)
-    {
-        Check.IfArgumentNotNull(viewModel);
+    public void ResetChanges() =>
+        this._writeDbContext.ResetChanges();
 
-        viewModel.Codes.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
+    Task IAsyncTransactional.RollbackTransactionAsync(CancellationToken cancellationToken) =>
+        this._writeDbContext.Database.RollbackTransactionAsync(cancellationToken);
 
-        viewModel.Codes.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
-        viewModel.Codes.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
-        viewModel.Codes.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
-        viewModel.Codes.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
-        this.
-
-        return viewModel.Codes;
-    }
-
-    public void ResetChanges()
-            => this._writeDbContext.ResetChanges();
-
-    Task IAsyncTransactional.RollbackTransactionAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.Database.RollbackTransactionAsync(cancellationToken);
-
-    public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken)
-        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
+    public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken) =>
+        this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
     Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken) =>
         viewModel.Check()

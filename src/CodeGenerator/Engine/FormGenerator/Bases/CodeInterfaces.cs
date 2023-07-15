@@ -18,6 +18,17 @@ public interface ICodeGenerator
     Codes GenerateCodes(in GenerateCodesParameters? arguments = null);
 }
 
+public interface ICodeGenerator<TViewModel>
+{
+    /// <summary>
+    /// Generates codes based on the given view model and optional parameters.
+    /// </summary>
+    /// <param name="viewModel">The view model to generate codes from.</param>
+    /// <param name="arguments">Optional parameters for generating codes.</param>
+    /// <returns>A result containing the generated codes.</returns>
+    Result<Codes> GenerateCodes(in TViewModel viewModel, GenerateCodesParameters? arguments = null);
+}
+
 public interface ICodeGeneratorUnit
 {
     Code GenerateCode(in GenerateCodesParameters? arguments = null);
@@ -59,21 +70,10 @@ public interface IUiCodeGenerator
     Code GenerateUiCode(in GenerateCodesParameters? arguments = null);
 }
 
-public interface ICodeGeneratorService<TViewModel>
-{
-    /// <summary>
-    /// Generates codes based on the given view model and optional parameters.
-    /// </summary>
-    /// <param name="viewModel">The view model to generate codes from.</param>
-    /// <param name="arguments">Optional parameters for generating codes.</param>
-    /// <returns>A result containing the generated codes.</returns>
-    Result<Codes> GenerateCodes(in TViewModel viewModel, GenerateCodesParameters? arguments = null);
-}
-
-public interface IAsyncCodeGeneratorService<TViewModel>
+public interface IAsyncCodeGenerator<TViewModel>
 {
     /// <summary>
     /// Generates codes asynchronously based on the given view model and optional parameters.
     /// </summary>
-    Task<IEnumerable<Result<Codes>>> GenerateCodesAsync(TViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default);
+    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default);
 }

@@ -1,5 +1,6 @@
 ﻿using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -16,8 +17,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal sealed partial class FunctionalityService
+internal sealed partial class FunctionalityService:IAsyncCodeGenerator<FunctionalityViewModel>
 {
+    public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default)
+    {
+        Check.IfArgumentNotNull(viewModel);
+
+        viewModel.CodesResults.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
+        viewModel.CodesResults.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
+        viewModel.CodesResults.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
+        viewModel.CodesResults.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
+        viewModel.CodesResults.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
+        viewModel.CodesResults.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
+        viewModel.CodesResults.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+
+        return viewModel.CodesResults.Merge();
+    }
+
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
         #region Validate the viewModel argument
@@ -421,7 +437,7 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private async Task GenerateCodes(CreationData data, CancellationToken token) => 
+    private async Task GenerateCodes(CreationData data, CancellationToken token) =>
         await this.GenerateCodesAsync(data.ViewModel, token: token);
 
     private DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
