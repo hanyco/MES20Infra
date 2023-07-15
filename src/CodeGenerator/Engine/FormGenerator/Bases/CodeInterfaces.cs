@@ -75,5 +75,5 @@ public interface IAsyncCodeGeneratorService<TViewModel>
     /// <summary>
     /// Generates codes asynchronously based on the given view model and optional parameters.
     /// </summary>
-    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default);
+    Task<IEnumerable<Result<Codes>>> GenerateCodesAsync(TViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default);
 }

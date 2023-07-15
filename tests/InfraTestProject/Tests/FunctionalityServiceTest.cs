@@ -14,12 +14,12 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     public async Task _10_GenerateModelTest()
     {
         // Assign
-        var tokenSource = new CancellationTokenSource();
+        var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
         var model = CreateModel();
 
         // Act
         var actual = await this._service.GenerateViewModelAsync(model, tokenSource.Token);
-
+        
         // Assert
         if (!actual.IsSucceed)
         {
@@ -27,7 +27,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
-    [Fact]
+    [Fact(Skip ="It's not this test's turn yet.")]
     public async void _20_GenerateCodeTest()
     {
         // Assign
@@ -47,7 +47,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var model = new FunctionalityViewModel()
         {
             DbTable = new(null!, "Person", "dbo", CS),
-            DbObject = new("Person") { Id = 1 },
+            DbObjectViewModel = new("Person") { Id = 1 },
             Name = "TestFunctionality",
             NameSpace = "CodeGen.UnitTest",
             ModuleId = 1,

@@ -2,10 +2,10 @@
 using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services;
 
 using Library.CodeGeneration.Models;
-using Library.Exceptions;
 using Library.Interfaces;
 using Library.Results;
 using Library.Threading.MultistepProgress;
@@ -15,11 +15,14 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Services;
 
+[Service]
 internal partial class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
     , IBusinessService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSave, ILoggerContainer
 {
     #region Fields & Properties
 
+    private readonly IBlazorCodingService _blazorCodingService;
+    private readonly IBlazorComponentService _blazorComponentService;
     private readonly ICqrsCommandService _commandService;
     private readonly IEntityViewModelConverter _converter;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService;
@@ -37,19 +40,19 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     #region Ctors
 
     public FunctionalityService(
-    InfraReadDbContext readDbContext,
-    InfraWriteDbContext writeDbContext,
-
-    IEntityViewModelConverter converter,
-    IDtoService dtoService,
-    IDtoCodeService dtoCodeService,
-    ICqrsQueryService queryService,
-    ICqrsCommandService commandService,
-    ICqrsCodeGeneratorService cqrsCodeService,
-
-    IModuleService moduleService,
-    IMultistepProcess reporter,
-    ILogger logger)
+        InfraReadDbContext readDbContext,
+        InfraWriteDbContext writeDbContext,
+        IEntityViewModelConverter converter,
+        IDtoService dtoService,
+        IDtoCodeService dtoCodeService,
+        ICqrsQueryService queryService,
+        ICqrsCommandService commandService,
+        ICqrsCodeGeneratorService cqrsCodeService,
+        IModuleService moduleService,
+        IMultistepProcess reporter,
+        ILogger logger,
+        IBlazorComponentService blazorComponentService,
+        IBlazorCodingService blazorCodingService)
     {
         (this._readDbContext, this._writeDbContext) = (readDbContext, writeDbContext);
         this._converter = converter;
@@ -61,6 +64,8 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
         this._cqrsCodeService = cqrsCodeService;
         this._moduleService = moduleService;
         this._reporter = reporter;
+        this._blazorComponentService = blazorComponentService;
+        this._blazorCodingService = blazorCodingService;
     }
 
     #endregion Ctors
@@ -71,23 +76,19 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     Task<Result> IAsyncTransactional.CommitTransactionAsync(CancellationToken cancellationToken)
         => this._writeDbContext.CommitTransactionAsync(cancellationToken);
 
-    public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default)
+    public async Task<IEnumerable<Result<Codes>>> GenerateCodesAsync(FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default)
     {
-        var result = Codes.New();
+        Check.IfArgumentNotNull(viewModel);
 
-        var getAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQuery, token: token);
-        if (!getAllQueryCodes)
-        {
-            return Result<Codes>.From(getAllQueryCodes, result);
-        }
-        if (token.IsCancellationRequested)
-        {
-            return Result<Codes>.CreateFailure(new OperationCancelException(), result)!;
-        }
+        viewModel.Codes.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
 
-        viewModel.Codes.GetAllQueryCodes = getAllQueryCodes;
+        viewModel.Codes.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
+        viewModel.Codes.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
+        viewModel.Codes.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
+        viewModel.Codes.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
+        this.
 
-        return new(result);
+        return viewModel.Codes;
     }
 
     public void ResetChanges()
@@ -99,8 +100,8 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken)
         => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken)
-        => viewModel.Check()
+    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken) =>
+        viewModel.Check()
             .ArgumentNotNull()
             .NotNull(x => x.Name)
             .NotNull(x => x.NameSpace)

@@ -1,7 +1,6 @@
 ﻿using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
@@ -15,11 +14,8 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-using Database = Library.Data.SqlServer.Dynamics.Database;
-
 namespace Services;
 
-[Service]
 internal sealed partial class FunctionalityService
 {
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
@@ -59,13 +55,13 @@ internal sealed partial class FunctionalityService
 
         this._reporter.Report(description: getTitle("Running..."));
         // Run the process with the tokenSource
-        var processResult = await process.RunAsync(tokenSource.Token);
+        var processResult = await process.RunAsync(data.CancellationTokenSource.Token);
 
         #endregion Process
 
         #region Finalize and prepare the result
 
-        var message = getResultMessage(processResult);
+        var message = getResultMessage(processResult, data.CancellationTokenSource.Token);
         this._reporter.Report(description: getTitle(message));
         tokenSource.Dispose();
         // Get the result from the processResult
@@ -82,16 +78,16 @@ internal sealed partial class FunctionalityService
             => new(Description: description, Sender: nameof(FunctionalityService));
 
         // Validate the model
-        static Result<FunctionalityViewModel?> validate(in FunctionalityViewModel model, CancellationToken token)
-            => model.Check()
-                    .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
-                    .ArgumentNotNull().ThrowOnFail()
-                    .NotNull(x => x.Name)
-                    .NotNull(x => x.NameSpace)
-                    .NotNull(x => x.DbObject)
-                    .NotNull(x => x.DbObject.Name)
-                    .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
-                    .Build()!;
+        static Result<FunctionalityViewModel> validate(in FunctionalityViewModel model, CancellationToken token) =>
+            model.Check()
+                 .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
+                 .ArgumentNotNull()
+                 .NotNull(x => x.Name)
+                 .NotNull(x => x.NameSpace)
+                 .NotNull(x => x.DbObjectViewModel)
+                 .NotNull(x => x.DbObjectViewModel.Name)
+                 .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
+                 .Build();
 
         // Initialize the viewModel with the connection string
         static async Task<Result<(CreationData Data, CancellationTokenSource TokenSource)>> initialize(FunctionalityViewModel viewModel, string? connectionString, CancellationToken token)
@@ -115,14 +111,14 @@ internal sealed partial class FunctionalityService
             {
                 var db = await Database.GetDatabaseAsync(connectionString!, cancellationToken: token);
                 dbTable = db.NotNull(() => new ObjectNotFoundException("Database not found."))
-                            .Tables[dataResult.DbObject.Name!].NotNull(() => new ObjectNotFoundException($"Table name `{dataResult.DbObject}` not found."));
+                            .Tables[dataResult.DbObjectViewModel.Name!].NotNull(() => new ObjectNotFoundException($"Table name `{dataResult.DbObjectViewModel}` not found."));
             }
             // Create a linked tokenSource from the token
-            var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
             // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
-            var result = new CreationData(dataResult, dbTable, cancellationTokenSource);
+            var result = new CreationData(dataResult, dbTable, tokenSource);
             // Return a success result with the result and cancellationTokenSource
-            return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateSuccess((result, cancellationTokenSource));
+            return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateSuccess((result, tokenSource));
         }
 
         // Initialize the steps for the process
@@ -135,17 +131,18 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                .AddStep(this.CreateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
+                .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
 
-                .AddStep(this.CreateListComponent, getTitle($"Creating `{data.ViewModel.Name}ListComponent`…"))
-                .AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
-                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"));
+                //.AddStep(this.CreateListComponent, getTitle($"Creating `{data.ViewModel.Name}ListComponent`…"))
+                //.AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
+                //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+                ;
 
         // Finalize the process
-        static string getResultMessage(in CreationData result)
+        static string getResultMessage(in CreationData result, CancellationToken token)
             => !result.Result.Message.IsNullOrEmpty()
                     ? result.Result.Message
-                    : result.CancellationTokenSource.IsCancellationRequested
+                    : token.IsCancellationRequested
                         ? "Generating process is cancelled."
                         : result.Result.IsSucceed
                             ? "Functionality view model is created."
@@ -154,7 +151,7 @@ internal sealed partial class FunctionalityService
         #endregion Local Methods
     }
 
-    private Task CreateBlazorPage(CreationData data)
+    private Task CreateBlazorPage(CreationData data, CancellationToken token)
     {
         createPageViewModel();
         return Task.CompletedTask;
@@ -162,7 +159,7 @@ internal sealed partial class FunctionalityService
         void createPageViewModel()
         {
             var pageViewModel = this.RawDto(data, true);
-            pageViewModel.Name = $"Get{data.ViewModel.DbObject.Name}ViewModel";
+            pageViewModel.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}ViewModel";
             pageViewModel.IsViewModel = true;
             pageViewModel.Properties.Add(new()
             {
@@ -182,44 +179,58 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private async Task CreateCodes(CreationData data)
+    private async Task CreateDeleteCommand(CreationData data, CancellationToken token)
     {
-        // TODO: Not done yet.
-        var codes = await this.GenerateCodesAsync(data.ViewModel, token: data.CancellationTokenSource.Token);
-        if (!codes)
-        {
-            _ = data.SetResult(codes);
-            return;
-        }
-        //ToDo arg.ViewModel.Codes = codes;
-    }
-
-    private Task CreateDeleteCommand(CreationData data)
-    {
-        return TaskRunner.StartWith(createParams)
+        data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
+        _ = await TaskRunner<CreationData>.StartWith(data)
+            .Then(createParams)
             .Then(createValidator)
             .Then(createHandler)
             .Then(createResult)
-            .RunAsync(data.CancellationTokenSource.Token);
+            .RunAsync(token);
 
-        Task createParams(CancellationToken token) => Task.CompletedTask;
+        void createParams(CreationData data)
+        {
+            var dto = this.RawDto(data, false);
+            dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            dto.Name = $"Delete{data.DbTable.Name}Params";
+            dto.IsParamsDto = true;
+            dto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.DeleteCommandViewModel.ParamDto = dto;
+        }
         Task createValidator(CancellationToken token) => Task.CompletedTask;
-        Task createHandler(CancellationToken token) => Task.CompletedTask;
-        Task createResult(CancellationToken token) => Task.CompletedTask;
+        async Task createHandler(CancellationToken token)
+        {
+            data.ViewModel.DeleteCommandViewModel.Name = $"Delete{data.DbTable.Name}Command";
+            data.ViewModel.DeleteCommandViewModel.Category = CqrsSegregateCategory.Delete;
+            data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
+            data.ViewModel.DeleteCommandViewModel.DbObject = data.ViewModel.DbObjectViewModel;
+            data.ViewModel.DeleteCommandViewModel.FriendlyName = data.ViewModel.DeleteCommandViewModel.Name.SplitCamelCase().Merge(" ");
+            data.ViewModel.DeleteCommandViewModel.Comment = data.COMMENT;
+            data.ViewModel.DeleteCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token);
+        }
+        void createResult(CreationData data)
+        {
+            var dto = this.RawDto(data, false);
+            dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            dto.Name = $"Delete{data.DbTable.Name}Result";
+            dto.IsResultDto = true;
+            data.ViewModel.DeleteCommandViewModel.ResultDto = dto;
+        }
     }
 
-    private Task CreateDetailsComponent(CreationData data)
+    private Task CreateDetailsComponent(CreationData data, CancellationToken token)
     {
         return TaskRunner.StartWith(createDetailsViewModel)
             .Then(createDetailsFrontCode)
             .Then(createDetailsBackendCode)
-            .RunAsync(data.CancellationTokenSource.Token);
+            .RunAsync(token);
 
         void createDetailsViewModel()
         {
             var rawDto = this.RawDto(data, true);
             data.ViewModel.DetailsViewModel = rawDto;
-            data.ViewModel.DetailsViewModel.Name = $"Get{data.ViewModel.DbObject.Name}DetailsViewModel";
+            data.ViewModel.DetailsViewModel.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}DetailsViewModel";
             data.ViewModel.DetailsViewModel.IsViewModel = true;
         }
 
@@ -230,101 +241,101 @@ internal sealed partial class FunctionalityService
             Task.CompletedTask;
     }
 
-    private Task CreateGetAllQuery(CreationData data)
+    private Task CreateGetAllQuery(CreationData data, CancellationToken token)
     {
         return TaskRunner.StartWith(createViewModel)
             .Then(createParams)
             .Then(createResult)
-            .RunAsync(data.CancellationTokenSource.Token);
+            .RunAsync(token);
 
         async Task createViewModel(CancellationToken token)
         {
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
-            data.ViewModel.GetAllQuery = await this._queryService.CreateAsync(token: token);
-            data.ViewModel.GetAllQuery.Name = $"{data.GetAllQueryName}ViewModel";
-            data.ViewModel.GetAllQuery.Category = CqrsSegregateCategory.Read;
-            data.ViewModel.GetAllQuery.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
-            data.ViewModel.GetAllQuery.DbObject = data.ViewModel.DbObject;
-            data.ViewModel.GetAllQuery.FriendlyName = data.GetAllQueryName.SplitCamelCase().Merge(" ");
-            data.ViewModel.GetAllQuery.Comment = data.COMMENT;
-            data.ViewModel.GetAllQuery.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
+            data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token);
+            data.ViewModel.GetAllQueryViewModel.Name = $"{data.GetAllQueryName}ViewModel";
+            data.ViewModel.GetAllQueryViewModel.Category = CqrsSegregateCategory.Read;
+            data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
+            data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.DbObjectViewModel;
+            data.ViewModel.GetAllQueryViewModel.FriendlyName = data.GetAllQueryName.SplitCamelCase().Merge(" ");
+            data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
+            data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
         }
 
         void createParams()
         {
-            data.ViewModel.GetAllQuery.ParamDto = this.RawDto(data, false);
-            data.ViewModel.GetAllQuery.ParamDto.Name = $"{data.GetAllQueryName}Params";
-            data.ViewModel.GetAllQuery.ParamDto.IsParamsDto = true;
+            data.ViewModel.GetAllQueryViewModel.ParamDto = this.RawDto(data, false);
+            data.ViewModel.GetAllQueryViewModel.ParamDto.Name = $"{data.GetAllQueryName}Params";
+            data.ViewModel.GetAllQueryViewModel.ParamDto.IsParamsDto = true;
         }
 
         void createResult()
         {
-            data.ViewModel.GetAllQuery.ResultDto = this.RawDto(data, true);
-            data.ViewModel.GetAllQuery.ResultDto.Name = $"GetAll{data.GetAllQueryName}Result";
-            data.ViewModel.GetAllQuery.ResultDto.IsResultDto = true;
+            data.ViewModel.GetAllQueryViewModel.ResultDto = this.RawDto(data, true);
+            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"GetAll{data.GetAllQueryName}Result";
+            data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
         }
     }
 
-    private Task CreateGetByIdQuery(CreationData data)
+    private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
         return TaskRunner.StartWith(createQuery)
             .Then(createParams)
             .Then(createResult)
-            .RunAsync(data.CancellationTokenSource.Token);
+            .RunAsync(token);
 
         async Task createQuery(CancellationToken token)
         {
             data.GetByIdQueryName = $"GetById{data.DbTable.Name}Query";
-            data.ViewModel.GetByIdQuery = await this._queryService.CreateAsync(token: token);
-            data.ViewModel.GetByIdQuery.Name = $"{data.GetByIdQueryName}ViewModel";
-            data.ViewModel.GetByIdQuery.Category = CqrsSegregateCategory.Read;
-            data.ViewModel.GetByIdQuery.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
-            data.ViewModel.GetByIdQuery.DbObject = data.ViewModel.DbObject;
-            data.ViewModel.GetByIdQuery.FriendlyName = data.GetByIdQueryName.SplitCamelCase().Merge(" ");
-            data.ViewModel.GetByIdQuery.Comment = data.COMMENT;
-            data.ViewModel.GetByIdQuery.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
+            data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token);
+            data.ViewModel.GetByIdQueryViewModel.Name = $"{data.GetByIdQueryName}ViewModel";
+            data.ViewModel.GetByIdQueryViewModel.Category = CqrsSegregateCategory.Read;
+            data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
+            data.ViewModel.GetByIdQueryViewModel.DbObject = data.ViewModel.DbObjectViewModel;
+            data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.GetByIdQueryName.SplitCamelCase().Merge(" ");
+            data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
+            data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
         }
 
         void createParams()
         {
-            data.ViewModel.GetByIdQuery.ParamDto = this.RawDto(data, false);
-            data.ViewModel.GetByIdQuery.ParamDto.Name = $"GetById{data.DbTable.Name}Params";
-            data.ViewModel.GetByIdQuery.ParamDto.IsParamsDto = true;
-            data.ViewModel.GetByIdQuery.ParamDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
+            data.ViewModel.GetByIdQueryViewModel.ParamDto = this.RawDto(data, false);
+            data.ViewModel.GetByIdQueryViewModel.ParamDto.Name = $"GetById{data.DbTable.Name}Params";
+            data.ViewModel.GetByIdQueryViewModel.ParamDto.IsParamsDto = true;
+            data.ViewModel.GetByIdQueryViewModel.ParamDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
         }
 
         void createResult()
         {
-            data.ViewModel.GetByIdQuery.ResultDto = this.RawDto(data, true);
-            data.ViewModel.GetByIdQuery.ResultDto.Name = $"GetById{data.DbTable.Name}Result";
-            data.ViewModel.GetByIdQuery.ResultDto.IsResultDto = true;
+            data.ViewModel.GetByIdQueryViewModel.ResultDto = this.RawDto(data, true);
+            data.ViewModel.GetByIdQueryViewModel.ResultDto.Name = $"GetById{data.DbTable.Name}Result";
+            data.ViewModel.GetByIdQueryViewModel.ResultDto.IsResultDto = true;
         }
     }
 
-    private async Task CreateInsertCommand(CreationData data)
+    private async Task CreateInsertCommand(CreationData data, CancellationToken token)
     {
-        data.ViewModel.InsertCommand = await this._commandService.CreateAsync(data.CancellationTokenSource.Token);
-        _ = await TaskRunner<CqrsCommandViewModel>.StartWith(data.ViewModel.InsertCommand)
+        data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token);
+        _ = await TaskRunner<CreationData>.StartWith(data)
             .Then(createParams)
             .Then(createValidator)
             .Then(createHandler)
             .Then(createResult)
-            .RunAsync(data.CancellationTokenSource.Token);
+            .RunAsync(token);
 
-        static Task createValidator(CqrsCommandViewModel command, CancellationToken token) => Task.CompletedTask;
+        static Task createValidator(CreationData data, CancellationToken token) => Task.CompletedTask;
 
-        async Task createHandler(CqrsCommandViewModel command, CancellationToken token)
+        async Task createHandler(CreationData data, CancellationToken token)
         {
-            command.Name = $"Insert{data.DbTable.Name}Command";
-            command.Category = CqrsSegregateCategory.Create;
-            command.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
-            command.DbObject = data.ViewModel.DbObject;
-            command.FriendlyName = command.Name.SplitCamelCase().Merge(" ");
-            command.Comment = data.COMMENT;
-            command.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
+            data.ViewModel.InsertCommandViewModel.Name = $"Insert{data.DbTable.Name}Command";
+            data.ViewModel.InsertCommandViewModel.Category = CqrsSegregateCategory.Create;
+            data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
+            data.ViewModel.InsertCommandViewModel.DbObject = data.ViewModel.DbObjectViewModel;
+            data.ViewModel.InsertCommandViewModel.FriendlyName = data.ViewModel.InsertCommandViewModel.Name.SplitCamelCase().Merge(" ");
+            data.ViewModel.InsertCommandViewModel.Comment = data.COMMENT;
+            data.ViewModel.InsertCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token);
         }
 
-        void createParams(CqrsCommandViewModel command)
+        void createParams(CreationData data)
         {
             var dto = this.RawDto(data, true);
             dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
@@ -335,29 +346,29 @@ internal sealed partial class FunctionalityService
             {
                 _ = dto.Properties.Remove(idProp);
             }
-            command.ParamDto = dto;
+            data.ViewModel.InsertCommandViewModel.ParamDto = dto;
         }
 
-        void createResult(CqrsCommandViewModel command)
+        void createResult(CreationData data)
         {
-            command.ResultDto = this.RawDto(data, false);
-            command.ResultDto.Name = $"Insert{data.DbTable.Name}Result";
-            command.ResultDto.IsResultDto = true;
-            command.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.InsertCommandViewModel.ResultDto = this.RawDto(data, false);
+            data.ViewModel.InsertCommandViewModel.ResultDto.Name = $"Insert{data.DbTable.Name}Result";
+            data.ViewModel.InsertCommandViewModel.ResultDto.IsResultDto = true;
+            data.ViewModel.InsertCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
     }
 
-    private Task CreateListComponent(CreationData data)
+    private Task CreateListComponent(CreationData data, CancellationToken token)
     {
         return TaskRunner.StartWith(createListViewModel)
             .Then(createListFrontCode)
             .Then(createListBackendCode)
-            .RunAsync(data.CancellationTokenSource.Token);
+            .RunAsync(token);
 
         void createListViewModel()
         {
             data.ViewModel.ListViewModel = this.RawDto(data, true);
-            data.ViewModel.ListViewModel.Name = $"Get{data.ViewModel.DbObject.Name}ListViewModel";
+            data.ViewModel.ListViewModel.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}ListViewModel";
             data.ViewModel.ListViewModel.IsViewModel = true;
         }
 
@@ -368,32 +379,50 @@ internal sealed partial class FunctionalityService
             => Task.CompletedTask;
     }
 
-    private Task CreateUpdateCommand(CreationData data)
+    private async Task CreateUpdateCommand(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(createParams)
+        data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token);
+        _ = await TaskRunner<CreationData>.StartWith(data)
+            .Then(createParamsAsync)
             .Then(createValidator)
             .Then(createHandler)
             .Then(createResult)
-            .RunAsync(data.CancellationTokenSource.Token);
+            .RunAsync(token);
 
-        Task createParams(CancellationToken token) => Task.CompletedTask;
+        static Task createValidator(CreationData data, CancellationToken token) => Task.CompletedTask;
 
-        Task createValidator(CancellationToken token) => Task.CompletedTask;
-
-        async Task createHandler(CancellationToken token)
+        async Task createHandler(CreationData data, CancellationToken token)
         {
-            data.ViewModel.UpdateCommand = await this._commandService.CreateAsync(token: token);
-            data.ViewModel.UpdateCommand.Name = $"Update{data.DbTable.Name}Command";
-            data.ViewModel.UpdateCommand.Category = CqrsSegregateCategory.Update;
-            data.ViewModel.UpdateCommand.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
-            data.ViewModel.UpdateCommand.DbObject = data.ViewModel.DbObject;
-            data.ViewModel.UpdateCommand.FriendlyName = data.ViewModel.UpdateCommand.Name.SplitCamelCase().Merge(" ");
-            data.ViewModel.UpdateCommand.Comment = data.COMMENT;
-            data.ViewModel.UpdateCommand.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
+            data.ViewModel.UpdateCommandViewModel.Name = $"Update{data.DbTable.Name}Command";
+            data.ViewModel.UpdateCommandViewModel.Category = CqrsSegregateCategory.Update;
+            data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
+            data.ViewModel.UpdateCommandViewModel.DbObject = data.ViewModel.DbObjectViewModel;
+            data.ViewModel.UpdateCommandViewModel.FriendlyName = data.ViewModel.UpdateCommandViewModel.Name.SplitCamelCase().Merge(" ");
+            data.ViewModel.UpdateCommandViewModel.Comment = data.COMMENT;
+            data.ViewModel.UpdateCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
         }
 
-        Task createResult(CancellationToken token) => Task.CompletedTask;
+        void createParamsAsync(CreationData data)
+        {
+            var dto = this.RawDto(data, true);
+            dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            dto.Name = $"Update{data.DbTable.Name}Params";
+            dto.IsParamsDto = true;
+            data.ViewModel.UpdateCommandViewModel.ParamDto = dto;
+        }
+
+        void createResult(CreationData data)
+        {
+            var dto = this.RawDto(data, false);
+            dto.Name = $"Update{data.DbTable.Name}Result";
+            dto.IsResultDto = true;
+            dto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.UpdateCommandViewModel.ResultDto = dto;
+        }
     }
+
+    private async Task GenerateCodes(CreationData data, CancellationToken token) => 
+        await this.GenerateCodesAsync(data.ViewModel, token: token);
 
     private DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
