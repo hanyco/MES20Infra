@@ -70,10 +70,19 @@ public interface IUiCodeGenerator
     Code GenerateUiCode(in GenerateCodesParameters? arguments = null);
 }
 
-public interface IAsyncCodeGenerator<TViewModel>
+
+public interface IAsyncCodeGenerator<in TViewModel, in TArgs>
 {
     /// <summary>
     /// Generates codes asynchronously based on the given view model and optional parameters.
     /// </summary>
-    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default);
+    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, TArgs? arguments = default, CancellationToken token = default);
+}
+
+public interface IAsyncCodeGenerator<in TViewModel>
+{
+    /// <summary>
+    /// Generates codes asynchronously based on the given view model and optional parameters.
+    /// </summary>
+    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, CancellationToken token = default);
 }

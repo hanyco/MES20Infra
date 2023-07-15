@@ -1,6 +1,6 @@
-﻿using Contracts.ViewModels;
+﻿using Contracts.Services;
+using Contracts.ViewModels;
 
-using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -17,21 +17,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal sealed partial class FunctionalityService:IAsyncCodeGenerator<FunctionalityViewModel>
+internal sealed partial class FunctionalityService
 {
-    public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, GenerateCodesParameters? arguments = null, CancellationToken token = default)
+    public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
+        var validationResult = viewModel.Check()
+             .ArgumentNotNull()
+             .NotNull(x => x.GetAllQueryViewModel)
+             .NotNull(x => x.GetByIdQueryViewModel)
+             .NotNull(x => x.InsertCommandViewModel)
+             .NotNull(x => x.UpdateCommandViewModel)
+             .NotNull(x => x.DeleteCommandViewModel)
+             .NotNull(x => x.BlazorListComponentViewModel)
+             .NotNull(x => x.BlazorDetailsComponentViewModel)
+             .Build();
+        if (!validationResult)
+        {
+            return Result<Codes>.From(validationResult, Codes.Empty);
+        }
+
         Check.IfArgumentNotNull(viewModel);
 
-        viewModel.CodesResults.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
-        viewModel.CodesResults.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
-        viewModel.CodesResults.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
-        viewModel.CodesResults.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
-        viewModel.CodesResults.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
-        viewModel.CodesResults.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
-        viewModel.CodesResults.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+        var results = (args?.UpdateModelView ?? false) ? viewModel.CodesResults : new();
 
-        return viewModel.CodesResults.Merge();
+        results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
+        results.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
+        results.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
+        results.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
+        results.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
+        results.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
+        results.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+
+        return results.Merge();
     }
 
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
