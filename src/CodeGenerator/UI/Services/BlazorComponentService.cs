@@ -3,6 +3,7 @@
 using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Exceptions.Validations;
@@ -15,11 +16,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.UI.Services;
 
+[Service]
 public sealed class BlazorComponentService :
     IBlazorComponentService,
     IAsyncValidator<UiComponentViewModel>,
     IAsyncSaveChanges,
-    IResetChanges
+    IResetChanges,
+    IService
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _readDbContext;
