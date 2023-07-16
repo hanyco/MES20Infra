@@ -21,34 +21,37 @@ internal sealed partial class FunctionalityService
 {
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
-        var validationResult = viewModel.Check()
-             .ArgumentNotNull()
-             .NotNull(x => x.GetAllQueryViewModel)
-             .NotNull(x => x.GetByIdQueryViewModel)
-             .NotNull(x => x.InsertCommandViewModel)
-             .NotNull(x => x.UpdateCommandViewModel)
-             .NotNull(x => x.DeleteCommandViewModel)
-             .NotNull(x => x.BlazorListComponentViewModel)
-             .NotNull(x => x.BlazorDetailsComponentViewModel)
-             .Build();
-        if (!validationResult)
+        if (!validate(viewModel).TryParse(out var result))
         {
-            return Result<Codes>.From(validationResult, Codes.Empty);
+            return Result<Codes>.From(result, Codes.Empty);
         }
 
-        Check.IfArgumentNotNull(viewModel);
-
-        var results = (args?.UpdateModelView ?? false) ? viewModel.CodesResults : new();
-
-        results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
-        results.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
-        results.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
-        results.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
-        results.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
-        results.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
-        results.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+        var results = await generateCodes(viewModel, (args?.UpdateModelView ?? false) ? viewModel.CodesResults : new(), token);
 
         return results.Merge();
+
+        static Result<FunctionalityViewModel> validate(FunctionalityViewModel viewModel) =>
+            viewModel.Check()
+                     .ArgumentNotNull()
+                     .NotNull(x => x.GetAllQueryViewModel)
+                     .NotNull(x => x.GetByIdQueryViewModel)
+                     .NotNull(x => x.InsertCommandViewModel)
+                     .NotNull(x => x.UpdateCommandViewModel)
+                     .NotNull(x => x.DeleteCommandViewModel)
+                     .NotNull(x => x.BlazorListComponentViewModel)
+                     .NotNull(x => x.BlazorDetailsComponentViewModel);
+
+        async Task<FunctionalityViewModelCodesResults> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodesResults results, CancellationToken token)
+        {
+            results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
+            results.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
+            results.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
+            results.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
+            results.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
+            results.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
+            results.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+            return results;
+        }
     }
 
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
@@ -98,7 +101,7 @@ internal sealed partial class FunctionalityService
         this._reporter.Report(description: getTitle(message));
         tokenSource.Dispose();
         // Get the result from the processResult
-        var result = processResult.Result;
+        var result = processResult.Value.Result;
 
         #endregion Finalize and prepare the result
 
@@ -119,8 +122,7 @@ internal sealed partial class FunctionalityService
                  .NotNull(x => x.NameSpace)
                  .NotNull(x => x.DbObjectViewModel)
                  .NotNull(x => x.DbObjectViewModel.Name)
-                 .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."))
-                 .Build();
+                 .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."));
 
         // Initialize the viewModel with the connection string
         static async Task<Result<(CreationData Data, CancellationTokenSource TokenSource)>> initialize(FunctionalityViewModel viewModel, string? connectionString, CancellationToken token)
@@ -155,8 +157,8 @@ internal sealed partial class FunctionalityService
         }
 
         // Initialize the steps for the process
-        MultistepProcessRunner<CreationData> initSteps(in CreationData data)
-            => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
+        MultistepProcessRunner<CreationData> initSteps(in CreationData data)=> 
+            MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel!.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
 
@@ -172,8 +174,8 @@ internal sealed partial class FunctionalityService
                 ;
 
         // Finalize the process
-        static string getResultMessage(in CreationData result, CancellationToken token)
-            => !result.Result.Message.IsNullOrEmpty()
+        static string getResultMessage(in CreationData result, CancellationToken token) => 
+            !result.Result.Message.IsNullOrEmpty()
                     ? result.Result.Message
                     : token.IsCancellationRequested
                         ? "Generating process is cancelled."
@@ -212,13 +214,12 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private async Task CreateDeleteCommand(CreationData data, CancellationToken token)
+    private Task CreateDeleteCommand(CreationData data, CancellationToken token)
     {
-        data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
-        _ = await TaskRunner<CreationData>.StartWith(data)
+        return TaskRunner<CreationData>.StartWith(data)
+            .Then(createHandler)
             .Then(createParams)
             .Then(createValidator)
-            .Then(createHandler)
             .Then(createResult)
             .RunAsync(token);
 
@@ -234,6 +235,7 @@ internal sealed partial class FunctionalityService
         Task createValidator(CancellationToken token) => Task.CompletedTask;
         async Task createHandler(CancellationToken token)
         {
+            data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.DeleteCommandViewModel.Name = $"Delete{data.DbTable.Name}Command";
             data.ViewModel.DeleteCommandViewModel.Category = CqrsSegregateCategory.Delete;
             data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
@@ -255,8 +257,8 @@ internal sealed partial class FunctionalityService
     private Task CreateDetailsComponent(CreationData data, CancellationToken token)
     {
         return TaskRunner.StartWith(createDetailsViewModel)
-            .Then(createDetailsFrontCode)
-            .Then(createDetailsBackendCode)
+            .Then(createDetailsFrontViewModel)
+            .Then(createDetailsBackendViewModel)
             .RunAsync(token);
 
         void createDetailsViewModel()
@@ -267,10 +269,10 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DetailsViewModel.IsViewModel = true;
         }
 
-        Task createDetailsFrontCode(CancellationToken token) =>
+        Task createDetailsFrontViewModel(CancellationToken token) =>
             Task.CompletedTask;
 
-        Task createDetailsBackendCode(CancellationToken token) =>
+        Task createDetailsBackendViewModel(CancellationToken token) =>
             Task.CompletedTask;
     }
 
@@ -311,12 +313,12 @@ internal sealed partial class FunctionalityService
 
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(createQuery)
+        return TaskRunner.StartWith(createViewModel)
             .Then(createParams)
             .Then(createResult)
             .RunAsync(token);
 
-        async Task createQuery(CancellationToken token)
+        async Task createViewModel(CancellationToken token)
         {
             data.GetByIdQueryName = $"GetById{data.DbTable.Name}Query";
             data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token);
@@ -345,13 +347,12 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private async Task CreateInsertCommand(CreationData data, CancellationToken token)
+    private Task CreateInsertCommand(CreationData data, CancellationToken token)
     {
-        data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token);
-        _ = await TaskRunner<CreationData>.StartWith(data)
+        return TaskRunner<CreationData>.StartWith(data)
+            .Then(createHandler)
             .Then(createParams)
             .Then(createValidator)
-            .Then(createHandler)
             .Then(createResult)
             .RunAsync(token);
 
@@ -359,6 +360,7 @@ internal sealed partial class FunctionalityService
 
         async Task createHandler(CreationData data, CancellationToken token)
         {
+            data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.InsertCommandViewModel.Name = $"Insert{data.DbTable.Name}Command";
             data.ViewModel.InsertCommandViewModel.Category = CqrsSegregateCategory.Create;
             data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");

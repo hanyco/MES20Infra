@@ -92,9 +92,10 @@ public partial class App : LibApp
                 .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule))
                 .RegisterServicesWithIService<App>()
                 //.AddScoped<IEntityViewModelConverter, EntityViewModelConverter>()
-                .AddScoped<IBlazorCodingService, BlazorCodingService>()
-                .AddScoped<IBlazorComponentService, BlazorComponentService>()
-                .AddScoped<IBlazorPageService, BlazorPageService>();
+                //.AddScoped<IBlazorCodingService, BlazorCodingService>()
+                //.AddScoped<IBlazorComponentService, BlazorComponentService>()
+                //.AddScoped<IBlazorPageService, BlazorPageService>()
+                ;
 
         static void addPages(IServiceCollection services)
         {

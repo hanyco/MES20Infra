@@ -84,16 +84,26 @@ public abstract record ResultBase(in bool? Succeed = null,
         var status = results.LastOrDefault(x => x.Status is not null)?.Status;
         var message = results.LastOrDefault(x => !x.Message.IsNullOrEmpty())?.Message;
         var errors = results.SelectMany(x => EnumerableHelper.DefaultIfEmpty(x?.Errors));
-        var extraData = results.SelectMany(x => EnumerableHelper.DefaultIfEmpty(x.ExtraData)).ToImmutableDictionary();
-
         var statusBuffer = results.Where(x => x.Status is not null).Select(x => x.Status).ToList();
         if (statusBuffer.Count > 1)
         {
             errors = errors.AddRangeImmuted(statusBuffer.Select(x => ((object)null!, x!)));
             status = null;
         }
+        var extraData = combineExtraData(results);
 
-        return (isSucceed, status, message, errors, extraData);
+        return (isSucceed, status, message, errors, extraData.ToImmutableDictionary());
+
+        static IEnumerable<KeyValuePair<string, object>> combineExtraData(ResultBase[] results)
+        {
+            var lastData = results
+                .Where(x => x?.ExtraData is not null)
+                .SelectMany(x => x.ExtraData!)
+                .Where(item => !item.IsDefault() && !item.Key.IsNullOrEmpty() && item.Value is not null);
+            return !lastData.Any()
+                ? results.Select(x => new KeyValuePair<string, object>("Previous Rsult", x))
+                : lastData;
+        }
     }
 }
 

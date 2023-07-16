@@ -5,7 +5,6 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services;
 
-using Library.CodeGeneration.Models;
 using Library.Interfaces;
 using Library.Results;
 using Library.Threading.MultistepProgress;
@@ -85,7 +84,7 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    Task<Result<FunctionalityViewModel>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel viewModel, CancellationToken cancellationToken) =>
+    Task<Result<FunctionalityViewModel?>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel? viewModel, CancellationToken cancellationToken) =>
         viewModel.Check()
             .ArgumentNotNull()
             .NotNull(x => x.Name)
