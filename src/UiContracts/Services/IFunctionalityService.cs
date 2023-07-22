@@ -4,6 +4,7 @@ using Contracts.ViewModels;
 
 using Library.Interfaces;
 using Library.Results;
+using Library.Wpf.Windows;
 
 namespace Contracts.Services;
 

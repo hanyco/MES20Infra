@@ -116,13 +116,13 @@ internal sealed partial class FunctionalityService
         // Validate the model
         static Result<FunctionalityViewModel> validate(in FunctionalityViewModel model, CancellationToken token) =>
             model.Check()
-                 .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
-                 .ArgumentNotNull()
-                 .NotNull(x => x.Name)
-                 .NotNull(x => x.NameSpace)
-                 .NotNull(x => x.DbObjectViewModel)
-                 .NotNull(x => x.DbObjectViewModel.Name)
-                 .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."));
+                .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
+                .ArgumentNotNull()
+                .NotNull(x => x.Name)
+                .NotNull(x => x.NameSpace)
+                .NotNull(x => x.DbObjectViewModel)
+                .NotNull(x => x.DbObjectViewModel.Name)
+                .RuleFor(x => x.ModuleId != 0, () => new ValidationException("Module is not selected."));
 
         // Initialize the viewModel with the connection string
         static async Task<Result<(CreationData Data, CancellationTokenSource TokenSource)>> initialize(FunctionalityViewModel viewModel, string? connectionString, CancellationToken token)
@@ -136,7 +136,7 @@ internal sealed partial class FunctionalityService
             // Get the dataResult from the viewModel
             var dataResult = viewModel;
             Table dbTable;
-            // If viewModel.DbTable is not null, use it
+            // If viewModel.DbTable is not null, use it (FOR TESTING PURPOSES ONLY
             if (viewModel.DbTable is not null)
             {
                 dbTable = viewModel.DbTable;
@@ -157,7 +157,7 @@ internal sealed partial class FunctionalityService
         }
 
         // Initialize the steps for the process
-        MultistepProcessRunner<CreationData> initSteps(in CreationData data)=> 
+        MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
             MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel!.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
@@ -168,13 +168,13 @@ internal sealed partial class FunctionalityService
 
                 .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
 
-                //.AddStep(this.CreateListComponent, getTitle($"Creating `{data.ViewModel.Name}ListComponent`…"))
-                //.AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
-                //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+                .AddStep(this.CreateListComponent, getTitle($"Creating `{data.ViewModel.Name}ListComponent`…"))
+                .AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
+                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
                 ;
 
         // Finalize the process
-        static string getResultMessage(in CreationData result, CancellationToken token) => 
+        static string getResultMessage(in CreationData result, CancellationToken token) =>
             !result.Result.Message.IsNullOrEmpty()
                     ? result.Result.Message
                     : token.IsCancellationRequested
