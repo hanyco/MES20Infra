@@ -25,21 +25,21 @@ internal sealed partial class FunctionalityService
         {
             return Result<Codes>.From(result, Codes.Empty);
         }
-
-        var results = await generateCodes(viewModel, (args?.UpdateModelView ?? false) ? viewModel.CodesResults : new(), token);
+        var codeResult = (args?.UpdateModelView ?? false) ? viewModel.CodesResults : new();
+        var results = await generateCodes(viewModel, codeResult, token);
 
         return results.Merge();
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel viewModel) =>
             viewModel.Check()
-                     .ArgumentNotNull()
-                     .NotNull(x => x.GetAllQueryViewModel)
-                     .NotNull(x => x.GetByIdQueryViewModel)
-                     .NotNull(x => x.InsertCommandViewModel)
-                     .NotNull(x => x.UpdateCommandViewModel)
-                     .NotNull(x => x.DeleteCommandViewModel)
-                     .NotNull(x => x.BlazorListComponentViewModel)
-                     .NotNull(x => x.BlazorDetailsComponentViewModel);
+                .ArgumentNotNull()
+                .NotNull(x => x.GetAllQueryViewModel)
+                .NotNull(x => x.GetByIdQueryViewModel)
+                .NotNull(x => x.InsertCommandViewModel)
+                .NotNull(x => x.UpdateCommandViewModel)
+                .NotNull(x => x.DeleteCommandViewModel)
+                .NotNull(x => x.BlazorListComponentViewModel)
+                .NotNull(x => x.BlazorDetailsComponentViewModel);
 
         async Task<FunctionalityViewModelCodesResults> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodesResults results, CancellationToken token)
         {
@@ -159,29 +159,46 @@ internal sealed partial class FunctionalityService
         // Initialize the steps for the process
         MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
             MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
-                .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel!.Name)}Query`…"))
+                .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
 
                 .AddStep(this.CreateInsertCommand, getTitle($"Creating `Insert{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
-
-                .AddStep(this.CreateListComponent, getTitle($"Creating `{data.ViewModel.Name}ListComponent`…"))
-                .AddStep(this.CreateDetailsComponent, getTitle($"Creating `{data.ViewModel.Name}DetailsComponent`…"))
+                .AddStep(this.CreateListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
+                .AddStep(this.CreateDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
                 .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+
+                .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
                 ;
 
         // Finalize the process
-        static string getResultMessage(in CreationData result, CancellationToken token) =>
-            !result.Result.Message.IsNullOrEmpty()
-                    ? result.Result.Message
-                    : token.IsCancellationRequested
-                        ? "Generating process is cancelled."
-                        : result.Result.IsSucceed
-                            ? "Functionality view model is created."
-                            : "An error occurred while creating functionality view model";
+        static string getResultMessage(in CreationData result, CancellationToken token)
+        {
+            if (!result.Result.Message.IsNullOrEmpty())
+            {
+                return result.Result.Message;
+            }
+            else
+            {
+                if (token.IsCancellationRequested)
+                {
+                    return "Generating process is cancelled.";
+                }
+                else
+                {
+                    if (result.Result.IsSucceed)
+                    {
+                        return "Functionality view model is created.";
+                    }
+                    else
+                    {
+                        return "An error occurred while creating functionality view model";
+                    }
+                }
+            }
+        }
 
         #endregion Local Methods
     }
@@ -285,7 +302,7 @@ internal sealed partial class FunctionalityService
             .Then(createResult)
             .RunAsync(token);
 
-        async Task createViewModel(CancellationToken token)
+        async Task createViewModel(CreationData data, CancellationToken token)
         {
             data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DbTable.Name)}Query";
             data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token);
@@ -298,14 +315,14 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token: token);
         }
 
-        void createParams()
+        void createParams(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ParamDto = this.RawDto(data, false);
             data.ViewModel.GetAllQueryViewModel.ParamDto.Name = $"{data.GetAllQueryName}Params";
             data.ViewModel.GetAllQueryViewModel.ParamDto.IsParamsDto = true;
         }
 
-        void createResult()
+        void createResult(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = this.RawDto(data, true);
             data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"GetAll{data.GetAllQueryName}Result";
