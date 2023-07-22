@@ -216,7 +216,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)
     {
-        return TaskRunner<CreationData>.StartWith(data)
+        return TaskRunner.StartWith(data)
             .Then(createHandler)
             .Then(createParams)
             .Then(createValidator)
@@ -256,7 +256,8 @@ internal sealed partial class FunctionalityService
 
     private Task CreateDetailsComponent(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(createDetailsViewModel)
+        return TaskRunner.StartWith(data)
+            .Then(createDetailsViewModel)
             .Then(createDetailsFrontViewModel)
             .Then(createDetailsBackendViewModel)
             .RunAsync(token);
@@ -278,7 +279,8 @@ internal sealed partial class FunctionalityService
 
     private Task CreateGetAllQuery(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(createViewModel)
+        return TaskRunner.StartWith(data)
+            .Then(createViewModel)
             .Then(createParams)
             .Then(createResult)
             .RunAsync(token);
@@ -313,7 +315,8 @@ internal sealed partial class FunctionalityService
 
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(createViewModel)
+        return TaskRunner.StartWith(data)
+            .Then(createViewModel)
             .Then(createParams)
             .Then(createResult)
             .RunAsync(token);
@@ -349,7 +352,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
     {
-        return TaskRunner<CreationData>.StartWith(data)
+        return TaskRunner.StartWith(data)
             .Then(createHandler)
             .Then(createParams)
             .Then(createValidator)
@@ -395,7 +398,8 @@ internal sealed partial class FunctionalityService
 
     private Task CreateListComponent(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(createListViewModel)
+        return TaskRunner.StartWith(data)
+            .Then(createListViewModel)
             .Then(createListFrontCode)
             .Then(createListBackendCode)
             .RunAsync(token);
@@ -414,20 +418,20 @@ internal sealed partial class FunctionalityService
             => Task.CompletedTask;
     }
 
-    private async Task CreateUpdateCommand(CreationData data, CancellationToken token)
+    private Task CreateUpdateCommand(CreationData data, CancellationToken token)
     {
-        data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token);
-        _ = await TaskRunner<CreationData>.StartWith(data)
-            .Then(createParamsAsync)
-            .Then(createValidator)
+        return TaskRunner.StartWith(data)
             .Then(createHandler)
+            .Then(createParamsAsync)
             .Then(createResult)
+            .Then(createValidator)
             .RunAsync(token);
 
         static Task createValidator(CreationData data, CancellationToken token) => Task.CompletedTask;
 
         async Task createHandler(CreationData data, CancellationToken token)
         {
+            data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.UpdateCommandViewModel.Name = $"Update{data.DbTable.Name}Command";
             data.ViewModel.UpdateCommandViewModel.Category = CqrsSegregateCategory.Update;
             data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
