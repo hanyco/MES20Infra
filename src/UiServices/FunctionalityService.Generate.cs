@@ -270,13 +270,10 @@ internal sealed partial class FunctionalityService
             .Then(createDetailsBackendViewModel)
             .RunAsync(token);
 
-        void createDetailsViewModel(CreationData data)
-        {
-            var rawDto = this.RawDto(data, true);
-            data.ViewModel.DetailsViewModel = rawDto;
-            data.ViewModel.DetailsViewModel.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}DetailsViewModel";
-            data.ViewModel.DetailsViewModel.IsViewModel = true;
-        }
+        void createDetailsViewModel(CreationData data) => 
+            data.ViewModel.DetailsViewModel = this.RawDto(data, true)
+                .With(x => x.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}DetailsViewModel")
+                .With(x => x.IsViewModel = true);
 
         Task createDetailsFrontViewModel(CreationData data, CancellationToken token) =>
             Task.CompletedTask;
