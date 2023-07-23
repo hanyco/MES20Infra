@@ -180,24 +180,15 @@ internal sealed partial class FunctionalityService
             {
                 return result.Result.Message;
             }
-            else
+            if (token.IsCancellationRequested)
             {
-                if (token.IsCancellationRequested)
-                {
-                    return "Generating process is cancelled.";
-                }
-                else
-                {
-                    if (result.Result.IsSucceed)
-                    {
-                        return "Functionality view model is created.";
-                    }
-                    else
-                    {
-                        return "An error occurred while creating functionality view model";
-                    }
-                }
-            }
+                return "Generating process is cancelled.";
+            };
+            if (result.Result.IsFailure)
+            {
+                return "An error occurred while creating functionality view model";
+            };
+            return "Functionality view model is created.";
         }
 
         #endregion Local Methods
@@ -279,7 +270,7 @@ internal sealed partial class FunctionalityService
             .Then(createDetailsBackendViewModel)
             .RunAsync(token);
 
-        void createDetailsViewModel()
+        void createDetailsViewModel(CreationData data)
         {
             var rawDto = this.RawDto(data, true);
             data.ViewModel.DetailsViewModel = rawDto;
@@ -287,10 +278,10 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DetailsViewModel.IsViewModel = true;
         }
 
-        Task createDetailsFrontViewModel(CancellationToken token) =>
+        Task createDetailsFrontViewModel(CreationData data, CancellationToken token) =>
             Task.CompletedTask;
 
-        Task createDetailsBackendViewModel(CancellationToken token) =>
+        Task createDetailsBackendViewModel(CreationData data, CancellationToken token) =>
             Task.CompletedTask;
     }
 
