@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
-    xmlns:viewmodels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    xmlns:viewmodels="clr-namespace:Contracts.ViewModels;assembly=Contracts"
     x:Name="Me"
     Title="Functionality Editor"
     d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
@@ -75,7 +75,7 @@
                         <TextBox
                             IsReadOnly="True"
                             Style="{StaticResource LongTextBox}"
-                            Text="{Binding RootDto.Name, Mode=OneWay}" />
+                            Text="{Binding SourceDto.Name, Mode=OneWay}" />
                         <Button
                             x:Name="SelectRootDtoButton"
                             Click="SelectRootDtoButton_Click"
@@ -88,7 +88,7 @@
                         <usercontrols:SelectModuleUserControl
                             x:Name="ModuleComboBox"
                             Initializing="ModuleComboBox_Initializing"
-                            SelectedModule="{Binding RootDto.Module}"
+                            SelectedModule="{Binding SourceDto.Module}"
                             SelectedModuleChanged="ModuleComboBox_SelectedModuleChanged"
                             Style="{StaticResource LongControl}" />
                     </StackPanel>
@@ -99,9 +99,8 @@
                 </Grid>
             </TabItem>
             <TabItem Header="DTO">
-                <usercontrols:DtoEditUserControl DataContext="{Binding Path=RootDto}" />
+                <usercontrols:DtoEditUserControl DataContext="{Binding Path=SourceDto}" />
             </TabItem>
         </TabControl>
-
     </Grid>
 </local:PageBase>

@@ -1,4 +1,6 @@
-﻿namespace HanyCo.Infra.UI.ViewModels;
+﻿using Contracts.ViewModels;
+
+namespace HanyCo.Infra.UI.ViewModels;
 
 public abstract class InfraViewModelBase : InfraViewModelBase<long?>
 {

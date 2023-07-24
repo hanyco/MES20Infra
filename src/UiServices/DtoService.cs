@@ -107,11 +107,11 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return Result.CreateFailure(message);
         }
 
-        static Result<DtoViewModel?> validate(DtoViewModel model, CancellationToken token = default)
+        static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default)
             => model.Check()
                     .ArgumentNotNull()
-                    .NotNull(x => x.Id)
-                    .Build();
+                    .NotNull(x => x!.Id)
+                    .Build()!;
     }
 
     public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
@@ -138,13 +138,12 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return result;
         }
 
-        static Result<DtoViewModel?> validate(DtoViewModel viewModel, CancellationToken token = default)
+        static Result<DtoViewModel> validate(DtoViewModel? viewModel, CancellationToken token = default)
             => viewModel.Check()
-                    //.NotNull(x => x.Id)
                     .NotNull(x => x.Module)
                     .NotNullOrEmpty(x => x.Name)
                     .NotNullOrEmpty(x => x.NameSpace)
-                    .Build();
+                    .Build()!;
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync(CancellationToken token = default)
@@ -159,7 +158,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
     public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels, CancellationToken token = default)
     {
-        var rawQuery = from dto in this._db.Dtos
+        var rawQuery = from dto in this._db.Dtos.Include(x => x.Module)
                        select dto;
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels, token);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
@@ -368,7 +367,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         var result = viewModel.Check(CheckBehavior.GatherAll)
             .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
-            .RuleFor(x => x.Module?.Id is not null or 0, () => "Module name cannot be null.")
+            .RuleFor(x => x.Module.Id is not null or 0, () => "Module name cannot be null.")
             .Build();
         if (!result.IsSucceed)
         {

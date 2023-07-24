@@ -1,8 +1,6 @@
 ﻿using Contracts.Services;
 using Contracts.ViewModels;
 
-using Library.Data.SqlServer.Dynamics;
-
 namespace InfraTestProject.Tests;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
@@ -43,19 +41,17 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
 
     private static FunctionalityViewModel CreateModel()
     {
-        const string CS = "InMemoryConnectionString";
-        var model = new FunctionalityViewModel()
+        var model = new FunctionalityViewModel
         {
-            DbTable = new(null!, "Person", "dbo", CS),
-            DbObjectViewModel = new("Person") { Id = 1 },
+            SourceDto = new(-1, "PersonDTO") { Module = new(1, "Module") },
             Name = "TestFunctionality",
-            NameSpace = "CodeGen.UnitTest",
-            ModuleId = 1,
+            NameSpace = "CodeGen.UnitTests",
         };
-        model.DbTable.Columns = new(new Column[]
+        _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
-                new(model.DbTable, "Name", CS) { DataType = "nvarchar", MaxLength = 50, },
-                new(model.DbTable, "Age", CS) { DataType = "int" },
+                new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),
+                new("Name", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),
+                new("Age", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Interger),
         });
         return model;
     }

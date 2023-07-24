@@ -1,5 +1,8 @@
-﻿using Library.Interfaces;
+﻿using Contracts.ViewModels;
+
+using Library.Interfaces;
 using Library.Types;
+
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 

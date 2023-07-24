@@ -20,6 +20,17 @@ public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescript
     public PropertyViewModel()
     {
     }
+    public PropertyViewModel(PropertyViewModel original)
+    {
+        this._type = original._type;
+        this._comment = original._comment;
+        this._dbObject = original._dbObject;
+        this._dto = original._dto;
+        this._isList = original._isList;
+        this._isNullable = original._isNullable;
+        this._parentEntityId = original._parentEntityId;
+        this._typeFullName = original._typeFullName;
+    }
 
     public PropertyViewModel(string name, PropertyType type)
         => (this.Name, this.Type) = (name, type);
