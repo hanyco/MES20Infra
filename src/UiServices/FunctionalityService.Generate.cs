@@ -166,9 +166,9 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                .AddStep(this.CreateListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
-                .AddStep(this.CreateDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
-                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+                //.AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
+                //.AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
+                //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
 
                 .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
                 ;
@@ -183,7 +183,7 @@ internal sealed partial class FunctionalityService
             if (token.IsCancellationRequested)
             {
                 return "Generating process is cancelled.";
-            };
+            }
             if (result.Result.IsFailure)
             {
                 return "An error occurred while creating functionality view model";
@@ -194,12 +194,36 @@ internal sealed partial class FunctionalityService
         #endregion Local Methods
     }
 
-    private Task CreateBlazorPage(CreationData data, CancellationToken token)
+    private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
-        createPageViewModel();
+        createViewModel(data);
         return Task.CompletedTask;
 
-        void createPageViewModel()
+        void createViewModel(CreationData data) =>
+            data.ViewModel.DetailsViewModel = this.RawDto(data, true)
+                .With(x => x.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}DetailsViewModel")
+                .With(x => x.IsViewModel = true);
+    }
+
+    private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
+    {
+        createViewModel(data);
+        return Task.CompletedTask;
+
+        void createViewModel(CreationData data)
+        {
+            data.ViewModel.ListViewModel = this.RawDto(data, true);
+            data.ViewModel.ListViewModel.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}ListViewModel";
+            data.ViewModel.ListViewModel.IsViewModel = true;
+        }
+    }
+
+    private Task CreateBlazorPage(CreationData data, CancellationToken token)
+    {
+        createPageViewModel(data);
+        return Task.CompletedTask;
+
+        void createPageViewModel(CreationData data)
         {
             var pageViewModel = this.RawDto(data, true);
             pageViewModel.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}ViewModel";
@@ -240,7 +264,10 @@ internal sealed partial class FunctionalityService
             dto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
             data.ViewModel.DeleteCommandViewModel.ParamDto = dto;
         }
-        Task createValidator(CancellationToken token) => Task.CompletedTask;
+
+        Task createValidator(CancellationToken token) =>
+            Task.CompletedTask;
+
         async Task createHandler(CancellationToken token)
         {
             data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
@@ -252,6 +279,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel.Comment = data.COMMENT;
             data.ViewModel.DeleteCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.ModuleId, token);
         }
+
         void createResult(CreationData data)
         {
             var dto = this.RawDto(data, false);
@@ -260,26 +288,6 @@ internal sealed partial class FunctionalityService
             dto.IsResultDto = true;
             data.ViewModel.DeleteCommandViewModel.ResultDto = dto;
         }
-    }
-
-    private Task CreateDetailsComponent(CreationData data, CancellationToken token)
-    {
-        return TaskRunner.StartWith(data)
-            .Then(createDetailsViewModel)
-            .Then(createDetailsFrontViewModel)
-            .Then(createDetailsBackendViewModel)
-            .RunAsync(token);
-
-        void createDetailsViewModel(CreationData data) => 
-            data.ViewModel.DetailsViewModel = this.RawDto(data, true)
-                .With(x => x.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}DetailsViewModel")
-                .With(x => x.IsViewModel = true);
-
-        Task createDetailsFrontViewModel(CreationData data, CancellationToken token) =>
-            Task.CompletedTask;
-
-        Task createDetailsBackendViewModel(CreationData data, CancellationToken token) =>
-            Task.CompletedTask;
     }
 
     private Task CreateGetAllQuery(CreationData data, CancellationToken token)
@@ -401,28 +409,6 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private Task CreateListComponent(CreationData data, CancellationToken token)
-    {
-        return TaskRunner.StartWith(data)
-            .Then(createListViewModel)
-            .Then(createListFrontCode)
-            .Then(createListBackendCode)
-            .RunAsync(token);
-
-        void createListViewModel()
-        {
-            data.ViewModel.ListViewModel = this.RawDto(data, true);
-            data.ViewModel.ListViewModel.Name = $"Get{data.ViewModel.DbObjectViewModel.Name}ListViewModel";
-            data.ViewModel.ListViewModel.IsViewModel = true;
-        }
-
-        Task createListFrontCode(CancellationToken token)
-            => Task.CompletedTask;
-
-        Task createListBackendCode(CancellationToken token)
-            => Task.CompletedTask;
-    }
-
     private Task CreateUpdateCommand(CreationData data, CancellationToken token)
     {
         return TaskRunner.StartWith(data)
@@ -466,7 +452,7 @@ internal sealed partial class FunctionalityService
     }
 
     private async Task GenerateCodes(CreationData data, CancellationToken token) =>
-        await this.GenerateCodesAsync(data.ViewModel, token: token);
+        await this.GenerateCodesAsync(data.ViewModel, new(true), token);
 
     private DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {

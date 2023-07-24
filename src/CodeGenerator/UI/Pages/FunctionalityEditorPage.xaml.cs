@@ -27,7 +27,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private CqrsExplorerTreeView? _dtoExplorerTreeView;
 
     public FunctionalityEditorPage(
-            IFunctionalityService service,
+        IFunctionalityService service,
         IFunctionalityCodeService codeService,
         IModuleService moduleService,
         IDbTableService dbTableService,
@@ -44,29 +44,11 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
     public FunctionalityViewModel? ViewModel
     {
-        get => this.DataContext is FunctionalityViewModel result ? result : null;
-        set
-        {
-            if (this.DataContext.Cast().As<FunctionalityViewModel>() == value)
-            {
-                return;
-            }
-
-            if (value != null)
-            {
-                value.PropertyChanged -= this.ViewModel_PropertyChanged;
-            }
-
-            this.DataContext = value;
-            if (value != null)
-            {
-                value.PropertyChanged += this.ViewModel_PropertyChanged;
-            }
-            this.SetIsViewModelChanged(false);
-        }
+        get => this.GetViewModelByDataContext<FunctionalityViewModel>();
+        set => this.SetViewModelByDataContext(value);
     }
 
-    async Task<Result<int>> IAsyncSavePage.SaveAsync()
+    public async Task<Result<int>> SaveAsync()
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync();
 
@@ -86,21 +68,26 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         => this.ViewModel.NotNull(() => "Please create a new Functionality or edit an old one.");
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
-        => await this.NewViewModelAsync();
-
-    private async Task GenerateCodesAsync()
     {
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync();
-
-        var scope = this.BeginActionScope("Generating code...");
-        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel!).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
+        _ = await this.AskToSaveAsync().BreakOnFail();
+        this.ViewModel = new();
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
-        => await this.GenerateCodesAsync();
+    {
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync();
+
+        var scope = this.BeginActionScope("Generating...");
+        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel!)
+                                            .WithAsync(x => scope.End(x))
+                                            .ThrowOnFailAsync(this.Title);
+    }
+
+    private void Me_Loaded(object sender, RoutedEventArgs e) => 
+        this.ViewModel = new();
 
     private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
-        => e.Item = this._moduleService;
+            => e.Item = this._moduleService;
 
     private void ModuleComboBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
     {
@@ -112,13 +99,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    private async Task NewViewModelAsync()
-    {
-        _ = await this.AskToSaveAsync().BreakOnFail();
-        this.ViewModel = new();
-    }
-
-    private void SelectRootDto()
+    private void SelectRootDtoButton_Click(object sender, RoutedEventArgs e)
     {
         this.CheckIfInitiated();
 
@@ -129,10 +110,4 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             this.ViewModel.DbObjectViewModel = dto.DbObject;
         }
     }
-
-    private void SelectRootDtoButton_Click(object sender, RoutedEventArgs e)
-        => this.SelectRootDto();
-
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        => this.SetIsViewModelChanged(true);
 }

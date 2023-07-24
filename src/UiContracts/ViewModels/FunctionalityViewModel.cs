@@ -23,10 +23,9 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public FunctionalityViewModelCodesResults CodesResults { get; } = new();
 
-    //x public DtoViewModel RootDto { get => this._rootDto; set => this.SetProperty(ref this._rootDto, value); }
     public DbObjectViewModel DbObjectViewModel { get => this._dbObjectViewModel; set => this.SetProperty(ref this._dbObjectViewModel, value); }
-
     public Table DbTable { get; set; } = null;
+
     public CqrsCommandViewModel DeleteCommandViewModel { get; set; }
 
     public DtoViewModel DetailsViewModel { get; set; }

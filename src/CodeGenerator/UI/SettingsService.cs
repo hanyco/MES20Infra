@@ -44,7 +44,8 @@ internal static class SettingsService
 
     private static SettingsModel Load()
     {
-        var settingFilePath = $"AppSettings.{(IsDevelopment() ? "Development" : "Production")}.json";
+        //x var settingFilePath = $"AppSettings.{(IsDevelopment() ? "Development" : "Production")}.json";
+        var settingFilePath = $"AppSettings{(IsDevelopment() ? "" : ".Production")}.json";
         var settingText = File.ReadAllText(settingFilePath);
         return JsonSerializer.Deserialize<SettingsModel>(settingText) ?? new SettingsModel();
     }
