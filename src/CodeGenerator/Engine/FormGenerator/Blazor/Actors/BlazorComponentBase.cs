@@ -6,7 +6,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration.Models;
-using Library.Collections;
 using Library.Data.Models;
 using Library.DesignPatterns.Behavioral.Observation;
 using Library.Exceptions.Validations;
@@ -21,6 +20,8 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICodeGenerator, IComponentCodeUnit, IParent<IHtmlElement>
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
+    private static readonly string[] _parametersAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
+
     protected BlazorComponentBase(in string name) => this.Name = name;
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
@@ -215,7 +216,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
                                               getter: new(true, false),
                                               setter: new(true, false),
                                               isNullable: true,
-                                              attributes: new[] { "Microsoft.AspNetCore.Components.Parameter" });
+                                              attributes: _parametersAttributes);
             }
         }
 
@@ -251,7 +252,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
     {
         var args = arguments ?? new GenerateCodesParameters();
         _ = validate(args);
-        List<Code> codes = new List<Code>();
+        var codes = new List<Code>();
         if (args.GenerateUiCode)
         {
             var htmlCode = this.GenerateUiCode(args);
@@ -283,7 +284,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
                     .NotNull(() => new ValidationException("Please initialize a new component."))
                     .NotNull(x => x.Name)
                     .NotNull(x => x.NameSpace);
-            if(!arguments.GenerateMainCode && !arguments.GeneratePartialCode && !arguments.GenerateUiCode)
+            if (!arguments.GenerateMainCode && !arguments.GeneratePartialCode && !arguments.GenerateUiCode)
             {
                 throw new ValidationException("Please select a code generation option at least.", "No code generation option is selected.", owner: this);
             }
