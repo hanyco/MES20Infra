@@ -22,8 +22,8 @@ namespace HanyCo.Infra.UI.Pages;
 /// </summary>
 public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 {
-    private readonly IModuleService _moduleService;
     private readonly IDtoService _dtoService;
+    private readonly IModuleService _moduleService;
     private readonly IFunctionalityService _service;
 
     // This field should be created bcuz creating takes a long time. Used as a cash.
@@ -50,7 +50,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     public FunctionalityViewModel? ViewModel
     {
         get => this.GetViewModelByDataContext<FunctionalityViewModel>();
-        set => this.SetViewModelByDataContext(value);
+        set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
     public async Task<Result<int>> SaveAsync()
@@ -110,14 +110,37 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         this.CheckIfInitiated();
 
+        _ = await this.AskToSaveAsync().BreakOnFail();
+
+        //Let user to select a DTO
         this._dtoExplorerTreeView ??= new CqrsExplorerTreeView { LoadDtos = true };
         var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
-        if (isSelected && this._dtoExplorerTreeView.SelectedItem is DtoViewModel { } dto)
+        //Did user select a DTO?
+        if (!isSelected || this._dtoExplorerTreeView.SelectedItem is not DtoViewModel dto) // I don like this. Not OOP.
         {
-            var details = await _dtoService.GetByIdAsync(dto.Id!.Value);
-            this.ViewModel.SourceDto = details;
-            this.ViewModel.NameSpace = details!.NameSpace;
+            return;
+        }
+        
+        var details = await this._dtoService.GetByIdAsync(dto.Id!.Value);
+        //Optional! To make sure that the selected dto exists and has details.
+        if (details == null)
+        {
+            return;
+        }
+
+        this.ViewModel.SourceDto = null;
+        this.ViewModel.SourceDto = details;
+        //May be the user filled these data. We shouldn't overwrite user's preferences. If user
+        // presses <Reset> button, user's preferences will be cleaned.
+        if (this.ViewModel.NameSpace.IsNullOrEmpty())
+        {
+            this.ViewModel.NameSpace = details.NameSpace;
+        }
+
+        if (this.ViewModel.Name.IsNullOrEmpty())
+        {
             this.ViewModel.Name = details.Name;
         }
+        //The form is now ready to call service.
     }
 }

@@ -14,7 +14,6 @@
     d:DesignWidth="800"
     Loaded="Me_Loaded"
     mc:Ignorable="d">
-
     <Grid x:Name="Container">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" ToolTip="ToolBar" />
@@ -63,12 +62,11 @@
             </Button>
         </ToolBar>
         <TabControl Grid.Row="1" TabStripPlacement="Left">
-            <TabItem Header="General">
-                <Grid VerticalAlignment="Top">
+            <TabItem Header="Parameters">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
                         <TextBlock Style="{StaticResource LabelBlock}" Text="Root DTO:" />
@@ -83,23 +81,15 @@
                             <Path Style="{StaticResource FolderOpen}" />
                         </Button>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
-                        <TextBlock Style="{StaticResource LabelBlock}" Text="Module:" />
-                        <usercontrols:SelectModuleUserControl
-                            x:Name="ModuleComboBox"
-                            Initializing="ModuleComboBox_Initializing"
-                            SelectedModule="{Binding SourceDto.Module}"
-                            SelectedModuleChanged="ModuleComboBox_SelectedModuleChanged"
-                            Style="{StaticResource LongControl}" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
-                        <TextBlock Style="{StaticResource LabelBlock}" Text="Namespace:" />
-                        <TextBox Style="{StaticResource LongTextBox}" Text="{Binding NameSpace}" />
-                    </StackPanel>
+                    <usercontrols:DtoEditUserControl
+                        x:Name="DtoViewModelEditor"
+                        Grid.Row="1"
+                        DataContext="{Binding Path=SourceDto}"
+                        IsEnabled="False" />
                 </Grid>
             </TabItem>
-            <TabItem Header="DTO">
-                <usercontrols:DtoEditUserControl DataContext="{Binding Path=SourceDto}" />
+            <TabItem Header="Result">
+                <Grid />
             </TabItem>
         </TabControl>
     </Grid>

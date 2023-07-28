@@ -295,7 +295,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         => this._writeDbContext.ChangeTracker.Clear();
 
     public Task<Result<int>> SaveChangesAsync(CancellationToken token = default)
-        => this._writeDbContext.SaveChangesResultAsync();
+        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: token);
 
     public async Task<Result<DtoViewModel>> UpdateAsync(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
@@ -361,13 +361,13 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         }
     }
 
-    public async Task<Result<DtoViewModel>> ValidateAsync([DisallowNull] DtoViewModel viewModel, CancellationToken token = default)
+    public async Task<Result<DtoViewModel>> ValidateAsync(DtoViewModel viewModel, CancellationToken token = default)
     {
         Check.IfArgumentNotNull(viewModel);
 
         var result = viewModel.Check(CheckBehavior.GatherAll)
             .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
-            .RuleFor(x => x.Module.Id is not null or 0, () => "Module name cannot be null.")
+            .RuleFor(x => x.Module.Id is not null and not 0, () => "Module name cannot be null.")
             .Build();
         if (!result.IsSucceed)
         {

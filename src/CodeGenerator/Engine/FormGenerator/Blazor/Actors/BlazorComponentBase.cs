@@ -287,21 +287,21 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
             {
                 throw new ValidationException("Please select a code generation option at least.", "No code generation option is selected.", owner: this);
             }
-            if (this.Children.Any())
+            if (this.Children.Count != 0)
             {
                 if (EnumerableHelper.FindDuplicates(this.Children).Any())
                 {
                     throw new ObjectDuplicateValidationException(nameof(this.Children));
                 }
             }
-            if (this.Actions.Any())
+            if (this.Actions.Count != 0)
             {
                 if (EnumerableHelper.FindDuplicates(this.Actions).Any())
                 {
                     throw new ObjectDuplicateValidationException(nameof(this.Actions));
                 }
             }
-            if (this.Properties.Any())
+            if (this.Properties.Count != 0)
             {
                 if (EnumerableHelper.FindDuplicates(this.Properties).Any())
                 {
@@ -400,7 +400,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
                 }
             }
         }
-        if (element.Children.Any())
+        if (element.Children.Count != 0)
         {
             foreach (var child in element.Children)
             {
@@ -422,7 +422,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
                 yield return code;
             }
         }
-        if (element.Children.Any())
+        if (element.Children.Count != 0)
         {
             foreach (var child in element.Children)
             {

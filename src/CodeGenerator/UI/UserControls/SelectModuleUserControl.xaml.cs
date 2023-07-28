@@ -24,8 +24,6 @@ public partial class SelectModuleUserControl : UserControl
     public static readonly DependencyProperty SelectedModuleProperty
         = ControlHelper.GetDependencyProperty<ModuleViewModel, SelectModuleUserControl>(nameof(SelectedModule), onPropertyChanged: (e1, e2) => { e1.OnSelectedModuleChanged(); });
 
-    private IModuleService _Service;
-
     #endregion Fields
 
     public event EventHandler<InitialItemEventArgs<IModuleService>> Initializing;
@@ -41,25 +39,32 @@ public partial class SelectModuleUserControl : UserControl
 
     public async Task InitializeAsync()
     {
-        if (ControlHelper.IsDesignTime() || this.Modules is not null)
+        if (ControlHelper.IsDesignTime())
         {
             return;
         }
 
-        _ = Check.MustBeNotNull(Initializing, () => "Please handle 'Initializing' event.").ThrowOnFail(this);
+        if (this.Modules is not null)
+        {
+            this.BindModulesComboBox();
+            return;
+        }
+
+        _ = Check.MustBeNotNull(this.Initializing, () => "Please handle 'Initializing' event or bind property: Modules.").ThrowOnFail(this);
         var e = new InitialItemEventArgs<IModuleService>();
-        Initializing(this, e);
-        var service = e.Item;
-        await this.InitializeAsync(service);
+        this.Initializing(this, e);
+        await this.InitializeAsync(e.Item);
     }
 
-    public async Task InitializeAsync([DisallowNull] IModuleService service)
+    public async Task InitializeAsync([DisallowNull]IModuleService service)
     {
-        _ = Check.MustBeArgumentNotNull(service).ThrowOnFail(this);
-        this._Service = service;
-        this.Modules = await this._Service.GetAllAsync();
-        _ = this.ModulesComboBox.BindItemsSource(this.Modules, "Name", this.SelectedModule);
+        Check.IfArgumentNotNull(service);
+        this.Modules = await service.GetAllAsync();
+        this.BindModulesComboBox();
     }
+
+    private void BindModulesComboBox() =>
+        this.ModulesComboBox.BindItemsSource(this.Modules, "Name", this.SelectedModule);
 
     [Obsolete]
     private void ModulesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
