@@ -22,6 +22,7 @@ namespace HanyCo.Infra.UI.Pages;
 /// </summary>
 public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 {
+    private readonly IFunctionalityCodeService _codeService;
     private readonly IDtoService _dtoService;
     private readonly IModuleService _moduleService;
     private readonly IFunctionalityService _service;
@@ -41,6 +42,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         this.InitializeComponent();
         this._service = service;
+        this._codeService = codeService;
         this._moduleService = moduleService;
         this._dtoService = dtoService;
     }
@@ -120,7 +122,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         {
             return;
         }
-        
+
         var details = await this._dtoService.GetByIdAsync(dto.Id!.Value);
         //Optional! To make sure that the selected dto exists and has details.
         if (details == null)
