@@ -1,4 +1,5 @@
 ﻿using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;

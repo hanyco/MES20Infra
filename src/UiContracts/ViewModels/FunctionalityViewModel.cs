@@ -16,10 +16,12 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     private DtoViewModel _sourceDto;
 
     public UiComponentViewModel BlazorDetailsComponentViewModel { get; set; }
-    public DtoViewModel BlazorDetailsViewModel { get; set; }
     public UiComponentViewModel BlazorListComponentViewModel { get; set; }
+
+    public DtoViewModel BlazorDetailsViewModel { get; set; }
     public DtoViewModel BlazorListViewModel { get; set; }
     public FunctionalityViewModelCodesResults CodesResults { get; } = new();
+
     public CqrsCommandViewModel DeleteCommandViewModel { get; set; }
     public CqrsQueryViewModel GetAllQueryViewModel { get; set; }
     public CqrsQueryViewModel GetByIdQueryViewModel { get; set; }

@@ -86,10 +86,15 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name;
         this.ViewModel.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
 
-        var scope = this.BeginActionScope("Generating...");
-        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel!)
-                                            .WithAsync(x => scope.End(x))
-                                            .ThrowOnFailAsync(this.Title);
+        var scope = this.BeginActionScope("Generating view models...");
+        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel)
+            .WithAsync(x => scope.End(x))
+            .ThrowOnFailAsync(this.Title);
+
+        scope = this.BeginActionScope("Creating code...");
+        this.ComponentCodeResultUserControl.Codes = await this._codeService.GenerateCodesAsync(this.ViewModel)
+            .WithAsync(x => scope.End(x))
+            .ThrowOnFailAsync(this.Title);
     }
 
     private void Me_Loaded(object sender, RoutedEventArgs e) =>

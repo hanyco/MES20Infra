@@ -1,4 +1,4 @@
-﻿using HanyCo.Infra.UI.ViewModels;
+﻿using Contracts.ViewModels;
 
 using Library.Interfaces;
 

@@ -130,7 +130,7 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
                 .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
 
-                .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
+                //.AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
                 ;
 
         // Finalize the process
