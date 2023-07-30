@@ -30,7 +30,7 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     private readonly IModuleService _moduleService;
     private readonly ICqrsQueryService _queryService;
     private readonly InfraReadDbContext _readDbContext;
-    private readonly IMultistepProcess _reporter;
+    private readonly IProgressReport _reporter;
     private readonly InfraWriteDbContext _writeDbContext;
     public ILogger Logger { get; }
 
@@ -48,7 +48,7 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
         ICqrsCommandService commandService,
         ICqrsCodeGeneratorService cqrsCodeService,
         IModuleService moduleService,
-        IMultistepProcess reporter,
+        IProgressReport reporter,
         ILogger logger,
         IBlazorComponentService blazorComponentService,
         IBlazorCodingService blazorCodingService)

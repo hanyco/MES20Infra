@@ -1,10 +1,11 @@
-﻿using Contracts.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration.Models;
-using Library.DesignPatterns.Markers;
 using Library.Exceptions;
 using Library.Exceptions.Validations;
 using Library.Results;
@@ -52,16 +53,10 @@ internal sealed partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        #region Validate the viewModel argument
-
         if (!validate(viewModel, token).TryParse(out var validationChecks))
         {
             return validationChecks!;
         }
-
-        #endregion Validate the viewModel argument
-
-        #region Initialize
 
         this._reporter.Report(description: getTitle("Initializing..."));
         // Initialize the result with the viewModel
@@ -69,40 +64,28 @@ internal sealed partial class FunctionalityService
         // If the initialization fails, return the result
         if (!initResult.IsSucceed)
         {
-            return Result<FunctionalityViewModel>.From(initResult, default!)!;
+            return Result<FunctionalityViewModel>.From(initResult, viewModel)!;
         }
         // Get the data and tokenSource from the initialization result
         var (data, tokenSource) = initResult.GetValue();
         // Initialize the steps for the process
         var process = initSteps(data);
 
-        #endregion Initialize
-
-        #region Process
-
         this._reporter.Report(description: getTitle("Running..."));
         // Run the process with the tokenSource
-        var processResult = await process.RunAsync(data.CancellationTokenSource.Token);
+        var processResult = await process.RunAsync(tokenSource.Token);
 
-        #endregion Process
-
-        #region Finalize and prepare the result
-
-        var message = getResultMessage(processResult, data.CancellationTokenSource.Token);
+        var message = getResultMessage(processResult, tokenSource.Token);
         this._reporter.Report(description: getTitle(message));
         tokenSource.Dispose();
         // Get the result from the processResult
         var result = processResult.Value.Result;
 
-        #endregion Finalize and prepare the result
-
         return result!;
 
-        #region Local Methods
-
         // Get the title for the description
-        ProgressData getTitle(in string description)
-            => new(Description: description, Sender: nameof(FunctionalityService));
+        ProgressData getTitle(in string description) =>
+            new(Description: description, Sender: nameof(FunctionalityService));
 
         // Validate the model
         static Result<FunctionalityViewModel> validate(in FunctionalityViewModel model, CancellationToken token) =>
@@ -122,7 +105,7 @@ internal sealed partial class FunctionalityService
             // If the token is in cancel state, return a failure result
             if (token.IsCancellationRequested)
             {
-                return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateFailure("Cancelled by parent", default);
+                return Result<(CreationData, CancellationTokenSource)>.CreateFailure("Cancelled by parent", default);
             }
 
             // Create a linked tokenSource from the token
@@ -130,7 +113,7 @@ internal sealed partial class FunctionalityService
             // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
             var result = new CreationData(viewModel, viewModel.SourceDto, tokenSource);
             // Return a success result with the result and cancellationTokenSource
-            return Result<(CreationData Data, CancellationTokenSource TokenSource)>.CreateSuccess((result, tokenSource));
+            return Result<(CreationData, CancellationTokenSource)>.CreateSuccess((result, tokenSource));
         }
 
         // Initialize the steps for the process
@@ -143,9 +126,9 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                //.AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
-                //.AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
-                //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+                .AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
+                .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
+                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
 
                 .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
                 ;
@@ -167,8 +150,6 @@ internal sealed partial class FunctionalityService
             };
             return "Functionality view model is created.";
         }
-
-        #endregion Local Methods
     }
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
@@ -198,7 +179,7 @@ internal sealed partial class FunctionalityService
         return Task.CompletedTask;
 
         void createViewModel(CreationData data) =>
-            data.ViewModel.DetailsViewModel = RawDto(data, true)
+            data.ViewModel.BlazorDetailsViewModel = RawDto(data, true)
                 .With(x => x.Name = $"Get{data.ViewModel.Name}DetailsViewModel")
                 .With(x => x.IsViewModel = true);
     }
@@ -210,9 +191,9 @@ internal sealed partial class FunctionalityService
 
         static void createViewModel(CreationData data)
         {
-            data.ViewModel.ListViewModel = RawDto(data, true);
-            data.ViewModel.ListViewModel.Name = $"Get{data.ViewModel.Name}ListViewModel";
-            data.ViewModel.ListViewModel.IsViewModel = true;
+            data.ViewModel.BlazorListViewModel = RawDto(data, true);
+            data.ViewModel.BlazorListViewModel.Name = $"Get{data.ViewModel.Name}ListViewModel";
+            data.ViewModel.BlazorListViewModel.IsViewModel = true;
         }
     }
 
@@ -229,15 +210,15 @@ internal sealed partial class FunctionalityService
             pageViewModel.Properties.Add(new()
             {
                 Comment = data.COMMENT,
-                Dto = data.ViewModel.DetailsViewModel,
-                Name = data.ViewModel.DetailsViewModel.Name,
+                Dto = data.ViewModel.BlazorDetailsViewModel,
+                Name = data.ViewModel.BlazorDetailsViewModel.Name,
                 Type = PropertyType.Dto
             });
             pageViewModel.Properties.Add(new()
             {
                 Comment = data.COMMENT,
-                Dto = data.ViewModel.ListViewModel,
-                Name = data.ViewModel.ListViewModel.Name,
+                Dto = data.ViewModel.BlazorListViewModel,
+                Name = data.ViewModel.BlazorListViewModel.Name,
                 Type = PropertyType.Dto,
                 IsList = true
             });
@@ -457,6 +438,7 @@ internal sealed partial class FunctionalityService
         internal readonly string COMMENT = "Auto-generated by Functionality Service.";
         private Result<FunctionalityViewModel>? _result;
 
+        [NotNull]
         internal CancellationTokenSource CancellationTokenSource { get; } = tokenSource;
 
         internal DtoViewModel DtoViewModel { get; } = dtoViewModel;
@@ -465,16 +447,9 @@ internal sealed partial class FunctionalityService
 
         internal string? GetByIdQueryName { get; set; }
 
+        [NotNull]
         internal Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
 
         internal FunctionalityViewModel ViewModel { get; } = result;
-
-        [DarkMethod(Reason = "Changes the class state.")]
-        internal CreationData SetResult(bool isSucceed, in string? message = null)
-            => this.Fluent(this._result = new(this.ViewModel) { Message = message, Succeed = isSucceed });
-
-        [DarkMethod(Reason = "Changes the class state.")]
-        internal CreationData SetResult(Result result)
-            => this.Fluent(this._result = Result<FunctionalityViewModel>.From(result, this.ViewModel));
     }
 }

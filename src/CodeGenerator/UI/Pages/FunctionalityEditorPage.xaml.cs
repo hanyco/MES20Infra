@@ -35,7 +35,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         IFunctionalityCodeService codeService,
         IModuleService moduleService,
         IDbTableService dbTableService,
-        IMultistepProcess reporter,
+        IProgressReport reporter,
         IDtoService dtoService,
         ILogger logger)
         : base(logger)
@@ -108,22 +108,10 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    private async void SelectRootDtoButton_Click(object sender, RoutedEventArgs e)
+    private void PrepareViewModelByDto(DtoViewModel? details)
     {
         this.CheckIfInitiated();
 
-        _ = await this.AskToSaveAsync().BreakOnFail();
-
-        //Let user to select a DTO
-        this._dtoExplorerTreeView ??= new CqrsExplorerTreeView { LoadDtos = true };
-        var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
-        //Did user select a DTO?
-        if (!isSelected || this._dtoExplorerTreeView.SelectedItem is not DtoViewModel dto) // I don like this. Not OOP.
-        {
-            return;
-        }
-
-        var details = await this._dtoService.GetByIdAsync(dto.Id!.Value);
         //Optional! To make sure that the selected dto exists and has details.
         if (details == null)
         {
@@ -144,5 +132,24 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             this.ViewModel.Name = details.Name;
         }
         //The form is now ready to call service.
+    }
+
+    private async void SelectRootDtoButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.CheckIfInitiated();
+
+        _ = await this.AskToSaveAsync().BreakOnFail();
+
+        //Let user to select a DTO
+        this._dtoExplorerTreeView ??= new CqrsExplorerTreeView { LoadDtos = true };
+        var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
+        //Did user select a DTO?
+        if (!isSelected || this._dtoExplorerTreeView.SelectedItem is not DtoViewModel dto) // I don like this. Not OOP.
+        {
+            return;
+        }
+
+        var details = await this._dtoService.GetByIdAsync(dto.Id!.Value);
+        this.PrepareViewModelByDto(details);
     }
 }

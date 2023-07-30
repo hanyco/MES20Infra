@@ -58,7 +58,7 @@ internal static class ServiceCollectionExtensions
         _ = services
                 .AddScoped<IMapper, Mapper>()
                 .AddScoped<ILogger, EmptyLogger>()
-                .AddSingleton(IMultistepProcess.New());
+                .AddSingleton(IProgressReport.New());
         
         var inMemoryDatabaseRoot = new InMemoryDatabaseRoot();
         _ = services

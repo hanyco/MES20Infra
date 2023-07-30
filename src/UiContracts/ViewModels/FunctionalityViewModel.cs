@@ -12,19 +12,18 @@ namespace Contracts.ViewModels;
 
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
-    private long _moduleId;
     private string _nameSpace;
     private DtoViewModel _sourceDto;
 
     public UiComponentViewModel BlazorDetailsComponentViewModel { get; set; }
+    public DtoViewModel BlazorDetailsViewModel { get; set; }
     public UiComponentViewModel BlazorListComponentViewModel { get; set; }
+    public DtoViewModel BlazorListViewModel { get; set; }
     public FunctionalityViewModelCodesResults CodesResults { get; } = new();
     public CqrsCommandViewModel DeleteCommandViewModel { get; set; }
-    public DtoViewModel DetailsViewModel { get; set; }
     public CqrsQueryViewModel GetAllQueryViewModel { get; set; }
     public CqrsQueryViewModel GetByIdQueryViewModel { get; set; }
     public CqrsCommandViewModel InsertCommandViewModel { get; set; }
-    public DtoViewModel ListViewModel { get; set; }
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
     public CqrsCommandViewModel UpdateCommandViewModel { get; set; }

@@ -44,27 +44,23 @@ public partial class SelectModuleUserControl : UserControl
             return;
         }
 
-        if (this.Modules is not null)
+        if (this.Modules == null)
         {
-            this.BindModulesComboBox();
-            return;
+            IModuleService moduleService;
+            if (Initializing != null)
+            {
+                var e = new InitialItemEventArgs<IModuleService>();
+                this.Initializing(this, e);
+                moduleService = e.Item.NotNull();
+            }
+            else
+            {
+                moduleService = DI.GetService<IModuleService>();
+            }
+            this.Modules = await moduleService.GetAllAsync();
+            this.ModulesComboBox.BindItemsSource(this.Modules, nameof(ModuleViewModel.Name), this.SelectedModule);
         }
-
-        _ = Check.MustBeNotNull(this.Initializing, () => "Please handle 'Initializing' event or bind property: Modules.").ThrowOnFail(this);
-        var e = new InitialItemEventArgs<IModuleService>();
-        this.Initializing(this, e);
-        await this.InitializeAsync(e.Item);
-    }
-
-    public async Task InitializeAsync([DisallowNull]IModuleService service)
-    {
-        Check.IfArgumentNotNull(service);
-        this.Modules = await service.GetAllAsync();
-        this.BindModulesComboBox();
-    }
-
-    private void BindModulesComboBox() =>
-        this.ModulesComboBox.BindItemsSource(this.Modules, "Name", this.SelectedModule);
+    } 
 
     [Obsolete]
     private void ModulesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

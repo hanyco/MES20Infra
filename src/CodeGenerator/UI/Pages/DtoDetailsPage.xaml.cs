@@ -29,7 +29,7 @@ public partial class DtoDetailsPage
 {
     private readonly IDtoCodeService _codeService;
     private readonly IDbTableService _dbTableService;
-    private readonly IMultistepProcess _reporter;
+    private readonly IProgressReport _reporter;
     private readonly IDtoService _service;
 
     public DtoDetailsPage(
@@ -37,7 +37,7 @@ public partial class DtoDetailsPage
         IDtoCodeService codeService,
         IDbTableService dbTableService,
         IPropertyService propertyService,
-        IMultistepProcess reporter,
+        IProgressReport reporter,
         ILogger logger)
         : base(logger)
     {

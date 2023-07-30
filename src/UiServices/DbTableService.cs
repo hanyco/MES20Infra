@@ -11,7 +11,7 @@ namespace Services;
 
 internal sealed class DbTableService : IDbTableService
 {
-    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(IMultistepProcess? reporter, string connectionString, CancellationToken token = default)
+    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(IProgressReport? reporter, string connectionString, CancellationToken token = default)
     {
         reporter?.Report(description: "Please wait a while.");
         var db = await Database.GetDatabaseAsync(connectionString);
