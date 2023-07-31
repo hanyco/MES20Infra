@@ -41,7 +41,7 @@ public partial class SecurityDescriptorLookupPage
     {
         var initiallySelectedIds = this._selectedItems.Select(x => x.Id).ToArray();
         var secs = await this._service.GetAllAsync();
-        Check.If(secs.Any(), () => new Library.Exceptions.ObjectNotFoundException("No Security Description is defined."));
+        Check.If(!secs.Any(), () => new Library.Exceptions.ObjectNotFoundException("No Security Description is defined."));
         this.ViewModel = secs.Select(x => new SecurityDescriptorLookupPageViewModelItem(initiallySelectedIds.Contains(x.Id), x)).ToObservableCollection();
     }
 

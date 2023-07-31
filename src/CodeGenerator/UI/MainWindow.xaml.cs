@@ -1,11 +1,11 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Controls.Pages;
 using HanyCo.Infra.UI.Pages;
 
 using Library.EventsArgs;
-using Library.Helpers;
 using Library.Threading.MultistepProgress;
 using Library.Windows;
 using Library.Wpf.Dialogs;
@@ -26,7 +26,7 @@ public partial class MainWindow
 
     #endregion Fields
 
-    public MainWindow(InfraWriteDbContext writeDbContext, IEventualLogger logger, IMultistepProcess reportHost)
+    public MainWindow(InfraWriteDbContext writeDbContext, IEventualLogger logger, IProgressReport reportHost)
     {
         this.InitializeComponent();
         this._writeDbContext = writeDbContext;
@@ -41,32 +41,29 @@ public partial class MainWindow
 
     public string? CurrentPageTitle { get => (string)this.GetValue(CurrentPageTitleProperty); set => this.SetValue(CurrentPageTitleProperty, value); }
 
-    private void BlazorComponentMenuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<BlazorComponentGenertorPage>();
+    private void BlazorComponentMenuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<BlazorComponentGenertorPage>();
 
-    private void BlazorPageMenuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<BlazorPageGeneratorPage>();
+    private void BlazorPageMenuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<BlazorPageGeneratorPage>();
 
-    private void CreatCodeMenuIten_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<CodeDetailsPage>();
+    private void CreateCommandMenuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<CqrsCommandDetailsPage>();
 
-    private void CreateCommandMenuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<CqrsCommandDetailsPage>();
+    private void CreateCrudMenuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<CreateTableCrudPage>();
 
-    private void CreateCrudMenuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<CreateTableCrudPage>();
+    private void CreateDtoMenuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<DtoDetailsPage>();
 
-    private void CreateDtoMenuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<DtoDetailsPage>();
+    private void CreateQueryMenuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<CqrsQueryDetailsPage>();
 
-    private void CreateQueryMenuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<CqrsQueryDetailsPage>();
+    private void EditSecurityDescriptor_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<SecurityDescriptorEditorPage>();
 
-    private void EditSecurityDescriptor_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<SecurityDescriptorEditorPage>();
-
-    private void FunctionalityEditorManuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<FunctionalityEditorPage>();
+    private void FunctionalityEditorManuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<FunctionalityEditorPage>();
 
     private void GenerateSourceWizard_Click(object sender, RoutedEventArgs e)
     {
@@ -74,7 +71,7 @@ public partial class MainWindow
         _ = wizardDlg.ShowDialog();
     }
 
-    private void log(object message)
+    private void Log(object message)
     {
         this.StatusBarItem.Content = message switch
         {
@@ -83,7 +80,7 @@ public partial class MainWindow
             object o => o.ToString(),
             _ => "Ready."
         };
-
+        this.StatusBarItem.Refresh();
         var log = LoggingHelper.Reformat(message);
         if (!log.IsNullOrEmpty())
         {
@@ -91,8 +88,8 @@ public partial class MainWindow
         }
     }
 
-    private void Logger_Logging(object? sender, Library.EventsArgs.ItemActedEventArgs<object> e)
-        => this.log(e.Item);
+    private void Logger_Logging(object? sender, ItemActedEventArgs<object> e) =>
+        this.Log(e.Item);
 
     private void Navigate<TPage>()
         where TPage : PageBase
@@ -108,21 +105,22 @@ public partial class MainWindow
 
     private void PageHostFrame_Navigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
     {
-        if (e.Content.Cast().As<PageBase>() is { } page)
+        if (e.Content.Cast().As<Page>() is { } page)
         {
             this.Title = $"{page.Title} - {ApplicationHelper.ApplicationTitle}";
         }
     }
 
-    private void ReportHost_Ended(object? sender, ItemActedEventArgs<ProgressData?> e)
-        => this.RunInControlThread(() =>
+    private void ReportHost_Ended(object? sender, ItemActedEventArgs<ProgressData?> e) =>
+        this.RunInControlThread(() =>
         {
             this.StatusProgressBar.Visibility = Visibility.Collapsed;
-            this.log(e.Item ?? "Ready.");
+            this.Log(e.Item ?? "Ready.");
+            this.StatusProgressBar.Refresh();
         });
 
-    private void ReportHost_Reported(object? sender, ItemActedEventArgs<ProgressData> e)
-        => this.RunInControlThread(() =>
+    private void ReportHost_Reported(object? sender, ItemActedEventArgs<ProgressData> e) =>
+        this.RunInControlThread(() =>
         {
             if (e.Item.Max != 0)
             {
@@ -130,14 +128,20 @@ public partial class MainWindow
                 this.StatusProgressBar.Maximum = e.Item.Max.Cast().ToInt(0);
                 this.StatusProgressBar.Value = e.Item.Current.Cast().ToInt(0);
             }
+            else
+            {
+                this.StatusProgressBar.Visibility = Visibility.Collapsed;
+            }
             if (!e.Item.Description.IsNullOrEmpty())
             {
-                this.log(e.Item.Description);
+                this.Log(e.Item.Description);
             }
+            this.StatusProgressBar.Refresh();
+            this.StatusBarItem.Refresh();
         });
 
-    private void SettingMenuItem_Click(object sender, RoutedEventArgs e)
-        => this.Navigate<SettingsPage>();
+    private void SettingMenuItem_Click(object sender, RoutedEventArgs e) =>
+        this.Navigate<SettingsPage>();
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
@@ -154,14 +158,14 @@ public partial class MainWindow
 
             this._logger.Fatal(message.Text, this.Title);
             var closeButton = ButtonInfo.New("Close", (_, _) => this.Close());
-            var contButton = ButtonInfo.New("Continue", (o, e) => MsgBox2.GetOnButtonClick(o, e).Parent.Close(), useElevationIcon: true);
+            var continueButton = ButtonInfo.New("Continue", (o, e) => MsgBox2.GetOnButtonClick(o, e).Parent.Close(), useElevationIcon: true);
             _ = MsgBox2.Error(
                 message.Instruction,
                 message.Text,
                 message.Title,
                 detailsExpandedText: message.Details,
                 window: this,
-                controls: new Microsoft.WindowsAPICodePack.Dialogs.TaskDialogControl[] { closeButton, contButton });
+                controls: new Microsoft.WindowsAPICodePack.Dialogs.TaskDialogControl[] { closeButton, continueButton });
         }
     }
 }

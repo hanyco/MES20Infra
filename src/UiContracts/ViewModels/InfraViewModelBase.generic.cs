@@ -4,16 +4,16 @@ using Library.Data.Markers;
 using Library.Wpf.Bases;
 using Library.Wpf.Markers;
 
-namespace HanyCo.Infra.UI.ViewModels;
+namespace Contracts.ViewModels;
 
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 [ViewModel]
 public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraViewModelBase<TId>>, ICanSetKey<TId>, IEntity
 {
+    protected string? _name;
     private string? _description;
     private Guid? _guid;
     private TId? _id;
-    protected string? _name;
 
     public virtual string? Description
     {
@@ -43,7 +43,7 @@ public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraV
         => !(left == right);
 
     public static bool operator ==(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right)
-        => (left is null && right is null) || (left is not null && right is not null && left.Equals(right));
+        => left is null && right is null || left is not null && right is not null && left.Equals(right);
 
     public virtual bool Equals(InfraViewModelBase<TId>? other)
         => other is not null && (this.Id, other.Id) switch

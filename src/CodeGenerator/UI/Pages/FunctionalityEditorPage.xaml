@@ -1,19 +1,19 @@
-﻿<local:PageBase
+﻿<pages:PageBase
     x:Class="HanyCo.Infra.UI.Pages.FunctionalityEditorPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
+    xmlns:pages="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
-    xmlns:viewmodels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    xmlns:viewmodels="clr-namespace:Contracts.ViewModels;assembly=Contracts" xmlns:blazor="clr-namespace:HanyCo.Infra.UI.Pages.Blazor"
     x:Name="Me"
     Title="Functionality Editor"
     d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    Loaded="Me_Loaded"
     mc:Ignorable="d">
-
     <Grid x:Name="Container">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" ToolTip="ToolBar" />
@@ -62,19 +62,18 @@
             </Button>
         </ToolBar>
         <TabControl Grid.Row="1" TabStripPlacement="Left">
-            <TabItem Header="General">
-                <Grid VerticalAlignment="Top">
+            <TabItem Header="Parameters">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
                         <TextBlock Style="{StaticResource LabelBlock}" Text="Root DTO:" />
                         <TextBox
                             IsReadOnly="True"
                             Style="{StaticResource LongTextBox}"
-                            Text="{Binding RootDto.Name, Mode=OneWay}" />
+                            Text="{Binding SourceDto.Name, Mode=OneWay}" />
                         <Button
                             x:Name="SelectRootDtoButton"
                             Click="SelectRootDtoButton_Click"
@@ -82,25 +81,35 @@
                             <Path Style="{StaticResource FolderOpen}" />
                         </Button>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
-                        <TextBlock Style="{StaticResource LabelBlock}" Text="Module:" />
-                        <usercontrols:SelectModuleUserControl
-                            x:Name="ModuleComboBox"
-                            Initializing="ModuleComboBox_Initializing"
-                            SelectedModule="{Binding RootDto.Module}"
-                            SelectedModuleChanged="ModuleComboBox_SelectedModuleChanged"
-                            Style="{StaticResource LongControl}" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
-                        <TextBlock Style="{StaticResource LabelBlock}" Text="Namespace:" />
-                        <TextBox Style="{StaticResource LongTextBox}" Text="{Binding NameSpace}" />
-                    </StackPanel>
+                    <usercontrols:DtoEditUserControl
+                        x:Name="DtoViewModelEditor"
+                        Grid.Row="1"
+                        DataContext="{Binding Path=SourceDto}"
+                        IsEnabled="False" />
                 </Grid>
             </TabItem>
-            <TabItem Header="DTO">
-                <usercontrols:DtoEditUserControl DataContext="{Binding Path=RootDto}" />
+            <TabItem Header="Result">
+                <TabControl>
+                    <TabItem Header="Back-end">
+                        <TabControl>
+                            <TabItem Header="Get All Query" />
+                            <TabItem Header="Get By Id Query" />
+                            <TabItem Header="Insert Command" />
+                            <TabItem Header="Update Command" />
+                            <TabItem Header="Delete Command" />
+                        </TabControl>
+                    </TabItem>
+                    <TabItem Header="Front-end">
+                        <TabControl>
+                            <TabItem Header="Blazor List Page" />
+                            <TabItem Header="Blazor Details Page" />
+                        </TabControl>
+                    </TabItem>
+                    <TabItem Header="All Codes">
+                        <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl"/>
+                    </TabItem>
+                </TabControl>
             </TabItem>
         </TabControl>
-
     </Grid>
-</local:PageBase>
+</pages:PageBase>

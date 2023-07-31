@@ -308,7 +308,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         _ = this.CodeGenCloseParentalTag(statement);
 
         _ = this.CodeGenAddBody(statement);
-        if (this.Children.Any())
+        if (this.Children.Count != 0)
         {
             _ = statement.AppendLine();
             _ = this.OnCodeGenAddChildren(statement);

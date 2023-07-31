@@ -84,7 +84,7 @@ public partial class App : LibApp
             _ = services
                 .AddSingleton<ILogger>(AppLogger)
                 .AddSingleton<Microsoft.Extensions.Logging.ILogger>(new WebLogger(AppLogger))
-                .AddSingleton(IMultistepProcess.New());
+                .AddSingleton(IProgressReport.New());
         }
 
         static void registerServices(IServiceCollection services)
@@ -92,9 +92,10 @@ public partial class App : LibApp
                 .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule))
                 .RegisterServicesWithIService<App>()
                 //.AddScoped<IEntityViewModelConverter, EntityViewModelConverter>()
-                .AddScoped<IBlazorCodingService, BlazorCodingService>()
-                .AddScoped<IBlazorComponentService, BlazorComponentService>()
-                .AddScoped<IBlazorPageService, BlazorPageService>();
+                //.AddScoped<IBlazorCodingService, BlazorCodingService>()
+                //.AddScoped<IBlazorComponentService, BlazorComponentService>()
+                //.AddScoped<IBlazorPageService, BlazorPageService>()
+                ;
 
         static void addPages(IServiceCollection services)
         {

@@ -40,34 +40,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Services\Imp\**" />
+	  <Compile Remove="Services\**" />
 	  <Compile Remove="ViewModels\**" />
-	  <EmbeddedResource Remove="Services\Imp\**" />
+	  <EmbeddedResource Remove="Services\**" />
 	  <EmbeddedResource Remove="ViewModels\**" />
-	  <None Remove="Services\Imp\**" />
+	  <None Remove="Services\**" />
 	  <None Remove="ViewModels\**" />
-	  <Page Remove="Services\Imp\**" />
+	  <Page Remove="Services\**" />
 	  <Page Remove="ViewModels\**" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Compile Remove="Helpers\PropertyTypeHelper.cs" />
-	  <Compile Remove="Services\IBlazorCodingService.cs" />
-	  <Compile Remove="Services\IBlazorComponentService.cs" />
-	  <Compile Remove="Services\IBlazorPageService.cs" />
-	  <Compile Remove="Services\ICqrsCodeGeneratorService.cs" />
-	  <Compile Remove="Services\ICqrsCommandService.cs" />
-	  <Compile Remove="Services\ICqrsQueryService.cs" />
-	  <Compile Remove="Services\IDbTableService.cs" />
-	  <Compile Remove="Services\IDtoCodeService.cs" />
-	  <Compile Remove="Services\IDtoService.cs" />
-	  <Compile Remove="Services\IEntityViewModelConverter.cs" />
-	  <Compile Remove="Services\IFunctionalityCodeService.cs" />
-	  <Compile Remove="Services\IFunctionalityService.cs" />
-	  <Compile Remove="Services\IModuleService.cs" />
-	  <Compile Remove="Services\IPropertyService.cs" />
-	  <Compile Remove="Services\ISecurityDescriptorService.cs" />
-	  <Compile Remove="Services\ITranslationService.cs" />
 	  <Compile Remove="UserControls\DtoEditorUserControl.xaml.cs" />
 	</ItemGroup>
 

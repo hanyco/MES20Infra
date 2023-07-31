@@ -16,6 +16,7 @@ using HanyCo.Infra.UI.ViewModels;
 using Library.CodeGeneration.Models;
 using Library.Collections;
 using Library.Exceptions.Validations;
+using Library.Results;
 using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
@@ -121,8 +122,8 @@ internal sealed class BlazorCodingService : IBlazorCodingService
     public Code? GenerateBlazorHtmlCode(in UiComponentViewModel model)
         => CreateComponent(model).GenerateUiCode();
 
-    public Codes GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
-        => CreateComponent(model).GenerateCodes(arguments ?? new GenerateCodesParameters());
+    public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
+        => new(CreateComponent(model).GenerateCodes(arguments ?? new GenerateCodesParameters()));
 
     public UiComponentPropertyViewModel GetProperty(in PropertyViewModel propertyViewModel)
     {
@@ -175,7 +176,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
         Check.NotNull(viewModel.ClassName);
         Check.NotNull(path);
 
-        var codes = this.GenerateCodes(viewModel, arguments);
+        var codes = this.GenerateCodes(viewModel, arguments).Value;
         foreach (var code in codes.Compact())
         {
             await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, cancellationToken: cancellationToken);

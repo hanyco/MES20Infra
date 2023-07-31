@@ -80,7 +80,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     }
 
     private void CqrsCommandDetailsPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-                => this.RefreshFormState();
+        => this.RefreshFormState();
 
     private async void DeleteCommandButton_Click(object sender, RoutedEventArgs e)
     {
@@ -137,7 +137,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
             return;
         }
         var selectedViewModel = this.CommandsTreeView.GetSelectedValue<CqrsCommandViewModel>();
-        Check.If(selectedViewModel?.Id is not null, () => new ValidationException("Please select a Command."));
+        Check.If(selectedViewModel?.Id is null, () => new ValidationException("Please select a Command."));
         _ = await this.Logger.LogBlockAsync(async () =>
         {
             var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);

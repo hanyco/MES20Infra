@@ -24,8 +24,6 @@ public partial class SelectModuleUserControl : UserControl
     public static readonly DependencyProperty SelectedModuleProperty
         = ControlHelper.GetDependencyProperty<ModuleViewModel, SelectModuleUserControl>(nameof(SelectedModule), onPropertyChanged: (e1, e2) => { e1.OnSelectedModuleChanged(); });
 
-    private IModuleService _Service;
-
     #endregion Fields
 
     public event EventHandler<InitialItemEventArgs<IModuleService>> Initializing;
@@ -41,25 +39,28 @@ public partial class SelectModuleUserControl : UserControl
 
     public async Task InitializeAsync()
     {
-        if (ControlHelper.IsDesignTime() || this.Modules is not null)
+        if (ControlHelper.IsDesignTime())
         {
             return;
         }
 
-        _ = Check.MustBeNotNull(Initializing, () => "Please handle 'Initializing' event.").ThrowOnFail(this);
-        var e = new InitialItemEventArgs<IModuleService>();
-        Initializing(this, e);
-        var service = e.Item;
-        await this.InitializeAsync(service);
-    }
-
-    public async Task InitializeAsync([DisallowNull] IModuleService service)
-    {
-        _ = Check.MustBeArgumentNotNull(service).ThrowOnFail(this);
-        this._Service = service;
-        this.Modules = await this._Service.GetAllAsync();
-        _ = this.ModulesComboBox.BindItemsSource(this.Modules, "Name", this.SelectedModule);
-    }
+        if (this.Modules == null)
+        {
+            IModuleService moduleService;
+            if (Initializing != null)
+            {
+                var e = new InitialItemEventArgs<IModuleService>();
+                this.Initializing(this, e);
+                moduleService = e.Item.NotNull();
+            }
+            else
+            {
+                moduleService = DI.GetService<IModuleService>();
+            }
+            this.Modules = await moduleService.GetAllAsync();
+            this.ModulesComboBox.BindItemsSource(this.Modules, nameof(ModuleViewModel.Name), this.SelectedModule);
+        }
+    } 
 
     [Obsolete]
     private void ModulesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

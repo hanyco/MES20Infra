@@ -20,7 +20,6 @@ using Library.Helpers.CodeGen;
 using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
-using Library.Results;
 using Library.Validations;
 using Library.Windows;
 
@@ -55,6 +54,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
     public Task<DtoViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new DtoViewModel());
 
+    [return: NotNull]
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
     {
         var result = new DtoViewModel
@@ -107,11 +107,11 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return Result.CreateFailure(message);
         }
 
-        static Result<DtoViewModel?> validate(DtoViewModel model, CancellationToken token = default)
+        static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default)
             => model.Check()
                     .ArgumentNotNull()
-                    .NotNull(x => x.Id)
-                    .Build();
+                    .NotNull(x => x!.Id)
+                    .Build()!;
     }
 
     public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
@@ -138,13 +138,13 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
             return result;
         }
 
-        static Result<DtoViewModel?> validate(DtoViewModel viewModel, CancellationToken token = default)
+        static Result<DtoViewModel> validate(DtoViewModel? viewModel, CancellationToken token = default)
             => viewModel.Check()
-                    //.NotNull(x => x.Id)
+                    .NotNull(x=>x)
                     .NotNull(x => x.Module)
                     .NotNullOrEmpty(x => x.Name)
                     .NotNullOrEmpty(x => x.NameSpace)
-                    .Build();
+                    .Build()!;
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync(CancellationToken token = default)
@@ -159,7 +159,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
     public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels, CancellationToken token = default)
     {
-        var rawQuery = from dto in this._db.Dtos
+        var rawQuery = from dto in this._db.Dtos.Include(x => x.Module)
                        select dto;
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels, token);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
@@ -296,7 +296,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         => this._writeDbContext.ChangeTracker.Clear();
 
     public Task<Result<int>> SaveChangesAsync(CancellationToken token = default)
-        => this._writeDbContext.SaveChangesResultAsync();
+        => this._writeDbContext.SaveChangesResultAsync(cancellationToken: token);
 
     public async Task<Result<DtoViewModel>> UpdateAsync(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
@@ -362,30 +362,32 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         }
     }
 
-    public async Task<Result<DtoViewModel>> ValidateAsync([DisallowNull] DtoViewModel viewModel, CancellationToken token = default)
+    public async Task<Result<DtoViewModel?>> ValidateAsync(DtoViewModel? viewModel, CancellationToken token = default)
     {
-        Check.IfArgumentNotNull(viewModel);
-
-        var result = viewModel.Check(CheckBehavior.GatherAll)
-            .NotNullOrEmpty(x => x.Name, () => "DTO name cannot be null.")
-            .RuleFor(x => x.Module?.Id is not null or 0, () => "Module name cannot be null.")
+        var validation = viewModel.Check()
+            .ArgumentNotNull()
+            .NotNullOrEmpty(x => x!.Name, () => "DTO name cannot be null.")
+            .RuleFor(x => x!.Module.Id is not null and not 0, () => "Module name cannot be null.")
             .Build();
-        if (!result.IsSucceed)
+        if (!validation.IsSucceed)
         {
-            return result;
+            return validation;
         }
 
         var query = from dto in this._db.Dtos
                     where dto.Name == viewModel!.Name && dto.Id != viewModel.Id
                     select dto.Id;
-        _ = result.Check(await query.AnyAsync(cancellationToken: token), "DTO name already exists.", ObjectDuplicateValidationException.ErrorCode);
-        var duplicates = viewModel!.Properties
-            .GroupBy(x => x.Name)
-            .Where(g => g.Count() > 1)
-            .Select(y => y.Key)
-            .Compact().ToList();
-        _ = result.Check(duplicates.Count != 0, $"{duplicates.Merge(",")} property name(s) are|is duplicated.", ObjectDuplicateValidationException.ErrorCode);
-        return result;
+        if (await query.AnyAsync(cancellationToken: token))
+        {
+            return Result<DtoViewModel>.CreateFailure(new ObjectDuplicateValidationException("DTO"));
+        }
+
+        var duplicates = viewModel!.Properties.FindDuplicates().Select(x => x?.Name).Compact().ToList();
+        if (duplicates.Any())
+        {
+            return Result<DtoViewModel>.CreateFailure(new ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
+        };
+        return Result<DtoViewModel>.CreateSuccess(viewModel)!;
     }
 
     private static DtoViewModel InitializeViewModel(in DtoViewModel viewModel)

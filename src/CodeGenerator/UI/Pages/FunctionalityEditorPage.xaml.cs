@@ -22,55 +22,44 @@ namespace HanyCo.Infra.UI.Pages;
 /// </summary>
 public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 {
+    private readonly IFunctionalityCodeService _codeService;
+    private readonly IDtoService _dtoService;
     private readonly IModuleService _moduleService;
     private readonly IFunctionalityService _service;
+
+    // This field should be created bcuz creating takes a long time. Used as a cash.
     private CqrsExplorerTreeView? _dtoExplorerTreeView;
 
     public FunctionalityEditorPage(
-            IFunctionalityService service,
+        IFunctionalityService service,
         IFunctionalityCodeService codeService,
         IModuleService moduleService,
         IDbTableService dbTableService,
-        IMultistepProcess reporter,
+        IProgressReport reporter,
+        IDtoService dtoService,
         ILogger logger)
         : base(logger)
     {
         this.InitializeComponent();
         this._service = service;
+        this._codeService = codeService;
         this._moduleService = moduleService;
+        this._dtoService = dtoService;
     }
 
     bool IStatefulPage.IsViewModelChanged { get; set; }
 
     public FunctionalityViewModel? ViewModel
     {
-        get => this.DataContext is FunctionalityViewModel result ? result : null;
-        set
-        {
-            if (this.DataContext.Cast().As<FunctionalityViewModel>() == value)
-            {
-                return;
-            }
-
-            if (value != null)
-            {
-                value.PropertyChanged -= this.ViewModel_PropertyChanged;
-            }
-
-            this.DataContext = value;
-            if (value != null)
-            {
-                value.PropertyChanged += this.ViewModel_PropertyChanged;
-            }
-            this.SetIsViewModelChanged(false);
-        }
+        get => this.GetViewModelByDataContext<FunctionalityViewModel>();
+        set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    async Task<Result<int>> IAsyncSavePage.SaveAsync()
+    public async Task<Result<int>> SaveAsync()
     {
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync();
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
 
-        _ = await this._service.SaveViewModelAsync(this.ViewModel!).ThrowOnFailAsync();
+        _ = await this._service.SaveViewModelAsync(this.ViewModel!).ThrowOnFailAsync(this.Title);
         _ = this.SetIsViewModelChanged(false);
         return Result<int>.CreateSuccess(0);
     }
@@ -82,57 +71,90 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     }
 
     [MemberNotNull(nameof(ViewModel))]
-    private void CheckIfInitiated()
-        => this.ViewModel.NotNull(() => "Please create a new Functionality or edit an old one.");
+    private void CheckIfInitiated() =>
+        this.ViewModel.NotNull(() => "Please create a new Functionality or edit an old one.");
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
-        => await this.NewViewModelAsync();
-
-    private async Task GenerateCodesAsync()
-    {
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync();
-
-        var scope = this.BeginActionScope("Generating code...");
-        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel!).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
-    }
-
-    private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
-        => await this.GenerateCodesAsync();
-
-    private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
-        => e.Item = this._moduleService;
-
-    private void ModuleComboBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
-    {
-        this.CheckIfInitiated();
-
-        if (e.Item?.Id is { } moduleId)
-        {
-            this.ViewModel.ModuleId = moduleId;
-        }
-    }
-
-    private async Task NewViewModelAsync()
     {
         _ = await this.AskToSaveAsync().BreakOnFail();
         this.ViewModel = new();
     }
 
-    private void SelectRootDto()
+    private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
+    {
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
+        this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name;
+        this.ViewModel.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
+
+        var scope = this.BeginActionScope("Generating view models...");
+        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel)
+            .WithAsync(x => scope.End(x))
+            .ThrowOnFailAsync(this.Title);
+
+        scope = this.BeginActionScope("Creating code...");
+        this.ComponentCodeResultUserControl.Codes = await this._codeService.GenerateCodesAsync(this.ViewModel)
+            .WithAsync(x => scope.End(x))
+            .ThrowOnFailAsync(this.Title);
+    }
+
+    private void Me_Loaded(object sender, RoutedEventArgs e) =>
+        this.ViewModel = new();
+
+    private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e) =>
+        e.Item = this._moduleService;
+
+    private void ModuleComboBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
     {
         this.CheckIfInitiated();
 
-        this._dtoExplorerTreeView ??= new CqrsExplorerTreeView() { LoadDtos = true };
-        var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
-        if (isSelected && this._dtoExplorerTreeView.SelectedItem is DtoViewModel { } dto)
+        if (e.Item is { } module)
         {
-            this.ViewModel.DbObject = dto.DbObject;
+            this.ViewModel.SourceDto.NotNull().Module = module;
         }
     }
 
-    private void SelectRootDtoButton_Click(object sender, RoutedEventArgs e)
-        => this.SelectRootDto();
+    private void PrepareViewModelByDto(DtoViewModel? details)
+    {
+        this.CheckIfInitiated();
 
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        => this.SetIsViewModelChanged(true);
+        //Optional! To make sure that the selected dto exists and has details.
+        if (details == null)
+        {
+            return;
+        }
+
+        this.ViewModel.SourceDto = null;
+        this.ViewModel.SourceDto = details;
+        //May be the user filled these data. We shouldn't overwrite user's preferences. If user
+        // presses <Reset> button, user's preferences will be cleaned.
+        if (this.ViewModel.NameSpace.IsNullOrEmpty())
+        {
+            this.ViewModel.NameSpace = details.NameSpace;
+        }
+
+        if (this.ViewModel.Name.IsNullOrEmpty())
+        {
+            this.ViewModel.Name = details.Name;
+        }
+        //The form is now ready to call service.
+    }
+
+    private async void SelectRootDtoButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.CheckIfInitiated();
+
+        _ = await this.AskToSaveAsync().BreakOnFail();
+
+        //Let user to select a DTO
+        this._dtoExplorerTreeView ??= new CqrsExplorerTreeView { LoadDtos = true };
+        var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
+        //Did user select a DTO?
+        if (!isSelected || this._dtoExplorerTreeView.SelectedItem is not DtoViewModel dto) // I don like this. Not OOP.
+        {
+            return;
+        }
+
+        var details = await this._dtoService.GetByIdAsync(dto.Id!.Value);
+        this.PrepareViewModelByDto(details);
+    }
 }

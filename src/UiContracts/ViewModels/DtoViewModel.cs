@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.UI.ViewModels;
 
@@ -39,6 +40,7 @@ public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
 
     public bool IsViewModel { get => this._isViewModel; set => this.SetProperty(ref this._isViewModel, value); }
 
+    [NotNull]
     public ModuleViewModel Module
     {
         get

@@ -5,8 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:HanyCo.Infra.UI.ViewModels;assembly=Contracts"
-    d:DataContext="{d:DesignInstance models:DtoViewModel,
+    xmlns:viewmodels="clr-namespace:Contracts.ViewModels;assembly=Contracts"
+    d:DataContext="{d:DesignInstance viewmodels:DtoViewModel,
                                      IsDesignTimeCreatable=True}"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -52,10 +52,10 @@
             </StackPanel>
             <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
                 <TextBlock Style="{StaticResource LabelBlock}" Text="Module:" />
-                <ComboBox
-                    x:Name="ModulesComboBox"
-                    SelectedValue="{Binding Module}"
-                    Style="{StaticResource LongComboBox}" />
+                <local:SelectModuleUserControl
+                    x:Name="SelectModuleUserControl"
+                    SelectedModule="{Binding Module, Mode=TwoWay}"
+                    Style="{StaticResource LongControl}" />
             </StackPanel>
             <StackPanel Grid.Row="3" Style="{StaticResource FieldPanel}">
                 <TextBlock Style="{StaticResource LabelBlock}" Text="Namespace:" />

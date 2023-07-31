@@ -8,5 +8,5 @@ namespace HanyCo.Infra.UI.Services;
 
 public interface IDbTableService : IService
 {
-    Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(IMultistepProcess? reporter, string connectionString, CancellationToken token = default);
+    Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(IProgressReport? reporter, string connectionString, CancellationToken token = default);
 }

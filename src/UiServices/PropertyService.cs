@@ -1,8 +1,8 @@
 ﻿using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Exceptions.Validations;
 using Library.Interfaces;

@@ -41,12 +41,11 @@ public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirec
     public async Task BindAsync()
     {
         Check.NotNull(this._moduleService, () => new ValidationException($"Please call `{nameof(Initialize)}` method."));
-        var modules = await this._moduleService.GetAllAsync();
-        _ = this.ModulesComboBox.BindItemsSource(modules, nameof(ModuleViewModel.Name));
+        this.SelectModuleUserControl.Modules = await this._moduleService.GetAllAsync();
     }
 
-    public void Initialize()
-        => this._moduleService = DI.GetService<IModuleService>();
+    public void Initialize() =>
+        this._moduleService = DI.GetService<IModuleService>();
 
     public void RefreshState(DtoViewModel? viewModel)
     {

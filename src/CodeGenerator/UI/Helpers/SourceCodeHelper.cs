@@ -58,7 +58,7 @@ public static class SourceCodeHelper
                 new("OK", (e1, e2) => MsgBox2.GetOnButtonClick(e1, e2).Parent.Close()),
                 new("Open Containing Folder…", (e1, e2) => { _ = Process.Start("explorer.exe", result.Value!); })).ToArray());
 
-    public static async Task<Result<string?>> SaveSourceToDiskAsync<TViewModel>(this ICodeGeneratorService<TViewModel> codeGeneratorService,
+    public static async Task<Result<string?>> SaveSourceToDiskAsync<TViewModel>(this ICodeGenerator<TViewModel> codeGeneratorService,
                                                                                 TViewModel viewModel,
                                                                                 Func<Task> validatorAsync)
     {

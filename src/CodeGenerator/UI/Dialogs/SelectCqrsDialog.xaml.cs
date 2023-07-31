@@ -89,10 +89,7 @@ public partial class SelectCqrsDialog
 
     private async void OkButton_Click(object sender, RoutedEventArgs e)
     {
-        if (this.Explorer.SelectedItem is not CqrsViewModelBase and not DtoViewModel)
-        {
-            throw new ValidationException("Please select an item");
-        }
+        ValidationException.ThrowIfNotValid(this.Explorer.SelectedItem is not CqrsViewModelBase and not DtoViewModel, "Please select an item");
         InfraViewModelBase? obj = this.Explorer.SelectedItem switch
         {
             DtoViewModel dto => await this.Service<IDtoService>().GetByIdAsync(dto.Id!.Value),

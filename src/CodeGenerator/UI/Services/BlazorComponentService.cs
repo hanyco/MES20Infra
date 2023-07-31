@@ -1,6 +1,9 @@
-﻿using Contracts.Services;
+﻿using System.Collections.Immutable;
+
+using Contracts.Services;
 
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Exceptions.Validations;
@@ -13,11 +16,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.UI.Services;
 
+[Service]
 public sealed class BlazorComponentService :
     IBlazorComponentService,
     IAsyncValidator<UiComponentViewModel>,
     IAsyncSaveChanges,
-    IResetChanges
+    IResetChanges,
+    IService
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _readDbContext;
@@ -85,8 +90,8 @@ public sealed class BlazorComponentService :
                        select c;
         var cmp = await cmpQuery.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         model = this._converter.ToViewModel(cmp)!;
-        _ = model?.UiProperties?.AddRange(this._converter.ToViewModel(cmp.UiComponentProperties)!);
-        _ = model?.UiActions?.AddRange(this._converter.ToViewModel(cmp.UiComponentActions)!);
+        _ = model?.UiProperties?.AddRange(this._converter.ToViewModel(cmp?.UiComponentProperties)!);
+        _ = model?.UiActions?.AddRange(this._converter.ToViewModel(cmp?.UiComponentActions)!);
         return model;
     }
 
@@ -107,7 +112,7 @@ public sealed class BlazorComponentService :
                     where c.PageDataContextId == dataDataContextId
                     select c;
         var dbComponents = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = dbComponents.Select(this._converter.ToViewModel).ToReadOnlyList();
+        var result = dbComponents.Select(this._converter.ToViewModel).ToImmutableArray();
         return result!;
     }
 
@@ -141,38 +146,47 @@ public sealed class BlazorComponentService :
             _ = this._writeDbContext.Detach(entity);
         }
 
-        void updateEntity()
-            => entry.SetModified(x => x.Caption)
-            .SetModified(x => x.IsEnabled)
-            .SetModified(x => x.Name);
+        void updateEntity() =>
+            entry.SetModified(x => x.Caption)
+                 .SetModified(x => x.IsEnabled)
+                 .SetModified(x => x.Name);
 
         void updateProperties()
         {
-            //! The removed ones will be being missed if the current ones are being attached. So let's deleted them all and then insert them again.
-            _ = this._writeDbContext.UiComponentProperties.Where(x => x.UiComponentId == entity.Id)
-                .ForEach(x => this._writeDbContext.Detach(x))
-                .ForEach(x => this._writeDbContext.UiComponentProperties.Remove(x))
-                .Build();
-            var newProps = entry.Entity.UiComponentProperties.ToReadOnlyList();
+            //! The removed ones will be being missed if the current ones are being attached. So let's delete them all and then insert them again.
+            var props = this._writeDbContext.UiComponentProperties.Where(x => x.UiComponentId == entity.Id).ToImmutableArray();
+            foreach (var prop in props)
+            {
+                _ = this._writeDbContext.Detach(prop);
+                _ = this._writeDbContext.UiComponentProperties.Remove(prop);
+            }
+
+            var newProps = entry.Entity.UiComponentProperties.ToImmutableArray();
             entry.Entity.UiComponentProperties.Clear();
-            _ = newProps
-                .ForEach(x => x.UiComponentId = entity.Id)
-                .ForEach(entry.Entity.UiComponentProperties.Add)
-                .Build();
+            foreach (var prop in newProps)
+            {
+                prop.UiComponentId = entity.Id;
+                entry.Entity.UiComponentProperties.Add(prop);
+            }
         }
 
         void updateActions()
         {
-            //! The removed ones will be being missed if the current ones are being attached. So let's deleted them all and then insert them again.
-            _ = this._writeDbContext.UiComponentActions.Where(x => x.UiComponentId == entity.Id)
-                .ForEach(x => this._writeDbContext.Detach(x))
-                .ForEach(x => this._writeDbContext.UiComponentActions.Remove(x))
-                .Build();
-            var newProps = entry.Entity.UiComponentActions.ToReadOnlyList();
+            //! The removed ones will be being missed if the current ones are being attached. So let's delete them all and then insert them again.
+            var actions = this._writeDbContext.UiComponentActions.Where(x => x.UiComponentId == entity.Id).ToImmutableArray();
+            foreach (var action in actions)
+            {
+                _ = this._writeDbContext.Detach(action);
+                _ = this._writeDbContext.UiComponentActions.Remove(action);
+            }
+
+            var newActions = entry.Entity.UiComponentActions.ToImmutableArray();
             entry.Entity.UiComponentActions.Clear();
-            _ = newProps.ForEach(x => x.UiComponentId = entity.Id)
-                .ForEach(entry.Entity.UiComponentActions.Add)
-                .Build();
+            foreach (var action in newActions)
+            {
+                action.UiComponentId = entity.Id;
+                entry.Entity.UiComponentActions.Add(action);
+            }
         }
 
         void updateDataContextInfo()
@@ -193,7 +207,7 @@ public sealed class BlazorComponentService :
         var nameQuery = from c in this._readDbContext.UiComponents
                         where c.Name == model.Name && c.Id != model.Id
                         select c.Id;
-        Check.If(!await nameQuery.AnyAsync(), () => new ObjectDuplicateValidationException(nameof(model.Name)));
+        Check.If(await nameQuery.AnyAsync(cancellationToken: cancellationToken), () => new ObjectDuplicateValidationException(nameof(model.Name)));
         return new(model);
     }
 }

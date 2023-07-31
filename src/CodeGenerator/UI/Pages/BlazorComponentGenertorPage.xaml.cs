@@ -9,7 +9,6 @@ using Contracts.ViewModels;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Exceptions.Validations;
 using Library.Results;
@@ -260,7 +259,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         _ = await this.ValidateFormAsync();
         var viewModel = this.ViewModel!;
         var codes = this._codeService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode));
-        _ = await codes.SaveToFileAsync().ThrowOnFailAsync();
+        _ = await codes.Value.SaveToFileAsync().ThrowOnFailAsync();
     }
 
     private async void ValidateButton_Click(object sender, RoutedEventArgs e)

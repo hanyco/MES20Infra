@@ -1,4 +1,6 @@
-﻿using Library.Interfaces;
+﻿using Contracts.ViewModels;
+
+using Library.Interfaces;
 using Library.Types;
 
 namespace HanyCo.Infra.UI.ViewModels;

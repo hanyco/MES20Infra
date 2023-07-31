@@ -1,18 +1,18 @@
 ﻿using System.Collections.ObjectModel;
 
-using Contracts.ViewModels;
+using HanyCo.Infra.UI.ViewModels;
 
-namespace HanyCo.Infra.UI.ViewModels;
+namespace Contracts.ViewModels;
 
 public class UiComponentViewModel : UiComponentViewModelBase
 {
     private string _className = null!;
-    private DtoViewModel _dto = null!;
     private bool _generateMainCode = true;
     private bool _generatePartialCode = true;
     private bool _generateUiCode = true;
     private bool _isGrid;
     private string? _nameSpace;
+    private DtoViewModel? _pageDataContext = null;
     private PropertyViewModel? _pageDataContextProperty;
 
     public string ClassName { get => this._className; set => this.SetProperty(ref this._className, value); }
@@ -28,7 +28,7 @@ public class UiComponentViewModel : UiComponentViewModelBase
     public string? NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
 
     public long? PageComponentId { get; set; }
-    public DtoViewModel? PageDataContext { get => this._dto; set => this.SetProperty(ref this._dto, value); }
+    public DtoViewModel? PageDataContext { get => this._pageDataContext; set => this.SetProperty(ref this._pageDataContext, value); }
 
     public PropertyViewModel? PageDataContextProperty { get => this._pageDataContextProperty; set => this.SetProperty(ref this._pageDataContextProperty, value); }
 

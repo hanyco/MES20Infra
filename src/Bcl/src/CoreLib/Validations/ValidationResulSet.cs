@@ -16,7 +16,8 @@ namespace Library.Validations;
 public static class Validation
 {
     /// <summary>
-    /// Checks that the specified value is not null and returns it. Throws an exception if the value is null.
+    /// Checks that the specified value is not null and returns it. Throws an exception if the value
+    /// is null.
     /// </summary>
     /// <typeparam name="TValue">The type of the value.</typeparam>
     /// <param name="value">The value to check.</param>
@@ -90,12 +91,14 @@ public sealed class ValidationResultSet<TValue> : IBuilder<Result<TValue>>
 
     #region Public methods
 
-    public static implicit operator TValue(ValidationResultSet<TValue> source)
-        => source.Value;
+    public static implicit operator Result<TValue>(ValidationResultSet<TValue> source) =>
+        source.Build();
 
-    /// <summary>
-    /// Traverses the rules and create a fail <code>Result<TValue></code>, at first broken rule . Otherwise created a succeed result.
-    /// </summary>
+    public static implicit operator TValue(ValidationResultSet<TValue> source) =>
+        source.Value;
+
+    /// <summary> Traverses the rules and create a fail <code>Result<TValue></code>, at first broken
+    /// rule . Otherwise created a succeed result. </summary>
     public Result<TValue> Build()
         => this.InnerBuild(this._behavior);
 
@@ -262,7 +265,7 @@ public sealed class ValidationResultSet<TValue> : IBuilder<Result<TValue>>
     private ValidationResultSet<TValue> AddRule<TType>(Expression<Func<TValue, TType>> propertyExpression, Func<TType, bool> isValid, Func<Exception> onError, Func<Exception> onErrorAlternative)
     {
         var error = onError ?? onErrorAlternative;
-        bool validator(TValue x) => isValid(Invoke(propertyExpression, x));
+        [DebuggerStepThrough] bool validator(TValue x) => isValid(Invoke(propertyExpression, x));
         return this.InnerAddRule(validator, error);
     }
 

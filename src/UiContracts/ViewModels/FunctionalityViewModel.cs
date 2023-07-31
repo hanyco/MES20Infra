@@ -6,56 +6,52 @@ using System.Runtime.CompilerServices;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
-using Library.Data.SqlServer.Dynamics;
+using Library.Results;
 
 namespace Contracts.ViewModels;
 
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
-    private long _moduleId;
     private string _nameSpace;
-    //x private DtoViewModel _rootDto;
-    private DbObjectViewModel _dbObject;
+    private DtoViewModel _sourceDto;
 
-    public UiComponentViewModel BlazorDetailsComponent { get; set; }
+    public UiComponentViewModel BlazorDetailsComponentViewModel { get; set; }
+    public UiComponentViewModel BlazorListComponentViewModel { get; set; }
 
-    public UiComponentViewModel BlazorListComponent { get; set; }
+    public DtoViewModel BlazorDetailsViewModel { get; set; }
+    public DtoViewModel BlazorListViewModel { get; set; }
+    public FunctionalityViewModelCodesResults CodesResults { get; } = new();
 
-    public CqrsCommandViewModel DeleteCommand { get; set; }
-
-    public DtoViewModel DetailsViewModel { get; set; }
-
-    public CqrsQueryViewModel GetAllQuery { get; set; }
-
-    public CqrsQueryViewModel GetByIdQuery { get; set; }
-
-    public CqrsCommandViewModel InsertCommand { get; set; }
-
-    public DtoViewModel ListViewModel { get; set; }
-
-    public long ModuleId { get => this._moduleId; set => this.SetProperty(ref this._moduleId, value); }
-
+    public CqrsCommandViewModel DeleteCommandViewModel { get; set; }
+    public CqrsQueryViewModel GetAllQueryViewModel { get; set; }
+    public CqrsQueryViewModel GetByIdQueryViewModel { get; set; }
+    public CqrsCommandViewModel InsertCommandViewModel { get; set; }
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
-
-    //x public DtoViewModel RootDto { get => this._rootDto; set => this.SetProperty(ref this._rootDto, value); }
-    public DbObjectViewModel DbObject { get => this._dbObject; set => this.SetProperty(ref this._dbObject, value); }
-
-    public Table DbTable { get; set; } = null;
-
-    public CqrsCommandViewModel UpdateCommand { get; set; }
-
-    public FunctionalityViewModelCodes Codes { get; } = new();
+    public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
+    public CqrsCommandViewModel UpdateCommandViewModel { get; set; }
 }
 
-public sealed class FunctionalityViewModelCodes
+public sealed class FunctionalityViewModelCodesResults : IEnumerable<Result<Codes>>
 {
-    private readonly Dictionary<string, Codes> _allCodes = new();
+    private readonly Dictionary<string, Result<Codes>> _allCodes = new();
 
-    public Codes GetAllQueryCodes { get => this.get(); set => this.set(value); }
+    public Result<Codes> BlazorDetailsComponentViewModel { get => this.get(); set => this.set(value); }
+    public Result<Codes> BlazorListCodes { get => this.get(); set => this.set(value); }
+    public Result<Codes> DeleteCommandCodes { get => this.get(); set => this.set(value); }
+    public Result<Codes> GetAllQueryCodes { get => this.get(); set => this.set(value); }
+    public Result<Codes> GetByIdQueryCodes { get => this.get(); set => this.set(value); }
+    public Result<Codes> InsertCommandCodes { get => this.get(); set => this.set(value); }
+    public Result<Codes> UpdateCommandCodes { get => this.get(); set => this.set(value); }
 
-    private void set(Codes value, [CallerMemberName] string propName = null)
-        => this._allCodes[propName] = value;
+    public IEnumerator<Result<Codes>> GetEnumerator() =>
+        this._allCodes.Select(x => x.Value).Compact().GetEnumerator();
 
-    private Codes get([CallerMemberName] string propName = null)
-        => this._allCodes[propName];
+    IEnumerator IEnumerable.GetEnumerator() =>
+        this.GetEnumerator();
+
+    private Result<Codes> get([CallerMemberName] string propName = null) =>
+        this._allCodes[propName];
+
+    private void set(Result<Codes> value, [CallerMemberName] string propName = null) =>
+        this._allCodes[propName] = value;
 }

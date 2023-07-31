@@ -115,7 +115,6 @@
             <Button
                 Name="ValidateButton"
                 Click="ValidateButton_Click"
-                Command="{}"
                 Style="{StaticResource IconButton}"
                 ToolTip="Validate Form…">
                 <Button.IsEnabled>

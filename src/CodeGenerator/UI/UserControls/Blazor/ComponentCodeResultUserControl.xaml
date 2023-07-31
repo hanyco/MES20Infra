@@ -13,5 +13,6 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <TabControl x:Name="CodesTabConrol" />
+    <!--<TabControl x:Name="CodesTabConrol" />-->
+    <Grid />
 </blazor:BlazorComponentUserControlBase>

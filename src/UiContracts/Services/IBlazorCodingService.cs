@@ -5,6 +5,7 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
 using Library.Interfaces;
+using Library.Results;
 
 namespace Contracts.Services;
 
@@ -61,7 +62,7 @@ public interface IBlazorCodingService : IBusinessService
     /// </summary>
     /// <param name="model">The model.</param>
     /// <returns></returns>
-    Codes GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null);
+    Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null);
 
     /// <summary>
     /// Gets the property.
