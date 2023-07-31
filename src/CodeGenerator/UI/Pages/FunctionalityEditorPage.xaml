@@ -90,12 +90,6 @@
             </TabItem>
             <TabItem Header="Result">
                 <TabControl>
-                    <TabItem Header="Front-end">
-                        <TabControl>
-                            <TabItem Header="Blazor List Page" />
-                            <TabItem Header="Blazor Details Page" />
-                        </TabControl>
-                    </TabItem>
                     <TabItem Header="Back-end">
                         <TabControl>
                             <TabItem Header="Get All Query" />
@@ -103,6 +97,12 @@
                             <TabItem Header="Insert Command" />
                             <TabItem Header="Update Command" />
                             <TabItem Header="Delete Command" />
+                        </TabControl>
+                    </TabItem>
+                    <TabItem Header="Front-end">
+                        <TabControl>
+                            <TabItem Header="Blazor List Page" />
+                            <TabItem Header="Blazor Details Page" />
                         </TabControl>
                     </TabItem>
                     <TabItem Header="All Codes">

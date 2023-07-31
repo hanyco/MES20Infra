@@ -35,18 +35,47 @@ internal sealed partial class FunctionalityService
                 .NotNull(x => x.InsertCommandViewModel)
                 .NotNull(x => x.UpdateCommandViewModel)
                 .NotNull(x => x.DeleteCommandViewModel)
-                .NotNull(x => x.BlazorListComponentViewModel)
-                .NotNull(x => x.BlazorDetailsComponentViewModel);
+                //.NotNull(x => x.BlazorListComponentViewModel)
+                //.NotNull(x => x.BlazorDetailsComponentViewModel)
+                ;
 
         async Task<FunctionalityViewModelCodesResults> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodesResults results, CancellationToken token)
         {
-            results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
-            results.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
-            results.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
-            results.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
-            results.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
-            results.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
-            results.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+            if (viewModel.GetAllQueryViewModel != null)
+            {
+                results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
+            }
+
+            if (viewModel.GetByIdQueryViewModel != null)
+            {
+                results.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
+            }
+
+            if (viewModel.InsertCommandViewModel != null)
+            {
+                results.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
+            }
+
+            if (viewModel.UpdateCommandViewModel != null)
+            {
+                results.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
+            }
+
+            if (viewModel.DeleteCommandViewModel != null)
+            {
+                results.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
+            }
+
+            if (viewModel.BlazorListComponentViewModel != null)
+            {
+                results.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
+            }
+
+            if (viewModel.BlazorDetailsComponentViewModel != null)
+            {
+                results.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+            }
+
             return results;
         }
     }
@@ -126,9 +155,9 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                .AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
-                .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
-                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+                //.AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
+                //.AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
+                //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
 
                 //.AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
                 ;
@@ -204,24 +233,6 @@ internal sealed partial class FunctionalityService
 
         static void createPageViewModel(CreationData data)
         {
-            var pageViewModel = RawDto(data, true);
-            pageViewModel.Name = $"Get{data.ViewModel.Name}ViewModel";
-            pageViewModel.IsViewModel = true;
-            pageViewModel.Properties.Add(new()
-            {
-                Comment = data.COMMENT,
-                Dto = data.ViewModel.BlazorDetailsViewModel,
-                Name = data.ViewModel.BlazorDetailsViewModel.Name,
-                Type = PropertyType.Dto
-            });
-            pageViewModel.Properties.Add(new()
-            {
-                Comment = data.COMMENT,
-                Dto = data.ViewModel.BlazorListViewModel,
-                Name = data.ViewModel.BlazorListViewModel.Name,
-                Type = PropertyType.Dto,
-                IsList = true
-            });
         }
     }
 

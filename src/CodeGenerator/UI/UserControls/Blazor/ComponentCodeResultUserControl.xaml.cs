@@ -35,17 +35,17 @@ public partial class ComponentCodeResultUserControl
 
     private void OnCodesChanged()
     {
-        this.CodesTabConrol.Items.Clear();
-        if (this.Codes is not null)
-        {
-            foreach (var code in this.Codes)
-            {
-                _ = this.CodesTabConrol.Items.Add(new TabItem
-                {
-                    Header = code?.Name,
-                    Content = new CodeDetailsUserControl() { DataContext = code }
-                });
-            }
-        }
+        //this.CodesTabConrol.Items.Clear();
+        //if (this.Codes is not null)
+        //{
+        //    foreach (var code in this.Codes)
+        //    {
+        //        _ = this.CodesTabConrol.Items.Add(new TabItem
+        //        {
+        //            Header = code?.Name,
+        //            Content = new CodeDetailsUserControl() { DataContext = code }
+        //        });
+        //    }
+        //}
     }
 }
