@@ -54,11 +54,11 @@ public class Code(in string name, in Language language, in string statement, in 
     public static implicit operator string(in Code code)
         => code.Statement;
 
-    public static bool operator !=(Code left, string code)
-        => !(left == code);
+    public static bool operator !=(Code? left, Code? right)
+        => !(left == right);
 
-    public static bool operator ==(Code left, string code)
-        => left.Equals(code);
+    public static bool operator ==(Code? left, Code? right)
+            => left?.Equals(right) ?? (right is null);
 
     public static Code ToCode(in string name, in Language language, in string statement, in bool isPartial, in string? fileName)
         => new(name, language, statement, isPartial, fileName);
@@ -90,7 +90,7 @@ public class Code(in string name, in Language language, in string statement, in 
     public override string ToString()
         => this.Name;
 
-    public Code WithStatement([DisallowNull]string statement)
+    public Code WithStatement([DisallowNull] string statement)
         => new(this) { Statement = statement };
 
     private static string GenerateFileName(string name, Language language, bool isPartial)
@@ -107,7 +107,7 @@ public static class CodeStatementHelpers
 
     public static Codes ToCodes(this IEnumerable<Code> codes)
         => new(codes);
-    
+
     public static Codes ToCodes(this IEnumerable<Codes> codes)
         => new(codes.SelectAll());
 }

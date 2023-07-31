@@ -4,15 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:blazor="clr-namespace:HanyCo.Infra.UI.UserControls.Blazor"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages.Blazor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModels="clr-namespace:HanyCo.Infra.UI.ViewModels"
     x:Name="Me"
-    d:DataContext="{d:DesignInstance viewModels:UiComponentViewModel,
-                                     IsDesignTimeCreatable=True}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
     mc:Ignorable="d">
     <!--<TabControl x:Name="CodesTabConrol" />-->
-    <Grid />
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="25*" />
+            <ColumnDefinition Width="85*" />
+        </Grid.ColumnDefinitions>
+        <TreeView x:Name="CodeNamesTreeView" SelectedItemChanged="CodeNamesTreeView_SelectedItemChanged" />
+        <ContentControl x:Name="CodeStatementContentControl" Grid.Column="1" />
+    </Grid>
 </blazor:BlazorComponentUserControlBase>
