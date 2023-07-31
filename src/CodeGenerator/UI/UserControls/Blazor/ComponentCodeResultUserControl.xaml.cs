@@ -14,20 +14,17 @@ namespace HanyCo.Infra.UI.Pages.Blazor;
 /// </summary>
 public partial class ComponentCodeResultUserControl
 {
-    private Codes? _Codes;
+    private Codes? _codes;
 
-    public ComponentCodeResultUserControl()
-    {
+    public ComponentCodeResultUserControl() =>
         this.InitializeComponent();
-        DataContextChanged += this.ComponentCodeResultUserControl_DataContextChanged;
-    }
 
     public Codes? Codes
     {
-        get => this._Codes;
-        internal set
+        get => this._codes;
+        set
         {
-            this._Codes = value;
+            this._codes = value;
             this.OnCodesChanged();
         }
     }
@@ -38,26 +35,9 @@ public partial class ComponentCodeResultUserControl
         this.CodeStatementContentControl.Content =
             code == null
                 ? null
-                : new CodeDetailsUserControl() { DataContext = code };
-    }
-
-    private void ComponentCodeResultUserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-    {
-        //this.DataContext.As<>()
+                : new CodeDetailsUserControl { DataContext = code };
     }
 
     private void OnCodesChanged() =>
-        //this.CodesTabConrol.Items.Clear();
-        //if (this.Codes is not null)
-        //{
-        //    foreach (var code in this.Codes)
-        //    {
-        //        _ = this.CodesTabConrol.Items.Add(new TabItem
-        //        {
-        //            Header = code?.Name,
-        //            Content = new CodeDetailsUserControl() { DataContext = code }
-        //        });
-        //    }
-        //}
         this.CodeNamesTreeView.BindItems(this.Codes);
 }

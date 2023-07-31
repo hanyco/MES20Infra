@@ -7,7 +7,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="Me"
     mc:Ignorable="d">
-    <!--<TabControl x:Name="CodesTabConrol" />-->
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="25*" />
