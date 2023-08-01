@@ -45,7 +45,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
 
     public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
-        Check.IfArgumentNotNull(model?.Id);
+        Check.MustBeArgumentNotNull(model?.Id);
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
         _ = this._writeDbContext.Remove(entry.Entity);
         return (Result)(await this.SubmitChangesAsync(persist: persist) > 0);
@@ -87,7 +87,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     public async Task<Result<CqrsCommandViewModel>> UpdateAsync(long id, CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         _ = await this.ValidateAsync(model, token);
-        Check.IfArgumentNotNull(model.Id);
+        Check.MustBeArgumentNotNull(model.Id);
         var segregate = this._converter.ToDbEntity(model)!;
         _ = this._writeDbContext.Attach(segregate)
             .SetModified(x => x.Comment)

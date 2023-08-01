@@ -15,15 +15,15 @@ public sealed class DbTableViewModel : DbObjectViewModel
     [return: NotNull]
     public static DbTableViewModel FromDbObjectViewModel([DisallowNull] DbObjectViewModel viewModel)
     {
-        Check.IfArgumentNotNull(viewModel);
-        Check.IfArgumentNotNull(viewModel.Name);
+        Check.MustBeArgumentNotNull(viewModel);
+        Check.MustBeArgumentNotNull(viewModel.Name);
         return viewModel is DbTableViewModel x ? x : new(viewModel.Name, viewModel.ObjectId, viewModel.Schema);
     }
 
     [return: NotNull]
     public static DbTableViewModel FromDbTable([DisallowNull] Table table)
     {
-        Check.IfArgumentNotNull(table);
+        Check.MustBeArgumentNotNull(table);
         return new DbTableViewModel(table.Name, table.Id, table.Schema);
     }
 }

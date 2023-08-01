@@ -33,7 +33,7 @@ internal sealed class PropertyService : IPropertyService
 
     public async Task<Result> DeleteAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        Check.IfArgumentNotNull(model?.Id);
+        Check.MustBeArgumentNotNull(model?.Id);
 
         _ = this._writeDbContext.RemoveById<Property>(model.Id.Value);
         if (model.Guid is not null)

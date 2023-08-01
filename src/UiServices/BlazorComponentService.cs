@@ -127,7 +127,7 @@ public sealed class BlazorComponentService :
 
     public async Task<Result<UiComponentViewModel>> UpdateAsync(long id, UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        Check.IfArgumentNotNull(model);
+        Check.MustBeArgumentNotNull(model);
         model.Id = id;
         _ = await this.CheckValidatorAsync(model);
         var entity = this._converter.ToDbEntity(model)!;
@@ -207,7 +207,7 @@ public sealed class BlazorComponentService :
         var nameQuery = from c in this._readDbContext.UiComponents
                         where c.Name == model.Name && c.Id != model.Id
                         select c.Id;
-        Check.If(await nameQuery.AnyAsync(cancellationToken: cancellationToken), () => new ObjectDuplicateValidationException(nameof(model.Name)));
+        Check.MustBe(await nameQuery.AnyAsync(cancellationToken: cancellationToken), () => new ObjectDuplicateValidationException(nameof(model.Name)));
         return new(model);
     }
 }

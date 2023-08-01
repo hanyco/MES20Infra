@@ -21,7 +21,7 @@ public static class HtmlElementExtensions
     public static TElement AddChild<TElement>(this TElement element, params IHtmlElement[] children)
         where TElement : IHtmlElement
     {
-        Check.IfArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(element);
         if (children?.Any() is true)
         {
             foreach (var child in children)
@@ -124,8 +124,8 @@ public static class HtmlElementExtensions
     public static string? GetAttribute<TElement>(this TElement element, string key)
         where TElement : IHtmlElement
     {
-        Check.IfArgumentNotNull(element);
-        Check.IfArgumentNotNull(key);
+        Check.MustBeArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(key);
 
         var target = element.Attributes;
         return target.TryGetValue(key, out var value) ? value : null;
@@ -134,8 +134,8 @@ public static class HtmlElementExtensions
     public static string? GetAttribute<TElement>(this TElement element, string key, bool isBlazorAttribute = true)
         where TElement : IBlazorComponent
     {
-        Check.IfArgumentNotNull(element);
-        Check.IfArgumentNotNull(key);
+        Check.MustBeArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(key);
         var target = isBlazorAttribute ? element.BlazorAttributes : element.Attributes;
         return target.TryGetValue(key, out var value) ? value : null;
     }
@@ -147,8 +147,8 @@ public static class HtmlElementExtensions
     public static TElement RemoveAttribute<TElement>(this TElement element, string key)
         where TElement : IHtmlElement
     {
-        Check.IfArgumentNotNull(element);
-        Check.IfArgumentNotNull(key);
+        Check.MustBeArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(key);
 
         if (!element.Attributes.ContainsKey(key))
         {
@@ -167,8 +167,8 @@ public static class HtmlElementExtensions
     public static TElement SetAttribute<TElement>(this TElement element, string key, string? value, bool isBlazorAttribute = true)
         where TElement : IBlazorComponent
     {
-        Check.IfArgumentNotNull(element);
-        Check.IfArgumentNotNull(key);
+        Check.MustBeArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(key);
         var target = isBlazorAttribute ? element.BlazorAttributes : element.Attributes;
         _ = target.SetByKey(key.ArgumentNotNull(nameof(key)), value);
         return element;
@@ -185,8 +185,8 @@ public static class HtmlElementExtensions
     public static TElement SetElementAttribute<TElement>([DisallowNull] this TElement element, [DisallowNull] string key, string? value, bool mustSet)
         where TElement : notnull, IHtmlElement
     {
-        Check.IfArgumentNotNull(element);
-        Check.IfArgumentNotNull(key);
+        Check.MustBeArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(key);
         if (mustSet)
         {
             _ = element.Attributes.SetByKey(key, value?.ToString());

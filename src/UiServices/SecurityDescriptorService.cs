@@ -31,7 +31,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
 
     public async Task<Result> DeleteAsync(SecurityDescriptorViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        Check.IfArgumentNotNull(model);
+        Check.MustBeArgumentNotNull(model);
         _ = this._writeDbContext.SecurityDescriptors.Remove(new() { Id = model.Id });
         return (Result)(persist && await this._writeDbContext.SaveChangesAsync(cancellationToken) > 0);
     }
@@ -147,7 +147,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
 
     public Task<Result<SecurityDescriptorViewModel?>> ValidateAsync(SecurityDescriptorViewModel? item, CancellationToken cancellationToken = default)
     {
-        Check.IfArgumentNotNull(item);
+        Check.MustBeArgumentNotNull(item);
 
         var result = item.Check()
             .NotNullOrEmpty(x => x.Name, () => "Security Descriptor name")

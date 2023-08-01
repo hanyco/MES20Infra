@@ -11,7 +11,7 @@ public static class SecurityDescriptorServiceHelper
     public static async Task SetSecurityDescriptorsAsync<TEntity>(this ISecurityDescriptorService service, TEntity entity, bool persist = true)
         where TEntity : IHasSecurityDescriptor
     {
-        Check.IfArgumentNotNull(service);
+        Check.MustBeArgumentNotNull(service);
         if (entity?.Guid is { } guid && entity.SecurityDescriptors?.Any() is true)
         {
             await service.AssignToEntityIdAsync(guid, entity.SecurityDescriptors.Select(x => x.Id), false).ToEnumerableAsync();

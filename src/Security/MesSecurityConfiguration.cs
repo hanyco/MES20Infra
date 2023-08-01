@@ -19,7 +19,7 @@ public static class MesSecurityConfiguration
 {
     public static IServiceCollection AddMesInfraSecurityServices<TStartup>(this IServiceCollection services, ISecutityConfigOptions options)
     {
-        Check.IfArgumentNotNull(options);
+        Check.MustBeArgumentNotNull(options);
 
         addLoggers(services, options.Logger);
         addIdentity(services);

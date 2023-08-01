@@ -30,7 +30,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {
-        Check.IfArgumentNotNull(codeStringBuilder);
+        Check.MustBeArgumentNotNull(codeStringBuilder);
         var result = addRequiredNameSpaces(codeStringBuilder);
         return result.AppendLine();
 

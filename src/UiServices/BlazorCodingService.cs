@@ -65,7 +65,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
 
     public UiComponentPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel)
     {
-        Check.IfArgumentNotNull(viewModel?.Name);
+        Check.MustBeArgumentNotNull(viewModel?.Name);
 
         return new UiComponentPropertyViewModel
         {
@@ -82,7 +82,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
 
     public async Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken cancellationToken = default)
     {
-        Check.IfArgumentNotNull(dto?.Id);
+        Check.MustBeArgumentNotNull(dto?.Id);
         var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value, cancellationToken)).NotNull(() => new NotFoundValidationException());
         var propsEntity = await this._propertyService.GetDbPropertiesByParentIdAsync(dto.Id!.Value, cancellationToken);
         var parsedName = entity.Name?.Replace("Dto", "Component").Replace("ViewModel", "Component") ?? string.Empty;
@@ -106,7 +106,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
 
     public Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop, CancellationToken cancellationToken = default)
     {
-        Check.IfArgumentNotNull(prop);
+        Check.MustBeArgumentNotNull(prop);
         var id = prop.Id.ArgumentNotNull(nameof(UiComponentPropertyViewModel.Id)).Value;
         return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
     }
@@ -197,7 +197,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
 
     private static BlazorComponent CreateComponent(in UiComponentViewModel model)
     {
-        Check.IfArgumentNotNull(model?.Name);
+        Check.MustBeArgumentNotNull(model?.Name);
 
         var (dataContextType, dataContextPropType) = createDataContext(model);
         var result = initializeComponent(model, dataContextType);
@@ -346,8 +346,8 @@ internal sealed class BlazorCodingService : IBlazorCodingService
 
     private static BlazorPage CreatePage(in UiPageViewModel model, CancellationToken cancellationToken = default)
     {
-        Check.IfArgumentNotNull(model);
-        Check.IfArgumentNotNull(model.Name, nameof(model.Name));
+        Check.MustBeArgumentNotNull(model);
+        Check.MustBeArgumentNotNull(model.Name, nameof(model.Name));
 
         var dataContextType = TypePath.New(model.Dto?.Name, model.Dto?.NameSpace);
         var result = BlazorPage.New(model.Name).SetPageRoute(model.Route).SetNameSpace(model.NameSpace).SetDataContext(dataContextType);

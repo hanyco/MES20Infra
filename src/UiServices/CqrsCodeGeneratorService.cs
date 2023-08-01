@@ -216,7 +216,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 
     private static Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken token = default)
     {
-        Check.IfArgumentNotNull(commandViewModel?.Name);
+        Check.MustBeArgumentNotNull(commandViewModel?.Name);
 
         var paramsDto = ExtractParamsDto(commandViewModel);
         var resultDto = ExtractResultDto(commandViewModel);
@@ -235,7 +235,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 
     private static Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken token = default)
     {
-        Check.IfArgumentNotNull(queryViewModel?.Name);
+        Check.MustBeArgumentNotNull(queryViewModel?.Name);
 
         var paramsDto = ExtractParamsDto(queryViewModel);
         var resultDto = ExtractResultDto(queryViewModel);

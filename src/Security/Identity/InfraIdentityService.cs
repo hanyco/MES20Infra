@@ -40,7 +40,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     public async Task<Result> AddClaimToUserAsync(string userId, string claimType, string? claimValue)
     {
-        Check.IfArgumentNotNull(claimType);
+        Check.MustBeArgumentNotNull(claimType);
         var user = await this.GetUserByIdAsync(userId);
         if (!user.IsSucceed)
         {
@@ -131,7 +131,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     public async Task<IEnumerable<string>> GetUserRolesAsync(string userId)
     {
-        Check.IfArgumentNotNull(userId, nameof(userId));
+        Check.MustBeArgumentNotNull(userId, nameof(userId));
 
         var user = await this._userManager.FindByIdAsync(userId) ?? throw new ObjectNotFoundException($"User {userId} not found.");
         var result = await this._userManager.GetRolesAsync(user);
@@ -140,8 +140,8 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     public async Task<bool> HasUserClaim(string userId, string claimType)
     {
-        Check.IfArgumentNotNull(userId);
-        Check.IfArgumentNotNull(claimType);
+        Check.MustBeArgumentNotNull(userId);
+        Check.MustBeArgumentNotNull(claimType);
         var user = await this.GetUserByIdAsync(userId);
         var userClaims = await this._userManager.GetClaimsAsync(user!);
         return userClaims.Any(c => c.Type == claimType);
@@ -162,7 +162,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     public async Task<Result> RemoveClaimFromUserAsync(string claimType, string userId)
     {
-        Check.IfArgumentNotNull(claimType);
+        Check.MustBeArgumentNotNull(claimType);
         var user = await this.GetUserByIdAsync(userId);
         if (!user.IsSucceed)
         {
@@ -209,7 +209,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     public async Task<Result<string>> SignInByPasswordAsync(string userId, string password, bool isPersistent = false)
     {
-        Check.IfArgumentNotNull(password);
+        Check.MustBeArgumentNotNull(password);
 
         var result = await this._signInManager.PasswordSignInAsync(userId, password, isPersistent, true);
         if (!result.Succeeded)
@@ -223,7 +223,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         return new(token);
 
         [StackTraceHidden]
-        void check(bool required, string message) => Check.If(required, () => new UnauthorizedException(message, owner: this));
+        void check(bool required, string message) => Check.MustBe(required, () => new UnauthorizedException(message, owner: this));
     }
 
     public async Task<Result> SignOutAsync()
@@ -234,7 +234,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     public async Task<Result> UpdateAsync(IUserUpdateModel user)
     {
-        Check.IfArgumentNotNull(user);
+        Check.MustBeArgumentNotNull(user);
         var dbUser = await this.GetUserByIdAsync(user.Id.ToString());
         if (!dbUser.IsSucceed)
         {
@@ -253,7 +253,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     private async Task<Result<InfraIdentityUser?>> FindByNameAsync(string userName)
     {
-        Check.IfArgumentNotNull(userName);
+        Check.MustBeArgumentNotNull(userName);
 
         var user = await this._userManager.FindByNameAsync(userName);
         return user is null ? Result<InfraIdentityUser>.Failure : Result<InfraIdentityUser?>.CreateSuccess(user);
@@ -264,7 +264,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         var claim = this._claimManager.Claims.SingleOrDefault(x => x.Type == claimType);
         if (claim is null)
         {
-            Check.If(!createIfNotFound, () => new ObjectNotFoundException("Claim type not found."));
+            Check.MustBe(!createIfNotFound, () => new ObjectNotFoundException("Claim type not found."));
 
             claim = new Claim(claimType, claimValue ?? LibClaimDefaultValues.VALID_CLAIM_VALUE);
             this._claimManager.AddClaim(claim);
@@ -275,7 +275,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
     private async Task<Result<InfraIdentityRole?>> GetRoleByIdAsync(string roleId)
     {
-        Check.IfArgumentNotNull(roleId);
+        Check.MustBeArgumentNotNull(roleId);
         var role = await this._roleManager.FindByIdAsync(roleId);
         return role is null ? Result<InfraIdentityRole>.Failure : Result<InfraIdentityRole?>.CreateSuccess(role);
     }

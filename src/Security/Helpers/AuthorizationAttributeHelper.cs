@@ -10,7 +10,7 @@ public static class AuthorizationAttributeHelper
 {
     public static AuthorizationInfo ToAuthorizationInfo([DisallowNull] this MesAuthorizeAttribute attribute)
     {
-        Check.IfArgumentNotNull(attribute);
+        Check.MustBeArgumentNotNull(attribute);
 
         ClaimInfo? claim = attribute.ClaimType != null ? new(attribute.ClaimType, attribute.ClaimValue) : null;
         return new(claim, attribute.Policy, attribute.Roles, attribute.AuthenticationSchemes);

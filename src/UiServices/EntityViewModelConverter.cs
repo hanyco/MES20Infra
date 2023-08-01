@@ -52,8 +52,8 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
 
     public DtoViewModel FillViewModel(in DtoViewModel viewModel, in Dto dto, in IEnumerable<Property> properties)
     {
-        Check.IfArgumentNotNull(dto);
-        Check.IfArgumentNotNull(properties);
+        Check.MustBeArgumentNotNull(dto);
+        Check.MustBeArgumentNotNull(properties);
 
         _ = this._mapper.Map(dto, viewModel);
         if (viewModel.Module is null && dto.Module is not null)

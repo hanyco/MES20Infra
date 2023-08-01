@@ -58,7 +58,7 @@ public partial class SelectCqrsDialog
     public static TryMethodResult<TViewModel?> Show<TViewModel>(in ShowArgs args)
         where TViewModel : InfraViewModelBase
     {
-        Check.IfArgumentNotNull(args);
+        Check.MustBeArgumentNotNull(args);
 
         if (!args.Entities.Contains(LoadEntity.Dto) && !args.Entities.Contains(LoadEntity.Queries) && !args.Entities.Contains(LoadEntity.Commands))
         {

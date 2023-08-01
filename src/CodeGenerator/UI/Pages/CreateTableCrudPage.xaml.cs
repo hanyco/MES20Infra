@@ -239,7 +239,7 @@ public partial class CreateTableCrudPage
                      this.Modules = dbResult;
                      dlg.InstructionText = "Initializing...";
                      dlg.ProgressBar.Value = 30;
-                     _ = await this.ServerExplorerTreeView.InitailizeAsync(this._DbTableService);
+                     _ = await this.ServerExplorerTreeView.InitializeAsync(this._DbTableService);
                      dlg.Close();
                      this.Logger.Debug("Ready.");
                  }, showOkButton: false, isCancallable: false);

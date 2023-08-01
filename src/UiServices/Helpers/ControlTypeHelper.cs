@@ -13,7 +13,7 @@ public static class ControlTypeHelper
 {
     public static ControlType ByDtoViewModel(DtoViewModel dto)
     {
-        Check.IfArgumentNotNull(dto);
+        Check.MustBeArgumentNotNull(dto);
         return dto.Properties.Count switch
         {
             0 => ControlType.None,

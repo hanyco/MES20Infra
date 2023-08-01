@@ -62,8 +62,8 @@ public static class SourceCodeHelper
                                                                                 TViewModel viewModel,
                                                                                 Func<Task> validatorAsync)
     {
-        Check.IfArgumentNotNull(codeGeneratorService);
-        Check.IfArgumentNotNull(viewModel);
+        Check.MustBeArgumentNotNull(codeGeneratorService);
+        Check.MustBeArgumentNotNull(viewModel);
 
         if (validatorAsync is not null)
         {

@@ -142,7 +142,7 @@ public partial class BlazorComponentActionsUserControl
 
     private async void SetRefCqrsButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.If<ObjectNotFoundException>(this.SelectedAction is not null);
+        Check.MustBe<ObjectNotFoundException>(this.SelectedAction is not null);
         if (!SelectCqrsDialog.Show(out CqrsViewModelBase? selectedItem, new("Select a segregation", EnumHelper.AddFlag(SelectCqrsDialog.LoadEntity.Queries, SelectCqrsDialog.LoadEntity.Commands))))
         {
             return;

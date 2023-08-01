@@ -116,7 +116,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
     public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
-        Check.IfArgumentNotNull(viewModel);
+        Check.MustBeArgumentNotNull(viewModel);
         var result = new Codes();
         if (!validate(viewModel).TryParse(out var validationResult))
         {

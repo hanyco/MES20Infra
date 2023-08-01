@@ -50,8 +50,8 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     public CqrsQueryViewModel? ViewModel
     {
-        get => this.DataContext.Cast().As<CqrsQueryViewModel>();
-        set => this.DataContext = value;
+        get => this.GetViewModelByDataContext<CqrsQueryViewModel>();
+        set => this.SetViewModelByDataContext(value);
     }
 
     public async Task<Result<int>> SaveAsync()
@@ -71,17 +71,23 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         }
     }
 
+    protected override async Task<Result> OnValidateFormAsync() => 
+        await this.ViewModel.Check()
+            .NotNull()
+            .NotNull(x => x!.ParamDto)
+            .NotNull(x => x!.ParamDto.Id)
+            .NotNull(x => x!.ResultDto)
+            .NotNull(x => x!.ResultDto.Id)
+            .Build().ToAsync();
+
     private void CqrsQueryDetailsPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        => this.RefreshFormState();
+            => this.RefreshFormState();
 
     private async void DeleteQueryButton_Click(object sender, RoutedEventArgs e)
     {
         var id = this.QueriesTreeView.GetSelectedValue<CqrsQueryViewModel>()?.Id;
-        if (id is null)
-        {
-            throw new ValidationException("Please select a Query.");
-        }
-
+        Check.MustBe(id is null, () => new ValidationException("Please select a Query."));
+        
         if (MsgBox2.AskWithWarn("Are you sure to delete this item?") != TaskDialogResult.Yes)
         {
             return;
@@ -98,22 +104,20 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async void GenerateCodeButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = this.ViewModel.Check(CheckBehavior.ThrowOnFail).NotNull()
-            .NotNull(x => x.ParamDto)
-            .NotNull(x => x.ParamDto.Id)
-            .NotNull(x => x.ResultDto)
-            .NotNull(x => x.ResultDto.Id);
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync();
+
         IEnumerable<PropertyViewModel> props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ParamDto.Id.Value);
         _ = this.ViewModel.ParamDto.Properties.ClearAndAddRange(props);
         props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
         var codes = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
-        this.ComponentCodeResultUserControl.Codes = codes;
-        this.ResultsTabItem.IsSelected = true;
+        //this.ComponentCodeResultUserControl.Codes = codes;
+        //this.ResultsTabItem.IsSelected = true;
     }
 
     private void InitFormInfo()
-        => this.CategoryComboBox.BindItemsSourceToEnum<CqrsSegregateCategory>(CqrsSegregateCategory.Create);
+    //=> this.CategoryComboBox.BindItemsSourceToEnum<CqrsSegregateCategory>(CqrsSegregateCategory.Create);
+    { }
 
     private async Task InitQueriesTreeViewAsync()
         => this.QueriesTreeView.BindItems((IReadOnlyList<CqrsQueryViewModel>?)await this._service.GetAllAsync());
@@ -125,7 +129,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
             return;
         }
         var selectedViewModel = this.QueriesTreeView.GetSelectedValue<CqrsQueryViewModel>();
-        Check.If(selectedViewModel?.Id is null, () => new ValidationException("Please select a Query."));
+        Check.MustBe(selectedViewModel?.Id is null, () => new ValidationException("Please select a Query."));
         this.Logger.Debug("Loading...");
         var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
         Check.NotNull(viewModel, () => "ID not found");
@@ -166,29 +170,28 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private void RefreshFormState()
     {
-        this.NewQueryButton.IsEnabled = this.EditQueryButton.IsEnabled = this.DeleteQueryButton.IsEnabled = this.ViewModel is null;
+        this.NewQueryButton.IsEnabled
+            = this.EditQueryButton.IsEnabled
+            = this.DeleteQueryButton.IsEnabled
+            = this.QueriesTreeView.IsEnabled
+            = this.ViewModel is null;
         this.SaveAllToDiskButton.IsEnabled
             = this.SaveToDbButton.IsEnabled
             = this.GenerateCodeButton.IsEnabled
             = this.ResetFormButton.IsEnabled
+            //= this.QueryDetailsGrid.IsEnabled
             = this.ViewModel is not null;
-        this.QueriesTreeView.IsEnabled = this.ViewModel is null;
-        this.QueryDetailsGrid.IsEnabled = this.ViewModel is not null;
     }
 
     private async void ResetFormButton_Click(object sender, RoutedEventArgs e)
     {
-        if (await this.AskToSaveAsync() != true)
-        {
-            return;
-        }
+        _ = await this.AskToSaveAsync().BreakOnFail();
 
         if (this.ViewModel is not null)
         {
-            this.ViewModel.PropertyChanged -= this.ViewModel_PropertyChanged;
             this.ViewModel = null;
         }
-        this.ComponentCodeResultUserControl.Codes = null;
+        //this.ComponentCodeResultUserControl.Codes = null;
     }
 
     private async void SaveAllToDiskButton_Click(object sender, RoutedEventArgs e)
@@ -200,26 +203,8 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = this.SelectModuleBox.Focus();
+        //_ = this.SelectModuleBox.Focus();
         _ = await this.SaveAsync();
-    }
-
-    private async void SelectModuleBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
-    {
-        this.ResultDtoComboBox.ItemsSource = null;
-        this.ParamDtoComboBox.ItemsSource = null;
-        var moduleId = e.Item?.Id;
-        if (moduleId is null)
-        {
-            return;
-        }
-        var dtos = await this._dtoService.GetByModuleId(moduleId.Value);
-
-        var paramDtos = dtos.Where(x => x.IsParamsDto).OrderBy(x => x.Name);
-        _ = this.ParamDtoComboBox.BindItemsSource(paramDtos, nameof(ModuleViewModel.Name));
-
-        var resultDtos = dtos.Where(x => x.IsResultDto).OrderBy(x => x.Name);
-        _ = this.ResultDtoComboBox.BindItemsSource(resultDtos, nameof(ModuleViewModel.Name));
     }
 
     private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)

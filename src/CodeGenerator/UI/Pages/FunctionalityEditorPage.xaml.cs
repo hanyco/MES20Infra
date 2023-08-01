@@ -147,7 +147,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
         //Let user to select a DTO
         this._dtoExplorerTreeView ??= new CqrsExplorerTreeView { LoadDtos = true };
-        var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.MustBe(this._dtoExplorerTreeView.SelectedItem is DtoViewModel, () => "Please select a DTO."));
+        var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.If(this._dtoExplorerTreeView.SelectedItem is not DtoViewModel, () => "Please select a DTO."));
         //Did user select a DTO?
         if (!isSelected || this._dtoExplorerTreeView.SelectedItem is not DtoViewModel dto) // I don like this. Not OOP.
         {

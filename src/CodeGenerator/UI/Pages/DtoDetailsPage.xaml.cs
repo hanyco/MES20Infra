@@ -144,7 +144,7 @@ public partial class DtoDetailsPage
         var scope = this.BeginActionScope("Initializing... Please wait.");
         _ = MsgBox2.ShowProgress(new (Func<Task> Operation, string Description)[]
                                  {
-                                     (new Func<Task>(() => this.DatabaseExplorerUserControl.InitailizeAsync(this._dbTableService, this._reporter)), "Exploring database tables…"),
+                                     (new Func<Task>(() => this.DatabaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter)), "Exploring database tables…"),
                                      (this.InitDtoExplorerTreeAsync, "Reading DTOs…"),
                                      (this.DtoEditUserControl.BindAsync, "Binding Properties…")
                                  },

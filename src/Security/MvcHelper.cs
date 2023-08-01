@@ -17,7 +17,7 @@ public static class MvcHelper
 
     public static IEnumerable<ApiAuthorizationInfo> Initialize(IActionDescriptorCollectionProvider provider)
     {
-        Check.IfArgumentNotNull(provider);
+        Check.MustBeArgumentNotNull(provider);
         {
             var actionDescriptors = provider.ActionDescriptors.Items;
             foreach (var actionDescriptor in actionDescriptors)

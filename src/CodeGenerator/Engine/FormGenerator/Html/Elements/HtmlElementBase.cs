@@ -132,7 +132,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
 
     protected virtual THtmlElement CodeGenAddAttributes(in StringBuilder statement)
     {
-        Check.IfArgumentNotNull(statement, nameof(statement));
+        Check.MustBeArgumentNotNull(statement);
         foreach ((var key, var value) in this.Attributes!)
         {
             _ = value.IsNullOrEmpty() ? statement!.Append($" {key}") : statement.Append($" {key}='{value}'");
@@ -142,7 +142,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
 
     protected virtual THtmlElement CodeGenAddBlazorAttributes(in StringBuilder statement)
     {
-        Check.IfArgumentNotNull(statement!, nameof(statement));
+        Check.MustBeArgumentNotNull(statement!);
         foreach (var blazorAttribute in this.BlazorAttributes)
         {
             var (key, value) = blazorAttribute;
