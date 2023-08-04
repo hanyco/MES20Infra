@@ -103,7 +103,7 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         {
             yield break;
         }
-        Check.NotNull(this.Action.Segregation);
+        Check.MutBeNotNull(this.Action.Segregation);
         var calleeName = this.Action.Name;
         var cqrsCommandType = TypePath.New(this.Action.Segregation.Name);
         var cqrsResultType = this.Action.Segregation.Result?.Type ?? TypePath.New<object>();

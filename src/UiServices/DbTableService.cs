@@ -15,7 +15,7 @@ internal sealed class DbTableService : IDbTableService
     {
         reporter?.Report(description: "Please wait a while.");
         var db = await Database.GetDatabaseAsync(connectionString);
-        Check.NotNull(db, () => new NotFoundValidationException("Database not found. 💀"));
+        Check.MustBeNotNull(db, () => new NotFoundValidationException("Database not found. 💀"));
 
         List<Node<DbObjectViewModel>> result = new();
         Node<DbObjectViewModel> schemaNode;

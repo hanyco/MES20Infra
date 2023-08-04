@@ -108,7 +108,7 @@ public partial class DtoDetailsPage
     private void CreateDtoWithTableMenuItem_Click(object sender, RoutedEventArgs e)
     {
         var tableNode = this.DatabaseExplorerUserControl.SelectedDbObjectNode;
-        Check.NotNull(tableNode, () => "Please select a table");
+        Check.MustBeNotNull(tableNode, () => "Please select a table");
 
         var columns = tableNode.Children?.First()?.Children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>());
         this.ViewModel = this._service.CreateByDbTable(DbTableViewModel.FromDbObjectViewModel(tableNode!), columns.Compact());
@@ -121,7 +121,7 @@ public partial class DtoDetailsPage
     private async void DeleteDtoButton_Click(object sender, RoutedEventArgs e)
     {
         var dto = this.CqrsExplorerTreeView.SelectedItem.Cast().As<DtoViewModel>();
-        Check.NotNull(dto, () => new ValidationException("Please select a DTO"));
+        Check.MustBeNotNull(dto, () => new ValidationException("Please select a DTO"));
 
         if (MsgBox2.AskWithWarn(
             $"Deleting DTO '{dto.Name}'.",
@@ -182,7 +182,7 @@ public partial class DtoDetailsPage
         }
 
         var dto = this.CqrsExplorerTreeView.SelectedItem.Cast().As<DtoViewModel>();
-        Check.NotNull(dto, () => "Please select a DTO");
+        Check.MustBeNotNull(dto, () => "Please select a DTO");
         var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value);
         this.ViewModel = viewModel.NotNull(() => new NotFoundValidationException("Entity not found."));
         this.EndActionScope();
@@ -286,7 +286,7 @@ public partial class DtoDetailsPage
 
     private async void SaveDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.NotNull(this.ViewModel);
+        Check.MutBeNotNull(this.ViewModel);
 
         this.SaveDtoButton.IsEnabled = false;
 
@@ -333,7 +333,7 @@ public partial class DtoDetailsPage
 
     private void SecurityDescriptorButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.NotNull(this.ViewModel);
+        Check.MutBeNotNull(this.ViewModel);
 
         var x = new SecurityDescriptorLookupPage(this.Logger, this.ViewModel.SecurityDescriptors.ToObservableCollection());
         var hostDialog = HostDialog.Create(x)

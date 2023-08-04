@@ -138,7 +138,7 @@ public partial class BlazorPageGeneratorPage
     private async void DeleteBlazorPageCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
     {
         var page = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView);
-        Check.NotNull(page, () => new ValidationException("Please select a page to edit."));
+        Check.MustBeNotNull(page, () => new ValidationException("Please select a page to edit."));
         if (MsgBox2.AskWithWarn("Are you sure you want to delete selected component?") != TaskDialogResult.Yes)
         {
             return;
@@ -165,7 +165,7 @@ public partial class BlazorPageGeneratorPage
 
         using var scope = this.BeginActionScope("Loading...");
         var id = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView)?.Id;
-        Check.NotNull(id, () => "Please select a page to edit.");
+        Check.MustBeNotNull(id, () => "Please select a page to edit.");
         var viewModel = await this._service.GetByIdAsync(id.Value);
         this.ViewModel = viewModel;
         await this.BindAllComponentsView();
@@ -309,7 +309,7 @@ public partial class BlazorPageGeneratorPage
     private void ValidateForm()
     {
         //! It's kinda impossible. Just to shut VS up.
-        Check.NotNull(this.ViewModel, () => new ValidationException("Please create a new Page or edit one."));
+        Check.MustBeNotNull(this.ViewModel, () => new ValidationException("Please create a new Page or edit one."));
         _ = this._service.CheckValidator(this.ViewModel);
     }
 

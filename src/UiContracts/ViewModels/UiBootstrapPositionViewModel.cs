@@ -65,7 +65,7 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
 
     public UiBootstrapPositionViewModel FillWith([DisallowNull] UiBootstrapPositionViewModel positionViewModel)
     {
-        Check.NotNull(positionViewModel);
+        Check.MutBeNotNull(positionViewModel);
         var mapper = new Mapper();
         mapper.Map(positionViewModel, this);
         //this.Order = positionViewModel.Order;

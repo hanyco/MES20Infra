@@ -135,7 +135,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.NotNull(this.SelectedComponent, () => new ValidationException("Please select a component to delete."));
+        Check.MustBeNotNull(this.SelectedComponent, () => new ValidationException("Please select a component to delete."));
         if (this.SelectedComponent.Id is not { } id)
         {
             return;
@@ -179,7 +179,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     private async Task LoadBlazorComponent()
     {
-        Check.NotNull(this.SelectedComponent, () => "Please select a component to edit.");
+        Check.MustBeNotNull(this.SelectedComponent, () => "Please select a component to edit.");
         _ = await this.AskToSaveAsync().BreakOnFail();
 
         var scope = this.BeginActionScope();
@@ -192,7 +192,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         async Task<UiComponentViewModel?> getViewModel()
         {
             var result = await this._service.GetByIdAsync(this.SelectedComponent.Id!.Value);
-            Check.NotNull(result, () => new NotFoundValidationException("Component not found"));
+            Check.MustBeNotNull(result, () => new NotFoundValidationException("Component not found"));
             if (result.PageDataContext?.Id is { } id)
             {
                 var dataContext = await this._dtoService.GetByIdAsync(id);

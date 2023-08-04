@@ -51,7 +51,7 @@ public partial class SecurityDescriptorEditorPage
 
     private void AddClaimButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.NotNull(this.ViewModel.SecurityDescriptor);
+        Check.MutBeNotNull(this.ViewModel.SecurityDescriptor);
 
         var newItem = ClaimViewModel.NewDefault();
         this.ViewModel.SecurityDescriptor.ClaimSet.Add(newItem);
@@ -59,7 +59,7 @@ public partial class SecurityDescriptorEditorPage
 
     private void DeleteClaimButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.NotNull(this.ViewModel.SecurityDescriptor);
+        Check.MutBeNotNull(this.ViewModel.SecurityDescriptor);
 
         var item = this.ViewModel.HighlightedClaim;
         if (item is null)

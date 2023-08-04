@@ -127,8 +127,8 @@ internal sealed class BlazorCodingService : IBlazorCodingService
 
     public UiComponentPropertyViewModel GetProperty(in PropertyViewModel propertyViewModel)
     {
-        Check.NotNull(propertyViewModel, nameof(propertyViewModel));
-        Check.NotNull(propertyViewModel.Name, nameof(propertyViewModel.Name));
+        Check.MutBeNotNull(propertyViewModel, nameof(propertyViewModel));
+        Check.MutBeNotNull(propertyViewModel.Name, nameof(propertyViewModel.Name));
 
         var result = new UiComponentPropertyViewModel
         {
@@ -172,9 +172,9 @@ internal sealed class BlazorCodingService : IBlazorCodingService
 
     public async Task SaveToPathAsync(UiComponentViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
     {
-        Check.NotNull(viewModel);
-        Check.NotNull(viewModel.ClassName);
-        Check.NotNull(path);
+        Check.MutBeNotNull(viewModel);
+        Check.MutBeNotNull(viewModel.ClassName);
+        Check.MutBeNotNull(path);
 
         var codes = this.GenerateCodes(viewModel, arguments).Value;
         foreach (var code in codes.Compact())

@@ -53,7 +53,7 @@ public sealed class BlazorComponentService :
                            actions = c.UiComponentActions.Select(x => new { x.Id, x.PositionId }),
                        };
         var cmp = await cmpQuery.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        Check.NotNull(cmp, () => new NotFoundValidationException("Component not found"));
+        Check.MustBeNotNull(cmp, () => new NotFoundValidationException("Component not found"));
         _ = this._writeDbContext.RemoveById<UiComponent>(cmp.Id)
             .RemoveById<UiBootstrapPosition>(cmp.props.Select(x => x.PositionId))
             .RemoveById<UiBootstrapPosition>(cmp.actions.Select(x => x.PositionId));
@@ -202,7 +202,7 @@ public sealed class BlazorComponentService :
 
     public async Task<Result<UiComponentViewModel>> ValidateAsync(UiComponentViewModel model, CancellationToken cancellationToken = default)
     {
-        Check.NotNull(model?.Name);
+        Check.MutBeNotNull(model?.Name);
 
         var nameQuery = from c in this._readDbContext.UiComponents
                         where c.Name == model.Name && c.Id != model.Id

@@ -55,7 +55,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     public async Task<Result<int>> SaveAsync()
     {
-        Check.NotNull(this.ViewModel);
+        Check.MutBeNotNull(this.ViewModel);
         try
         {
             _ = await this._service.SaveViewModelAsync(this.ViewModel);
@@ -141,7 +141,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         _ = await this.Logger.LogBlockAsync(async () =>
         {
             var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
-            Check.NotNull(viewModel, () => "ID not found");
+            Check.MustBeNotNull(viewModel, () => "ID not found");
             this.ViewModel = viewModel.HandlePropertyChanges(this.ViewModel_PropertyChanged);
         }, "Loading…");
     }

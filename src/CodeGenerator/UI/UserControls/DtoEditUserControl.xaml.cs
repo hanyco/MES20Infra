@@ -40,7 +40,7 @@ public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirec
 
     public async Task BindAsync()
     {
-        Check.NotNull(this._moduleService, () => new ValidationException($"Please call `{nameof(Initialize)}` method."));
+        Check.MustBeNotNull(this._moduleService, () => new ValidationException($"Please call `{nameof(Initialize)}` method."));
         this.SelectModuleUserControl.Modules = await this._moduleService.GetAllAsync();
     }
 
