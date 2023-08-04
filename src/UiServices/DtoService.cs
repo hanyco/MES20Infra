@@ -269,8 +269,9 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
         {
             _ = await this._writeDbContext.ReAttach(dto.Module!).DbContext
                                           .Dtos.Add(dto)
-                                          .SaveChangesAsync(cancellationToken: token)
-                                          .With((Task<int> _) => viewModel.Guid = dto.Guid);
+                                          .SaveChangesResultAsync(cancellationToken: token)
+                                          .ThrowOnFailAsync()
+                                          .With(_ => viewModel.Guid = dto.Guid);
             await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
         }
         async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, CancellationToken token = default)

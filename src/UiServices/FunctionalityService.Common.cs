@@ -87,7 +87,7 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     Task<Result<FunctionalityViewModel?>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel? viewModel, CancellationToken cancellationToken) =>
         viewModel.Check()
             .ArgumentNotNull()
-            .NotNull(x => x.Name)
-            .NotNull(x => x.NameSpace)
+            .NotNull(x => x!.Name)
+            .NotNull(x => x!.NameSpace)
             .Build().ToAsync();
 }
