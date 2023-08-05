@@ -162,7 +162,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
         {
             //result = result.Check(item.ClaimSet?.Any() is true, $"{nameof(item.ClaimSet)} has no items.");
         }
-        return result.ToResult().ToAsync();
+        return result.Build().ToAsync();
     }
 
     private IQueryable<SecurityDescriptor> SelectAll()
