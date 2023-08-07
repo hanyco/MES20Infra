@@ -39,14 +39,14 @@ public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraV
         set => this.SetProperty(ref this._name, value);
     }
 
-    public static bool operator !=(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right)
-        => !(left == right);
+    public static bool operator !=(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right) =>
+        !(left == right);
 
-    public static bool operator ==(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right)
-        => left is null && right is null || left is not null && right is not null && left.Equals(right);
+    public static bool operator ==(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right) =>
+        (left is null && right is null) || (left is not null && right is not null && left.Equals(right));
 
-    public virtual bool Equals(InfraViewModelBase<TId>? other)
-        => other is not null && (this.Id, other.Id) switch
+    public virtual bool Equals(InfraViewModelBase<TId>? other) =>
+        other is not null && (this.Id, other.Id) switch
         {
             (null, null) => this.Name == other.Name,
             (not null, null) => false,
@@ -54,23 +54,15 @@ public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraV
             (_, _) => this.Id.Equals(other.Id)
         };
 
-    public override bool Equals(object? obj)
-        => this.Equals(obj as InfraViewModelBase<TId>);
+    public override bool Equals(object? obj) =>
+        this.Equals(obj as InfraViewModelBase<TId>);
 
-    public override int GetHashCode()
-        => HashCode.Combine(this.Id, this.Name);
+    public override int GetHashCode() =>
+        HashCode.Combine(this.Id, this.Name);
 
-    public override string ToString()
-    {
-        var result = $"{this.Name}";
-        if (this.Id is not null)
-        {
-            result = $"{result} ({this.Id})";
-        }
+    public override string ToString() =>
+        this.Id is not null ? $"{this.Name} ({this.Id})" : $"{this.Name}";
 
-        return result;
-    }
-
-    private string GetDebuggerDisplay()
-        => this.ToString();
+    private string GetDebuggerDisplay() =>
+        this.ToString();
 }

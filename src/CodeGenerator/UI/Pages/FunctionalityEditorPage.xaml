@@ -42,6 +42,13 @@
             </Button>
             <Separator />
             <Button
+                Name="GenerateViewModelButton"
+                Style="{StaticResource IconButton}"
+                Click="GenerateViewModelButton_Click"
+                ToolTip="Generate Functionality ViewModel">
+                <Path Style="{StaticResource Apps}" />
+            </Button>
+            <Button
                 Name="GenerateCodesButton"
                 Click="GenerateCodesButton_Click"
                 Style="{StaticResource IconButton}"
@@ -107,7 +114,7 @@
                         </TabControl>
                     </TabItem>
                     <TabItem Header="All Codes">
-                        <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" />
+                        <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" Codes="{Binding CodesResults}" />
                     </TabItem>
                 </TabControl>
             </TabItem>

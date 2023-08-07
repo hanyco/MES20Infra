@@ -84,10 +84,10 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    Task<Result<FunctionalityViewModel?>> IAsyncValidator<FunctionalityViewModel>.ValidateAsync(FunctionalityViewModel? viewModel, CancellationToken cancellationToken) =>
+    public Task<Result<FunctionalityViewModel>> ValidateAsync(FunctionalityViewModel? viewModel, CancellationToken cancellationToken) =>
         viewModel.Check()
             .ArgumentNotNull()
             .NotNull(x => x!.Name)
             .NotNull(x => x!.NameSpace)
-            .Build().ToAsync();
+            .Build().ToAsync()!;
 }

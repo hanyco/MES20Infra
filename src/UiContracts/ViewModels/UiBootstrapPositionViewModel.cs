@@ -1,13 +1,17 @@
-﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
+
 using Library.Mapping;
 using Library.Validations;
+
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace HanyCo.Infra.UI.ViewModels;
 
 /// <summary>
-/// <seealso cref="HanyCo.Infra.UI.ViewModels.InfraViewModelBase" />
+/// <seealso cref="Contracts.ViewModels.InfraViewModelBase" />
 /// <seealso cref="System.IComparable" />
 /// <seealso cref="System.IComparable{HanyCo.Infra.UI.ViewModels.UiBootstrapPositionViewModel}" />
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
