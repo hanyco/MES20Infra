@@ -29,27 +29,19 @@ using DtoEntity = HanyCo.Infra.Internals.Data.DataSources.Dto;
 
 namespace Services;
 
-internal sealed class DtoService : IDtoService, IDtoCodeService,
-    IAsyncValidator<DtoViewModel>, IAsyncSaveChanges, IResetChanges
+internal sealed class DtoService(
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext writeDbContext,
+    IEntityViewModelConverter converter,
+    ISecurityDescriptorService securityDescriptor,
+    IPropertyService propertyService)
+    : IDtoService, IDtoCodeService, IAsyncValidator<DtoViewModel>, IAsyncSaveChanges, IResetChanges
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly InfraReadDbContext _db;
-    private readonly IPropertyService _propertyService;
-    private readonly ISecurityDescriptorService _securityDescriptor;
-    private readonly InfraWriteDbContext _writeDbContext;
-
-    public DtoService(InfraReadDbContext readDbContext,
-                      InfraWriteDbContext writeDbContext,
-                      IEntityViewModelConverter converter,
-                      ISecurityDescriptorService securityDescriptor,
-                      IPropertyService propertyService)
-    {
-        this._db = readDbContext;
-        this._writeDbContext = writeDbContext;
-        this._converter = converter;
-        this._securityDescriptor = securityDescriptor;
-        this._propertyService = propertyService;
-    }
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly InfraReadDbContext _db = readDbContext;
+    private readonly IPropertyService _propertyService = propertyService;
+    private readonly ISecurityDescriptorService _securityDescriptor = securityDescriptor;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     public Task<DtoViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new DtoViewModel());
@@ -140,7 +132,7 @@ internal sealed class DtoService : IDtoService, IDtoCodeService,
 
         static Result<DtoViewModel> validate(DtoViewModel? viewModel, CancellationToken token = default)
             => viewModel.Check()
-                    .NotNull(x=>x)
+                    .NotNull(x => x)
                     .NotNull(x => x.Module)
                     .NotNullOrEmpty(x => x.Name)
                     .NotNullOrEmpty(x => x.NameSpace)

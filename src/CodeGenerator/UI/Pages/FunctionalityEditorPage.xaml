@@ -43,8 +43,8 @@
             <Separator />
             <Button
                 Name="GenerateViewModelButton"
-                Style="{StaticResource IconButton}"
                 Click="GenerateViewModelButton_Click"
+                Style="{StaticResource IconButton}"
                 ToolTip="Generate Functionality ViewModel">
                 <Path Style="{StaticResource Apps}" />
             </Button>
@@ -83,9 +83,17 @@
                             Style="{StaticResource LongTextBox}"
                             Text="{Binding SourceDto.Name, Mode=OneWay}" />
                         <Button
-                            x:Name="SelectRootDtoButton"
-                            Click="SelectRootDtoButton_Click"
-                            Style="{StaticResource IconButton}">
+                            x:Name="SelectRootDtoByDtoButton"
+                            Click="SelectRootDtoByDtoButton_Click"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Select root DTO by DTO">
+                            <Path Style="{StaticResource FolderOpen}" />
+                        </Button>
+                        <Button
+                            x:Name="SelectRootDtoByTableButton"
+                            Click="SelectRootDtoByTableButton_Click"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="Select root DTO by Table">
                             <Path Style="{StaticResource FolderOpen}" />
                         </Button>
                     </StackPanel>
@@ -114,7 +122,7 @@
                         </TabControl>
                     </TabItem>
                     <TabItem Header="All Codes">
-                        <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" Codes="{Binding CodesResults}" />
+                        <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" Codes="{Binding CodesResults, Mode=OneWay}" />
                     </TabItem>
                 </TabControl>
             </TabItem>

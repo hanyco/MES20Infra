@@ -5,7 +5,6 @@ using HanyCo.Infra.UI.UserControls.Blazor;
 
 using Library.CodeGeneration.Models;
 
-
 namespace HanyCo.Infra.UI.Pages.Blazor;
 
 /// <summary>
@@ -13,19 +12,17 @@ namespace HanyCo.Infra.UI.Pages.Blazor;
 /// </summary>
 public partial class ComponentCodeResultUserControl
 {
-    private Codes? _codes;
+    // Using a DependencyProperty as the backing store for Codes. This enables animation, styling,
+    // binding, etc...
+    public static readonly DependencyProperty CodesProperty = ControlHelper.GetDependencyProperty<Codes?, ComponentCodeResultUserControl>(nameof(Codes), onPropertyChanged: (me, _) => me.OnCodesChanged());
 
     public ComponentCodeResultUserControl() =>
         this.InitializeComponent();
 
     public Codes? Codes
     {
-        get => this._codes;
-        set
-        {
-            this._codes = value;
-            this.OnCodesChanged();
-        }
+        get => (Codes?)this.GetValue(CodesProperty);
+        set => this.SetValue(CodesProperty, value);
     }
 
     private void CodeNamesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

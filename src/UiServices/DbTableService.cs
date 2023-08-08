@@ -1,20 +1,31 @@
-﻿using HanyCo.Infra.UI.Services;
+﻿using Contracts.Services;
+
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Collections;
 using Library.Data.SqlServer.Dynamics;
 using Library.Exceptions.Validations;
-using Library.Threading.MultistepProgress;
 using Library.Validations;
 
 namespace Services;
 
 internal sealed class DbTableService : IDbTableService
 {
-    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(IProgressReport? reporter, string connectionString, CancellationToken token = default)
+    public async Task<IEnumerable<DbColumnViewModel>> GetColumnsAsync(string connectionString, string tableName, CancellationToken token = default)
     {
+        Check.MustBeNotNull(connectionString);
+        Check.MustBeNotNull(tableName);
+
+        var db = await Database.GetDatabaseAsync(connectionString, cancellationToken: token);
+        Check.MustBeNotNull(db, () => "Not connected to database.");
+        return db.Tables[tableName].NotNull().Columns.Select(DbColumnViewModel.FromDbColumn);
+    }
+
+    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(GetTablesTreeViewItemOptions options, CancellationToken token = default)
+    {
+        var (connectionString, gatherColumns, reporter) = options;
         reporter?.Report(description: "Please wait a while.");
-        var db = await Database.GetDatabaseAsync(connectionString);
+        var db = await Database.GetDatabaseAsync(connectionString, cancellationToken: token);
         Check.MustBeNotNull(db, () => new NotFoundValidationException("Database not found. 💀"));
 
         List<Node<DbObjectViewModel>> result = new();

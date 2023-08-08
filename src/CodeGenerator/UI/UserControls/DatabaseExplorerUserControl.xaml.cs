@@ -2,7 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 
-using HanyCo.Infra.UI.Services;
+using Contracts.Services;
+
 using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -69,7 +70,7 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
     public async Task<DatabaseExplorerUserControl> InitializeAsync(IDbTableService dbTableService, IProgressReport? reporter = null)
     {
-        var dbNode = await dbTableService.NotNull().GetTablesTreeViewItemAsync(reporter, SettingsService.Get().connectionString!);
+        var dbNode = await dbTableService.NotNull().GetTablesTreeViewItemAsync(new(SettingsService.Get().connectionString!, reporter: reporter));
         var treeItems = new TreeViewItem { Header = "Tables" };
         EnumerableHelper.BuildTree<Node<DbObjectViewModel>, TreeViewItem>(
             dbNode,
