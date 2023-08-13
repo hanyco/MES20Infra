@@ -5,6 +5,7 @@ using Contracts.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.Data.SqlServer.Dynamics;
 using Library.Interfaces;
 
 namespace Contracts.Services;
@@ -66,4 +67,5 @@ public interface IEntityViewModelConverter :
 
     [return: NotNullIfNotNull(nameof(entity))]
     DtoViewModel? ToViewModel(in Dto? entity, in IEnumerable<SecurityDescriptorViewModel>? securityDescriptors = null);
+
 }

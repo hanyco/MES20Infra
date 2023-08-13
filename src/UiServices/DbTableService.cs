@@ -17,8 +17,8 @@ internal sealed class DbTableService : IDbTableService
         Check.MustBeNotNull(tableName);
 
         var db = await Database.GetDatabaseAsync(connectionString, cancellationToken: token);
-        Check.MustBeNotNull(db, () => "Not connected to database.");
-        return db.Tables[tableName].NotNull().Columns.Select(DbColumnViewModel.FromDbColumn);
+        Check.MustBeNotNull(db, () => "Not connected to database or database not found.");
+        return db.Tables[tableName].NotNull($"Table '{tableName}' not found.").Columns.Select(DbColumnViewModel.FromDbColumn);
     }
 
     public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(GetTablesTreeViewItemOptions options, CancellationToken token = default)
@@ -26,7 +26,7 @@ internal sealed class DbTableService : IDbTableService
         var (connectionString, gatherColumns, reporter) = options;
         reporter?.Report(description: "Please wait a while.");
         var db = await Database.GetDatabaseAsync(connectionString, cancellationToken: token);
-        Check.MustBeNotNull(db, () => new NotFoundValidationException("Database not found. 💀"));
+        Check.MustBeNotNull(db, () => new NotFoundValidationException("Not connected to database or database not found. 💀"));
 
         List<Node<DbObjectViewModel>> result = new();
         Node<DbObjectViewModel> schemaNode;

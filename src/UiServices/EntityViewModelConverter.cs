@@ -235,8 +235,8 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
 
     public Functionality? ToDbEntity(FunctionalityViewModel? model) => throw new NotImplementedException();
 
-    public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel)
-        => columnViewModel == null ? null : new()
+    public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel) =>
+        columnViewModel == null ? null : new()
         {
             DbObject = columnViewModel,
             Name = columnViewModel.Name,

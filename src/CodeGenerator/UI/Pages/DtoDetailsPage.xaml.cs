@@ -65,7 +65,7 @@ public partial class DtoDetailsPage
     }
 
     private void AddColumnToDto(in DbColumnViewModel column)
-        => this.ViewModel.NotNull(nameof(this.ViewModel)).Properties.Add(new()
+        => this.ViewModel.NotNull().Properties.Add(new()
         {
             IsNullable = column.IsNullable,
             Name = column.Name,

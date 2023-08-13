@@ -9,7 +9,6 @@ using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -43,8 +42,8 @@ internal sealed class DtoService(
     private readonly ISecurityDescriptorService _securityDescriptor = securityDescriptor;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
-    public Task<DtoViewModel> CreateAsync(CancellationToken token = default)
-        => Task.FromResult(new DtoViewModel());
+    public Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
+        Task.FromResult(new DtoViewModel());
 
     [return: NotNull]
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
@@ -56,14 +55,7 @@ internal sealed class DtoService(
         };
         if (columns?.Any() is true)
         {
-            _ = columns.Compact().Select(x => new PropertyViewModel
-            {
-                DbObject = x,
-                Name = x.Name,
-                Type = PropertyTypeHelper.FromDbType(x.DbType),
-                IsNullable = x.IsNullable,
-                Id = x.ObjectId * -1,
-            }).ForEach(result.Properties.Add).Build();
+            _ = result.Properties!.AddRange(columns.Compact().Select(this._converter.ToPropertyViewModel));
         }
 
         return result;
