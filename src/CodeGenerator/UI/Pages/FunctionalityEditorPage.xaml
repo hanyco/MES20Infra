@@ -59,7 +59,8 @@
             <Button
                 Name="SaveToDbButton"
                 Style="{StaticResource IconButton}"
-                ToolTip="Save to Database">
+                ToolTip="Save to Database"
+                Click="SaveToDbButton_Click">
                 <Path Style="{StaticResource SaveToDb}" />
             </Button>
             <Button

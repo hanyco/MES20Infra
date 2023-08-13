@@ -180,7 +180,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
     private async Task LoadBlazorComponent()
     {
         Check.MustBeNotNull(this.SelectedComponent, () => "Please select a component to edit.");
-        _ = await this.AskToSaveAsync().BreakOnFail();
+        _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
 
         var scope = this.ActionScopeBegin();
         this.EditBlazorComponentButton.IsEnabled = false;
@@ -221,7 +221,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     private async void NewBlazorComponentButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = await this.AskToSaveAsync().BreakOnFail();
+        _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
         var resp = SelectCqrsDialog.Show<DtoViewModel>(new("Select Page ViewModel", SelectCqrsDialog.LoadEntity.Dto, SelectCqrsDialog.FilterDto.ViewModel));
         if (resp is null or { IsSucceed: false } or { Value: null } || resp.Value is not DtoViewModel dto)
         {
@@ -243,7 +243,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     private async Task ResetFormAsync()
     {
-        _ = await this.AskToSaveAsync().BreakOnFail();
+        _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
         this.ViewModel = null;
         this.IsEditMode = false;
         ((IStatefulPage)this).IsViewModelChanged = false;

@@ -124,7 +124,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task LoadQueryViewModelAsync()
     {
-        if (await this.AskToSaveAsync() != true)
+        if (await this.AskToSaveIfChangedAsync() != true)
         {
             return;
         }
@@ -142,7 +142,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task NewQueryViewModelAsync()
     {
-        if (await this.AskToSaveAsync() != true)
+        if (await this.AskToSaveIfChangedAsync() != true)
         {
             return;
         }
@@ -185,7 +185,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async void ResetFormButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = await this.AskToSaveAsync().BreakOnFail();
+        _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
 
         if (this.ViewModel is not null)
         {

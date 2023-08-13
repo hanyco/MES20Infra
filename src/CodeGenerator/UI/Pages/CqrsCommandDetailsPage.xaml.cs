@@ -132,7 +132,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task LoadCommandViewModelAsync()
     {
-        if (await this.AskToSaveAsync() != true)
+        if (await this.AskToSaveIfChangedAsync() != true)
         {
             return;
         }
@@ -151,7 +151,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task NewCommandViewModelAsync()
     {
-        if (await this.AskToSaveAsync() != true)
+        if (await this.AskToSaveIfChangedAsync() != true)
         {
             return;
         }
@@ -177,7 +177,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async void ResetFormButton_Click(object sender, RoutedEventArgs e)
     {
-        if (await this.AskToSaveAsync() != true)
+        if (await this.AskToSaveIfChangedAsync() != true)
         {
             return;
         }
