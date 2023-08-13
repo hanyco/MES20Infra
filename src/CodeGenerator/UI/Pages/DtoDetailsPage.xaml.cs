@@ -141,7 +141,7 @@ public partial class DtoDetailsPage
 
     private void DtoDetailsPage_Binding(object sender, EventArgs e)
     {
-        var scope = this.BeginActionScope("Initializing... Please wait.");
+        var scope = this.ActionScopeBegin("Initializing... Please wait.");
         _ = MsgBox2.ShowProgress(new (Func<Task> Operation, string Description)[]
                                  {
                                      (new Func<Task>(() => this.DatabaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter)), "Exploring database tables…"),

@@ -79,7 +79,7 @@ public partial class BlazorPageGeneratorPage
 
     private async void AddComponentToPageButton_Click(object sender, RoutedEventArgs e)
     {
-        var scope = this.BeginActionScope();
+        var scope = this.ActionScopeBegin();
         if (this.ViewModel is null)
         {
             return;
@@ -163,7 +163,7 @@ public partial class BlazorPageGeneratorPage
             return;
         }
 
-        using var scope = this.BeginActionScope("Loading...");
+        using var scope = this.ActionScopeBegin("Loading...");
         var id = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView)?.Id;
         Check.MustBeNotNull(id, () => "Please select a page to edit.");
         var viewModel = await this._service.GetByIdAsync(id.Value);
@@ -179,7 +179,7 @@ public partial class BlazorPageGeneratorPage
 
     private Task GenerateCodeAsync()
     {
-        var scope = this.BeginActionScope("Generating code…");
+        var scope = this.ActionScopeBegin("Generating code…");
         var model = this.ViewModel!;
         _ = this._service.CheckValidator(model);
         this.ComponentCodeResultUserControl.Codes = this._service.GenerateCodes(model, new(model.GenerateMainCode, model.GeneratePartialCode, model.GenerateUiCode));

@@ -94,15 +94,11 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
 
-        var scope = this.BeginActionScope("Generating codes...");
-        var code = await this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
-        if (code?.IsSucceed ?? false)
+        var code = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ThrowOnFailAsync(this.Title);
+        if (!code.Message.IsNullOrEmpty())
         {
-            if (!code.Message.IsNullOrEmpty())
-            {
-                Toast2.New().AddText(code.Message).Show();
-                this.Logger.Debug(code.Message);
-            }
+            Toast2.ShowText(code.Message);
+            this.Logger.Debug(code.Message);
         }
         this.ComponentCodeResultUserControl.Codes = code!;
     }
@@ -113,7 +109,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
         this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name;
         this.ViewModel!.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
-        var scope = this.BeginActionScope("Creating view models...");
+        var scope = this.ActionScopeBegin("Creating view models...");
         var viewModel = await this._service.GenerateViewModelAsync(this.ViewModel).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
         if (viewModel?.IsSucceed ?? false)
         {

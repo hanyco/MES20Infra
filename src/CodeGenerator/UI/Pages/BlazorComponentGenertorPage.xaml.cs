@@ -93,7 +93,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         {
             this.SaveToDbButton.IsEnabled = false;
             this.ValidateForm(false);
-            var scope = this.BeginActionScope("Saving...");
+            var scope = this.ActionScopeBegin("Saving...");
             var saveResult = await this._service.SaveViewModelAsync(this.ViewModel).ThrowOnFailAsync();
             ((IStatefulPage)this).IsViewModelChanged = false;
             await this.BindComponentTreeView();
@@ -182,7 +182,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         Check.MustBeNotNull(this.SelectedComponent, () => "Please select a component to edit.");
         _ = await this.AskToSaveAsync().BreakOnFail();
 
-        var scope = this.BeginActionScope();
+        var scope = this.ActionScopeBegin();
         this.EditBlazorComponentButton.IsEnabled = false;
         await this.ResetFormAsync();
         this.ViewModel = await getViewModel();
@@ -206,7 +206,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     private async void Me_BindingData(object sender, EventArgs e)
     {
-        var scope = this.BeginActionScope("Initializing…");
+        var scope = this.ActionScopeBegin("Initializing…");
 
         this.ComponentDetailsUserControl.Initialize(this._codeService, this._moduleService);
         this.ComponentPropertiesUserControl.Initialize(this._codeService);
@@ -228,7 +228,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
             return;
         }
 
-        var scope = this.BeginActionScope("Creating new component...");
+        var scope = this.ActionScopeBegin("Creating new component...");
         this.ViewModel = await this._codeService.CreateNewComponentByDtoAsync(dto);
         this.IsEditMode = true;
         scope.End();
