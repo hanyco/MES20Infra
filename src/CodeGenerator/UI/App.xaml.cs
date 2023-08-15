@@ -119,46 +119,23 @@ public partial class App : LibApp
             => services.AddMesInfraServices<App>(settings.connectionString!, AppLogger);
     }
 
-    private async void Logger_Logging(object? sender, ItemActedEventArgs<object> e)
+    private void Logger_Logging(object? sender, ItemActedEventArgs<object> e)
     {
-        if (e.Item is not LogRecord<object> log || log.Message?.ToString() is not string message)
-        {
-            return;
-        }
-
-        if (log.Level is LogLevel.Error or LogLevel.Fatal)
-        {
-            Toast.CreateLongContent(message, log.Sender?.ToString(), this.Title!).SetPriority(ToastNotificationPriority.High).Show();
-        }
-        else if (log.Level.MeetsLevel(LogLevel.Info))
-        {
-            Toast.CreateLongContent(message, this.Title!).Show();
-        }
-
-        if (this._logFilePath is not null)
-        {
-            if (log.Level.MeetsLevel(LogLevel.Fatal))
-            {
-                using var sw = new StreamWriter(this._logFilePath, true);
-                try
-                {
-                    await sw.WriteLineAsync(LoggingHelper.Reformat(log));
-                }
-                finally
-                {
-                    sw.Close();
-                }
-            }
-        }
+        
     }
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
-        this._logFilePath = Path.Combine(Environment.CurrentDirectory, $"{this.Title ?? "Application"}.log.txt");
+        InitializeLog();
+        var mainWindow = DI.GetService<MainWindow>();
+        mainWindow!.Show();
+    }
+
+    private void InitializeLog()
+    {
+        this._logFilePath = Path.Combine(Environment.CurrentDirectory, $"{this.Title ?? "Application"}.log");
         this.Logger.LogLevel = LogLevel.Trace;
         this.Logger.Logging += this.Logger_Logging;
         this.Logger.Debug("Loading Main Window...");
-        var mainWindow = DI.GetService<MainWindow>();
-        mainWindow!.Show();
     }
 }

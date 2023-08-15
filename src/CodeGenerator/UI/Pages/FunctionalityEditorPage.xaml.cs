@@ -4,10 +4,12 @@ using System.Windows;
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.CodeGeneration.Models;
 using Library.EventsArgs;
 using Library.Results;
 using Library.Threading.MultistepProgress;
@@ -65,18 +67,25 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    public async Task<Result<int>> SaveAsync()
+    public async Task<Result<int>> SaveoDbAsync()
     {
         this.CheckIfInitiated();
         if (!this.GetIsViewModelChanged())
         {
-            return Result<int>.CreateSuccess(0);
+            return Result<int>.CreateFailure("Nothing to save.", -1);
+        }
+        var validationResult = await this.ValidateFormAsync();
+        if (!validationResult)
+        {
+            return validationResult.WithValue(-2);
         }
 
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
+        var result = await this._service.SaveViewModelAsync(this.ViewModel).ShowOrThrowAsync();
+        if (result)
+        {
+            _ = this.SetIsViewModelChanged(false);
+        }
 
-        var result = await this._service.SaveViewModelAsync(this.ViewModel!).ThrowOnFailAsync(this.Title);
-        _ = this.SetIsViewModelChanged(false);
         return result.WithValue(0);
     }
 
@@ -118,7 +127,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var viewModel = await this._service.GenerateViewModelAsync(this.ViewModel).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
         if (!viewModel.Message.IsNullOrEmpty())
         {
-            Toast2.New().AddText(viewModel.Message).Show();
+            Toast2.ShowText(viewModel.Message);
             this.Logger.Debug(viewModel.Message);
         }
         this.ViewModel = viewModel!;
@@ -166,8 +175,25 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         //The form is now ready to call service.
     }
 
-    private async void SaveToDbButton_Click(object sender, RoutedEventArgs e) => 
-        await this.SaveAsync();
+    private async Task SaveCodes()
+    {
+        this.CheckIfInitiated();
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
+        await this.ActionScopeRunAsync(async () =>
+        {
+            _ = await this.ViewModel.CodesResults
+                    .Select(x => x.GetValue())
+                    .GatherAll()
+                    .SaveToFileAsync()
+                    .ThrowOnFailAsync(this.Title);
+        }, "Saving codes");
+    }
+
+    private async void SaveToDbButton_Click(object sender, RoutedEventArgs e) =>
+        await this.SaveoDbAsync().ShowOrThrowAsync(this.Title);
+
+    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e) => 
+        await this.SaveCodes();
 
     private async void SelectRootDtoByDtoButton_Click(object sender, RoutedEventArgs e)
     {
@@ -180,9 +206,10 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
             //Let user to select a DTO
             this._dtoExplorerTreeView ??= new CqrsExplorerTreeView { LoadDtos = true };
-            var isSelected = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.If(this._dtoExplorerTreeView.SelectedItem is not DtoViewModel, () => "Please select a DTO."));
+            _ = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.If(this._dtoExplorerTreeView.SelectedItem is not DtoViewModel, () => "Please select a DTO.")).BreakOnFail();
+
             //Did user select a DTO?
-            if (isSelected && this._dtoExplorerTreeView.SelectedItem is DtoViewModel dto)
+            if (this._dtoExplorerTreeView.SelectedItem is DtoViewModel dto)
             {
                 var details = await this._dtoService.GetByIdAsync(dto.Id!.Value);
                 this.PrepareViewModelByDto(details);
@@ -209,15 +236,13 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                 this._databaseExplorerUserControl = new DatabaseExplorerUserControl();
                 _ = await this._databaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter);
             }
-            var isSelected = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a table."));
-            //Did user select a DTO?
+            _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a table.")).BreakOnFail();
+
+            // Did user select a DTO?
             var table = this._databaseExplorerUserControl.SelectedTable;
-            if (isSelected && table is not null)
-            {
-                var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
-                var dto = this._dtoService.CreateByDbTable(table, columns);
-                this.PrepareViewModelByDto(dto);
-            }
+            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
+            var dto = this._dtoService.CreateByDbTable(table, columns);
+            this.PrepareViewModelByDto(dto);
         }
         finally
         {

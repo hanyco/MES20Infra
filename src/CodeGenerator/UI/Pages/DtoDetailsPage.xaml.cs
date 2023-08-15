@@ -289,21 +289,6 @@ public partial class DtoDetailsPage
         Check.MutBeNotNull(this.ViewModel);
 
         this.SaveDtoButton.IsEnabled = false;
-
-        //? Cannot await in the body of a lock statement
-        //x try
-        //x {
-        //x     lock (this)
-        //x     {
-        //x         await save();
-        //x     }
-        //x }
-        //x finally
-        //x {
-        //x     this.SaveDtoButton.IsEnabled = true;
-        //x     this.Debug(ENDING_MESSAGE);
-        //x }
-
         try
         {
             _ = await Lock(this, save);
@@ -313,7 +298,7 @@ public partial class DtoDetailsPage
             this.SaveDtoButton.IsEnabled = true;
         }
 
-        async Task<Result<DtoViewModel>> save()
+        async Task save()
         {
             _ = this.DtoEditUserControl.Focus();
 
@@ -327,7 +312,7 @@ public partial class DtoDetailsPage
 
             await this.InitDtoExplorerTreeAsync();
             this.Debug("DTO saved.");
-            return saveResult;
+            saveResult.ShowOrThrow();
         }
     }
 
@@ -340,7 +325,7 @@ public partial class DtoDetailsPage
             .SetTile("DTO Security Descriptor")
             .SetPrompt("Add or remove security descriptors.")
             .SetOwnerToDefault();
-        if (hostDialog.Show() is not true)
+        if (hostDialog.Show() != true)
         {
             this.EndActionScope();
             return;

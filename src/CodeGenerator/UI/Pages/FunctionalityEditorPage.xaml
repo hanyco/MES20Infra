@@ -58,13 +58,14 @@
             <Separator />
             <Button
                 Name="SaveToDbButton"
+                Click="SaveToDbButton_Click"
                 Style="{StaticResource IconButton}"
-                ToolTip="Save to Database"
-                Click="SaveToDbButton_Click">
+                ToolTip="Save to Database">
                 <Path Style="{StaticResource SaveToDb}" />
             </Button>
             <Button
                 Name="SaveToDiskButton"
+                Click="SaveToDiskButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="Save Codes to Disk">
                 <Path Style="{StaticResource SaveAll}" />
