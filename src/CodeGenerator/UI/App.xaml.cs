@@ -2,6 +2,7 @@
 using System.Windows;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -53,7 +54,7 @@ public partial class App : LibApp
 
         return;
 
-        static void addDataContext(IServiceCollection services, HanyCo.Infra.UI.ViewModels.SettingsModel settings)
+        static void addDataContext(IServiceCollection services, SettingsModel settings)
             => services
 #if !TEST_MODE
                .AddDbContext<InfraWriteDbContext>(options =>
@@ -115,7 +116,7 @@ public partial class App : LibApp
             _ = services.AddTransient<SelectCqrsDialog>();
         }
 
-        static void addMesInfraServices(IServiceCollection services, HanyCo.Infra.UI.ViewModels.SettingsModel settings)
+        static void addMesInfraServices(IServiceCollection services, SettingsModel settings)
             => services.AddMesInfraServices<App>(settings.connectionString!, AppLogger);
     }
 

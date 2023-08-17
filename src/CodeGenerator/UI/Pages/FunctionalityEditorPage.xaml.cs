@@ -67,26 +67,25 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    public async Task<Result<int>> SaveoDbAsync()
+    public async Task<Result<int>> SaveDbAsync()
     {
         this.CheckIfInitiated();
         if (!this.GetIsViewModelChanged())
         {
             return Result<int>.CreateFailure("Nothing to save.", -1);
         }
-        var validationResult = await this.ValidateFormAsync();
-        if (!validationResult)
+        if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
         {
             return validationResult.WithValue(-2);
         }
 
-        var result = await this._service.SaveViewModelAsync(this.ViewModel).ShowOrThrowAsync();
+        var result = await this._service.SaveViewModelAsync(this.ViewModel);
         if (result)
         {
             _ = this.SetIsViewModelChanged(false);
         }
 
-        return result.WithValue(0);
+        return result ? result.WithValue(0) : result.WithValue(-3);
     }
 
     protected override Task<Result> OnValidateFormAsync()
@@ -175,25 +174,21 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         //The form is now ready to call service.
     }
 
-    private async Task SaveCodes()
+    private async Task<Result> SaveCodes()
     {
         this.CheckIfInitiated();
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
-        await this.ActionScopeRunAsync(async () =>
+        if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
         {
-            _ = await this.ViewModel.CodesResults
-                    .Select(x => x.GetValue())
-                    .GatherAll()
-                    .SaveToFileAsync()
-                    .ThrowOnFailAsync(this.Title);
-        }, "Saving codes");
+            return validationResult;
+        };
+        return await this.ViewModel.CodesResults.Select(x => x.GetValue()).GatherAll().SaveToFileAsync();
     }
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e) =>
-        await this.SaveoDbAsync().ShowOrThrowAsync(this.Title);
+        await this.SaveDbAsync().ShowOrThrowAsync(this.Title);
 
-    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e) => 
-        await this.SaveCodes();
+    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e) =>
+        await this.SaveCodes().ShowOrThrowAsync(this.Title);
 
     private async void SelectRootDtoByDtoButton_Click(object sender, RoutedEventArgs e)
     {
@@ -239,7 +234,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a table.")).BreakOnFail();
 
             // Did user select a DTO?
-            var table = this._databaseExplorerUserControl.SelectedTable;
+            var table = this._databaseExplorerUserControl.SelectedTable!;
             var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
             var dto = this._dtoService.CreateByDbTable(table, columns);
             this.PrepareViewModelByDto(dto);

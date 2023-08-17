@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    xmlns:viewmodels="clr-namespace:Contracts.ViewModels;assembly=Contracts"
     Title="SettingsPage"
     d:DataContext="{d:DesignInstance Type=viewmodels:SettingsModel}"
     Loaded="Page_Loaded"
@@ -36,9 +36,15 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
-                <TextBlock Text="Connection String:" />
+                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Connection string:" />
                 <TextBox
                     Name="ConnectionStringBox"
                     Width="500"
@@ -49,10 +55,40 @@
                     Content="…"
                     Style="{StaticResource IconButton}" />
             </StackPanel>
-            <CheckBox
-                Grid.Row="2"
-                Content="Show _Toast notifications"
-                IsChecked="{Binding showToast}" />
+            <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
+                <CheckBox Content="Show _Toast notifications" IsChecked="{Binding showToast}" />
+                <Button Name="ToastHelpButton" Style="{StaticResource IconButton}" Click="ToastHelpButton_Click">
+                    <Path Style="{StaticResource HelpBook}" />
+                </Button>
+            </StackPanel>
+            <TextBlock
+                Grid.Row="3"
+                Style="{StaticResource Heading3}"
+                Text="Folder Paths" />
+            <TextBlock
+                Grid.Row="4"
+                Style="{StaticResource TipTextBlock}"
+                Text="⚠Please don't include root folder. It will be asked on savig.⚠" />
+            <StackPanel Grid.Row="5" Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Queries path:" />
+                <TextBox Width="500" Text="{Binding queriesPath}" />
+                <Button Content="…" Style="{StaticResource IconButton}" />
+            </StackPanel>
+            <StackPanel Grid.Row="6" Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Commands path:" />
+                <TextBox Width="500" Text="{Binding commandsPath}" />
+                <Button Content="…" Style="{StaticResource IconButton}" />
+            </StackPanel>
+            <StackPanel Grid.Row="7" Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Blazor pages path:" />
+                <TextBox Width="500" Text="{Binding blazorComponentsPath}" />
+                <Button Content="…" Style="{StaticResource IconButton}" />
+            </StackPanel>
+            <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
+                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Blazor components path:" />
+                <TextBox Width="500" Text="{Binding blazorComponentsPath}" />
+                <Button Content="…" Style="{StaticResource IconButton}" />
+            </StackPanel>
         </Grid>
     </Grid>
 </local:PageBase>

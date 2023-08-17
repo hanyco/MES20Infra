@@ -291,7 +291,7 @@ public partial class DtoDetailsPage
         this.SaveDtoButton.IsEnabled = false;
         try
         {
-            _ = await Lock(this, save);
+            await Lock(this, save);
         }
         finally
         {

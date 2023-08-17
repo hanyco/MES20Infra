@@ -54,7 +54,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         set => this.SetViewModelByDataContext(value);
     }
 
-    public async Task<Result<int>> SaveoDbAsync()
+    public async Task<Result<int>> SaveDbAsync()
     {
         Check.MutBeNotNull(this.ViewModel);
         try
@@ -204,7 +204,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
     {
         //_ = this.SelectModuleBox.Focus();
-        _ = await this.SaveoDbAsync();
+        _ = await this.SaveDbAsync();
     }
 
     private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)

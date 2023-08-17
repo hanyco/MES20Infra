@@ -42,7 +42,7 @@ public partial class EntitySecurityDescriptorViewUserControl
     {
         var viewModel = this.ViewModel.ToEnumerable();
         var lookupPage = new Pages.SecurityDescriptorLookupPage(this._logger, viewModel);
-        if (HostDialog.Create(lookupPage).SetPrompt("Select a Security Description for selected property.").Show() is not true)
+        if (HostDialog.Create(lookupPage).SetPrompt("Select a Security Description for selected property.").Show() != true)
         {
             return;
         }

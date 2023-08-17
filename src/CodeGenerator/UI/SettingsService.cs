@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-using HanyCo.Infra.UI.ViewModels;
+using Contracts.ViewModels;
 
 using Library.Data.SqlServer.Builders;
 using Library.Validations;

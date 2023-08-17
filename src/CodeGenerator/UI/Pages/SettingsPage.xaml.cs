@@ -1,6 +1,8 @@
 ﻿using System.Windows;
+
+using Contracts.ViewModels;
+
 using HanyCo.Infra.UI.Services.Imp;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows.UI;
@@ -39,5 +41,10 @@ public partial class SettingsPage
     {
         await this.SaveAsync();
         this.Logger.Info("Settings saved");
+    }
+
+    private void ToastHelpButton_Click(object sender, RoutedEventArgs e)
+    {
+        Toast2.ShowText("This is a sample toast notification.");
     }
 }
