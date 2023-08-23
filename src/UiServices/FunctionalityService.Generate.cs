@@ -29,6 +29,7 @@ internal sealed partial class FunctionalityService
             if (viewModel.GetAllQueryViewModel != null)
             {
                 results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
+                results.GetAllQueryCodes.props().Category = "Queries";
             }
 
             if (viewModel.GetByIdQueryViewModel != null)

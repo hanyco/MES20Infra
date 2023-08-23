@@ -239,18 +239,19 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 
         var paramsDto = ExtractParamsDto(queryViewModel);
         var resultDto = ExtractResultDto(queryViewModel);
-        var queryParam = CodeGenQueryParam.New().AddProp(paramsDto, "dto");
-        var queryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result");
-        var queryHandler = CodeGenQueryHandler.New(queryParam,
+        var queryParams = CodeGenQueryParam.New().AddProp(paramsDto, "dto").With(x => x.props().Category = "Dto");
+        var queryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = "Dto");
+        var queryHandler = CodeGenQueryHandler.New(queryParams,
                                                    queryResult,
                                                    (typeof(ICommandProcessor), "CommandProcessor"),
-                                                   (typeof(IQueryProcessor), "QueryProcessor"));
+                                                   (typeof(IQueryProcessor), "QueryProcessor"))
+                                              .With(x => x.props().Category = "Query");
 
         var query = CodeGenQueryModel.New(queryViewModel.Name,
                                           queryViewModel.CqrsNameSpace,
                                           queryViewModel.DtoNameSpace,
                                           queryHandler,
-                                          queryParam,
+                                          queryParams,
                                           queryResult);
         return Task.FromResult(query.GenerateCode());
     }

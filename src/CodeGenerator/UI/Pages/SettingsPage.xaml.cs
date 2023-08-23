@@ -3,7 +3,6 @@ using System.Windows.Forms;
 
 using Contracts.ViewModels;
 
-using Library.Wpf.Dialogs;
 using Library.Wpf.Windows.UI;
 
 using UI;
@@ -15,33 +14,22 @@ namespace HanyCo.Infra.UI.Pages;
 /// </summary>
 public partial class SettingsPage
 {
-    public SettingsPage(ILogger logger)
-        : base(logger) =>
+    public SettingsPage(ILogger logger) : base(logger) =>
         this.InitializeComponent();
 
     public SettingsModel ViewModel =>
-        this.DataContext.Cast().As<SettingsModel>()!;
-
-    private void OpenConnectionStringBoxButton_Click(object sender, RoutedEventArgs e)
-    {
-        var settings = this.DataContext.Cast().As<SettingsModel>()!;
-        var (isOk, connectionString) = ConnectionStringDialog.ShowDlg(settings.connectionString);
-        if (isOk is true && connectionString is not null)
-        {
-            settings.connectionString = connectionString;
-        }
-    }
+        this.DataContext.Cast().To<SettingsModel>();
 
     private void Page_Loaded(object sender, RoutedEventArgs e) =>
-        this.DataContext = SettingsService.Get();
+        this.DataContext = SettingsService.Load();
 
-    private Task SaveAsync() =>
-        this.ViewModel.SaveAsync();
+    private void Save() =>
+        this.ViewModel.Save();
 
-    private async void SaveButton_Click(object sender, RoutedEventArgs e)
+    private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
         _ = this.ShowToastCheckBox.Focus();
-        await this.SaveAsync();
+        this.Save();
         this.Logger.Info("Settings saved");
     }
 

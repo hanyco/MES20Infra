@@ -17,6 +17,6 @@ public sealed record CodeGenQueryParam : CodeGenCqrsSegregateType
     public static CodeGenQueryParam New(IEnumerable<CodeGenProp>? props = null)
         => new(props);
 
-    protected override IEnumerable<string> OnGetRequiredIntefaces(string cqrsName)
+    protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
     { yield return $"{typeof(IQueryParameter).FullName}<{cqrsName}Result>"; }
 }

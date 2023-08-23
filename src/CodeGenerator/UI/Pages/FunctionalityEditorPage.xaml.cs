@@ -182,7 +182,10 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         {
             return validationResult;
         };
-        return await this.ViewModel.CodesResults.Select(x => x.GetValue()).GatherAll().SaveToFileAsync();
+        //return await this.ViewModel.CodesResults.Select(x => x.GetValue()).GatherAll().SaveToFileAsync();
+        var codes = this.ViewModel.CodesResults;
+        //codes.GetAllQueryCodes.Value.
+        return Result.Success;
     }
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e) =>
@@ -236,7 +239,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
             // Did user select a DTO?
             var table = this._databaseExplorerUserControl.SelectedTable!;
-            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
+            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Load().connectionString!, table.Name!);
             var dto = this._dtoService.CreateByDbTable(table, columns);
             this.PrepareViewModelByDto(dto);
         }

@@ -43,7 +43,7 @@ public sealed record CodeGenCommandHandler : CodeGenCqrsSegregateType
     public static CodeGenCommandHandler New(CodeGenCommandParameter CommandParam, CodeGenCommandResult CommandResult, params (Type Type, string Name, bool HasSetter)[] props)
         => new(CommandParam, CommandResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false, hasSetter: p.HasSetter)));
 
-    protected override IEnumerable<string> OnGetRequiredIntefaces(string cqrsName)
+    protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
     {
         yield return $"{TypePath.New(typeof(ICommandHandler<,>))}<{cqrsName}Parameter, {cqrsName}Result>";
     }

@@ -33,7 +33,7 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases
 
         public IEnumerable<string> GetIntefaces(string cqrsName)
         {
-            var items = this.OnGetRequiredIntefaces(cqrsName);
+            var items = this.OnGetRequiredInterfaces(cqrsName);
             foreach (var item in items)
             {
                 yield return item;
@@ -50,7 +50,7 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases
         public Partials GetValidPartials()
             => this.OnGetValidPartials();
 
-        protected virtual IEnumerable<string> OnGetRequiredIntefaces(string cqrsName)
+        protected virtual IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
             => Enumerable.Empty<string>();
         protected virtual Partials OnGetValidPartials()
             => Partials.OnInitialize;

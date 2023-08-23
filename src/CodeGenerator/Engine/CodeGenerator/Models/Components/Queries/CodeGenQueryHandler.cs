@@ -49,7 +49,7 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries
         public static CodeGenQueryHandler New(CodeGenQueryParam queryParam, CodeGenQueryResult queryResult, params (Type Type, string Name, bool HasSetter)[] props)
             => new(queryParam, queryResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false, hasSetter: p.HasSetter)));
 
-        protected override IEnumerable<string> OnGetRequiredIntefaces(string cqrsName)
+        protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
         {
             yield return $"{TypePath.New(typeof(IQueryHandler<,>))}<{cqrsName}Parameter, {cqrsName}Result>";
         }

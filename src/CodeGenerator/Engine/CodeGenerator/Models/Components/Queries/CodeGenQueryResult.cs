@@ -17,7 +17,7 @@ public sealed record CodeGenQueryResult : CodeGenCqrsSegregateType
     public static CodeGenQueryResult New(IEnumerable<CodeGenProp>? props = null)
         => new(props);
 
-    protected override IEnumerable<string> OnGetRequiredIntefaces(string cqrsName)
+    protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
     {
         var prop = this.Cast().As<IPropertyContainer>()!.Properties.FirstOrDefault(p => p.Name.EqualsTo("result"));
         string result;

@@ -1,13 +1,14 @@
 ﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries;
+
 using Library.Validations;
 
 namespace HanyCo.Infra.CodeGeneration.CodeGenerator.AggregatedModels;
 
 [Fluent]
 [Immutable]
-public readonly record struct CodeGenQueryModel : ICodeGenCqrsModel
+public readonly struct CodeGenQueryModel : ICodeGenCqrsModel
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="CodeGenQueryModel" /> class.
@@ -128,10 +129,10 @@ public readonly record struct CodeGenQueryModel : ICodeGenCqrsModel
         params CodeGenDto[] dtos)
     {
         var n = name.ArgumentNotNull(nameof(name));
-        if (!n.EndsWith("Query"))
-        {
-            n = $"{n}Query";
-        }
+        //if (!n.EndsWith("Query"))
+        //{
+        //    n = $"{n}Query";
+        //}
 
         return new(n, cqrsNameSpace, dtoNameSpace, handler, param, result, dtos);
     }

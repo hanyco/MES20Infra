@@ -17,8 +17,8 @@ public static class CodeGenerator
     /// <returns></returns>
     public static Codes GenerateCode(this ICodeGenCqrsModel query)
     {
-        _ = query.ArgumentNotNull(nameof(query));
-        var codeData = CqrsCodeCompileUnitCreatorEngine.Create(query)
+        Check.MustBeNotNull(query);
+        return CqrsCodeCompileUnitCreatorEngine.Create(query)
                         .Select(cg =>
                         {
                             var code = cg.GenerateCode();
@@ -36,10 +36,8 @@ public static class CodeGenerator
                                                                             """)!);
                             }
 
-                            return (code.Name, code, code.IsPartial);
-                        });
-        var codes = codeData.Select(x => new Code(x.Name, Languages.CSharp, x.code!, x.IsPartial));
-        return codes.ToList().ToCodes();
+                            return code.With(x => x.props().Category = cg.props().Category);
+                        }).ToCodes();
     }
 
     public static Code GenerateCode(this CodeGenDto dto, string? nameSpace = null)

@@ -43,7 +43,7 @@ public partial class App : LibApp
 
     protected override void OnConfigureServices(ServiceCollection services)
     {
-        var settings = SettingsService.Get();
+        var settings = SettingsService.Load();
         Check.MustBeArgumentNotNull(settings.connectionString);
 
         addDataContext(services, settings);

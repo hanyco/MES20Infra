@@ -1,16 +1,17 @@
 ﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Commands;
+
 using Library.Validations;
 
 namespace HanyCo.Infra.CodeGeneration.CodeGenerator.AggregatedModels;
 
 [Fluent]
 [Immutable]
-public readonly record struct CodeGenCommandModel : ICodeGenCqrsModel
+public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="CodeGenCommandModel" /> class.
+    /// Initializes a new instance of the <see cref="CodeGenCommandModel"/> class.
     /// </summary>
     /// <param name="name">The CQRS Command name.</param>
     /// <param name="cqrsNameSpace">The namespace.</param>
@@ -37,67 +38,51 @@ public readonly record struct CodeGenCommandModel : ICodeGenCqrsModel
     }
 
     /// <summary>
-    ///     Gets the CQRS name space.
+    /// Gets the CQRS name space.
     /// </summary>
-    /// <value>
-    ///     The CQRS name space.
-    /// </value>
+    /// <value>The CQRS name space.</value>
     public string? CqrsNameSpace { get; }
 
     /// <summary>
-    ///     Gets the dto name space.
+    /// Gets the dto name space.
     /// </summary>
-    /// <value>
-    ///     The dto name space.
-    /// </value>
+    /// <value>The dto name space.</value>
     public string? DtoNameSpace { get; }
 
     /// <summary>
-    ///     Gets the data transfer objects.
+    /// Gets the data transfer objects.
     /// </summary>
-    /// <value>
-    ///     The dtos.
-    /// </value>
+    /// <value>The dtos.</value>
     public IEnumerable<CodeGenDto> Dtos { get; }
 
     /// <summary>
-    ///     Gets the Command handler.
+    /// Gets the Command handler.
     /// </summary>
-    /// <value>
-    ///     The handler.
-    /// </value>
+    /// <value>The handler.</value>
     public CodeGenCommandHandler Handler { get; }
 
     /// <summary>
-    ///     Gets the name of Command.
+    /// Gets the name of Command.
     /// </summary>
-    /// <value>
-    ///     The name.
-    /// </value>
+    /// <value>The name.</value>
     public string Name { get; }
 
     /// <summary>
-    ///     Gets the Command parameter.
+    /// Gets the Command parameter.
     /// </summary>
-    /// <value>
-    ///     The parameter.
-    /// </value>
+    /// <value>The parameter.</value>
     public CodeGenCommandParameter Param { get; }
 
     /// <summary>
-    ///     Gets the Command result.
+    /// Gets the Command result.
     /// </summary>
-    /// <value>
-    ///     The result.
-    /// </value>
+    /// <value>The result.</value>
     public CodeGenCommandResult Result { get; }
 
     /// <summary>
-    ///     Gets the CQRS segregates.
+    /// Gets the CQRS segregates.
     /// </summary>
-    /// <value>
-    ///     The segregates.
-    /// </value>
+    /// <value>The segregates.</value>
     public IEnumerable<ICodeGenCqrsSegregate> Segregates
     {
         get
@@ -109,14 +94,14 @@ public readonly record struct CodeGenCommandModel : ICodeGenCqrsModel
     }
 
     /// <summary>
-    ///     Creates a new instance of CodeGenCommand.
+    /// Creates a new instance of CodeGenCommand.
     /// </summary>
     /// <param name="name">The name.</param>
     /// <param name="cqrsNameSpace">The name space.</param>
     /// <param name="handler">The handler.</param>
     /// <param name="param">The parameter.</param>
     /// <param name="result">The result.</param>
-    /// <param name="dtos">The  data transfer objects.</param>
+    /// <param name="dtos">The data transfer objects.</param>
     /// <returns></returns>
     public static CodeGenCommandModel New(string name,
         string? cqrsNameSpace,
@@ -126,7 +111,7 @@ public readonly record struct CodeGenCommandModel : ICodeGenCqrsModel
         CodeGenCommandResult result,
         params CodeGenDto[] dtos)
     {
-        name.ArgumentNotNull(nameof(name));
+        _ = name.ArgumentNotNull(nameof(name));
 
         if (!name.EndsWith("Command"))
         {

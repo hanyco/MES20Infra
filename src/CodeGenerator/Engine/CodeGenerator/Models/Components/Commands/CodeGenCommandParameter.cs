@@ -17,7 +17,7 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Commands
         public static CodeGenCommandParameter New(IEnumerable<CodeGenProp>? props = null)
             => new(props);
 
-        protected override IEnumerable<string> OnGetRequiredIntefaces(string cqrsName)
+        protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
         {
             yield return typeof(ICommand).FullName!;
         }
