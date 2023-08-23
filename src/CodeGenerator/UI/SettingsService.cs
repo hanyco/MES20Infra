@@ -1,15 +1,14 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 using Contracts.ViewModels;
 
 using Library.Data.SqlServer.Builders;
+using Library.Results;
 using Library.Validations;
-using Library.Wpf.Helpers;
 
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace HanyCo.Infra.UI;
 
 internal static class SettingsService
 {
@@ -21,38 +20,31 @@ internal static class SettingsService
         return _settings;
     }
 
-    [ModuleInitializer]
-    public static void Initialize()
+    public static Task SaveAsync(this SettingsModel settings)
     {
-        if (!ControlHelper.IsDesignTime() && _settings is null)
-        {
-            _settings = Load();
-        }
-    }
-
-    public static Task SaveAsync(SettingsModel settings)
-    {
-        Validate(settings);
+        _ = Validate(settings).ThrowOnFail();
         _settings = settings;
-        var settingFilePath = $"AppSettings.{(IsDevelopment() ? "Development" : "Production")}.json";
+        var settingFilePath = GetSettingFilePath();
         var settingText = JsonSerializer.Serialize(_settings);
         return File.WriteAllTextAsync(settingFilePath, settingText);
+
+        static Result Validate(SettingsModel settings) => 
+            Result.Combine(
+                settings.Check().NotNull().NotNull(x => x.connectionString).Build(),
+                ConnectionStringBuilder.Validate(settings.connectionString)
+            );
     }
 
-    private static bool IsDevelopment()
-        => Debugger.IsAttached;
+    private static string GetSettingFilePath() =>
+        Path.Combine(Environment.CurrentDirectory, $"AppSettings.{(IsDevelopment() ? "Development" : "Production")}.json");
+
+    private static bool IsDevelopment() =>
+        Debugger.IsAttached;
 
     private static SettingsModel Load()
     {
-        //x var settingFilePath = $"AppSettings.{(IsDevelopment() ? "Development" : "Production")}.json";
-        var settingFilePath = $"AppSettings{(IsDevelopment() ? "" : ".Production")}.json";
+        var settingFilePath = GetSettingFilePath();
         var settingText = File.ReadAllText(settingFilePath);
         return JsonSerializer.Deserialize<SettingsModel>(settingText) ?? new SettingsModel();
-    }
-
-    private static void Validate(SettingsModel settings)
-    {
-        _ = settings.Check(CheckBehavior.ThrowOnFail).NotNull().NotNull(x => x.connectionString);
-        _ = ConnectionStringBuilder.Validate(settings.connectionString);
     }
 }

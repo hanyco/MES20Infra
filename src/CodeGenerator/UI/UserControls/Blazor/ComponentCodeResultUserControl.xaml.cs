@@ -27,7 +27,7 @@ public partial class ComponentCodeResultUserControl
 
     private void CodeNamesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var code = e.NewValue.As<TreeViewItem>()?.DataContext.As<Code>();
+        var code = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<Code>();
         this.CodeStatementContentControl.Content =
             code == null
                 ? null

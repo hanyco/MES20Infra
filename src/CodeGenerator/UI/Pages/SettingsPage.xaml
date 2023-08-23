@@ -31,64 +31,85 @@
         <Grid
             x:Name="ContainerGrid"
             Grid.Row="1"
-            Margin="20,0,0,0">
+            Margin="20,20,20,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+            <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
                 <TextBlock Style="{StaticResource LongLabelBlock}" Text="Connection string:" />
                 <TextBox
                     Name="ConnectionStringBox"
                     Width="500"
                     Text="{Binding connectionString}" />
-                <Button
-                    Name="OpenConnectionStringBoxButton"
-                    Click="OpenConnectionStringBoxButton_Click"
-                    Content="…"
-                    Style="{StaticResource IconButton}" />
             </StackPanel>
-            <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
-                <CheckBox Content="Show _Toast notifications" IsChecked="{Binding showToast}" />
-                <Button Name="ToastHelpButton" Style="{StaticResource IconButton}" Click="ToastHelpButton_Click">
+            <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+                <CheckBox
+                    x:Name="ShowToastCheckBox"
+                    Content="Show _Toast notifications"
+                    IsChecked="{Binding showToast}" />
+                <Button
+                    Name="ToastHelpButton"
+                    Click="ToastHelpButton_Click"
+                    Style="{StaticResource IconButton}">
                     <Path Style="{StaticResource HelpBook}" />
                 </Button>
             </StackPanel>
-            <TextBlock
-                Grid.Row="3"
-                Style="{StaticResource Heading3}"
-                Text="Folder Paths" />
-            <TextBlock
-                Grid.Row="4"
-                Style="{StaticResource TipTextBlock}"
-                Text="⚠Please don't include root folder. It will be asked on savig.⚠" />
-            <StackPanel Grid.Row="5" Style="{StaticResource FieldPanel}">
-                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Queries path:" />
-                <TextBox Width="500" Text="{Binding queriesPath}" />
-                <Button Content="…" Style="{StaticResource IconButton}" />
-            </StackPanel>
-            <StackPanel Grid.Row="6" Style="{StaticResource FieldPanel}">
-                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Commands path:" />
-                <TextBox Width="500" Text="{Binding commandsPath}" />
-                <Button Content="…" Style="{StaticResource IconButton}" />
-            </StackPanel>
-            <StackPanel Grid.Row="7" Style="{StaticResource FieldPanel}">
-                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Blazor pages path:" />
-                <TextBox Width="500" Text="{Binding blazorComponentsPath}" />
-                <Button Content="…" Style="{StaticResource IconButton}" />
-            </StackPanel>
-            <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
-                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Blazor components path:" />
-                <TextBox Width="500" Text="{Binding blazorComponentsPath}" />
-                <Button Content="…" Style="{StaticResource IconButton}" />
-            </StackPanel>
+            <Separator Grid.Row="2" />
+            <Grid Grid.Row="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    Style="{StaticResource Heading3}"
+                    Text="Source Code Folder Paths" />
+                <TextBlock
+                    Grid.Row="1"
+                    Style="{StaticResource HighlightBlock}"
+                    Text="These paths is used while generating source code on Functionali Editor window." />
+                <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Project Root:" />
+                    <TextBox Width="500" Text="{Binding projectSourceRoot}" />
+                    <Button
+                        x:Name="SelectProjectRootButton"
+                        Click="SelectProjectRootButton_Click"
+                        Style="{StaticResource IconButton}">
+                        …
+                    </Button>
+                </StackPanel>
+                <StackPanel Grid.Row="3" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Dto path:" />
+                    <TextBox Width="500" Text="{Binding dtosPath}" />
+                </StackPanel>
+                <StackPanel Grid.Row="4" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Queries path:" />
+                    <TextBox Width="500" Text="{Binding queriesPath}" />
+                </StackPanel>
+                <StackPanel Grid.Row="5" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Commands path:" />
+                    <TextBox Width="500" Text="{Binding commandsPath}" />
+                </StackPanel>
+                <StackPanel Grid.Row="6" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Blazor pages path:" />
+                    <TextBox Width="500" Text="{Binding blazorPagesPath}" />
+                </StackPanel>
+                <StackPanel Grid.Row="7" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Blazor components path:" />
+                    <TextBox Width="500" Text="{Binding blazorComponentsPath}" />
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </local:PageBase>

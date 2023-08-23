@@ -5,7 +5,6 @@ using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -17,6 +16,8 @@ using Library.Validations;
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
 using Library.Wpf.Windows.UI;
+
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HanyCo.Infra.UI.Pages;
 
@@ -110,7 +111,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var code = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ThrowOnFailAsync(this.Title);
         if (!code.Message.IsNullOrEmpty())
         {
-            Toast2.ShowText(code.Message);
+            Toast2.New().AddText(code.Message).Show();
             this.Logger.Debug(code.Message);
         }
         this.ComponentCodeResultUserControl.Codes = code!;
@@ -126,7 +127,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var viewModel = await this._service.GenerateViewModelAsync(this.ViewModel).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
         if (!viewModel.Message.IsNullOrEmpty())
         {
-            Toast2.ShowText(viewModel.Message);
+            Toast2.New().AddText(viewModel.Message).Show();
             this.Logger.Debug(viewModel.Message);
         }
         this.ViewModel = viewModel!;
