@@ -19,49 +19,56 @@ internal sealed partial class FunctionalityService
 {
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
-        var codeResult = (args?.UpdateModelView ?? false) ? viewModel.CodesResults : new();
+        var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : new();
         var results = await generateCodes(viewModel, codeResult, token);
 
-        return results.Merge();
+        return results;
 
-        async Task<FunctionalityViewModelCodesResults> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodesResults results, CancellationToken token)
+        async Task<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes results, CancellationToken token)
         {
+            var result = new List<Result<Codes>>();
             if (viewModel.GetAllQueryViewModel != null)
             {
-                results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
+                results.GetAllQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token));
             }
 
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                results.GetByIdQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token);
+                results.GetByIdQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token));
             }
 
             if (viewModel.InsertCommandViewModel != null)
             {
-                results.InsertCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token);
+                results.InsertCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token));
             }
 
             if (viewModel.UpdateCommandViewModel != null)
             {
-                results.UpdateCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token);
+                results.UpdateCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token));
             }
 
             if (viewModel.DeleteCommandViewModel != null)
             {
-                results.DeleteCommandCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token);
+                results.DeleteCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token));
             }
 
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                results.BlazorListCodes = this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel);
+                results.BlazorListCodes = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
             }
 
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                results.BlazorDetailsComponentViewModel = this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+                results.BlazorDetailsComponentViewModel = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
             }
 
-            return results;
+            return Result<Codes>.Combine(result, Codes.Combine);
+
+            Result<Codes> addToList(Result<Codes> codeResult)
+            {
+                result.Add(codeResult);
+                return codeResult;
+            }
         }
     }
 
@@ -133,12 +140,12 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                //! By now. will be un-commented later.
+                //! The bellow lines are commented by now to focus on above lines. They will be un-commented later.
                 //.AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
                 //.AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
                 //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
 
-                //! It must generate any code. The codes must be generated on demanded.
+                //! The following line generates codes. The codes must be generated on demanded.
                 //x .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
                 ;
 
@@ -417,9 +424,6 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private async Task GenerateCodes(CreationData data, CancellationToken token) =>
-        await this.GenerateCodesAsync(data.ViewModel, new(true), token);
-
     private sealed class CreationData(FunctionalityViewModel result, string sourceDtoName, CancellationTokenSource tokenSource)
     {
         internal readonly string COMMENT = "Auto-generated by Functionality Service.";
@@ -433,11 +437,7 @@ internal sealed partial class FunctionalityService
 
         internal string? SourceDtoName { get; } = sourceDtoName;
 
-        //internal string? GetAllQueryName { get; set; }
-        //internal string? GetByIdQueryName { get; set; }
-        //internal string? InsertCommandName { get; set; }
-        //internal string? UpdateCommandName { get; set; }
-        //internal string? DeleteCommandName { get; set; }
-        internal FunctionalityViewModel ViewModel { get; } = result;
+        [NotNull]
+        internal FunctionalityViewModel ViewModel { get; } = result.ArgumentNotNull();
     }
 }

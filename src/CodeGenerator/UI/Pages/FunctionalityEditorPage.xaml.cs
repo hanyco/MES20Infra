@@ -182,7 +182,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         };
         try
         {
-            var codes = this.ViewModel!.CodesResults.Select(x => x.Value).SelectAll().Compact();
+            var codes = this.ViewModel!.Codes.SelectAll().Compact();
             if (!codes.Any())
             {
                 return Result.CreateFailure("No code found. Please generate sources.");

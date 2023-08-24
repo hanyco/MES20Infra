@@ -19,7 +19,7 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public DtoViewModel BlazorDetailsViewModel { get; set; }
     public UiComponentViewModel BlazorListComponentViewModel { get; set; }
     public DtoViewModel BlazorListViewModel { get; set; }
-    public FunctionalityViewModelCodesResults CodesResults { get; } = new();
+    public FunctionalityViewModelCodes Codes { get; } = new();
 
     public CqrsCommandViewModel DeleteCommandViewModel { get; set; }
     public CqrsQueryViewModel GetAllQueryViewModel { get; set; }
@@ -30,27 +30,27 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public CqrsCommandViewModel UpdateCommandViewModel { get; set; }
 }
 
-public sealed class FunctionalityViewModelCodesResults : IEnumerable<Result<Codes>>
+public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
 {
-    private readonly Dictionary<string, Result<Codes>> _allCodes = new();
+    private readonly Dictionary<string, Codes> _allCodes = new();
 
-    public Result<Codes> BlazorDetailsComponentViewModel { get => this.get(); set => this.set(value); }
-    public Result<Codes> BlazorListCodes { get => this.get(); set => this.set(value); }
-    public Result<Codes> DeleteCommandCodes { get => this.get(); set => this.set(value); }
-    public Result<Codes> GetAllQueryCodes { get => this.get(); set => this.set(value); }
-    public Result<Codes> GetByIdQueryCodes { get => this.get(); set => this.set(value); }
-    public Result<Codes> InsertCommandCodes { get => this.get(); set => this.set(value); }
-    public Result<Codes> UpdateCommandCodes { get => this.get(); set => this.set(value); }
+    public Codes BlazorDetailsComponentViewModel { get => this.get(); set => this.set(value); }
+    public Codes BlazorListCodes { get => this.get(); set => this.set(value); }
+    public Codes DeleteCommandCodes { get => this.get(); set => this.set(value); }
+    public Codes GetAllQueryCodes { get => this.get(); set => this.set(value); }
+    public Codes GetByIdQueryCodes { get => this.get(); set => this.set(value); }
+    public Codes InsertCommandCodes { get => this.get(); set => this.set(value); }
+    public Codes UpdateCommandCodes { get => this.get(); set => this.set(value); }
 
-    public IEnumerator<Result<Codes>> GetEnumerator() =>
+    public IEnumerator<Codes> GetEnumerator() =>
         this._allCodes.Select(x => x.Value).Compact().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() =>
         this.GetEnumerator();
 
-    private Result<Codes> get([CallerMemberName] string propName = null) =>
+    private Codes get([CallerMemberName] string propName = null) =>
         this._allCodes[propName];
 
-    private void set(Result<Codes> value, [CallerMemberName] string propName = null) =>
+    private void set(Codes value, [CallerMemberName] string propName = null) =>
         this._allCodes[propName] = value;
 }
