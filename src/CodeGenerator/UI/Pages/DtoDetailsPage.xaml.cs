@@ -280,7 +280,7 @@ public partial class DtoDetailsPage
             return;
         }
 
-        var result = await this._codeService.SaveSourceToDiskAsync(this.ViewModel, this.ValidateFormAsync).ThrowOnFailAsync(this.Title);
+        var result = await this._codeService.SaveSourceToDiskAskAsync(this.ViewModel, this.ValidateFormAsync).ThrowOnFailAsync(this.Title);
         _ = this.EndActionScope(result);
     }
 

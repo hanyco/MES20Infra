@@ -13,7 +13,7 @@ internal static class SettingsService
 {
     private static SettingsModel? _settings;
 
-    public static SettingsModel Load() =>
+    public static SettingsModel Get() =>
         _settings ??= JsonSerializer.Deserialize<SettingsModel>(File.ReadAllText(GetSettingFilePath())) ?? new SettingsModel();
 
     public static SettingsModel Save(this SettingsModel settings)

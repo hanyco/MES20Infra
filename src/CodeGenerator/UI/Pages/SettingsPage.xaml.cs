@@ -21,7 +21,7 @@ public partial class SettingsPage
         this.DataContext.Cast().To<SettingsModel>();
 
     private void Page_Loaded(object sender, RoutedEventArgs e) =>
-        this.DataContext = SettingsService.Load();
+        this.DataContext = SettingsService.Get();
 
     private void Save() =>
         this.ViewModel.Save();

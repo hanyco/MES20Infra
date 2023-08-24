@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Windows;
 
 using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -16,8 +16,6 @@ using Library.Validations;
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
 using Library.Wpf.Windows.UI;
-
-using static System.Net.Mime.MediaTypeNames;
 
 namespace HanyCo.Infra.UI.Pages;
 
@@ -89,6 +87,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         return result ? result.WithValue(0) : result.WithValue(-3);
     }
 
+    [MemberNotNull(nameof(ViewModel))]
     protected override Task<Result> OnValidateFormAsync()
     {
         this.CheckIfInitiated();
@@ -177,15 +176,42 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
     private async Task<Result> SaveCodes()
     {
-        this.CheckIfInitiated();
         if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
         {
             return validationResult;
         };
-        //return await this.ViewModel.CodesResults.Select(x => x.GetValue()).GatherAll().SaveToFileAsync();
-        var codes = this.ViewModel.CodesResults;
-        //codes.GetAllQueryCodes.Value.
-        return Result.Success;
+        try
+        {
+            var codes = this.ViewModel!.CodesResults.Select(x => x.Value).SelectAll().Compact();
+            if (!codes.Any())
+            {
+                return Result.CreateFailure("No code found. Please generate sources.");
+            }
+            var settings = SettingsService.Get();
+            foreach (var code in codes)
+            {
+                var relativePath = code.props().Category switch
+                {
+                    "Dtos" => settings.dtosPath,
+                    "Queries" => settings.queriesPath,
+                    "Commands" => settings.commandsPath,
+                    "Pages" => settings.blazorPagesPath,
+                    "Components" => settings.blazorComponentsPath,
+                    _ => throw new NotSupportedException("Code category is null or not supported.")
+                };
+                var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.NotNull());
+                if (!Directory.Exists(path))
+                {
+                    _ = Directory.CreateDirectory(path);
+                }
+                File.WriteAllText(Path.Combine(path, code.FileName), code.Statement);
+            }
+            return Result.Success;
+        }
+        catch (Exception ex)
+        {
+            return Result.CreateFailure(ex);
+        }
     }
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e) =>
@@ -239,7 +265,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
             // Did user select a DTO?
             var table = this._databaseExplorerUserControl.SelectedTable!;
-            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Load().connectionString!, table.Name!);
+            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
             var dto = this._dtoService.CreateByDbTable(table, columns);
             this.PrepareViewModelByDto(dto);
         }

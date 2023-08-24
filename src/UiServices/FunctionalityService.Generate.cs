@@ -29,7 +29,6 @@ internal sealed partial class FunctionalityService
             if (viewModel.GetAllQueryViewModel != null)
             {
                 results.GetAllQueryCodes = await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token);
-                results.GetAllQueryCodes.props().Category = "Queries";
             }
 
             if (viewModel.GetByIdQueryViewModel != null)
@@ -119,7 +118,7 @@ internal sealed partial class FunctionalityService
             // Create a linked tokenSource from the token
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
             // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
-            var result = new CreationData(viewModel, viewModel.SourceDto, tokenSource);
+            var result = new CreationData(viewModel, (viewModel.Name ?? viewModel.SourceDto.Name).NotNull(), tokenSource);
             // Return a success result with the result and cancellationTokenSource
             return Result<(CreationData, CancellationTokenSource)>.CreateSuccess((result, tokenSource));
         }
@@ -188,8 +187,7 @@ internal sealed partial class FunctionalityService
         createViewModel(data);
         return Task.CompletedTask;
 
-        void createViewModel(CreationData data) =>
-            data.ViewModel.BlazorDetailsViewModel = RawDto(data, true)
+        void createViewModel(CreationData data) => data.ViewModel.BlazorDetailsViewModel = RawDto(data, true)
                 .With(x => x.Name = $"Get{data.ViewModel.Name}DetailsViewModel")
                 .With(x => x.IsViewModel = true);
     }
@@ -230,7 +228,7 @@ internal sealed partial class FunctionalityService
         {
             var dto = RawDto(data, false);
             dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            dto.Name = $"Delete{data.DtoViewModel.Name}Params";
+            dto.Name = $"Delete{data.ViewModel.DeleteCommandViewModel.Name}Params";
             dto.IsParamsDto = true;
             dto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
             data.ViewModel.DeleteCommandViewModel.ParamDto = dto;
@@ -242,7 +240,7 @@ internal sealed partial class FunctionalityService
         async Task createHandler(CancellationToken token)
         {
             data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
-            data.ViewModel.DeleteCommandViewModel.Name = $"Delete{data.DtoViewModel.Name}Command";
+            data.ViewModel.DeleteCommandViewModel.Name = $"Delete{data.SourceDtoName.TrimEnd("Dto")}Command";
             data.ViewModel.DeleteCommandViewModel.Category = CqrsSegregateCategory.Delete;
             data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
             data.ViewModel.DeleteCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
@@ -255,7 +253,7 @@ internal sealed partial class FunctionalityService
         {
             var dto = RawDto(data, false);
             dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            dto.Name = $"Delete{data.DtoViewModel.Name}Result";
+            dto.Name = $"Delete{data.ViewModel.DeleteCommandViewModel.Name}Result";
             dto.IsResultDto = true;
             data.ViewModel.DeleteCommandViewModel.ResultDto = dto;
         }
@@ -271,13 +269,12 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CreationData data, CancellationToken token)
         {
-            data.GetAllQueryName = $"GetAll{StringHelper.Pluralize(data.DtoViewModel.Name)}Query";
             data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token);
-            data.ViewModel.GetAllQueryViewModel.Name = $"{data.GetAllQueryName}ViewModel";
+            data.ViewModel.GetAllQueryViewModel.Name = $"GetAll{StringHelper.Pluralize(data.SourceDtoName.TrimEnd("Dto"))}Query";
             data.ViewModel.GetAllQueryViewModel.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
-            data.ViewModel.GetAllQueryViewModel.FriendlyName = data.GetAllQueryName.SplitCamelCase().Merge(" ");
+            data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
             data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
         }
@@ -285,14 +282,14 @@ internal sealed partial class FunctionalityService
         void createParams(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ParamDto = RawDto(data, false);
-            data.ViewModel.GetAllQueryViewModel.ParamDto.Name = $"{data.GetAllQueryName}Params";
+            data.ViewModel.GetAllQueryViewModel.ParamDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name}Params";
             data.ViewModel.GetAllQueryViewModel.ParamDto.IsParamsDto = true;
         }
 
         void createResult(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, true);
-            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"GetAll{data.GetAllQueryName}Result";
+            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name}Result";
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
         }
     }
@@ -307,13 +304,12 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CancellationToken token)
         {
-            data.GetByIdQueryName = $"GetById{data.DtoViewModel.Name}Query";
             data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token);
-            data.ViewModel.GetByIdQueryViewModel.Name = $"{data.GetByIdQueryName}ViewModel";
+            data.ViewModel.GetByIdQueryViewModel.Name = $"GetById{data.SourceDtoName.TrimEnd("Dto")}Query";
             data.ViewModel.GetByIdQueryViewModel.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
             data.ViewModel.GetByIdQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
-            data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.GetByIdQueryName.SplitCamelCase().Merge(" ");
+            data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.ViewModel.GetByIdQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
             data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
         }
@@ -321,7 +317,7 @@ internal sealed partial class FunctionalityService
         void createParams()
         {
             data.ViewModel.GetByIdQueryViewModel.ParamDto = RawDto(data, false);
-            data.ViewModel.GetByIdQueryViewModel.ParamDto.Name = $"GetById{data.DtoViewModel.Name}Params";
+            data.ViewModel.GetByIdQueryViewModel.ParamDto.Name = $"{data.ViewModel.GetByIdQueryViewModel.Name}Params";
             data.ViewModel.GetByIdQueryViewModel.ParamDto.IsParamsDto = true;
             data.ViewModel.GetByIdQueryViewModel.ParamDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
         }
@@ -329,7 +325,7 @@ internal sealed partial class FunctionalityService
         void createResult()
         {
             data.ViewModel.GetByIdQueryViewModel.ResultDto = RawDto(data, true);
-            data.ViewModel.GetByIdQueryViewModel.ResultDto.Name = $"GetById{data.DtoViewModel.Name}Result";
+            data.ViewModel.GetByIdQueryViewModel.ResultDto.Name = $"{data.ViewModel.GetByIdQueryViewModel.Name}Result";
             data.ViewModel.GetByIdQueryViewModel.ResultDto.IsResultDto = true;
         }
     }
@@ -348,7 +344,7 @@ internal sealed partial class FunctionalityService
         async Task createHandler(CreationData data, CancellationToken token)
         {
             data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token);
-            data.ViewModel.InsertCommandViewModel.Name = $"Insert{data.DtoViewModel.Name}Command";
+            data.ViewModel.InsertCommandViewModel.Name = $"Insert{data.SourceDtoName.TrimEnd("Dto")}Command";
             data.ViewModel.InsertCommandViewModel.Category = CqrsSegregateCategory.Create;
             data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
             data.ViewModel.InsertCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
@@ -359,22 +355,21 @@ internal sealed partial class FunctionalityService
 
         void createParams(CreationData data)
         {
-            var dto = RawDto(data, true);
-            dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            dto.Name = $"Insert{data.DtoViewModel.Name}Params";
-            dto.IsParamsDto = true;
-            var idProp = dto.Properties.FirstOrDefault(y => y.Name?.EqualsTo("id") is true);
+            data.ViewModel.InsertCommandViewModel.ParamDto = RawDto(data, true);
+            data.ViewModel.InsertCommandViewModel.ParamDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            data.ViewModel.InsertCommandViewModel.ParamDto.Name = $"{data.ViewModel.InsertCommandViewModel.Name}Params";
+            data.ViewModel.InsertCommandViewModel.ParamDto.IsParamsDto = true;
+            var idProp = data.ViewModel.InsertCommandViewModel.ParamDto.Properties.FirstOrDefault(y => y.Name?.EqualsTo("id") is true);
             if (idProp != null)
             {
-                _ = dto.Properties.Remove(idProp);
+                _ = data.ViewModel.InsertCommandViewModel.ParamDto.Properties.Remove(idProp);
             }
-            data.ViewModel.InsertCommandViewModel.ParamDto = dto;
         }
 
         void createResult(CreationData data)
         {
             data.ViewModel.InsertCommandViewModel.ResultDto = RawDto(data, false);
-            data.ViewModel.InsertCommandViewModel.ResultDto.Name = $"Insert{data.DtoViewModel.Name}Result";
+            data.ViewModel.InsertCommandViewModel.ResultDto.Name = $"{data.ViewModel.InsertCommandViewModel.Name}Result";
             data.ViewModel.InsertCommandViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.InsertCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
@@ -394,7 +389,7 @@ internal sealed partial class FunctionalityService
         async Task createHandler(CreationData data, CancellationToken token)
         {
             data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token);
-            data.ViewModel.UpdateCommandViewModel.Name = $"Update{data.DtoViewModel.Name}Command";
+            data.ViewModel.UpdateCommandViewModel.Name = $"Update{data.SourceDtoName.TrimEnd("Dto")}Command";
             data.ViewModel.UpdateCommandViewModel.Category = CqrsSegregateCategory.Update;
             data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
             data.ViewModel.UpdateCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
@@ -407,7 +402,7 @@ internal sealed partial class FunctionalityService
         {
             var dto = RawDto(data, true);
             dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            dto.Name = $"Update{data.DtoViewModel.Name}Params";
+            dto.Name = $"{data.ViewModel.UpdateCommandViewModel.Name}Params";
             dto.IsParamsDto = true;
             data.ViewModel.UpdateCommandViewModel.ParamDto = dto;
         }
@@ -415,7 +410,7 @@ internal sealed partial class FunctionalityService
         void createResult(CreationData data)
         {
             var dto = RawDto(data, false);
-            dto.Name = $"Update{data.DtoViewModel.Name}Result";
+            dto.Name = $"{data.ViewModel.UpdateCommandViewModel.Name}Result";
             dto.IsResultDto = true;
             dto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
             data.ViewModel.UpdateCommandViewModel.ResultDto = dto;
@@ -425,7 +420,7 @@ internal sealed partial class FunctionalityService
     private async Task GenerateCodes(CreationData data, CancellationToken token) =>
         await this.GenerateCodesAsync(data.ViewModel, new(true), token);
 
-    private sealed class CreationData(FunctionalityViewModel result, DtoViewModel dtoViewModel, CancellationTokenSource tokenSource)
+    private sealed class CreationData(FunctionalityViewModel result, string sourceDtoName, CancellationTokenSource tokenSource)
     {
         internal readonly string COMMENT = "Auto-generated by Functionality Service.";
         private Result<FunctionalityViewModel>? _result;
@@ -433,15 +428,16 @@ internal sealed partial class FunctionalityService
         [NotNull]
         internal CancellationTokenSource CancellationTokenSource { get; } = tokenSource;
 
-        internal DtoViewModel DtoViewModel { get; } = dtoViewModel;
-
-        internal string? GetAllQueryName { get; set; }
-
-        internal string? GetByIdQueryName { get; set; }
-
         [NotNull]
         internal Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
 
+        internal string? SourceDtoName { get; } = sourceDtoName;
+
+        //internal string? GetAllQueryName { get; set; }
+        //internal string? GetByIdQueryName { get; set; }
+        //internal string? InsertCommandName { get; set; }
+        //internal string? UpdateCommandName { get; set; }
+        //internal string? DeleteCommandName { get; set; }
         internal FunctionalityViewModel ViewModel { get; } = result;
     }
 }

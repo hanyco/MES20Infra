@@ -51,7 +51,7 @@ internal sealed class DtoService(
         var result = new DtoViewModel
         {
             DbObject = table,
-            Name = $"Get{table.Name}ParamsDto",
+            Name = $"{table.Name}Dto",
         };
         if (columns?.Any() is true)
         {

@@ -194,7 +194,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     {
         _ = this.ViewModel.NotNull();
         var codes = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
-        _ = await SourceCodeHelper.SaveToFileAsync(codes);
+        _ = await SourceCodeHelper.SaveToFileAskAsync(codes);
     }
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)

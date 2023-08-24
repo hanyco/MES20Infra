@@ -69,7 +69,7 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
     public async Task<DatabaseExplorerUserControl> InitializeAsync(IDbTableService dbTableService, IProgressReport? reporter = null)
     {
-        var dbNode = await dbTableService.NotNull().GetTablesTreeViewItemAsync(new(SettingsService.Load().connectionString!, reporter: reporter));
+        var dbNode = await dbTableService.NotNull().GetTablesTreeViewItemAsync(new(SettingsService.Get().connectionString!, reporter: reporter));
         var treeItems = new TreeViewItem { Header = "Tables" };
         EnumerableHelper.BuildTree<Node<DbObjectViewModel>, TreeViewItem>(
             dbNode,
@@ -107,15 +107,14 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onTableSelected(Node<DbObjectViewModel>? node)
         {
             var dbTable = node?.Value.Cast().As<DbTableViewModel>();
-            var children = node?.Children?.First()?.Children;
-            var list = (children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>()).ToList();
-            var dbColumns = list;
-            return (dbTable, dbColumns);
+            var children = node?.Children?.FirstOrDefault()?.Children;
+            var dbColumns = (List<DbColumnViewModel>?)(children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>()).ToList();
+            return (dbTable, dbColumns!);
         }
-        static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onColumnSelected(Node<DbObjectViewModel>? node) 
-            => (null, EnumerableHelper.ToEnumerable(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());
+        static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onColumnSelected(Node<DbObjectViewModel>? node) =>
+            (null, EnumerableHelper.ToEnumerable(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());
 
-        static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onUnknownSelected(Node<DbObjectViewModel>? node) 
-            => (null, Enumerable.Empty<DbColumnViewModel>());
+        static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onUnknownSelected(Node<DbObjectViewModel>? node) =>
+            (null, Enumerable.Empty<DbColumnViewModel>());
     }
 }
