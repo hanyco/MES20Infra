@@ -60,6 +60,85 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
             _ => throw new NotSupportedException()
         });
 
+    //UNDONE CQRS Code Generator Service SaveToDatabaseAsync.
+    public Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config, CancellationToken token = default)
+        => throw new NotImplementedException();
+
+    public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
+    {
+        var codesResult = await this.GenerateCodeAsync(viewModel, config, token).ThrowOnFailAsync();
+        var codes = codesResult.Value.Compact();
+        if (codes?.Any() is not true)
+        {
+            return;
+        }
+
+        foreach (var code in codes)
+        {
+            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, token);
+        }
+    }
+
+    private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
+    {
+        var result = CodeGenDto.New(TypeMemberNameHelper.GetFullName(resultViewModel.NameSpace, resultViewModel.Name));
+        foreach (var prop in resultViewModel.Properties)
+        {
+            _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false);
+        }
+        return result;
+    }
+
+    private static CodeGenDto ExtractParamsDto(in CqrsViewModelBase viewModel)
+        => ConvertViewModelToCodeGen(viewModel.ParamDto);
+
+    private static CodeGenDto ExtractResultDto(in CqrsViewModelBase viewModel)
+        => ConvertViewModelToCodeGen(viewModel.ResultDto);
+
+    private static Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken token = default)
+    {
+        Check.MustBeArgumentNotNull(commandViewModel?.Name);
+
+        var paramsDto = ExtractParamsDto(commandViewModel);
+        var resultDto = ExtractResultDto(commandViewModel);
+        var cmdParam = CodeGenCommandParameter.New().AddProp(paramsDto, "dto").With(x => x.props().Category = CodeCategory.Dto);
+        var cmdResult = CodeGenCommandResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = CodeCategory.Dto);
+        var cmdHandler = CodeGenCommandHandler.New(cmdParam, cmdResult).With(x => x.props().Category = CodeCategory.Command);
+
+        var cmd = CodeGenCommandModel.New(commandViewModel.Name,
+                                            commandViewModel.CqrsNameSpace,
+                                            commandViewModel.DtoNameSpace,
+                                            cmdHandler,
+                                            cmdParam,
+                                            cmdResult)
+                                        .With(x => x.props().Category = CodeCategory.Command);
+        return Task.FromResult(cmd.GenerateCode());
+    }
+
+    private static Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken token = default)
+    {
+        Check.MustBeArgumentNotNull(queryViewModel?.Name);
+
+        var paramsDto = ExtractParamsDto(queryViewModel);
+        var resultDto = ExtractResultDto(queryViewModel);
+        var qryParams = CodeGenQueryParam.New().AddProp(paramsDto, "dto").With(x => x.props().Category = CodeCategory.Dto);
+        var qryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = CodeCategory.Dto);
+        var qryHandler = CodeGenQueryHandler.New(qryParams,
+                                                   qryResult,
+                                                   (typeof(ICommandProcessor), "CommandProcessor"),
+                                                   (typeof(IQueryProcessor), "QueryProcessor"))
+                                              .With(x => x.props().Category = CodeCategory.Query);
+
+        var qry = CodeGenQueryModel.New(queryViewModel.Name,
+                                          queryViewModel.CqrsNameSpace,
+                                          queryViewModel.DtoNameSpace,
+                                          qryHandler,
+                                          qryParams,
+                                          qryResult)
+                                        .With(x => x.props().Category = CodeCategory.Query);
+        return Task.FromResult(qry.GenerateCode());
+    }
+
     private Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parameters)
     {
         (var table, var cqrsNameSpace, var dtoNameSpace) = parameters.ArgumentNotNull();
@@ -125,7 +204,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
             handler,
             param,
             result,
-            resultDto);
+            resultDto).With(x => x.props().Category = CodeCategory.Query);
         return query.GenerateCode();
     }
 
@@ -177,84 +256,5 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
             result,
             paramDto);
         return query.GenerateCode();
-    }
-
-    //UNDONE CQRS Code Generator Service SaveToDatabaseAsync.
-    public Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config, CancellationToken token = default)
-        => throw new NotImplementedException();
-
-    public async Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
-    {
-        var codesResult = await this.GenerateCodeAsync(viewModel, config, token).ThrowOnFailAsync();
-        var codes = codesResult.Value.Compact();
-        if (codes?.Any() is not true)
-        {
-            return;
-        }
-
-        foreach (var code in codes)
-        {
-            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, token);
-        }
-    }
-
-    private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
-    {
-        var result = CodeGenDto.New(TypeMemberNameHelper.GetFullName(resultViewModel.NameSpace, resultViewModel.Name));
-        foreach (var prop in resultViewModel.Properties)
-        {
-            _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false);
-        }
-        return result;
-    }
-
-    private static CodeGenDto ExtractParamsDto(in CqrsViewModelBase viewModel)
-        => ConvertViewModelToCodeGen(viewModel.ParamDto);
-
-    private static CodeGenDto ExtractResultDto(in CqrsViewModelBase viewModel)
-        => ConvertViewModelToCodeGen(viewModel.ResultDto);
-
-    private static Task<Codes> GenerateCommandAsync(CqrsCommandViewModel commandViewModel, CancellationToken token = default)
-    {
-        Check.MustBeArgumentNotNull(commandViewModel?.Name);
-
-        var paramsDto = ExtractParamsDto(commandViewModel);
-        var resultDto = ExtractResultDto(commandViewModel);
-        var commandParam = CodeGenCommandParameter.New().AddProp(paramsDto, "dto").With(x => x.props().Category = "Dtos");
-        var commandResult = CodeGenCommandResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = "Dtos");
-        var commandHandler = CodeGenCommandHandler.New(commandParam, commandResult).With(x => x.props().Category = "Commands");
-
-        var query = CodeGenCommandModel.New(commandViewModel.Name,
-                                            commandViewModel.CqrsNameSpace,
-                                            commandViewModel.DtoNameSpace,
-                                            commandHandler,
-                                            commandParam,
-                                            commandResult)
-                                        .With(x => x.props().Category = "Commands");
-        return Task.FromResult(query.GenerateCode());
-    }
-
-    private static Task<Codes> GenerateQueryAsync(CqrsQueryViewModel queryViewModel, CancellationToken token = default)
-    {
-        Check.MustBeArgumentNotNull(queryViewModel?.Name);
-
-        var paramsDto = ExtractParamsDto(queryViewModel);
-        var resultDto = ExtractResultDto(queryViewModel);
-        var queryParams = CodeGenQueryParam.New().AddProp(paramsDto, "dto").With(x => x.props().Category = "Dtos");
-        var queryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = "Dtos");
-        var queryHandler = CodeGenQueryHandler.New(queryParams,
-                                                   queryResult,
-                                                   (typeof(ICommandProcessor), "CommandProcessor"),
-                                                   (typeof(IQueryProcessor), "QueryProcessor"))
-                                              .With(x => x.props().Category = "Queries");
-
-        var query = CodeGenQueryModel.New(queryViewModel.Name,
-                                          queryViewModel.CqrsNameSpace,
-                                          queryViewModel.DtoNameSpace,
-                                          queryHandler,
-                                          queryParams,
-                                          queryResult)
-                                        .With(x => x.props().Category = "Queries");
-        return Task.FromResult(query.GenerateCode());
     }
 }

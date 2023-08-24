@@ -39,7 +39,7 @@ public static class SourceCodeHelper
     {
         if (codes?.Any() is not true)
         {
-            return Result<string?>.CreateFailure(message: "No code generated.");
+            return Result<string?>.CreateFailure("No code generated.");
         }
         var result = codes.Count switch
         {

@@ -152,13 +152,14 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         this.CheckIfInitiated();
 
+        this.ViewModel.SourceDto = null;
+
         //Optional! To make sure that the selected dto exists and has details.
         if (details == null)
         {
             return;
         }
 
-        this.ViewModel.SourceDto = null;
         this.ViewModel.SourceDto = details;
         //May be the user filled these data. We shouldn't overwrite user's preferences. If user
         // presses <Reset> button, user's preferences will be cleaned.
@@ -171,7 +172,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         {
             this.ViewModel.Name = details.Name;
         }
-        //The form is now ready to call service.
+        //The form is now ready to call services.
     }
 
     private async Task<Result> SaveCodes()
@@ -182,7 +183,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         };
         try
         {
-            var codes = this.ViewModel!.CodesResults.Select(x => x.Value).SelectAll().Compact();
+            var codes = this.ViewModel!.Codes.SelectAll().Compact();
             if (!codes.Any())
             {
                 return Result.CreateFailure("No code found. Please generate sources.");
@@ -192,11 +193,11 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             {
                 var relativePath = code.props().Category switch
                 {
-                    "Dtos" => settings.dtosPath,
-                    "Queries" => settings.queriesPath,
-                    "Commands" => settings.commandsPath,
-                    "Pages" => settings.blazorPagesPath,
-                    "Components" => settings.blazorComponentsPath,
+                    CodeCategory.Dto => settings.dtosPath,
+                    CodeCategory.Query => settings.queriesPath,
+                    CodeCategory.Command => settings.commandsPath,
+                    CodeCategory.Page => settings.blazorPagesPath,
+                    CodeCategory.Component => settings.blazorComponentsPath,
                     _ => throw new NotSupportedException("Code category is null or not supported.")
                 };
                 var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.NotNull());

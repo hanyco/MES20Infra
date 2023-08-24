@@ -11,6 +11,8 @@ using HanyCo.Infra.Markers;
 using Library.CodeGeneration.Models;
 using Library.Helpers.CodeGen;
 
+using Newtonsoft.Json.Linq;
+
 namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Strageries.CodeDom;
 
 [Worker]
@@ -142,7 +144,8 @@ internal static class CqrsCodeCompileUnitCreatorEngine
         foreach (var dto in model.Dtos)
         {
             (var dtoUnit, var dtoClass) = GenerateDto(dto, modelDtoNameSpace);
-            yield return (dtoClass.Name, dtoUnit);
+            var result = new GenerateCqrsSegsResult(dtoClass.Name, dtoUnit);
+            yield return result.With(x => x.props().Category = dto.props().Category);
         }
     }
 
@@ -153,7 +156,8 @@ internal static class CqrsCodeCompileUnitCreatorEngine
             var unit = new CodeCompileUnit();
             var parNameSpace = AddSegregateUsingNameSpaces(model, unit);
             var type = GeneratePartialSegregate(segregate, model.Name, parNameSpace);
-            yield return (type.Name, unit);
+            var result = new GenerateCqrsSegsResult(type.Name, unit);
+            yield return result.With(x => x.props().Category = segregate.props().Category);
         }
     }
 
@@ -239,6 +243,8 @@ internal static class CqrsCodeCompileUnitCreatorEngine
 
 public record GenerateCqrsSegsResult(string TypeName, CodeCompileUnit Unit)
 {
-    public static implicit operator (string TypeName, CodeCompileUnit Unit)(GenerateCqrsSegsResult value) => (value.TypeName, value.Unit);
-    public static implicit operator GenerateCqrsSegsResult((string TypeName, CodeCompileUnit Unit) value) => new GenerateCqrsSegsResult(value.TypeName, value.Unit);
+    public static implicit operator (string TypeName, CodeCompileUnit Unit)(GenerateCqrsSegsResult value) =>
+        (value.TypeName, value.Unit);
+    public static implicit operator GenerateCqrsSegsResult((string TypeName, CodeCompileUnit Unit) value) =>
+        new(value.TypeName, value.Unit);
 }

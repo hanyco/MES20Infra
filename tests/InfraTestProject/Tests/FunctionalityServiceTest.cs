@@ -25,18 +25,28 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
-    [Fact(Skip = "It's not this test's turn yet.")]
+    [Fact]
     public async void _20_GenerateCodeTest()
     {
         // Assign
-        var cts = new CancellationTokenSource();
-        var model = CreateModel();
-
+        var model = await this._service.GenerateViewModelAsync(CreateModel());
+        
         // Act
-        var actual = await this._codeService.GenerateCodesAsync(model, token: cts.Token);
+        var actual = await this._codeService.GenerateCodesAsync(model!);
 
         // Assert
-        Assert.True(actual);
+        if (!actual.IsSucceed)
+        {
+            Assert.Fail(actual.ToString());
+        }
+
+        foreach (var code in actual.Value)
+        {
+            if (code?.props().Category == null)
+            {
+                Assert.Fail($"Code: `{code}` has no Category");
+            }
+        }
     }
 
     private static FunctionalityViewModel CreateModel()

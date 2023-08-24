@@ -8,20 +8,12 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Strageries.CodeDom;
 
 [Fluent]
 [Worker]
-internal sealed class CodeCompileUnitWrapper : ICodeGeneratorUnit
+internal sealed class CodeCompileUnitWrapper(CodeCompileUnit unit, string codeName, bool isPartial = false, params string[] directives) : ICodeGeneratorUnit
 {
-    private readonly CodeCompileUnit _unit;
-    private readonly string _codeName;
-    private readonly bool _isPartial;
-    private readonly string[] _directives;
-
-    public CodeCompileUnitWrapper(CodeCompileUnit unit, string codeName, bool isPartial = false, params string[] directives)
-    {
-        this._unit = unit;
-        this._codeName = codeName;
-        this._isPartial = isPartial;
-        this._directives = directives;
-    }
+    private readonly CodeCompileUnit _unit = unit;
+    private readonly string _codeName = codeName;
+    private readonly bool _isPartial = isPartial;
+    private readonly string[] _directives = directives;
 
     public Code GenerateCode(in GenerateCodesParameters? arguments = null) =>
         new(this._codeName, Languages.CSharp, this._unit.GenerateCode(this._directives), this._isPartial);
