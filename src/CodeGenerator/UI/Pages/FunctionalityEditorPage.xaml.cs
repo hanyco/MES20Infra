@@ -193,11 +193,11 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             {
                 var relativePath = code.props().Category switch
                 {
-                    "Dtos" => settings.dtosPath,
-                    "Queries" => settings.queriesPath,
-                    "Commands" => settings.commandsPath,
-                    "Pages" => settings.blazorPagesPath,
-                    "Components" => settings.blazorComponentsPath,
+                    CodeCategory.Dto => settings.dtosPath,
+                    CodeCategory.Query => settings.queriesPath,
+                    CodeCategory.Command => settings.commandsPath,
+                    CodeCategory.Page => settings.blazorPagesPath,
+                    CodeCategory.Component => settings.blazorComponentsPath,
                     _ => throw new NotSupportedException("Code category is null or not supported.")
                 };
                 var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.NotNull());

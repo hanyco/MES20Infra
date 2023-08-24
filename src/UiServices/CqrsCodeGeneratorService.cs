@@ -32,8 +32,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         config ??= new();
         if (config.ShouldGenerateGetAll)
         {
-            var result = new GenerateAllCqrsCodesResultItem($"GetAll{StringHelper.Pluralize(entityName)}", this.GenerateGetAllCode(parameters));
-            yield return result.With(x => x.props().Category = CodeCategory.Query);
+            yield return new($"GetAll{StringHelper.Pluralize(entityName)}", this.GenerateGetAllCode(parameters));
         }
         if (config.ShouldGenerateGetById)
         {
@@ -102,9 +101,9 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 
         var paramsDto = ExtractParamsDto(commandViewModel);
         var resultDto = ExtractResultDto(commandViewModel);
-        var cmdParam = CodeGenCommandParameter.New().AddProp(paramsDto, "dto").With(x => x.props().Category = "Dtos");
-        var cmdResult = CodeGenCommandResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = "Dtos");
-        var cmdHandler = CodeGenCommandHandler.New(cmdParam, cmdResult).With(x => x.props().Category = "Commands");
+        var cmdParam = CodeGenCommandParameter.New().AddProp(paramsDto, "dto").With(x => x.props().Category = CodeCategory.Dto);
+        var cmdResult = CodeGenCommandResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = CodeCategory.Dto);
+        var cmdHandler = CodeGenCommandHandler.New(cmdParam, cmdResult).With(x => x.props().Category = CodeCategory.Command);
 
         var cmd = CodeGenCommandModel.New(commandViewModel.Name,
                                             commandViewModel.CqrsNameSpace,
@@ -112,7 +111,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                                             cmdHandler,
                                             cmdParam,
                                             cmdResult)
-                                        .With(x => x.props().Category = "Commands");
+                                        .With(x => x.props().Category = CodeCategory.Command);
         return Task.FromResult(cmd.GenerateCode());
     }
 
@@ -122,13 +121,13 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 
         var paramsDto = ExtractParamsDto(queryViewModel);
         var resultDto = ExtractResultDto(queryViewModel);
-        var qryParams = CodeGenQueryParam.New().AddProp(paramsDto, "dto").With(x => x.props().Category = "Dtos");
-        var qryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = "Dtos");
+        var qryParams = CodeGenQueryParam.New().AddProp(paramsDto, "dto").With(x => x.props().Category = CodeCategory.Dto);
+        var qryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result").With(x => x.props().Category = CodeCategory.Dto);
         var qryHandler = CodeGenQueryHandler.New(qryParams,
                                                    qryResult,
                                                    (typeof(ICommandProcessor), "CommandProcessor"),
                                                    (typeof(IQueryProcessor), "QueryProcessor"))
-                                              .With(x => x.props().Category = "Queries");
+                                              .With(x => x.props().Category = CodeCategory.Query);
 
         var qry = CodeGenQueryModel.New(queryViewModel.Name,
                                           queryViewModel.CqrsNameSpace,
@@ -136,7 +135,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                                           qryHandler,
                                           qryParams,
                                           qryResult)
-                                        .With(x => x.props().Category = "Queries");
+                                        .With(x => x.props().Category = CodeCategory.Query);
         return Task.FromResult(qry.GenerateCode());
     }
 
