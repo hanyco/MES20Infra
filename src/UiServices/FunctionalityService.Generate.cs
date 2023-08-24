@@ -19,16 +19,21 @@ internal sealed partial class FunctionalityService
 {
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
+        Check.MustBeArgumentNotNull(viewModel);
+
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : new();
         var results = await generateCodes(viewModel, codeResult, token);
 
-        return results;
+        return results.Any()
+                ? Result<Codes>.Combine(results, Codes.Combine)
+                : Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
 
-        async Task<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes results, CancellationToken token)
+        async Task<IEnumerable<Result<Codes>>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes results, CancellationToken token)
         {
             var result = new List<Result<Codes>>();
             if (viewModel.GetAllQueryViewModel != null)
             {
+                
                 results.GetAllQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token));
             }
 
@@ -61,8 +66,7 @@ internal sealed partial class FunctionalityService
             {
                 results.BlazorDetailsComponentViewModel = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
             }
-
-            return Result<Codes>.Combine(result, Codes.Combine);
+            return result;
 
             Result<Codes> addToList(Result<Codes> codeResult)
             {

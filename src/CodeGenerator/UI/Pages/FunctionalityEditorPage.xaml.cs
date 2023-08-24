@@ -152,13 +152,14 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         this.CheckIfInitiated();
 
+        this.ViewModel.SourceDto = null;
+
         //Optional! To make sure that the selected dto exists and has details.
         if (details == null)
         {
             return;
         }
 
-        this.ViewModel.SourceDto = null;
         this.ViewModel.SourceDto = details;
         //May be the user filled these data. We shouldn't overwrite user's preferences. If user
         // presses <Reset> button, user's preferences will be cleaned.
@@ -171,7 +172,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         {
             this.ViewModel.Name = details.Name;
         }
-        //The form is now ready to call service.
+        //The form is now ready to call services.
     }
 
     private async Task<Result> SaveCodes()
