@@ -259,7 +259,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         _ = await this.ValidateFormAsync();
         var viewModel = this.ViewModel!;
         var codes = this._codeService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode));
-        _ = await codes.Value.SaveToFileAsync().ThrowOnFailAsync();
+        _ = await codes.Value.SaveToFileAskAsync().ThrowOnFailAsync();
     }
 
     private async void ValidateButton_Click(object sender, RoutedEventArgs e)

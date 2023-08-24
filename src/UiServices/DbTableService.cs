@@ -34,7 +34,7 @@ internal sealed class DbTableService : IDbTableService
         Node<DbObjectViewModel> tableColumnsNode;
         Node<DbObjectViewModel> tablesNode;
 
-        await Task.Run(() =>
+        await Task.Factory.StartNew(() =>
         {
             reporter?.Report(description: "Initializing...");
             var max = db.GetTablesCount() + 1;
@@ -50,13 +50,15 @@ internal sealed class DbTableService : IDbTableService
                     var value = new DbTableViewModel(table.Name, table.Id, table.Schema);
                     reporter?.Report(new(max, index++, $"Reading `{value}`..."));
                     tableNode = new(value, table.Name);
-
-                    tableColumnsNode = new(new("Columns"));
-                    foreach (var column in table.Columns)
+                    if (gatherColumns)
                     {
-                        _ = tableColumnsNode.AddChild(DbColumnViewModel.FromDbColumn(column));
+                        tableColumnsNode = new(new("Columns"));
+                        foreach (var column in table.Columns)
+                        {
+                            _ = tableColumnsNode.AddChild(DbColumnViewModel.FromDbColumn(column));
+                        }
+                        _ = tableNode.AddChild(tableColumnsNode);
                     }
-                    _ = tableNode.AddChild(tableColumnsNode);
                     _ = tablesNode.AddChild(tableNode);
                 }
                 _ = schemaNode.AddChild(tablesNode);

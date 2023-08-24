@@ -13,52 +13,12 @@ namespace HanyCo.Infra.UI.Helpers;
 
 public static class SourceCodeHelper
 {
-    private static readonly Func<Code?, Task<Result<string?>>> _saveCodeFunc = async code =>
-    {
-        if (code == null)
-        {
-            return Result<string?>.CreateFailure("No code found to save.");
-        }
-        using var dlg = new SaveFileDialog();
-        dlg.FileName = code.FileName;
-        var resp = dlg.ShowDialog();
-        if (resp != DialogResult.OK)
-        {
-            return Result<string?>.Failure;
-        }
-
-        await File.WriteAllTextAsync(dlg.FileName, code.Statement);
-        var result = Path.GetDirectoryName(dlg.FileName)!;
-        return Result<string?>.CreateSuccess(result, message: "Code(s) saved");
-    };
-
-    private static readonly Func<Codes, Task<Result<string?>>> _saveCodesFunc = async codes =>
-    {
-        using var dlg = new FolderBrowserDialog();
-        if (dlg.ShowDialog() is not DialogResult.OK)
-        {
-            return Result<string?>.Failure;
-        }
-        var result = dlg.SelectedPath;
-        var meaningfullCodes = codes.Compact();
-        if (meaningfullCodes?.Any() is not true)
-        {
-            return Result<string?>.CreateFailure("No codes found to save.");
-        }
-        foreach (var code in meaningfullCodes)
-        {
-            var filePath = Path.Combine(result, code.FileName);
-            await File.WriteAllTextAsync(filePath, code.Statement);
-        }
-        return Result<string?>.CreateSuccess(result, message: "Code(s) saved");
-    };
-
     private static readonly Action<Result<string?>> _showResult = result =>
         MsgBox2.Inform(result.Message, controls: ButtonInfo.ToButtons(
                 new("OK", (e1, e2) => MsgBox2.GetOnButtonClick(e1, e2).Parent.Close()),
                 new("Open Containing Folder…", (e1, e2) => { _ = Process.Start("explorer.exe", result.Value!); })).ToArray());
 
-    public static async Task<Result<string?>> SaveSourceToDiskAsync<TViewModel>(this ICodeGenerator<TViewModel> codeGeneratorService,
+    public static async Task<Result<string?>> SaveSourceToDiskAskAsync<TViewModel>(this ICodeGenerator<TViewModel> codeGeneratorService,
                                                                                 TViewModel viewModel,
                                                                                 Func<Task> validatorAsync)
     {
@@ -71,11 +31,11 @@ public static class SourceCodeHelper
         }
 
         var codes = codeGeneratorService.GenerateCodes(viewModel).GetValue();
-        var result = await codes.SaveToFileAsync();
+        var result = await codes.SaveToFileAskAsync();
         return result;
     }
 
-    public static async Task<Result<string?>> SaveToFileAsync(this Codes codes)
+    public static async Task<Result<string?>> SaveToFileAskAsync(this Codes codes)
     {
         if (codes?.Any() is not true)
         {
@@ -83,18 +43,57 @@ public static class SourceCodeHelper
         }
         var result = codes.Count switch
         {
-            1 => await _saveCodeFunc(codes[0]),
-            _ => await _saveCodesFunc(codes),
+            1 => await saveCode(codes[0]),
+            _ => await saveCodesFunc(codes),
         };
         if (result.IsSucceed)
         {
             _showResult(result);
         }
         return result;
+
+        static async Task<Result<string?>> saveCode(Code? code)
+        {
+            if (code == null)
+            {
+                return Result<string?>.CreateFailure("No code found to save.");
+            }
+            using var dlg = new SaveFileDialog();
+            dlg.FileName = code.FileName;
+            var resp = dlg.ShowDialog();
+            if (resp != DialogResult.OK)
+            {
+                return Result<string?>.Failure;
+            }
+
+            await File.WriteAllTextAsync(dlg.FileName, code.Statement);
+            var result = Path.GetDirectoryName(dlg.FileName)!;
+            return Result<string?>.CreateSuccess(result, message: "Code(s) saved");
+        }
+        static async Task<Result<string?>> saveCodesFunc(Codes codes)
+        {
+            using var dlg = new FolderBrowserDialog();
+            if (dlg.ShowDialog() is not DialogResult.OK)
+            {
+                return Result<string?>.Failure;
+            }
+            var result = dlg.SelectedPath;
+            var meaningfulCodes = codes.Compact();
+            if (meaningfulCodes?.Any() is not true)
+            {
+                return Result<string?>.CreateFailure("No codes found to save.");
+            }
+            foreach (var code in meaningfulCodes)
+            {
+                var filePath = Path.Combine(result, code.FileName);
+                await File.WriteAllTextAsync(filePath, code.Statement);
+            }
+            return Result<string?>.CreateSuccess(result, message: "Code(s) saved");
+        }
     }
 
-    public static async Task<Result<string?>> SaveToFileAsync(this Code code) 
+    public static async Task<Result<string?>> SaveToFileAskAsync(this Code code)
         => code == default
             ? Result<string?>.CreateFailure("No code found to save.")
-            : await SaveToFileAsync(new Codes(code));
+            : await SaveToFileAskAsync(new Codes(code));
 }

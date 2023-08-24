@@ -28,7 +28,7 @@ public partial class CodeDetailsUserControl
     {
         if (this.DataContext is Code code)
         {
-            await SourceCodeHelper.SaveToFileAsync(code);
+            await SourceCodeHelper.SaveToFileAskAsync(code);
         }
     }
 }

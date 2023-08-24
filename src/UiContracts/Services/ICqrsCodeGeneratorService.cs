@@ -13,19 +13,7 @@ public interface ICqrsCodeGeneratorService : IBusinessService//, IAsyncCqrsCodeG
 
     Task<Result<Codes>> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default);
 
-    Codes GenerateCreateCode(in CqrsCodeGenerateCrudParams parameters);
-
-    Codes GenerateDeleteCode(in CqrsCodeGenerateCrudParams parameters);
-
-    Codes GenerateGetAllCode(in CqrsCodeGenerateCrudParams parameters);
-
-    Codes GenerateGetByIdCode(in CqrsCodeGenerateCrudParams parameters);
-
-    Codes GenerateUpdateCode(in CqrsCodeGenerateCrudParams parameters);
-
     Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config, CancellationToken token = default);
-
-    Task SaveToDiskAsync(CqrsViewModelBase viewModel, string path, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default);
 }
 
 public record CqrsCodeGenerateCrudParams(in Node<DbObjectViewModel> Table, in string CqrsNameSpace, in string DtoNameSpace);
@@ -33,7 +21,8 @@ public record CqrsCodeGenerateCrudParams(in Node<DbObjectViewModel> Table, in st
 public sealed record CqrsGenerateCodesParams(in string? EntityName, in Node<DbObjectViewModel> Table, in string CqrsNameSpace, in string DtoNameSpace)
     : CqrsCodeGenerateCrudParams(Table, CqrsNameSpace, DtoNameSpace);
 
-public sealed record CqrsCodeGenerateCodesConfig(bool ShouldGenerateGetAll = true,
+public sealed record CqrsCodeGenerateCodesConfig(
+    bool ShouldGenerateGetAll = true,
     bool ShouldGenerateGetById = true,
     bool ShouldGenerateCreate = true,
     bool ShouldGenerateUpdate = true,
