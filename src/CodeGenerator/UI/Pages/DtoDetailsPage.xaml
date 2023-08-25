@@ -163,9 +163,7 @@
                     </Grid>
                 </TabItem>
             </TabControl>
-            <TabControl
-                x:Name="DtoDetails"
-                Grid.Column="1">
+            <TabControl x:Name="DtoDetails" Grid.Column="1">
                 <TabItem Header="General">
                     <usercontrols:DtoEditUserControl x:Name="DtoEditUserControl" />
                 </TabItem>

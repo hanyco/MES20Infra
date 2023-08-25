@@ -1,13 +1,18 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+
+using Contracts.ViewModels;
+
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
+
 using Library.Exceptions;
 using Library.Exceptions.Validations;
 using Library.Validations;
 using Library.Wpf.Dialogs;
+
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace HanyCo.Infra.UI.UserControls.Blazor;

@@ -154,7 +154,7 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
             return null;
         }
 
-        var result = this._mapper.MapExcept<PropertyViewModel, Property>(viewModel, x => new { x.Id })
+        var result = this._mapper.MapExcept<Property>(viewModel, x => new { x.Id })
                                  .ForMember(x => x.ParentEntityId = viewModel.ParentEntityId)
                                  .ForMember(x => x.DbObjectId = viewModel.DbObject?.ObjectId.ToString(CultureInfo.CurrentCulture) ?? string.Empty)
                                  .ForMember(x => x.PropertyType = viewModel.Type.Cast().ToInt())

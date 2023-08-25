@@ -95,7 +95,7 @@
                     MouseDoubleClick="QueriesTreeView_MouseDoubleClick"
                     SelectedItemChanged="QueriesTreeView_SelectedItemChanged" />
             </Grid>
-            <usercontrols:CqrsEditorUserControl Grid.Column="1" />
+            <usercontrols:CqrsEditorUserControl Grid.Column="1" x:Name="CqrsEditorUserControl"/>
         </Grid>
     </Grid>
 </local:PageBase>

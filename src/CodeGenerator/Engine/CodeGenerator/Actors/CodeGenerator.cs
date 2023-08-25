@@ -1,7 +1,7 @@
 ﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Strageries.CodeDom;
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Strategies.CodeDom;
 
 using Library.CodeGeneration.Models;
 using Library.Validations;

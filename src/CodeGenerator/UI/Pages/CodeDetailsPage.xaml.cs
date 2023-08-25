@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;

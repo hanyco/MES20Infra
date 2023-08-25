@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.Internals.Data.DataSources;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.Internals.Data.DataSources;
 
 namespace HanyCo.Infra.UI.ViewModels;
 
