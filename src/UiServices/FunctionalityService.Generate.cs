@@ -120,8 +120,7 @@ internal sealed partial class FunctionalityService
                 .NotNull(x => x.Name)
                 .NotNull(x => x.NameSpace)
                 .NotNull(x => x.SourceDto)
-                .RuleFor(x => x.SourceDto.Module?.Id != 0, () => new ValidationException("Module is not selected or has not Id."))
-                ;
+                .RuleFor(x => x.SourceDto.Module?.Id != 0, () => new ValidationException("Module is not selected or has not Id."));
 
         // Initialize the viewModel with the connection string
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)

@@ -110,9 +110,9 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         _ = this.ViewModel.ParamDto.Properties.ClearAndAddRange(props);
         props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
-        _ = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
-        //this.ComponentCodeResultUserControl.Codes = codes;
-        //this.ResultsTabItem.IsSelected = true;
+        var codes = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
+        this.ComponentCodeResultUserControl.Codes = codes;
+        this.ResultsTabItem.IsSelected = true;
     }
 
     private void InitFormInfo()
@@ -129,7 +129,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
             return;
         }
         var selectedViewModel = this.QueriesTreeView.GetSelectedValue<CqrsQueryViewModel>();
-        Check.MustBe(selectedViewModel?.Id is null, () => new ValidationException("Please select a Query."));
+        Check.MustBeNotNull(selectedViewModel?.Id, () => new ValidationException("Please select a Query."));
         this.Logger.Debug("Loading...");
         var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
         Check.MustBeNotNull(viewModel, () => "ID not found");

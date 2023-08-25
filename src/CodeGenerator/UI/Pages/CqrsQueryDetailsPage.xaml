@@ -95,7 +95,15 @@
                     MouseDoubleClick="QueriesTreeView_MouseDoubleClick"
                     SelectedItemChanged="QueriesTreeView_SelectedItemChanged" />
             </Grid>
-            <usercontrols:CqrsEditorUserControl Grid.Column="1" x:Name="CqrsEditorUserControl"/>
+            <TabControl Grid.Column="2">
+                <TabItem Header="Query">
+                    <usercontrols:CqrsEditorUserControl x:Name="CqrsEditorUserControl" Grid.Column="1" />
+                </TabItem>
+                <TabItem x:Name="ResultsTabItem" Header="Source">
+                    <Blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" />
+                </TabItem>
+            </TabControl>
         </Grid>
+
     </Grid>
 </local:PageBase>
