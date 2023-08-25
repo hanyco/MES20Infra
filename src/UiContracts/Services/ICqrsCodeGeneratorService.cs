@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.UI.ViewModels;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
 using Library.Collections;
@@ -9,7 +11,7 @@ namespace Contracts.Services;
 
 public interface ICqrsCodeGeneratorService : IBusinessService//, IAsyncCqrsCodeGeneratorService
 {
-    IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config = null);
+    //IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config = null);
 
     Task<Result<Codes>> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default);
 
@@ -28,4 +30,4 @@ public sealed record CqrsCodeGenerateCodesConfig(
     bool ShouldGenerateUpdate = true,
     bool ShouldGenerateDelete = true);
 
-public sealed record GenerateAllCqrsCodesResultItem(in string Name, in Codes Codes);
+//public sealed record GenerateAllCqrsCodesResultItem(in string Name, in Codes Codes);

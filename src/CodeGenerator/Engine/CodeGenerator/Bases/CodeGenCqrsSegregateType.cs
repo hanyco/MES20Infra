@@ -31,7 +31,7 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases
         }
         public abstract SegregationRole Role { get; }
 
-        public IEnumerable<string> GetIntefaces(string cqrsName)
+        public IEnumerable<string> GetInterfaces(string cqrsName)
         {
             var items = this.OnGetRequiredInterfaces(cqrsName);
             foreach (var item in items)

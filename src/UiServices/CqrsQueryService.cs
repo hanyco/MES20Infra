@@ -37,7 +37,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 
     public Task<CqrsQueryViewModel> CreateAsync(CancellationToken token = default)
-        => Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandller = true, HasPartialOnInitialize = true });
+        => Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandler = true, HasPartialOnInitialize = true });
 
     public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
         => ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);

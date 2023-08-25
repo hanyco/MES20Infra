@@ -13,7 +13,6 @@ using HanyCo.Infra.UI.ViewModels;
 using Library.Collections;
 using Library.EventsArgs;
 using Library.Exceptions.Validations;
-using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
@@ -105,12 +104,13 @@ public partial class DtoDetailsPage
     private void CqrsExplorerTreeView_SelectedItemChanged(object sender, ItemActedEventArgs<InfraViewModelBase> e)
         => this.RefreshFormState();
 
-    private void CreateDtoWithTableMenuItem_Click(object sender, RoutedEventArgs e)
+    private async void CreateDtoWithTableMenuItem_Click(object sender, RoutedEventArgs e)
     {
         var tableNode = this.DatabaseExplorerUserControl.SelectedDbObjectNode;
         Check.MustBeNotNull(tableNode, () => "Please select a table");
 
-        var columns = tableNode.Children?.First()?.Children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>());
+        //var columns = tableNode.Children?.FirstOrDefault()?.Children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>());
+        var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, tableNode.Value.Name!);
         this.ViewModel = this._service.CreateByDbTable(DbTableViewModel.FromDbObjectViewModel(tableNode!), columns.Compact());
         this.Debug("DTO initialized.");
     }
@@ -176,11 +176,6 @@ public partial class DtoDetailsPage
 
     private async void EditDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        if (this.ViewModel is not null)
-        {
-            return;
-        }
-
         var dto = this.CqrsExplorerTreeView.SelectedItem.Cast().As<DtoViewModel>();
         Check.MustBeNotNull(dto, () => "Please select a DTO");
         var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value);
@@ -312,7 +307,7 @@ public partial class DtoDetailsPage
 
             await this.InitDtoExplorerTreeAsync();
             this.Debug("DTO saved.");
-            saveResult.ShowOrThrow();
+            _ = saveResult.ShowOrThrow();
         }
     }
 

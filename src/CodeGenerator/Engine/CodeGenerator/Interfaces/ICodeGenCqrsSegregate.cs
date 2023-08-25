@@ -8,5 +8,5 @@ public interface ICodeGenCqrsSegregate : ICanInherit, IPropertyContainer, ISuppo
 
     string Suffix { get; }
 
-    IEnumerable<string> GetIntefaces(string cqrsName);
+    IEnumerable<string> GetInterfaces(string cqrsName);
 }

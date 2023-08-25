@@ -4,7 +4,7 @@ using Library.CodeGeneration.Models;
 using Library.Helpers.CodeGen;
 using System.CodeDom;
 
-namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Strageries.CodeDom;
+namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Strategies.CodeDom;
 
 [Fluent]
 [Worker]

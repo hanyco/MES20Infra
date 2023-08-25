@@ -5,7 +5,6 @@ using System.Windows.Controls;
 using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
@@ -44,6 +43,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         this._codeGeneratorService = generatorService;
         this.DataContextChanged += this.CqrsQueryDetailsPage_DataContextChanged;
         this.InitializeComponent();
+        this.CqrsEditorUserControl.Initialize(moduleService, dtoService);
     }
 
     public bool IsViewModelChanged { get; set; }
@@ -71,7 +71,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    protected override async Task<Result> OnValidateFormAsync() => 
+    protected override async Task<Result> OnValidateFormAsync() =>
         await this.ViewModel.Check()
             .NotNull()
             .NotNull(x => x!.ParamDto)
@@ -87,7 +87,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
     {
         var id = this.QueriesTreeView.GetSelectedValue<CqrsQueryViewModel>()?.Id;
         Check.MustBe(id is null, () => new ValidationException("Please select a Query."));
-        
+
         if (MsgBox2.AskWithWarn("Are you sure to delete this item?") != TaskDialogResult.Yes)
         {
             return;
@@ -110,7 +110,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         _ = this.ViewModel.ParamDto.Properties.ClearAndAddRange(props);
         props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
-        var codes = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
+        _ = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
         //this.ComponentCodeResultUserControl.Codes = codes;
         //this.ResultsTabItem.IsSelected = true;
     }
@@ -201,11 +201,9 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         _ = await SourceCodeHelper.SaveToFileAskAsync(codes);
     }
 
-    private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
-    {
+    private async void SaveToDbButton_Click(object sender, RoutedEventArgs e) =>
         //_ = this.SelectModuleBox.Focus();
         _ = await this.SaveDbAsync();
-    }
 
     private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
         => e.Item = this._moduleService;

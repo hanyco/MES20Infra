@@ -41,7 +41,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Command;
 
     public Task<CqrsCommandViewModel> CreateAsync(CancellationToken token = default)
-        => Task.FromResult(new CqrsCommandViewModel { HasPartialHandller = true, HasPartialOnInitialize = true });
+        => Task.FromResult(new CqrsCommandViewModel { HasPartialHandler = true, HasPartialOnInitialize = true });
 
     public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {

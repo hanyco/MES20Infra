@@ -27,10 +27,6 @@ public static class ControlTypeHelper
         => EnumHelper.ToEnum<ControlType>(controltypeId);
 }
 
-//public sealed class ControlTypeProperties : Expando
-//{
-//}
-
 public static class TriggerTypeHelper
 {
     public static TriggerKind GetKind(this TriggerType triggerType) => triggerType switch

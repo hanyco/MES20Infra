@@ -264,28 +264,28 @@ public partial class CreateTableCrudPage
         }
         var folder = dlg.SelectedPath;
         var entityName = this.SelectedTable.Value.Name;
-        var codes = this._CodeGeneratorService.GenerateAllCodes(
-            new(entityName, this.SelectedTable, this.CqrsNamespace, this.DtoNamespace),
-            new(this.ShouldGenerateGetAll,
-                this.ShouldGenerateGetById,
-                this.ShouldGenerateCreate,
-                this.ShouldGenerateUpdate,
-                this.ShouldGenerateDelete));
+        //var codes = this._CodeGeneratorService.GenerateAllCodes(
+        //    new(entityName, this.SelectedTable, this.CqrsNamespace, this.DtoNamespace),
+        //    new(this.ShouldGenerateGetAll,
+        //        this.ShouldGenerateGetById,
+        //        this.ShouldGenerateCreate,
+        //        this.ShouldGenerateUpdate,
+        //        this.ShouldGenerateDelete));
 
-        if (!codes.Any())
-        {
-            throw new Exceptions.MesException("No CQRS Segregation is selected.");
-        }
-        foreach (var code in codes)
-        {
-            foreach (var statement in code.Codes)
-            {
-                var suffix = statement.IsPartial ? ".Partial" : "";
-                var sourceFile = Path.Combine(folder, $"{statement.Name}{suffix}.cs");
-                using var stream = File.CreateText(sourceFile);
-                await stream.WriteAsync(statement.Statement);
-            }
-        }
+        //if (!codes.Any())
+        //{
+        //    throw new Exceptions.MesException("No CQRS Segregation is selected.");
+        //}
+        //foreach (var code in codes)
+        //{
+        //    foreach (var statement in code.Codes)
+        //    {
+        //        var suffix = statement.IsPartial ? ".Partial" : "";
+        //        var sourceFile = Path.Combine(folder, $"{statement.Name}{suffix}.cs");
+        //        using var stream = File.CreateText(sourceFile);
+        //        await stream.WriteAsync(statement.Statement);
+        //    }
+        //}
         const string resultPrompt = "Code(s) saved.";
         this.Logger.Debug(resultPrompt);
         MsgBox2.Inform(resultPrompt);

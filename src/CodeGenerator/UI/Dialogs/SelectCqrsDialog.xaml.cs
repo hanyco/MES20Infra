@@ -3,8 +3,6 @@
 using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.UI.ViewModels;
-
 using Library.Exceptions.Validations;
 using Library.Globalization;
 using Library.Results;

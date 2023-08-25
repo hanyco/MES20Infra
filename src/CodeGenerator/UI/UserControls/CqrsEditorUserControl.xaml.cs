@@ -2,6 +2,7 @@
 
 using Contracts.Services;
 
+using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.EventsArgs;
@@ -19,8 +20,11 @@ public partial class CqrsEditorUserControl : UserControl
     public CqrsEditorUserControl() => 
         this.InitializeComponent();
 
-    public void Initialize(IModuleService moduleService, IDtoService dtoService) =>
+    public void Initialize(IModuleService moduleService, IDtoService dtoService)
+    {
         (this._moduleService, this._dtoService) = (moduleService, dtoService);
+        ControlHelper.BindItemsSourceToEnum<CqrsSegregateCategory>(CategoryComboBox);
+    }
 
     private async void SelectModuleBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
     {
