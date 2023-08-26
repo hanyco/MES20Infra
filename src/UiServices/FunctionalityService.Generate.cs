@@ -17,58 +17,80 @@ namespace Services;
 
 internal sealed partial class FunctionalityService
 {
+    /// <summary>
+    /// This method generates codes asynchronously based on the provided FunctionalityViewModel and optional arguments.
+    /// It is closely related to the FunctionalityViewModel and its associated codes.
+    /// </summary>
+    /// <param name="viewModel">The FunctionalityViewModel instance containing components and view models.</param>
+    /// <param name="args">Optional arguments for code generation.</param>
+    /// <param name="token">Cancellation token to cancel the code generation process.</param>
+    /// <returns>A Result containing the generated codes or a failure message if no codes were generated.</returns>
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(viewModel);
 
+        // Determine whether to update existing codes or generate new ones.
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : new();
-        var results = await generateCodes(viewModel, codeResult, token);
 
+        // Generate codes asynchronously and combine the results.
+        var results = await GenerateCodes(viewModel, codeResult, token);
+
+        // Combine generated results if available, or return a failure message.
         return results.Any()
-                ? Result<Codes>.Combine(results, Codes.Combine)
-                : Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
+            ? Result<Codes>.Combine(results, Codes.Combine)
+            : Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
 
-        async Task<IEnumerable<Result<Codes>>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes results, CancellationToken token)
+        // Internal method to generate codes for various components and view models.
+        async Task<IEnumerable<Result<Codes>>> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes results, CancellationToken token)
         {
             var result = new List<Result<Codes>>();
+
+            // Generate codes for GetAllQueryViewModel if available.
             if (viewModel.GetAllQueryViewModel != null)
             {
-                
-                results.GetAllQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token));
+                results.GetAllQueryCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token));
             }
 
+            // Generate codes for GetByIdQueryViewModel if available.
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                results.GetByIdQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token));
+                results.GetByIdQueryCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token));
             }
 
+            // Generate codes for InsertCommandViewModel if available.
             if (viewModel.InsertCommandViewModel != null)
             {
-                results.InsertCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token));
+                results.InsertCommandCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token));
             }
 
+            // Generate codes for UpdateCommandViewModel if available.
             if (viewModel.UpdateCommandViewModel != null)
             {
-                results.UpdateCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token));
+                results.UpdateCommandCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token));
             }
 
+            // Generate codes for DeleteCommandViewModel if available.
             if (viewModel.DeleteCommandViewModel != null)
             {
-                results.DeleteCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token));
+                results.DeleteCommandCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token));
             }
 
+            // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                results.BlazorListCodes = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
+                results.BlazorListCodes = AddToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
             }
 
+            // Generate codes for BlazorDetailsComponentViewModel if available.
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                results.BlazorDetailsComponentViewModel = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+                results.BlazorDetailsComponentViewModel = AddToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
             }
+
             return result;
 
-            Result<Codes> addToList(Result<Codes> codeResult)
+            // Internal method to add a code result to the result list.
+            Result<Codes> AddToList(Result<Codes> codeResult)
             {
                 result.Add(codeResult);
                 return codeResult;
@@ -173,21 +195,26 @@ internal sealed partial class FunctionalityService
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
-        var dto = create(data);
-        return addTableColumns ? addColumns(data, dto) : dto;
+        // Create an initial DTO based on the input data
+        var dto = Create(data);
 
-        static DtoViewModel create(CreationData data) =>
+        // If the addTableColumns parameter is true, add table columns to the DTO
+        return addTableColumns ? AddColumns(data, dto) : dto;
+
+        // Internal method for creating an initial DTO
+        static DtoViewModel Create(CreationData data) =>
             new DtoViewModel(data.ViewModel.SourceDto.Id, data.ViewModel.Name!)
             {
-                Comment = data.COMMENT,
-                NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"),
-                Functionality = data.ViewModel
+                Comment = data.COMMENT, // Set DTO comment
+                NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"), // Set DTO namespace
+                Functionality = data.ViewModel // Set DTO functionality
             }
-            .With(x => x.Module.Id = data.ViewModel.SourceDto.Module.Id);
+            .With(x => x.Module.Id = data.ViewModel.SourceDto.Module.Id); // Set DTO module ID
 
-        static DtoViewModel addColumns(CreationData data, DtoViewModel dto)
+        // Internal method for adding table columns to DTO
+        static DtoViewModel AddColumns(CreationData data, DtoViewModel dto)
         {
-            _ = dto.Properties.ClearAndAddRange(data.ViewModel.SourceDto.Properties.Select(x => new PropertyViewModel(x)));
+            _ = dto.Properties.ClearAndAddRange(data.ViewModel.SourceDto.Properties.Select(x => new PropertyViewModel(x))); // Add columns to DTO
             return dto;
         }
     }
