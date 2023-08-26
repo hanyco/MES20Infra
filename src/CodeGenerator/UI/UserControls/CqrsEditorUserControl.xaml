@@ -13,143 +13,136 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <TabControl TabStripPlacement="Left">
-        <TabItem Header="Query Details">
-            <Grid x:Name="QueryDetailsGrid" Margin="5">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <DockPanel
-                        Grid.Row="0"
-                        Grid.ColumnSpan="2"
-                        LastChildFill="True">
-                        <TextBlock Style="{StaticResource Heading}" Text="General" />
-                        <Separator />
-                    </DockPanel>
-                    <WrapPanel Grid.Row="1">
-                        <StackPanel Style="{StaticResource FieldPanel}">
-                            <TextBlock Text="Name:" />
-                            <TextBox
-                                d:Text="GetPersonById"
-                                Style="{StaticResource LongTextBox}"
-                                Text="{Binding Name}" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource FieldPanel}">
-                            <TextBlock Text="Module:" />
-                            <usercontrols:SelectModuleUserControl
-                                x:Name="SelectModuleBox"
-                                Initializing="SelectModuleUserControl_Initializing"
-                                SelectedModule="{Binding Module}"
-                                SelectedModuleChanged="SelectModuleBox_SelectedModuleChanged"
-                                Style="{StaticResource LongControl}" />
-                        </StackPanel>
-                    </WrapPanel>
-                    <StackPanel
-                        Grid.Row="1"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        Style="{StaticResource FieldPanel}">
-                        <TextBlock Text="Comments:" />
-                        <TextBox
-                            d:Text="Gets PersonDTO by specific ID"
-                            Style="{StaticResource Multiline}"
-                            Text="{Binding Comment}" />
+    <Grid x:Name="QueryDetailsGrid" Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DockPanel
+                Grid.Row="0"
+                Grid.ColumnSpan="2"
+                LastChildFill="True">
+                <TextBlock Style="{StaticResource Heading}" Text="General" />
+                <Separator />
+            </DockPanel>
+            <WrapPanel Grid.Row="1">
+                <StackPanel Style="{StaticResource FieldPanel}">
+                    <TextBlock Text="Name:" />
+                    <TextBox
+                        d:Text="GetPersonById"
+                        Style="{StaticResource LongTextBox}"
+                        Text="{Binding Name}" />
+                </StackPanel>
+                <StackPanel Style="{StaticResource FieldPanel}">
+                    <TextBlock Text="Module:" />
+                    <usercontrols:SelectModuleUserControl
+                        x:Name="SelectModuleBox"
+                        Initializing="SelectModuleUserControl_Initializing"
+                        SelectedModule="{Binding Module}"
+                        SelectedModuleChanged="SelectModuleBox_SelectedModuleChanged"
+                        Style="{StaticResource LongControl}" />
+                </StackPanel>
+            </WrapPanel>
+            <StackPanel
+                Grid.Row="1"
+                Grid.RowSpan="2"
+                Grid.Column="1"
+                Style="{StaticResource FieldPanel}">
+                <TextBlock Text="Comments:" />
+                <TextBox
+                    d:Text="Gets PersonDTO by specific ID"
+                    Style="{StaticResource Multiline}"
+                    Text="{Binding Comment}" />
+            </StackPanel>
+            <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
+                <TextBlock Text="Category:" />
+                <ComboBox
+                    Name="CategoryComboBox"
+                    SelectedValue="{Binding Category}"
+                    Style="{StaticResource LongComboBox}" />
+            </StackPanel>
+            <StackPanel Grid.Row="3" Grid.ColumnSpan="2">
+                <DockPanel Grid.ColumnSpan="2" LastChildFill="True">
+                    <TextBlock Style="{StaticResource Heading}" Text="Namespace" />
+                    <Separator />
+                </DockPanel>
+                <WrapPanel>
+                    <StackPanel Style="{StaticResource FieldPanel}">
+                        <TextBlock Text="CQRS" />
+                        <TextBox Style="{StaticResource LongTextBox}" Text="{Binding CqrsNameSpace}" />
                     </StackPanel>
-                    <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
-                        <TextBlock Text="Category:" />
-                        <ComboBox
-                            Name="CategoryComboBox"
-                            SelectedValue="{Binding Category}"
-                            Style="{StaticResource LongComboBox}" />
+                    <StackPanel IsEnabled="False" Style="{StaticResource FieldPanel}">
+                        <TextBlock Text="DTO" />
+                        <TextBox Style="{StaticResource LongTextBox}" Text="{Binding DtoNameSpace}" />
                     </StackPanel>
-                    <StackPanel Grid.Row="3" Grid.ColumnSpan="2">
-                        <DockPanel Grid.ColumnSpan="2" LastChildFill="True">
-                            <TextBlock Style="{StaticResource Heading}" Text="Namespace" />
-                            <Separator />
-                        </DockPanel>
-                        <WrapPanel>
-                            <StackPanel Style="{StaticResource FieldPanel}">
-                                <TextBlock Text="CQRS" />
-                                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding CqrsNameSpace}" />
-                            </StackPanel>
-                            <StackPanel IsEnabled="False" Style="{StaticResource FieldPanel}">
-                                <TextBlock Text="DTO" />
-                                <TextBox Style="{StaticResource LongTextBox}" Text="{Binding DtoNameSpace}" />
-                            </StackPanel>
-                        </WrapPanel>
-                    </StackPanel>
-                    <DockPanel
-                        Grid.Row="6"
-                        Grid.ColumnSpan="2"
-                        LastChildFill="True">
-                        <TextBlock Style="{StaticResource Heading}" Text="Developer Guides" />
-                        <Separator />
-                    </DockPanel>
-                    <WrapPanel Grid.Row="7">
-                        <StackPanel Style="{StaticResource FieldPanel}">
-                            <TextBlock Text="Param DTO:" />
-                            <ComboBox
-                                Name="ParamDtoComboBox"
-                                SelectedValue="{Binding ParamDto}"
-                                Style="{StaticResource LongComboBox}" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource FieldPanel}">
-                            <TextBlock Text="Result DTO:" />
-                            <ComboBox
-                                Name="ResultDtoComboBox"
-                                SelectedValue="{Binding ResultDto}"
-                                Style="{StaticResource LongComboBox}" />
-                        </StackPanel>
-                    </WrapPanel>
-                    <StackPanel
-                        Grid.Row="7"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        Style="{StaticResource FieldPanel}">
-                        <TextBlock Text="Description:    " />
-                        <TextBox
-                            d:Text="What the developer will see"
-                            Style="{StaticResource Multiline}"
-                            Text="{Binding Description}" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
-                        <TextBlock Text="Friendly:" />
-                        <TextBox
-                            d:Text="What the developer will see"
-                            Style="{StaticResource LongTextBox}"
-                            Text="{Binding FriendlyName}" />
-                    </StackPanel>
-                </Grid>
-            </Grid>
-        </TabItem>
-        <TabItem Name="ResultsTabItem" Header="Results">
-            <Blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" />
-        </TabItem>
-    </TabControl>
+                </WrapPanel>
+            </StackPanel>
+            <DockPanel
+                Grid.Row="6"
+                Grid.ColumnSpan="2"
+                LastChildFill="True">
+                <TextBlock Style="{StaticResource Heading}" Text="Developer Guides" />
+                <Separator />
+            </DockPanel>
+            <WrapPanel Grid.Row="7">
+                <StackPanel Style="{StaticResource FieldPanel}">
+                    <TextBlock Text="Param DTO:" />
+                    <ComboBox
+                        Name="ParamDtoComboBox"
+                        SelectedValue="{Binding ParamDto}"
+                        Style="{StaticResource LongComboBox}" />
+                </StackPanel>
+                <StackPanel Style="{StaticResource FieldPanel}">
+                    <TextBlock Text="Result DTO:" />
+                    <ComboBox
+                        Name="ResultDtoComboBox"
+                        SelectedValue="{Binding ResultDto}"
+                        Style="{StaticResource LongComboBox}" />
+                </StackPanel>
+            </WrapPanel>
+            <StackPanel
+                Grid.Row="7"
+                Grid.RowSpan="2"
+                Grid.Column="1"
+                Style="{StaticResource FieldPanel}">
+                <TextBlock Text="Description:    " />
+                <TextBox
+                    d:Text="What the developer will see"
+                    Style="{StaticResource Multiline}"
+                    Text="{Binding Description}" />
+            </StackPanel>
+            <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
+                <TextBlock Text="Friendly:" />
+                <TextBox
+                    d:Text="What the developer will see"
+                    Style="{StaticResource LongTextBox}"
+                    Text="{Binding FriendlyName}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
 </UserControl>

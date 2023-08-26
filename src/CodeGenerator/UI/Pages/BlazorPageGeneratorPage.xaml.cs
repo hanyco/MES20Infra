@@ -163,7 +163,7 @@ public partial class BlazorPageGeneratorPage
             return;
         }
 
-        using var scope = this.ActionScopeBegin("Loading...");
+        var scope = this.ActionScopeBegin("Loading...");
         var id = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView)?.Id;
         Check.MustBeNotNull(id, () => "Please select a page to edit.");
         var viewModel = await this._service.GetByIdAsync(id.Value);

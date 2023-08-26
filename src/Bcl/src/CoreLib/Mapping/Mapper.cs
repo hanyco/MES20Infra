@@ -46,19 +46,18 @@ public sealed class Mapper : IMapper
         return this.Map<TDestination>(converter);
     }
 
-    public TDestination? Map<TSource, TDestination>(in TSource source, in TDestination destination)
-        where TDestination : class
-        => throw new NotImplementedException();
+    public TDestination? Map<TSource, TDestination>(in TSource? source, in TDestination destination)
+        where TDestination : class => this.MapExcept<TDestination>(source, destination, default!);
 
-    public TDestination? MapExcept<TDestination>(in object source, in TDestination destination, in Func<TDestination, object> except)
-                                where TDestination : class
+    public TDestination? MapExcept<TDestination>(in object? source, in TDestination destination, in Func<TDestination, object>? except)
+        where TDestination : class
     {
         if (source is null)
         {
             return null;
         }
         Check.MustBeArgumentNotNull(source);
-        var exceptProps = except(destination).GetType().GetProperties().Select(x => x.Name).ToArray();
+        var exceptProps = (except?.Invoke(destination).GetType().GetProperties().Select(x => x.Name) ?? Enumerable.Empty<object>()).ToArray();
         var props = typeof(TDestination).GetProperties();
         var result = destination;
         foreach (var prop in props)
@@ -92,10 +91,7 @@ public sealed class Mapper : IMapper
         return result;
     }
 
-    public TDestination MapExcept<TSource, TDestination>(in TSource source, in Func<TDestination, object> except) where TDestination : class, new()
-    {
-        throw new NotImplementedException();
-    }
+    public TDestination MapExcept<TSource, TDestination>(in TSource source, in Func<TDestination, object> except) where TDestination : class, new() => throw new NotImplementedException();
 
     public TDestination? MapExcept<TSource, TDestination>(in TSource source, in TDestination destination, in Func<TDestination, object> except) where TDestination : class => throw new NotImplementedException();
 

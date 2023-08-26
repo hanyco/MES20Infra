@@ -114,7 +114,7 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         const string INDENT = "    ";
         switch (this.Action.Segregation)
         {
-            case IQueryCqrsSergregation query:
+            case IQueryCqrsSegregation query:
                 var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
                     $@"{INDENT.Repeat(3)}this.{dataContextValidatorName}();
 {INDENT.Repeat(3)}var dto = this.DataContext;
@@ -132,7 +132,7 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
                 yield return new(queryCalled, null);
                 break;
 
-            case ICommandCqrsSergregation command:
+            case ICommandCqrsSegregation command:
                 var commandBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
                     $@"{INDENT.Repeat(3)}this.{dataContextValidatorName}();
 {INDENT.Repeat(3)}var dto = this.DataContext;
@@ -167,10 +167,10 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
     public HtmlButton SetAction(IHtmlAction action)
         => this.Fluent(() => this.Action = action);
 
-    public HtmlButton SetAction(string name, ICommandCqrsSergregation segregation)
+    public HtmlButton SetAction(string name, ICommandCqrsSegregation segregation)
         => this.Fluent(() => this.Action = new HtmlCommandAction(name, segregation));
 
-    public HtmlButton SetAction(string name, IQueryCqrsSergregation segregation)
+    public HtmlButton SetAction(string name, IQueryCqrsSegregation segregation)
         => this.Fluent(() => this.Action = new HtmlQueryAction(name, segregation));
 
     private void SetCssClasses()
