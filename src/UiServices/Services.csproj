@@ -14,7 +14,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
     <ProjectReference Include="..\Bcl\src\WpfLib\WpfLib.csproj" />
-    <ProjectReference Include="..\UiContracts\Contracts.csproj" />
+    <ProjectReference Include="..\CodeGenerator\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\CodeGenerator\Data\Data.csproj" />
   </ItemGroup>
 
 </Project>
