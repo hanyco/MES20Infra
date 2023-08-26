@@ -1,212 +1,88 @@
-﻿USE [MesInfra]
+﻿USE [master]
 GO
-EXEC sys.sp_dropextendedproperty @name=N'MS_Description' , @level0type=N'SCHEMA',@level0name=N'infra', @level1type=N'TABLE',@level1name=N'UiPageComponent', @level2type=N'COLUMN',@level2name=N'PositionId'
+/****** Object:  Database [MesInfra]    Script Date: 8/26/2023 1:38:27 PM ******/
+CREATE DATABASE [MesInfra]
+ CONTAINMENT = NONE
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
 GO
-EXEC sys.sp_dropextendedproperty @name=N'MS_Description' , @level0type=N'SCHEMA',@level0name=N'infra', @level1type=N'TABLE',@level1name=N'UiComponentProperty', @level2type=N'COLUMN',@level2name=N'PositionId'
+ALTER DATABASE [MesInfra] SET COMPATIBILITY_LEVEL = 150
 GO
-EXEC sys.sp_dropextendedproperty @name=N'MS_Description' , @level0type=N'SCHEMA',@level0name=N'infra', @level1type=N'TABLE',@level1name=N'UiComponentAction', @level2type=N'COLUMN',@level2name=N'Id'
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [MesInfra].[dbo].[sp_fulltext_database] @action = 'enable'
+end
 GO
-ALTER TABLE [infra].[UiPageComponent] DROP CONSTRAINT [FK_UiPageComponent_UiPage]
+ALTER DATABASE [MesInfra] SET ANSI_NULL_DEFAULT OFF 
 GO
-ALTER TABLE [infra].[UiPageComponent] DROP CONSTRAINT [FK_UiPageComponent_UiComponent]
+ALTER DATABASE [MesInfra] SET ANSI_NULLS OFF 
 GO
-ALTER TABLE [infra].[UiPageComponent] DROP CONSTRAINT [FK_UiPageComponent_UiBootstrapPosition]
+ALTER DATABASE [MesInfra] SET ANSI_PADDING OFF 
 GO
-ALTER TABLE [infra].[UiPage] DROP CONSTRAINT [FK_UiPage_Module]
+ALTER DATABASE [MesInfra] SET ANSI_WARNINGS OFF 
 GO
-ALTER TABLE [infra].[UiPage] DROP CONSTRAINT [FK_UiPage_Dto]
+ALTER DATABASE [MesInfra] SET ARITHABORT OFF 
 GO
-ALTER TABLE [infra].[UiComponentProperty] DROP CONSTRAINT [FK_UiComponentProperty_UiComponent]
+ALTER DATABASE [MesInfra] SET AUTO_CLOSE ON 
 GO
-ALTER TABLE [infra].[UiComponentProperty] DROP CONSTRAINT [FK_UiComponentProperty_UiBootstrapPosition]
+ALTER DATABASE [MesInfra] SET AUTO_SHRINK OFF 
 GO
-ALTER TABLE [infra].[UiComponentProperty] DROP CONSTRAINT [FK_UiComponentProperty_Property1]
+ALTER DATABASE [MesInfra] SET AUTO_UPDATE_STATISTICS ON 
 GO
-ALTER TABLE [infra].[UiComponentAction] DROP CONSTRAINT [FK_UiComponentAction_UiComponent]
+ALTER DATABASE [MesInfra] SET CURSOR_CLOSE_ON_COMMIT OFF 
 GO
-ALTER TABLE [infra].[UiComponentAction] DROP CONSTRAINT [FK_UiComponentAction_UiBootstrapPosition]
+ALTER DATABASE [MesInfra] SET CURSOR_DEFAULT  GLOBAL 
 GO
-ALTER TABLE [infra].[UiComponentAction] DROP CONSTRAINT [FK_UiComponentAction_CqrsSegregate]
+ALTER DATABASE [MesInfra] SET CONCAT_NULL_YIELDS_NULL OFF 
 GO
-ALTER TABLE [infra].[UiComponent] DROP CONSTRAINT [FK_UiComponent_Property]
+ALTER DATABASE [MesInfra] SET NUMERIC_ROUNDABORT OFF 
 GO
-ALTER TABLE [infra].[UiComponent] DROP CONSTRAINT [FK_UiComponent_Dto1]
+ALTER DATABASE [MesInfra] SET QUOTED_IDENTIFIER OFF 
 GO
-ALTER TABLE [infra].[SecurityClaim] DROP CONSTRAINT [FK_SecurityClaim_SecurityDescriptor1]
+ALTER DATABASE [MesInfra] SET RECURSIVE_TRIGGERS OFF 
 GO
-ALTER TABLE [infra].[Property] DROP CONSTRAINT [FK_Property_Dto]
+ALTER DATABASE [MesInfra] SET  DISABLE_BROKER 
 GO
-ALTER TABLE [infra].[EntitySecurity] DROP CONSTRAINT [FK_EntitySecurity_SecurityDescriptor]
+ALTER DATABASE [MesInfra] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
 GO
-ALTER TABLE [infra].[Dto] DROP CONSTRAINT [FK_Dto_Module_ModuleId]
+ALTER DATABASE [MesInfra] SET DATE_CORRELATION_OPTIMIZATION OFF 
 GO
-ALTER TABLE [infra].[Dto] DROP CONSTRAINT [FK_Dto_Functionality]
+ALTER DATABASE [MesInfra] SET TRUSTWORTHY OFF 
 GO
-ALTER TABLE [infra].[CrudCode] DROP CONSTRAINT [FK_CrudCode_Module]
+ALTER DATABASE [MesInfra] SET ALLOW_SNAPSHOT_ISOLATION OFF 
 GO
-ALTER TABLE [infra].[CqrsSegregate] DROP CONSTRAINT [FK_CqrsSegregate_Module]
+ALTER DATABASE [MesInfra] SET PARAMETERIZATION SIMPLE 
 GO
-ALTER TABLE [infra].[CqrsSegregate] DROP CONSTRAINT [FK_CqrsSegregate_Functionality]
+ALTER DATABASE [MesInfra] SET READ_COMMITTED_SNAPSHOT OFF 
 GO
-ALTER TABLE [infra].[CqrsSegregate] DROP CONSTRAINT [FK_CqrsSegregate_Dto_ResultDtoId]
+ALTER DATABASE [MesInfra] SET HONOR_BROKER_PRIORITY OFF 
 GO
-ALTER TABLE [infra].[CqrsSegregate] DROP CONSTRAINT [FK_CqrsSegregate_Dto]
+ALTER DATABASE [MesInfra] SET RECOVERY FULL 
 GO
-ALTER TABLE [dbo].[AspNetUserTokens] DROP CONSTRAINT [FK_AspNetUserTokens_AspNetUsers_UserId]
+ALTER DATABASE [MesInfra] SET  MULTI_USER 
 GO
-ALTER TABLE [dbo].[AspNetUserRoles] DROP CONSTRAINT [FK_AspNetUserRoles_AspNetUsers_UserId]
+ALTER DATABASE [MesInfra] SET PAGE_VERIFY CHECKSUM  
 GO
-ALTER TABLE [dbo].[AspNetUserRoles] DROP CONSTRAINT [FK_AspNetUserRoles_AspNetRoles_RoleId]
+ALTER DATABASE [MesInfra] SET DB_CHAINING OFF 
 GO
-ALTER TABLE [dbo].[AspNetUserLogins] DROP CONSTRAINT [FK_AspNetUserLogins_AspNetUsers_UserId]
+ALTER DATABASE [MesInfra] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
 GO
-ALTER TABLE [dbo].[AspNetUserClaims] DROP CONSTRAINT [FK_AspNetUserClaims_AspNetUsers_UserId]
+ALTER DATABASE [MesInfra] SET TARGET_RECOVERY_TIME = 60 SECONDS 
 GO
-ALTER TABLE [dbo].[AspNetRoleClaims] DROP CONSTRAINT [FK_AspNetRoleClaims_AspNetRoles_RoleId]
+ALTER DATABASE [MesInfra] SET DELAYED_DURABILITY = DISABLED 
 GO
-ALTER TABLE [infra].[UiPageComponent] DROP CONSTRAINT [DF_UiPageComponent_Guid]
+ALTER DATABASE [MesInfra] SET ACCELERATED_DATABASE_RECOVERY = OFF  
 GO
-ALTER TABLE [infra].[UiPage] DROP CONSTRAINT [DF_UiPage_Guid]
+ALTER DATABASE [MesInfra] SET QUERY_STORE = OFF
 GO
-ALTER TABLE [infra].[UiComponent] DROP CONSTRAINT [DF_UiComponent_Guid]
+USE [MesInfra]
 GO
-ALTER TABLE [infra].[SystemMenu] DROP CONSTRAINT [DF_SystemMenu_Guid]
-GO
-ALTER TABLE [infra].[SecurityDescriptor] DROP CONSTRAINT [DF_SecurityDescriptor_Id]
-GO
-ALTER TABLE [infra].[SecurityClaim] DROP CONSTRAINT [DF_SecurityClaim_Id]
-GO
-ALTER TABLE [infra].[Property] DROP CONSTRAINT [DF_Property_Guid]
-GO
-ALTER TABLE [infra].[Module] DROP CONSTRAINT [DF_Module_Guid]
-GO
-ALTER TABLE [infra].[Functionality] DROP CONSTRAINT [DF_Functionality_Guid]
-GO
-ALTER TABLE [infra].[EntitySecurity] DROP CONSTRAINT [DF_EntitySecurity_Id]
-GO
-ALTER TABLE [infra].[Dto] DROP CONSTRAINT [DF_Dto_Guid]
-GO
-ALTER TABLE [infra].[CrudCode] DROP CONSTRAINT [DF_CrudCode_Guid]
-GO
-ALTER TABLE [infra].[CqrsSegregate] DROP CONSTRAINT [DF_CqrsSegregate_Guid]
-GO
-/****** Object:  Table [infra].[UiPageComponent]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[UiPageComponent]') AND type in (N'U'))
-DROP TABLE [infra].[UiPageComponent]
-GO
-/****** Object:  Table [infra].[UiPage]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[UiPage]') AND type in (N'U'))
-DROP TABLE [infra].[UiPage]
-GO
-/****** Object:  Table [infra].[UiComponentProperty]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[UiComponentProperty]') AND type in (N'U'))
-DROP TABLE [infra].[UiComponentProperty]
-GO
-/****** Object:  Table [infra].[UiComponentAction]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[UiComponentAction]') AND type in (N'U'))
-DROP TABLE [infra].[UiComponentAction]
-GO
-/****** Object:  Table [infra].[UiComponent]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[UiComponent]') AND type in (N'U'))
-DROP TABLE [infra].[UiComponent]
-GO
-/****** Object:  Table [infra].[UiBootstrapPosition]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[UiBootstrapPosition]') AND type in (N'U'))
-DROP TABLE [infra].[UiBootstrapPosition]
-GO
-/****** Object:  Table [infra].[Translation]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[Translation]') AND type in (N'U'))
-DROP TABLE [infra].[Translation]
-GO
-/****** Object:  Table [infra].[SystemMenu]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[SystemMenu]') AND type in (N'U'))
-DROP TABLE [infra].[SystemMenu]
-GO
-/****** Object:  Table [infra].[SecurityDescriptor]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[SecurityDescriptor]') AND type in (N'U'))
-DROP TABLE [infra].[SecurityDescriptor]
-GO
-/****** Object:  Table [infra].[SecurityClaim]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[SecurityClaim]') AND type in (N'U'))
-DROP TABLE [infra].[SecurityClaim]
-GO
-/****** Object:  Table [infra].[Property]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[Property]') AND type in (N'U'))
-DROP TABLE [infra].[Property]
-GO
-/****** Object:  Table [infra].[Module]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[Module]') AND type in (N'U'))
-DROP TABLE [infra].[Module]
-GO
-/****** Object:  Table [infra].[Functionality]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[Functionality]') AND type in (N'U'))
-DROP TABLE [infra].[Functionality]
-GO
-/****** Object:  Table [infra].[EntitySecurity]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[EntitySecurity]') AND type in (N'U'))
-DROP TABLE [infra].[EntitySecurity]
-GO
-/****** Object:  Table [infra].[Dto]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[Dto]') AND type in (N'U'))
-DROP TABLE [infra].[Dto]
-GO
-/****** Object:  Table [infra].[CrudCode]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[CrudCode]') AND type in (N'U'))
-DROP TABLE [infra].[CrudCode]
-GO
-/****** Object:  Table [infra].[CqrsSegregate]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[infra].[CqrsSegregate]') AND type in (N'U'))
-DROP TABLE [infra].[CqrsSegregate]
-GO
-/****** Object:  Table [dbo].[Person]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Person]') AND type in (N'U'))
-DROP TABLE [dbo].[Person]
-GO
-/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUserTokens]') AND type in (N'U'))
-DROP TABLE [dbo].[AspNetUserTokens]
-GO
-/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUsers]') AND type in (N'U'))
-DROP TABLE [dbo].[AspNetUsers]
-GO
-/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUserRoles]') AND type in (N'U'))
-DROP TABLE [dbo].[AspNetUserRoles]
-GO
-/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUserLogins]') AND type in (N'U'))
-DROP TABLE [dbo].[AspNetUserLogins]
-GO
-/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUserClaims]') AND type in (N'U'))
-DROP TABLE [dbo].[AspNetUserClaims]
-GO
-/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AspNetRoles]') AND type in (N'U'))
-DROP TABLE [dbo].[AspNetRoles]
-GO
-/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AspNetRoleClaims]') AND type in (N'U'))
-DROP TABLE [dbo].[AspNetRoleClaims]
-GO
-/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 11-Mar-23 23:11:14 ******/
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[__EFMigrationsHistory]') AND type in (N'U'))
-DROP TABLE [dbo].[__EFMigrationsHistory]
-GO
-/****** Object:  Schema [sec]    Script Date: 11-Mar-23 23:11:14 ******/
-DROP SCHEMA [sec]
-GO
-/****** Object:  Schema [infra]    Script Date: 11-Mar-23 23:11:14 ******/
-DROP SCHEMA [infra]
-GO
-/****** Object:  Schema [infra]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Schema [infra]    Script Date: 8/26/2023 1:38:27 PM ******/
 CREATE SCHEMA [infra]
 GO
-/****** Object:  Schema [sec]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Schema [sec]    Script Date: 8/26/2023 1:38:27 PM ******/
 CREATE SCHEMA [sec]
 GO
-/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -220,7 +96,7 @@ CREATE TABLE [dbo].[__EFMigrationsHistory](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -236,7 +112,7 @@ CREATE TABLE [dbo].[AspNetRoleClaims](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -252,7 +128,7 @@ CREATE TABLE [dbo].[AspNetRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -268,7 +144,7 @@ CREATE TABLE [dbo].[AspNetUserClaims](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -285,7 +161,7 @@ CREATE TABLE [dbo].[AspNetUserLogins](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -300,7 +176,7 @@ CREATE TABLE [dbo].[AspNetUserRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -327,7 +203,7 @@ CREATE TABLE [dbo].[AspNetUsers](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -345,7 +221,7 @@ CREATE TABLE [dbo].[AspNetUserTokens](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Person]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [dbo].[Person]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -358,7 +234,7 @@ CREATE TABLE [dbo].[Person](
 	[Height] [int] NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[CqrsSegregate]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[CqrsSegregate]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -383,7 +259,7 @@ CREATE TABLE [infra].[CqrsSegregate](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[CrudCode]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[CrudCode]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -407,7 +283,7 @@ CREATE TABLE [infra].[CrudCode](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Dto]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[Dto]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -430,7 +306,7 @@ CREATE TABLE [infra].[Dto](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[EntitySecurity]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[EntitySecurity]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -446,7 +322,7 @@ CREATE TABLE [infra].[EntitySecurity](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Functionality]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[Functionality]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -463,7 +339,7 @@ CREATE TABLE [infra].[Functionality](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Module]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[Module]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -479,7 +355,7 @@ CREATE TABLE [infra].[Module](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Property]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[Property]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -504,7 +380,7 @@ CREATE TABLE [infra].[Property](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[SecurityClaim]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[SecurityClaim]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -520,7 +396,7 @@ CREATE TABLE [infra].[SecurityClaim](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[SecurityDescriptor]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[SecurityDescriptor]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -537,7 +413,7 @@ CREATE TABLE [infra].[SecurityDescriptor](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[SystemMenu]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[SystemMenu]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -554,7 +430,7 @@ CREATE TABLE [infra].[SystemMenu](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Translation]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[Translation]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -566,7 +442,7 @@ CREATE TABLE [infra].[Translation](
 	[Value] [nvarchar](max) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiBootstrapPosition]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[UiBootstrapPosition]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -583,7 +459,7 @@ CREATE TABLE [infra].[UiBootstrapPosition](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiComponent]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[UiComponent]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -605,7 +481,7 @@ CREATE TABLE [infra].[UiComponent](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiComponentAction]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[UiComponentAction]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -626,7 +502,7 @@ CREATE TABLE [infra].[UiComponentAction](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiComponentProperty]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[UiComponentProperty]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -647,7 +523,7 @@ CREATE TABLE [infra].[UiComponentProperty](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiPage]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[UiPage]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -668,7 +544,7 @@ CREATE TABLE [infra].[UiPage](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiPageComponent]    Script Date: 11-Mar-23 23:11:14 ******/
+/****** Object:  Table [infra].[UiPageComponent]    Script Date: 8/26/2023 1:38:27 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -710,6 +586,14 @@ GO
 INSERT [infra].[Dto] ([Id], [Name], [NameSpace], [ModuleId], [DbObjectId], [Guid], [Comment], [IsParamsDto], [IsResultDto], [IsViewModel], [FunctionalityId]) VALUES (20224, N'PersonDetailsViewModel', N'Mes.Hr.Models', 5, NULL, N'788918a7-9083-47cf-93b0-2a97a3d3251c', NULL, 0, 0, 1, NULL)
 GO
 INSERT [infra].[Dto] ([Id], [Name], [NameSpace], [ModuleId], [DbObjectId], [Guid], [Comment], [IsParamsDto], [IsResultDto], [IsViewModel], [FunctionalityId]) VALUES (20225, N'PersonViewModel', N'Mes.Hr.Models', 5, NULL, N'1c4db1af-7022-4285-9d5f-af7bbad6eb9f', NULL, 0, 0, 1, NULL)
+GO
+INSERT [infra].[Dto] ([Id], [Name], [NameSpace], [ModuleId], [DbObjectId], [Guid], [Comment], [IsParamsDto], [IsResultDto], [IsViewModel], [FunctionalityId]) VALUES (20226, N'GetPersonParamsDto', N'Mes.Hr', 5, NULL, N'05cafc9a-5889-4444-bbf6-a82e1a38f6d5', NULL, 0, 0, 0, NULL)
+GO
+INSERT [infra].[Dto] ([Id], [Name], [NameSpace], [ModuleId], [DbObjectId], [Guid], [Comment], [IsParamsDto], [IsResultDto], [IsViewModel], [FunctionalityId]) VALUES (20227, N'InsertPersonParamsDto', N'Mes.Hr', 5, NULL, N'b31f0ee7-f666-411a-9692-c33e85c1beca', NULL, 1, 0, 0, NULL)
+GO
+INSERT [infra].[Dto] ([Id], [Name], [NameSpace], [ModuleId], [DbObjectId], [Guid], [Comment], [IsParamsDto], [IsResultDto], [IsViewModel], [FunctionalityId]) VALUES (20228, N'InsertPersonResultDto', N'Mes.Hr', 5, NULL, N'764055c8-cc93-4722-a7f5-c53b6f92e2dc', NULL, 0, 1, 0, NULL)
+GO
+INSERT [infra].[Dto] ([Id], [Name], [NameSpace], [ModuleId], [DbObjectId], [Guid], [Comment], [IsParamsDto], [IsResultDto], [IsViewModel], [FunctionalityId]) VALUES (20229, N'PersonDto', N'Mes.Infra', 5, NULL, N'0238c6ff-8cd7-4374-a56a-65ee072119f8', NULL, 0, 0, 1, NULL)
 GO
 SET IDENTITY_INSERT [infra].[Dto] OFF
 GO
@@ -768,6 +652,36 @@ GO
 INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20622, 20225, 20, N'Mes.Hr.Models.PersonListViewModel', N'ListViewModel', NULL, NULL, NULL, NULL, NULL, N'', N'f3d0c960-1c19-4388-a47c-df90e28f615b', 20223)
 GO
 INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20623, 20225, 20, N'Mes.Hr.Models.PersonDetailsViewModel', N'DetailsViewModel', NULL, NULL, NULL, NULL, NULL, N'', N'9ceddeca-3119-429c-aadc-2f3cb05acd94', 20224)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20624, 20226, 3, N'System.Int64', N'Id', NULL, NULL, NULL, 0, NULL, N'295672101001', N'c4e5f2cb-38d1-446b-9f7f-fd8f30cad062', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20625, 20226, 1, N'System.String', N'FirstName', NULL, NULL, NULL, 0, NULL, N'295672101002', N'a48019e3-c0e7-46fb-af3a-90f9358358db', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20626, 20226, 1, N'System.String', N'LastName', NULL, NULL, NULL, 0, NULL, N'295672101003', N'db295823-5d2e-4f8a-8536-381fd6a596af', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20627, 20226, 8, N'System.DateTime', N'DateOfBirth', NULL, NULL, NULL, 0, NULL, N'295672101004', N'e93c66f8-1399-4f78-a1be-a0c2cfb10012', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20628, 20226, 2, N'System.Int32', N'Height', NULL, NULL, NULL, 0, NULL, N'295672101005', N'aa043c46-fea4-45c7-bb34-d58a84995962', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20630, 20227, 1, N'System.String', N'FirstName', NULL, NULL, NULL, 0, NULL, N'', N'dfe2f29b-bce7-49a8-ae4b-c56f7b9f298e', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20631, 20227, 1, N'System.String', N'LastName', NULL, NULL, NULL, 0, NULL, N'', N'4f3168af-951a-4f85-8f08-9029c8ff7aae', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20632, 20227, 8, N'System.DateTime', N'DateOfBirth', NULL, NULL, NULL, 0, NULL, N'', N'955162c6-97b0-4ca5-a297-4e1943387533', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20633, 20227, 2, N'System.Int32', N'Height', NULL, NULL, NULL, 0, NULL, N'', N'42a2b005-4695-47f6-91f8-bf3a303e3a85', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20634, 20228, 3, N'System.Int64', N'Id', NULL, NULL, NULL, 0, NULL, N'295672101001', N'4475902b-f471-413e-aa5e-5e8d778badad', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20635, 20229, 3, N'System.Int64', N'Id', NULL, NULL, NULL, 0, NULL, N'295672101001', N'a262cda7-83a4-4e8e-97ef-b53e30fcd901', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20636, 20229, 1, N'System.String', N'FirstName', NULL, NULL, NULL, 0, NULL, N'295672101002', N'2f61b052-d23e-4e59-bc65-611d38b4a7ee', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20637, 20229, 1, N'System.String', N'LastName', NULL, NULL, NULL, 0, NULL, N'295672101003', N'bbf8543c-9843-4188-8c90-cbe83748a191', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20638, 20229, 1, N'System.String', N'DateOfBirth', NULL, NULL, NULL, 0, NULL, N'295672101004', N'4a055c5b-70b6-4a25-bf8f-2dbedd0c575e', NULL)
+GO
+INSERT [infra].[Property] ([Id], [ParentEntityId], [PropertyType], [TypeFullName], [Name], [HasSetter], [HasGetter], [IsList], [IsNullable], [Comment], [DbObjectId], [Guid], [DtoId]) VALUES (20639, 20229, 5, N'System.Single', N'Height', NULL, NULL, NULL, 0, NULL, N'295672101005', N'bb111bd1-15bd-4df9-bb62-daff42eaf51e', NULL)
 GO
 SET IDENTITY_INSERT [infra].[Property] OFF
 GO
@@ -1111,6 +1025,78 @@ INSERT [infra].[UiPageComponent] ([Id], [Guid], [PageId], [UiComponentId], [Posi
 GO
 SET IDENTITY_INSERT [infra].[UiPageComponent] OFF
 GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_AspNetRoleClaims_RoleId]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE NONCLUSTERED INDEX [IX_AspNetRoleClaims_RoleId] ON [dbo].[AspNetRoleClaims]
+(
+	[RoleId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [RoleNameIndex]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE UNIQUE NONCLUSTERED INDEX [RoleNameIndex] ON [dbo].[AspNetRoles]
+(
+	[NormalizedName] ASC
+)
+WHERE ([NormalizedName] IS NOT NULL)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_AspNetUserClaims_UserId]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE NONCLUSTERED INDEX [IX_AspNetUserClaims_UserId] ON [dbo].[AspNetUserClaims]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_AspNetUserLogins_UserId]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE NONCLUSTERED INDEX [IX_AspNetUserLogins_UserId] ON [dbo].[AspNetUserLogins]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_AspNetUserRoles_RoleId]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE NONCLUSTERED INDEX [IX_AspNetUserRoles_RoleId] ON [dbo].[AspNetUserRoles]
+(
+	[RoleId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [EmailIndex]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE NONCLUSTERED INDEX [EmailIndex] ON [dbo].[AspNetUsers]
+(
+	[NormalizedEmail] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UserNameIndex]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UserNameIndex] ON [dbo].[AspNetUsers]
+(
+	[NormalizedUserName] ASC
+)
+WHERE ([NormalizedUserName] IS NOT NULL)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_CqrsSegregate_ResultDtoId]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE NONCLUSTERED INDEX [IX_CqrsSegregate_ResultDtoId] ON [infra].[CqrsSegregate]
+(
+	[ResultDtoId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Dto_ModuleId]    Script Date: 8/26/2023 1:38:28 PM ******/
+CREATE NONCLUSTERED INDEX [IX_Dto_ModuleId] ON [infra].[Dto]
+(
+	[ModuleId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
 ALTER TABLE [infra].[CqrsSegregate] ADD  CONSTRAINT [DF_CqrsSegregate_Guid]  DEFAULT (newid()) FOR [Guid]
 GO
 ALTER TABLE [infra].[CrudCode] ADD  CONSTRAINT [DF_CrudCode_Guid]  DEFAULT (newsequentialid()) FOR [Guid]
@@ -1294,4 +1280,8 @@ GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'مکان در کامپوننت' , @level0type=N'SCHEMA',@level0name=N'infra', @level1type=N'TABLE',@level1name=N'UiComponentProperty', @level2type=N'COLUMN',@level2name=N'PositionId'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'مکان در پیج' , @level0type=N'SCHEMA',@level0name=N'infra', @level1type=N'TABLE',@level1name=N'UiPageComponent', @level2type=N'COLUMN',@level2name=N'PositionId'
+GO
+USE [master]
+GO
+ALTER DATABASE [MesInfra] SET  READ_WRITE 
 GO

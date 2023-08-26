@@ -48,49 +48,49 @@ internal sealed partial class FunctionalityService
             // Generate codes for GetAllQueryViewModel if available.
             if (viewModel.GetAllQueryViewModel != null)
             {
-                results.GetAllQueryCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token));
+                results.GetAllQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token));
             }
 
             // Generate codes for GetByIdQueryViewModel if available.
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                results.GetByIdQueryCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token));
+                results.GetByIdQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token));
             }
 
             // Generate codes for InsertCommandViewModel if available.
             if (viewModel.InsertCommandViewModel != null)
             {
-                results.InsertCommandCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token));
+                results.InsertCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token));
             }
 
             // Generate codes for UpdateCommandViewModel if available.
             if (viewModel.UpdateCommandViewModel != null)
             {
-                results.UpdateCommandCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token));
+                results.UpdateCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token));
             }
 
             // Generate codes for DeleteCommandViewModel if available.
             if (viewModel.DeleteCommandViewModel != null)
             {
-                results.DeleteCommandCodes = AddToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token));
+                results.DeleteCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token));
             }
 
             // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                results.BlazorListCodes = AddToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
+                results.BlazorListCodes = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
             }
 
             // Generate codes for BlazorDetailsComponentViewModel if available.
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                results.BlazorDetailsComponentViewModel = AddToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+                results.BlazorDetailsComponentViewModel = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
             }
 
             return result;
 
             // Internal method to add a code result to the result list.
-            Result<Codes> AddToList(Result<Codes> codeResult)
+            Result<Codes> addToList(Result<Codes> codeResult)
             {
                 result.Add(codeResult);
                 return codeResult;
