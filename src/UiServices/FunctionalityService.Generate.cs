@@ -18,13 +18,17 @@ namespace Services;
 internal sealed partial class FunctionalityService
 {
     /// <summary>
-    /// This method generates codes asynchronously based on the provided FunctionalityViewModel and optional arguments.
-    /// It is closely related to the FunctionalityViewModel and its associated codes.
+    /// This method generates codes asynchronously based on the provided FunctionalityViewModel and
+    /// optional arguments. It is closely related to the FunctionalityViewModel and its associated codes.
     /// </summary>
-    /// <param name="viewModel">The FunctionalityViewModel instance containing components and view models.</param>
+    /// <param name="viewModel">
+    /// The FunctionalityViewModel instance containing components and view models.
+    /// </param>
     /// <param name="args">Optional arguments for code generation.</param>
     /// <param name="token">Cancellation token to cancel the code generation process.</param>
-    /// <returns>A Result containing the generated codes or a failure message if no codes were generated.</returns>
+    /// <returns>
+    /// A Result containing the generated codes or a failure message if no codes were generated.
+    /// </returns>
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(viewModel);
@@ -137,12 +141,12 @@ internal sealed partial class FunctionalityService
         // Validate the model
         static Result<FunctionalityViewModel> validate(in FunctionalityViewModel model, CancellationToken token) =>
             model.Check()
-                .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
-                .ArgumentNotNull()
-                .NotNull(x => x.Name)
-                .NotNull(x => x.NameSpace)
-                .NotNull(x => x.SourceDto)
-                .RuleFor(x => x.SourceDto.Module?.Id != 0, () => new ValidationException("Module is not selected or has not Id."));
+                 .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
+                 .ArgumentNotNull()
+                 .NotNull(x => x.Name)
+                 .NotNull(x => x.NameSpace, paramName: "namespace")
+                 .NotNull(x => x.SourceDto)
+                 .RuleFor(x => x.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
 
         // Initialize the viewModel with the connection string
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)
@@ -165,7 +169,6 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                //! The bellow lines are commented by now to focus on above lines. They will be un-commented later.
                 //.AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
                 //.AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
                 //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))

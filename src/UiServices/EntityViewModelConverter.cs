@@ -15,23 +15,17 @@ using Services.Helpers;
 
 namespace Services;
 
-internal sealed class EntityViewModelConverter : IEntityViewModelConverter
+internal sealed class EntityViewModelConverter(in IMapper mapper, in ILogger logger) : IEntityViewModelConverter
 {
-    private readonly ILogger _logger;
-    private readonly IMapper _mapper;
-
-    public EntityViewModelConverter(IMapper mapper, ILogger logger)
-        => (this._mapper, this._logger) = (mapper, logger);
+    private readonly ILogger _logger = logger;
+    private readonly IMapper _mapper = mapper;
 
     ILogger ILoggerContainer.Logger => this._logger;
 
     public DtoViewModel FillByDbEntity(in Dto dto, in IEnumerable<Property>? properties)
     {
         var result = this._mapper.Map<DtoViewModel>(dto);
-        if (dto?.Module is not null)
-        {
-            result.Module = this.ToViewModel(dto.Module)!;
-        }
+        result.Module = this.ToViewModel(dto.Module)!;
         if (dto?.DbObjectId.IsNullOrEmpty() is false)
         {
             result.DbObject = new(string.Empty, dto.DbObjectId.Cast().ToLong());
@@ -65,17 +59,17 @@ internal sealed class EntityViewModelConverter : IEntityViewModelConverter
         return viewModel;
     }
 
-    public void FillViewModelByDbEntity(in UiBootstrapPositionViewModel viewModel, in UiBootstrapPosition dbEnitity)
-        => this._mapper.Map(dbEnitity, viewModel);
+    public UiBootstrapPositionViewModel? FillViewModelByDbEntity(in UiBootstrapPositionViewModel? viewModel, in UiBootstrapPosition? dbEntity) =>
+        viewModel is null ? null : this._mapper.Map(dbEntity, viewModel);
 
-    public UiComponentAction? ToDbEntity(UiComponentActionViewModel? model)
-        => model is null ? null : this._mapper.Map<UiComponentAction>(model)
+    public UiComponentAction? ToDbEntity(UiComponentActionViewModel? model) =>
+        model is null ? null : this._mapper.Map<UiComponentAction>(model)
             .ForMember(x => x.TriggerTypeId = model.TriggerType.Cast().ToInt())
             .ForMember(x => x.CqrsSegregateId = model.CqrsSegregate?.Id)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!);
 
-    public UiComponentProperty? ToDbEntity(UiComponentPropertyViewModel? model)
-        => model is null ? null : this._mapper.Map<UiComponentProperty>(model)
+    public UiComponentProperty? ToDbEntity(UiComponentPropertyViewModel? model) =>
+        model is null ? null : this._mapper.Map<UiComponentProperty>(model)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!)
             .ForMember(x => x.PropertyId = model.Property?.Id)
             .ForMember(x => x.ControlTypeId = model.ControlType?.Cast().ToInt() ?? 0);

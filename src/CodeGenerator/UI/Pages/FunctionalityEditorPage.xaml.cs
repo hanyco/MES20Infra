@@ -121,15 +121,10 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
 
         this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name;
-        this.ViewModel!.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
-        var scope = this.ActionScopeBegin("Creating view models...");
-        var viewModel = await this._service.GenerateViewModelAsync(this.ViewModel).WithAsync(x => scope.End(x)).ThrowOnFailAsync(this.Title);
-        if (!viewModel.Message.IsNullOrEmpty())
-        {
-            Toast2.New().AddText(viewModel.Message).Show();
-            this.Logger.Debug(viewModel.Message);
-        }
-        this.ViewModel = viewModel!;
+        this.ViewModel.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
+        using var scope = this.ActionScopeBegin("Creating view models...");
+        (_, var viewModel) = await this._service.GenerateViewModelAsync(this.ViewModel).ShowOrThrowAsync(this.Title);
+        this.ViewModel = viewModel;
     }
 
     private void Me_Loaded(object sender, RoutedEventArgs e) =>
