@@ -9,8 +9,8 @@ public static class WpfResultHelper
         where TResult : ResultBase
     {
         var res = result.ThrowOnFail(owner, instruction);
-        var text = res.Message.IfNullOrEmpty(successMessage ?? owner?.ToString());
-        MsgBox2.Inform(instruction, text);
+        var text = res.Message.IfNullOrEmpty(successMessage);
+        MsgBox2.Inform(instruction, text ?? "The operation successfully is done.");
 
         return res;
     }

@@ -50,11 +50,12 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         CqrsSegregate dbQuery,
         string? moduleName = null,
         string? paramDtoName = null,
-        string? resultDtoName = null)
-        => this._mapper.Map(dbQuery, @this)!.ForMember(x => x.Module = new(dbQuery.ModuleId, moduleName ?? dbQuery.Module.Name))
-        .ForMember(x => x.ParamDto = new(dbQuery.ParamDtoId, paramDtoName ?? dbQuery.ParamDto.Name) { NameSpace = dbQuery.ParamDto.NameSpace ?? string.Empty })
-        .ForMember(x => x.ResultDto = new(dbQuery.ResultDtoId, resultDtoName ?? dbQuery.ResultDto.Name) { NameSpace = dbQuery.ResultDto.NameSpace ?? string.Empty })
-        .ForMember(x => x.Category = CqrsSegregateCategory.Read);
+        string? resultDtoName = null) =>
+        this._mapper.Map(dbQuery, @this)
+            .ForMember(x => x.Module = new(dbQuery.ModuleId, moduleName ?? dbQuery.Module.Name))
+            .ForMember(x => x.ParamDto = new(dbQuery.ParamDtoId, paramDtoName ?? dbQuery.ParamDto.Name) { NameSpace = dbQuery.ParamDto.NameSpace ?? string.Empty, IsList = dbQuery.ParamDto.IsList })
+            .ForMember(x => x.ResultDto = new(dbQuery.ResultDtoId, resultDtoName ?? dbQuery.ResultDto.Name) { NameSpace = dbQuery.ResultDto.NameSpace ?? string.Empty, IsList = dbQuery.ResultDto.IsList })
+            .ForMember(x => x.Category = CqrsSegregateCategory.Read);
 
     public CqrsQueryViewModel FillByDbEntity(
         CqrsQueryViewModel @this,

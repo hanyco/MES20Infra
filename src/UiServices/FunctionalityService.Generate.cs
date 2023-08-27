@@ -199,13 +199,13 @@ internal sealed partial class FunctionalityService
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
         // Create an initial DTO based on the input data
-        var dto = Create(data);
+        var dto = create(data);
 
         // If the addTableColumns parameter is true, add table columns to the DTO
         return addTableColumns ? AddColumns(data, dto) : dto;
 
         // Internal method for creating an initial DTO
-        static DtoViewModel Create(CreationData data) =>
+        static DtoViewModel create(CreationData data) =>
             new DtoViewModel(data.ViewModel.SourceDto.Id, data.ViewModel.Name!)
             {
                 Comment = data.COMMENT, // Set DTO comment
@@ -299,9 +299,9 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private Task CreateGetAllQuery(CreationData data, CancellationToken token)
+    private async Task CreateGetAllQuery(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(data)
+        var result = await TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(createParams)
             .Then(createResult)
@@ -322,15 +322,16 @@ internal sealed partial class FunctionalityService
         void createParams(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ParamDto = RawDto(data, false);
-            data.ViewModel.GetAllQueryViewModel.ParamDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name}Params";
+            data.ViewModel.GetAllQueryViewModel.ParamDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name.TrimEnd("Query")}Params";
             data.ViewModel.GetAllQueryViewModel.ParamDto.IsParamsDto = true;
         }
 
         void createResult(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, true);
-            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name}Result";
+            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name.TrimEnd("Query")}Result";
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
+            data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }
     }
 

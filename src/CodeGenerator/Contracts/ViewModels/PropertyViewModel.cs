@@ -20,7 +20,9 @@ public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescript
     public PropertyViewModel()
     {
     }
+
     public PropertyViewModel(PropertyViewModel original)
+        : base(original.Id, original.Name)
     {
         this._type = original._type;
         this._comment = original._comment;

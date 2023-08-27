@@ -15,7 +15,7 @@ using Services.Helpers;
 
 namespace Services;
 
-internal sealed class EntityViewModelConverter(in IMapper mapper, in ILogger logger) : IEntityViewModelConverter
+internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) : IEntityViewModelConverter
 {
     private readonly ILogger _logger = logger;
     private readonly IMapper _mapper = mapper;
@@ -46,6 +46,8 @@ internal sealed class EntityViewModelConverter(in IMapper mapper, in ILogger log
 
     public DtoViewModel FillViewModel(in DtoViewModel viewModel, in Dto dto, in IEnumerable<Property> properties)
     {
+        Check.MustBeArgumentNotNull(viewModel);
+        Check.MustBeArgumentNotNull(viewModel.Properties);
         Check.MustBeArgumentNotNull(dto);
         Check.MustBeArgumentNotNull(properties);
 

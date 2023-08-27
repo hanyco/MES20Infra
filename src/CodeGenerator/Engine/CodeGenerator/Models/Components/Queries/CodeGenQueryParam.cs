@@ -19,4 +19,7 @@ public sealed record CodeGenQueryParam : CodeGenCqrsSegregateType
 
     protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
     { yield return $"{typeof(IQueryParameter).FullName}<{cqrsName}Result>"; }
+
+    public override string ToString() => 
+        this.FullName;
 }

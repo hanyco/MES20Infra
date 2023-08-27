@@ -33,5 +33,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public virtual ICollection<Property> Properties { get; set; }
         public virtual ICollection<UiComponent> UiComponents { get; set; }
         public virtual ICollection<UiPage> UiPages { get; set; }
+        public bool IsList { get; set; }
     }
 }

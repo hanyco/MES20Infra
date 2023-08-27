@@ -28,4 +28,7 @@ public sealed class CodeGenProp : CodeGenMember
     public static CodeGenProp New(in CodeGenType type, in string name, bool isList = false, bool isNullable = false, bool hasGetter = true, in bool hasSetter = true,
         string? comment = null)
         => new(type, name, isList, isNullable, hasGetter, hasSetter, comment);
+
+    public override string ToString() => 
+        this.Name;
 }

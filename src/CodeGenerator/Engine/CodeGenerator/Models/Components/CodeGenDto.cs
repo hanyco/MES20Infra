@@ -16,10 +16,14 @@ public sealed record CodeGenDto : CodeGenType, ISupportCommenting
     }
 
     public string? Comment { get; set; }
+    public bool IsList { get; set; }
 
     public static CodeGenDto New(
         in string fullName,
         in CodeGenType? baseClass = null,
         in IEnumerable<CodeGenProp>? props = null)
         => new(in fullName, baseClass ?? new CodeGenType(typeof(IDto)), props);
+
+    public override string ToString() => 
+        this.FullName;
 }

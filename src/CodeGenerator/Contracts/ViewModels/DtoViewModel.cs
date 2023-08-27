@@ -12,6 +12,7 @@ public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
     private string? _comment;
     private DbObjectViewModel _dbObject = null!;
     private FunctionalityViewModel? _functionality;
+    private bool _isList;
     private bool _isParamsDto;
     private bool _isResultDto;
     private bool _isViewModel;
@@ -33,6 +34,8 @@ public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
     public string FullName => TypeMemberNameHelper.GetFullName(this.NameSpace, this.Name);
 
     public FunctionalityViewModel? Functionality { get => this._functionality; set => this.SetProperty(ref this._functionality, value); }
+
+    public bool IsList { get => this._isList; set => this.SetProperty(ref this._isList, value); }
 
     public bool IsParamsDto { get => this._isParamsDto; set => this.SetProperty(ref this._isParamsDto, value); }
 
@@ -58,7 +61,7 @@ public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
     public override string? Name
     {
         get => base.Name;
-        set => this.SetProperty(ref _name, value, orderPropertyNames: new[] { nameof(this.FullName) });
+        set => this.SetProperty(ref this._name, value, orderPropertyNames: new[] { nameof(this.FullName) });
     }
 
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }

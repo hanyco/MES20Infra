@@ -43,4 +43,6 @@ public sealed record CodeGenQueryResult : CodeGenCqrsSegregateType
 
         yield return result;
     }
+
+    public override string ToString() => this.FullName;
 }
