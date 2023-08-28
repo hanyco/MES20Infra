@@ -111,6 +111,12 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this.ViewModel = new();
     }
 
+    private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
+    {
+        Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
+        _ = await this._service.DeleteAsync(this.FunctionalityTreeView.SelectedItem).ShowOrThrowAsync(this.Title);
+    }
+
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
@@ -276,10 +282,5 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         {
             this.SelectRootDtoByTableButton.IsEnabled = true;
         }
-    }
-
-    private void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
-    {
-        Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
     }
 }
