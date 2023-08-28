@@ -314,7 +314,7 @@ internal sealed class BlazorCodingService : IBlazorCodingService
                                 new QueryCqrsSergregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
                             CqrsCommandViewModel command => button.SetAction(
                                 command.Name!,
-                                new CommandCqrsSergregation(command.Name!, command.ParamDto is null ? null : new(new(command.ParamDto.Name, command.ParamDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
+                                new CommandCqrsSergregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
                             _ => throw new NotImplementedException()
                         };
                     }

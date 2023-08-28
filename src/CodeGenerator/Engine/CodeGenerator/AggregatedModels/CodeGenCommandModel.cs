@@ -24,7 +24,7 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
         in string? cqrsNameSpace,
         in string? dtoNameSpace,
         in CodeGenCommandHandler handler,
-        in CodeGenCommandParameter param,
+        in CodeGenCommandParams param,
         in CodeGenCommandResult result,
         params CodeGenDto[] dtos)
     {
@@ -71,7 +71,7 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
     /// Gets the Command parameter.
     /// </summary>
     /// <value>The parameter.</value>
-    public CodeGenCommandParameter Param { get; }
+    public CodeGenCommandParams Param { get; }
 
     /// <summary>
     /// Gets the Command result.
@@ -107,7 +107,7 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
         string? cqrsNameSpace,
         string? dtoNameSpace,
         CodeGenCommandHandler handler,
-        CodeGenCommandParameter param,
+        CodeGenCommandParams param,
         CodeGenCommandResult result,
         params CodeGenDto[] dtos)
     {

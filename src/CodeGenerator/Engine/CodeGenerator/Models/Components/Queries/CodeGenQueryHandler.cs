@@ -11,14 +11,14 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries
     [Immutable]
     public sealed record CodeGenQueryHandler : CodeGenCqrsSegregateType
     {
-        private CodeGenQueryHandler(CodeGenQueryParam queryParam, CodeGenQueryResult queryResult, IEnumerable<CodeGenProp>? props = null)
+        private CodeGenQueryHandler(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, IEnumerable<CodeGenProp>? props = null)
             : base("Handler", null, props)
         {
             this.QueryParam = queryParam;
             this.QueryResult = queryResult;
         }
 
-        public CodeGenQueryParam QueryParam { get; }
+        public CodeGenQueryParams QueryParam { get; }
         public CodeGenQueryResult QueryResult { get; }
 
         protected override bool HasPartialClass
@@ -37,16 +37,16 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries
 
         public override SegregationRole Role { get; } = SegregationRole.QueryHandler;
 
-        public static CodeGenQueryHandler New(CodeGenQueryParam queryParam, CodeGenQueryResult queryResult)
+        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult)
             => new(queryParam, queryResult, Enumerable.Empty<CodeGenProp>());
 
-        public static CodeGenQueryHandler New(CodeGenQueryParam queryParam, CodeGenQueryResult queryResult, params (string Type, string Name)[] props)
+        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, params (string Type, string Name)[] props)
             => new(queryParam, queryResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)));
 
-        public static CodeGenQueryHandler New(CodeGenQueryParam queryParam, CodeGenQueryResult queryResult, params (Type Type, string Name)[] props)
+        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, params (Type Type, string Name)[] props)
             => new(queryParam, queryResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)));
 
-        public static CodeGenQueryHandler New(CodeGenQueryParam queryParam, CodeGenQueryResult queryResult, params (Type Type, string Name, bool HasSetter)[] props)
+        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, params (Type Type, string Name, bool HasSetter)[] props)
             => new(queryParam, queryResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false, hasSetter: p.HasSetter)));
 
         protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)

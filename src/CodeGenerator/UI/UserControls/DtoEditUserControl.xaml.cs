@@ -5,8 +5,6 @@ using System.Windows.Input;
 using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.UI.ViewModels;
-
 using Library.ComponentModel;
 using Library.Exceptions.Validations;
 using Library.Validations;
@@ -25,8 +23,8 @@ public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirec
     private int _maxPropId;
     private IModuleService _moduleService = null!;
 
-    public DtoEditUserControl()
-        => this.InitializeComponent();
+    public DtoEditUserControl() =>
+        this.InitializeComponent();
 
     public bool IsReadOnly { get; set; }
 

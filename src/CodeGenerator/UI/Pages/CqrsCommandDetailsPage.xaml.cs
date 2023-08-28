@@ -8,6 +8,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.BusinessServices;
 using Library.EventsArgs;
 using Library.Interfaces;
 using Library.Results;
@@ -53,16 +54,18 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         set => this.DataContext = value;
     }
 
-    public async Task<Result<int>> SaveDbAsync()
+    public async Task<Result> SaveDbAsync()
     {
         Check.MutBeNotNull(this.ViewModel);
         try
         {
-            _ = await this._service.SaveViewModelAsync(this.ViewModel);
-
-            this.IsViewModelChanged = false;
-            this.Logger.Debug("CQRS Command saved.");
-            return Result<int>.CreateSuccess(1);
+            var result = await this._service.SaveViewModelAsync(this.ViewModel);
+            if (result)
+            {
+                this.IsViewModelChanged = false;
+                this.Logger.Debug("CQRS Command saved."); 
+            }
+            return result;
         }
         finally
         {
@@ -107,13 +110,13 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     private async void GenerateCodeButton_Click(object sender, RoutedEventArgs e)
     {
         _ = this.ViewModel.NotNull().Check()
-                .NotNull(x => this.ViewModel.ParamDto)
-                .NotNull(x => this.ViewModel.ParamDto.Id)
+                .NotNull(x => this.ViewModel.ParamsDto)
+                .NotNull(x => this.ViewModel.ParamsDto.Id)
                 .NotNull(x => this.ViewModel.ResultDto)
                 .NotNull(x => this.ViewModel.ResultDto.Id)
                 .ThrowOnFail();
-        var props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ParamDto.Id.Value);
-        _ = this.ViewModel.ParamDto.Properties.ClearAndAddRange(props);
+        var props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ParamsDto.Id.Value);
+        _ = this.ViewModel.ParamsDto.Properties.ClearAndAddRange(props);
         props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
         var codes = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
@@ -214,7 +217,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         var dtos = await this._dtoService.GetByModuleId(moduleId.Value);
 
         var paramDtos = dtos.Where(x => x.IsParamsDto).OrderBy(x => x.Name).ToList();
-        _ = this.ParamDtoComboBox.BindItemsSource(paramDtos, nameof(ModuleViewModel.Name), this.ViewModel?.ParamDto);
+        _ = this.ParamDtoComboBox.BindItemsSource(paramDtos, nameof(ModuleViewModel.Name), this.ViewModel?.ParamsDto);
 
         var resultDtos = dtos.Where(x => x.IsResultDto).OrderBy(x => x.Name).ToList();
         _ = this.ResultDtoComboBox.BindItemsSource(resultDtos, nameof(ModuleViewModel.Name), this.ViewModel?.ResultDto);

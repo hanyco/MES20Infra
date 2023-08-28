@@ -10,6 +10,7 @@ using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
 
+using Library.BusinessServices;
 using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
@@ -87,7 +88,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    public async Task<Result<int>> SaveDbAsync()
+    public async Task<Result> SaveDbAsync()
     {
         try
         {
@@ -99,7 +100,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
             await this.BindComponentTreeView();
             this.IsEditMode = true;
             scope.End(saveResult);
-            return Result<int>.CreateSuccess(1);
+            return saveResult;
         }
         finally
         {

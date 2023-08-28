@@ -6,6 +6,7 @@ using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.BusinessServices;
 using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
@@ -53,7 +54,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         string? resultDtoName = null) =>
         this._mapper.Map(dbQuery, @this)
             .ForMember(x => x.Module = new(dbQuery.ModuleId, moduleName ?? dbQuery.Module.Name))
-            .ForMember(x => x.ParamDto = new(dbQuery.ParamDtoId, paramDtoName ?? dbQuery.ParamDto.Name) { NameSpace = dbQuery.ParamDto.NameSpace ?? string.Empty, IsList = dbQuery.ParamDto.IsList })
+            .ForMember(x => x.ParamsDto = new(dbQuery.ParamDtoId, paramDtoName ?? dbQuery.ParamDto.Name) { NameSpace = dbQuery.ParamDto.NameSpace ?? string.Empty, IsList = dbQuery.ParamDto.IsList })
             .ForMember(x => x.ResultDto = new(dbQuery.ResultDtoId, resultDtoName ?? dbQuery.ResultDto.Name) { NameSpace = dbQuery.ResultDto.NameSpace ?? string.Empty, IsList = dbQuery.ResultDto.IsList })
             .ForMember(x => x.Category = CqrsSegregateCategory.Read);
 
@@ -68,7 +69,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
     {
         _ = this._mapper.Map(segregate, @this);
         @this.Module = this._converter.ToViewModel(infraModule);
-        @this.ParamDto = this._converter.FillByDbEntity(parameterDto, parameterDtoProperties);
+        @this.ParamsDto = this._converter.FillByDbEntity(parameterDto, parameterDtoProperties);
         @this.ResultDto = this._converter.FillByDbEntity(resultDto, resultDtoProperties);
         return @this;
     }
@@ -97,10 +98,10 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
     {
         var query = await getCQuery();
 
-        var paramProps = await getProps(query.ParamDto?.Id);
+        var paramProps = await getProps(query.ParamsDto?.Id);
         var resultProps = await getProps(query.ResultDto?.Id);
 
-        _ = query.ParamDto?.Properties.AddRange(paramProps);
+        _ = query.ParamsDto?.Properties.AddRange(paramProps);
         _ = query.ResultDto?.Properties.AddRange(resultProps);
 
         return query;
@@ -117,7 +118,7 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
 
         async Task<IEnumerable<PropertyViewModel>> getProps(long? paramDtoId)
         {
-            if (query?.ParamDto?.Id is null)
+            if (query?.ParamsDto?.Id is null)
             {
                 return Enumerable.Empty<PropertyViewModel>();
             }
@@ -214,8 +215,8 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         => model.Check()
                 .NotNull()
                 .NotNull(x => x.Name)
-                .NotNull(x => x.ParamDto)
-                .NotNull(x => x.ParamDto.Id)
+                .NotNull(x => x.ParamsDto)
+                .NotNull(x => x.ParamsDto.Id)
                 .NotNull(x => x.ResultDto)
                 .NotNull(x => x.ResultDto.Id)
                 .Build()!;

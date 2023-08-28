@@ -5,6 +5,7 @@ using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.BusinessServices;
 using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
@@ -108,8 +109,8 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)
         => item.ArgumentNotNull().Check()
                .NotNull(x => x.Name)
-               .NotNull(x => x.ParamDto)
-               .NotNull(x => x.ParamDto.Id)
+               .NotNull(x => x.ParamsDto)
+               .NotNull(x => x.ParamsDto.Id)
                .NotNull(x => x.ResultDto)
                .NotNull(x => x.ResultDto.Id)
                .Build().ToAsync();

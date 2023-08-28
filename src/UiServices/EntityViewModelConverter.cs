@@ -8,6 +8,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.Helpers;
 using Library.Mapping;
 using Library.Validations;
 
@@ -227,9 +228,15 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public IEnumerable<CqrsSegregate?> ToDbEntity(IEnumerable<CqrsCommandViewModel?> models)
         => models.Select(this.ToDbEntity);
 
-    public IEnumerable<Functionality?> ToDbEntity(IEnumerable<FunctionalityViewModel?> models) => throw new NotImplementedException();
+    public IEnumerable<Functionality?> ToDbEntity(IEnumerable<FunctionalityViewModel?> models) =>
+        models.Select(ToDbEntity);
 
-    public Functionality? ToDbEntity(FunctionalityViewModel? model) => throw new NotImplementedException();
+    public Functionality? ToDbEntity(FunctionalityViewModel? model)
+    {
+        if (model == null) return null;
+        var result = this._mapper.Map<Functionality>(model);
+        return result;
+    }
 
     public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel) =>
         columnViewModel == null ? null : new()
@@ -371,11 +378,11 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         {
             CqrsSegregateType.Command => this._mapper.Map<CqrsCommandViewModel>(entity)
                 .ForMember(x => x.Module = this._mapper.Map<ModuleViewModel>(entity.Module))
-                .ForMember(x => x.ParamDto = this.ToViewModel(entity.ParamDto))
+                .ForMember(x => x.ParamsDto = this.ToViewModel(entity.ParamDto))
                 .ForMember(x => x.ResultDto = this.ToViewModel(entity.ResultDto)),
             CqrsSegregateType.Query => this._mapper.Map<CqrsQueryViewModel>(entity)
                 .ForMember(x => x.Module = this._mapper.Map<ModuleViewModel>(entity.Module))
-                .ForMember(x => x.ParamDto = this.ToViewModel(entity.ParamDto))
+                .ForMember(x => x.ParamsDto = this.ToViewModel(entity.ParamDto))
                 .ForMember(x => x.ResultDto = this.ToViewModel(entity.ResultDto)),
             _ => null,
         };
@@ -420,7 +427,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                 ? null
                 : this._mapper.Map<CqrsSegregate>(model)
                               .ForMember(x => x.ModuleId = model.Module.Id.GetValueOrDefault())
-                              .ForMember(x => x.ParamDtoId = model.ParamDto.Id!.Value)
+                              .ForMember(x => x.ParamDtoId = model.ParamsDto.Id!.Value)
                               .ForMember(x => x.ResultDtoId = model.ResultDto.Id!.Value)
                               .ForMember(x => x.SegregateType = segregateType.Cast().ToInt())
                               .ForMember(x => x.CategoryId = model.Category.Cast().ToInt());

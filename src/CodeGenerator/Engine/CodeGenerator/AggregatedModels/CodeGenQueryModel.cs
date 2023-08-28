@@ -24,7 +24,7 @@ public class CodeGenQueryModel : ICodeGenCqrsModel
         in string? cqrsNameSpace,
         in string? dtoNameSpace,
         in CodeGenQueryHandler handler,
-        in CodeGenQueryParam param,
+        in CodeGenQueryParams param,
         in CodeGenQueryResult result,
         params CodeGenDto[] dtos)
     {
@@ -71,7 +71,7 @@ public class CodeGenQueryModel : ICodeGenCqrsModel
     /// Gets the query parameter.
     /// </summary>
     /// <value>The parameter.</value>
-    public CodeGenQueryParam Param { get; }
+    public CodeGenQueryParams Param { get; }
 
     /// <summary>
     /// Gets the query result.
@@ -108,7 +108,7 @@ public class CodeGenQueryModel : ICodeGenCqrsModel
         in string? cqrsNameSpace,
         in string? dtoNameSpace,
         in CodeGenQueryHandler handler,
-        in CodeGenQueryParam param,
+        in CodeGenQueryParams param,
         in CodeGenQueryResult result,
         params CodeGenDto[] dtos) =>
         new(name.ArgumentNotNull(), cqrsNameSpace, dtoNameSpace, handler, param, result, dtos);

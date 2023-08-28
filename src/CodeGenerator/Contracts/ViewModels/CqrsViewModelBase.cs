@@ -75,7 +75,7 @@ public abstract class CqrsViewModelBase : InfraViewModelBase, IHasSecurityDescri
         set => this.SetProperty(ref this._module, value);
     }
 
-    public DtoViewModel ParamDto
+    public DtoViewModel ParamsDto
     {
         get => this._paramDto;
         set => this.SetProperty(ref this._paramDto, value);

@@ -8,6 +8,7 @@ using Contracts.ViewModels;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.BusinessServices;
 using Library.CodeGeneration.Models;
 using Library.EventsArgs;
 using Library.Exceptions;
@@ -68,16 +69,13 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    public async Task<Result<int>> SaveDbAsync()
+    public async Task<Result> SaveDbAsync()
     {
         this.CheckIfInitiated();
-        if (!this.GetIsViewModelChanged())
-        {
-            return Result<int>.CreateFailure("Nothing to save.", -1);
-        }
+        this.PrepareViewModel();
         if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
         {
-            return validationResult.WithValue(-2);
+            return validationResult;
         }
 
         var result = await this._service.SaveViewModelAsync(this.ViewModel);
@@ -86,20 +84,13 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             _ = this.SetIsViewModelChanged(false);
         }
 
-        return result ? result.WithValue(0) : result.WithValue(-3);
+        return result;
     }
 
     protected override async Task OnBindDataAsync()
     {
         await this.FunctionalityTreeView.BindAsync();
         await base.OnBindDataAsync();
-    }
-
-    [MemberNotNull(nameof(ViewModel))]
-    protected override Task<Result> OnValidateFormAsync()
-    {
-        this.CheckIfInitiated();
-        return base.OnValidateFormAsync();
     }
 
     [MemberNotNull(nameof(ViewModel))]
@@ -123,16 +114,15 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
-        var code = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ShowOrThrowAsync(this.Title);
-        this.ComponentCodeResultUserControl.Codes = code.GetValue();
+
+        (_, var code) = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ShowOrThrowAsync(this.Title);
+        this.ComponentCodeResultUserControl.Codes = code;
     }
 
     private async void GenerateViewModelButton_Click(object sender, RoutedEventArgs e)
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
-
-        this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name;
-        this.ViewModel.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
+        this.PrepareViewModel();
         using var scope = this.ActionScopeBegin("Creating view models...");
         (_, var viewModel) = await this._service.GenerateViewModelAsync(this.ViewModel).ShowOrThrowAsync(this.Title);
         this.ViewModel = viewModel;
@@ -154,6 +144,13 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         }
     }
 
+    [MemberNotNull(nameof(ViewModel))]
+    private void PrepareViewModel()
+    {
+        this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name;
+        this.ViewModel.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
+    }
+
     private void PrepareViewModelByDto(DtoViewModel? details)
     {
         this.CheckIfInitiated();
@@ -167,7 +164,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         }
 
         this.ViewModel.SourceDto = details;
-        //May be the user filled these data. We shouldn't overwrite user's preferences. If user
+        //Maybe the user filled these data. We shouldn't overwrite user's preferences. If user
         // presses <Reset> button, user's preferences will be cleaned.
         if (this.ViewModel.NameSpace.IsNullOrEmpty())
         {

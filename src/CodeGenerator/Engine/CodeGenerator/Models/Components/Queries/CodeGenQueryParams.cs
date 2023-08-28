@@ -5,16 +5,16 @@ using HanyCo.Infra.Cqrs;
 namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries;
 
 [Fluent]
-public sealed record CodeGenQueryParam : CodeGenCqrsSegregateType
+public sealed record CodeGenQueryParams : CodeGenCqrsSegregateType
 {
-    private CodeGenQueryParam(IEnumerable<CodeGenProp>? props = null)
+    private CodeGenQueryParams(IEnumerable<CodeGenProp>? props = null)
         : base("Parameter", null, props)
     {
     }
 
     public override SegregationRole Role { get; } = SegregationRole.QueryParameter;
 
-    public static CodeGenQueryParam New(IEnumerable<CodeGenProp>? props = null)
+    public static CodeGenQueryParams New(IEnumerable<CodeGenProp>? props = null)
         => new(props);
 
     protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)

@@ -9,6 +9,7 @@ using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.BusinessServices;
 using Library.EventsArgs;
 using Library.Results;
 using Library.Validations;
@@ -54,16 +55,19 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         set => this.SetViewModelByDataContext(value);
     }
 
-    public async Task<Result<int>> SaveDbAsync()
+    public async Task<Result> SaveDbAsync()
     {
         Check.MutBeNotNull(this.ViewModel);
         try
         {
-            _ = await this._service.SaveViewModelAsync(this.ViewModel);
+            var result = await this._service.SaveViewModelAsync(this.ViewModel);
 
-            this.IsViewModelChanged = false;
-            this.Logger.Debug("CQRS Query saved.");
-            return Result<int>.CreateSuccess(1);
+            if (result)
+            {
+                this.IsViewModelChanged = false;
+                this.Logger.Debug("CQRS Query saved."); 
+            }
+            return result;
         }
         finally
         {
@@ -74,8 +78,8 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
     protected override async Task<Result> OnValidateFormAsync() =>
         await this.ViewModel.Check()
             .NotNull()
-            .NotNull(x => x!.ParamDto)
-            .NotNull(x => x!.ParamDto.Id)
+            .NotNull(x => x!.ParamsDto)
+            .NotNull(x => x!.ParamsDto.Id)
             .NotNull(x => x!.ResultDto)
             .NotNull(x => x!.ResultDto.Id)
             .Build().ToAsync();
@@ -106,8 +110,8 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync();
 
-        IEnumerable<PropertyViewModel> props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ParamDto.Id.Value);
-        _ = this.ViewModel.ParamDto.Properties.ClearAndAddRange(props);
+        IEnumerable<PropertyViewModel> props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ParamsDto.Id.Value);
+        _ = this.ViewModel.ParamsDto.Properties.ClearAndAddRange(props);
         props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
         var codes = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
