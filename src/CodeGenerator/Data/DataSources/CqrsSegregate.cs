@@ -7,6 +7,11 @@ namespace HanyCo.Infra.Internals.Data.DataSources
     {
         public CqrsSegregate()
         {
+            FunctionalityDeleteCommands = new HashSet<Functionality>();
+            FunctionalityGetAllQueries = new HashSet<Functionality>();
+            FunctionalityGetByIdQueries = new HashSet<Functionality>();
+            FunctionalityInsertCommands = new HashSet<Functionality>();
+            FunctionalityUpdateCommands = new HashSet<Functionality>();
             UiComponentActions = new HashSet<UiComponentAction>();
         }
 
@@ -22,12 +27,15 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public string? Comment { get; set; }
         public long ModuleId { get; set; }
         public int CategoryId { get; set; }
-        public long? FunctionalityId { get; set; }
 
-        public virtual Functionality? Functionality { get; set; }
         public virtual Module Module { get; set; } = null!;
         public virtual Dto ParamDto { get; set; } = null!;
         public virtual Dto ResultDto { get; set; } = null!;
+        public virtual ICollection<Functionality> FunctionalityDeleteCommands { get; set; }
+        public virtual ICollection<Functionality> FunctionalityGetAllQueries { get; set; }
+        public virtual ICollection<Functionality> FunctionalityGetByIdQueries { get; set; }
+        public virtual ICollection<Functionality> FunctionalityInsertCommands { get; set; }
+        public virtual ICollection<Functionality> FunctionalityUpdateCommands { get; set; }
         public virtual ICollection<UiComponentAction> UiComponentActions { get; set; }
     }
 }

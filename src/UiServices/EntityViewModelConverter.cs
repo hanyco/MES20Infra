@@ -8,7 +8,6 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.Helpers;
 using Library.Mapping;
 using Library.Validations;
 
@@ -216,12 +215,14 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public IEnumerable<Property?> ToDbEntity(IEnumerable<PropertyViewModel?> models)
         => models.Select(x => this.ToDbEntity(x));
 
+    [return: NotNullIfNotNull(nameof(model))]
     public CqrsSegregate? ToDbEntity(CqrsQueryViewModel? model)
         => this.CqrsViewModelToDbEntityInner(model, CqrsSegregateType.Query);
 
     public IEnumerable<CqrsSegregate?> ToDbEntity(IEnumerable<CqrsQueryViewModel?> models)
         => models.Select(this.ToDbEntity);
 
+    [return: NotNullIfNotNull(nameof(model))]
     public CqrsSegregate? ToDbEntity(CqrsCommandViewModel? model)
         => this.CqrsViewModelToDbEntityInner(model, CqrsSegregateType.Command);
 
@@ -229,12 +230,22 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         => models.Select(this.ToDbEntity);
 
     public IEnumerable<Functionality?> ToDbEntity(IEnumerable<FunctionalityViewModel?> models) =>
-        models.Select(ToDbEntity);
+        models.Select(this.ToDbEntity);
 
     public Functionality? ToDbEntity(FunctionalityViewModel? model)
     {
-        if (model == null) return null;
+        if (model == null)
+        {
+            return null;
+        }
+
         var result = this._mapper.Map<Functionality>(model);
+        result.GetAllQuery = this.ToDbEntity(model.GetAllQueryViewModel.NotNull());
+        result.GetByIdQuery = this.ToDbEntity(model.GetByIdQueryViewModel.NotNull());
+        result.InsertCommand = this.ToDbEntity(model.InsertCommandViewModel.NotNull());
+        result.UpdateCommand = this.ToDbEntity(model.UpdateCommandViewModel.NotNull());
+        result.DeleteCommand = this.ToDbEntity(model.DeleteCommandViewModel.NotNull());
+
         return result;
     }
 
@@ -420,7 +431,20 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         => entities.Select(this.ToViewModel);
 
     public FunctionalityViewModel? ToViewModel(Functionality? entity)
-        => entity is null ? null : this._mapper.Map<FunctionalityViewModel>(entity);
+    {
+        if (entity == null)
+        {
+            return null;
+        }
+
+        var result = this._mapper.Map<FunctionalityViewModel>(entity);
+        result.GetAllQueryViewModel = this.ToViewModel(entity.GetAllQuery).Cast().As<CqrsQueryViewModel>();
+        result.GetByIdQueryViewModel = this.ToViewModel(entity.GetByIdQuery).Cast().As<CqrsQueryViewModel>();
+        result.InsertCommandViewModel = this.ToViewModel(entity.InsertCommand).Cast().As<CqrsCommandViewModel>();
+        result.UpdateCommandViewModel = this.ToViewModel(entity.UpdateCommand).Cast().As<CqrsCommandViewModel>();
+        result.DeleteCommandViewModel = this.ToViewModel(entity.DeleteCommand).Cast().As<CqrsCommandViewModel>();
+        return result;
+    }
 
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType)
         => model is null

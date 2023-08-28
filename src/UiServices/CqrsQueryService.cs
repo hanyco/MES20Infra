@@ -54,8 +54,8 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
         string? resultDtoName = null) =>
         this._mapper.Map(dbQuery, @this)
             .ForMember(x => x.Module = new(dbQuery.ModuleId, moduleName ?? dbQuery.Module.Name))
-            .ForMember(x => x.ParamsDto = new(dbQuery.ParamDtoId, paramDtoName ?? dbQuery.ParamDto.Name) { NameSpace = dbQuery.ParamDto.NameSpace ?? string.Empty, IsList = dbQuery.ParamDto.IsList })
-            .ForMember(x => x.ResultDto = new(dbQuery.ResultDtoId, resultDtoName ?? dbQuery.ResultDto.Name) { NameSpace = dbQuery.ResultDto.NameSpace ?? string.Empty, IsList = dbQuery.ResultDto.IsList })
+            .ForMember(x => x.ParamsDto = new(dbQuery.ParamDtoId, paramDtoName ?? dbQuery.ParamDto.Name) { NameSpace = dbQuery.ParamDto.NameSpace ?? string.Empty, IsList = dbQuery.ParamDto.IsList ?? false })
+            .ForMember(x => x.ResultDto = new(dbQuery.ResultDtoId, resultDtoName ?? dbQuery.ResultDto.Name) { NameSpace = dbQuery.ResultDto.NameSpace ?? string.Empty, IsList = dbQuery.ResultDto.IsList ?? false })
             .ForMember(x => x.Category = CqrsSegregateCategory.Read);
 
     public CqrsQueryViewModel FillByDbEntity(

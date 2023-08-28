@@ -1,6 +1,8 @@
 ﻿using Contracts.Services;
 using Contracts.ViewModels;
 
+using Library.BusinessServices;
+
 namespace InfraTestProject.Tests;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
@@ -30,7 +32,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     {
         // Assign
         var model = await this._service.GenerateViewModelAsync(CreateModel());
-        
+
         // Act
         var actual = await this._codeService.GenerateCodesAsync(model!);
 
@@ -47,6 +49,19 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
                 Assert.Fail($"Code: `{code}` has no Category");
             }
         }
+    }
+
+    [Fact]
+    public async void _30_SaveModelTest()
+    {
+        // Assign
+        var model = await this._service.GenerateViewModelAsync(CreateModel());
+
+        // Act
+        var result = await this._service.SaveViewModelAsync(model!);
+
+        // Assert
+        Assert.True(result);
     }
 
     private static FunctionalityViewModel CreateModel()

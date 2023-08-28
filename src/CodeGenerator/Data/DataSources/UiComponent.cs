@@ -21,7 +21,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public string NameSpace { get; set; } = null!;
         public long? PageDataContextId { get; set; }
         public long? PageDataContextPropertyId { get; set; }
-        public long? FunctionalityId { get; set; }
 
         public virtual Dto? PageDataContext { get; set; }
         public virtual Property? PageDataContextProperty { get; set; }

@@ -18,7 +18,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public long ModuleId { get; set; }
         public string? Route { get; set; }
         public long? DtoId { get; set; }
-        public long? FunctionalityId { get; set; }
 
         public virtual Dto? Dto { get; set; }
         public virtual Module Module { get; set; } = null!;

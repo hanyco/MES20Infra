@@ -24,15 +24,13 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public bool IsParamsDto { get; set; }
         public bool IsResultDto { get; set; }
         public bool IsViewModel { get; set; }
-        public long? FunctionalityId { get; set; }
+        public bool? IsList { get; set; }
 
-        public virtual Functionality? Functionality { get; set; }
         public virtual Module? Module { get; set; }
         public virtual ICollection<CqrsSegregate> CqrsSegregateParamDtos { get; set; }
         public virtual ICollection<CqrsSegregate> CqrsSegregateResultDtos { get; set; }
         public virtual ICollection<Property> Properties { get; set; }
         public virtual ICollection<UiComponent> UiComponents { get; set; }
         public virtual ICollection<UiPage> UiPages { get; set; }
-        public bool IsList { get; set; }
     }
 }

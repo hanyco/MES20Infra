@@ -297,17 +297,17 @@ public partial class CreateTableCrudPage
         this.Logger.Debug("Ready.");
     }
 
-    private async void SaveCrudButton_Click(object sender, RoutedEventArgs e)
+    private void SaveCrudButton_Click(object sender, RoutedEventArgs e)
     {
         this.Validate();
         var entityName = this.SelectedTable.Value.Name;
-        await this._CodeGeneratorService.SaveToDatabaseAsync(
-            new(entityName, this.SelectedTable, this.CqrsNamespace, this.DtoNamespace),
-            new(this.ShouldGenerateGetAll,
-                this.ShouldGenerateGetById,
-                this.ShouldGenerateCreate,
-                this.ShouldGenerateUpdate,
-                this.ShouldGenerateDelete));
+        //await this._CodeGeneratorService.SaveToDatabaseAsync(
+        //    new(entityName, this.SelectedTable, this.CqrsNamespace, this.DtoNamespace),
+        //    new(this.ShouldGenerateGetAll,
+        //        this.ShouldGenerateGetById,
+        //        this.ShouldGenerateCreate,
+        //        this.ShouldGenerateUpdate,
+        //        this.ShouldGenerateDelete));
         this.Logger.Debug("Meta data saved.");
     }
 

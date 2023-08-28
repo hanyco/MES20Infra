@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace HanyCo.Infra.Internals.Data.DataSources
 {
-    public partial class InfraWriteDbContext
+    public partial class InfraWriteDbContext : DbContext
     {
         public InfraWriteDbContext()
         {
@@ -54,11 +54,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
                 entity.Property(e => e.Guid).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Name).HasMaxLength(50);
-
-                entity.HasOne(d => d.Functionality)
-                    .WithMany(p => p.CqrsSegregates)
-                    .HasForeignKey(d => d.FunctionalityId)
-                    .HasConstraintName("FK_CqrsSegregate_Functionality");
 
                 entity.HasOne(d => d.Module)
                     .WithMany(p => p.CqrsSegregates)
@@ -110,11 +105,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
 
                 entity.Property(e => e.NameSpace).HasMaxLength(1024);
 
-                entity.HasOne(d => d.Functionality)
-                    .WithMany(p => p.Dtos)
-                    .HasForeignKey(d => d.FunctionalityId)
-                    .HasConstraintName("FK_Dto_Functionality");
-
                 entity.HasOne(d => d.Module)
                     .WithMany(p => p.Dtos)
                     .HasForeignKey(d => d.ModuleId);
@@ -142,6 +132,36 @@ namespace HanyCo.Infra.Internals.Data.DataSources
                 entity.Property(e => e.Guid).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.Name).HasMaxLength(50);
+
+                entity.HasOne(d => d.DeleteCommand)
+                    .WithMany(p => p.FunctionalityDeleteCommands)
+                    .HasForeignKey(d => d.DeleteCommandId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Functionality_CqrsSegregate4");
+
+                entity.HasOne(d => d.GetAllQuery)
+                    .WithMany(p => p.FunctionalityGetAllQueries)
+                    .HasForeignKey(d => d.GetAllQueryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Functionality_CqrsSegregate");
+
+                entity.HasOne(d => d.GetByIdQuery)
+                    .WithMany(p => p.FunctionalityGetByIdQueries)
+                    .HasForeignKey(d => d.GetByIdQueryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Functionality_CqrsSegregate1");
+
+                entity.HasOne(d => d.InsertCommand)
+                    .WithMany(p => p.FunctionalityInsertCommands)
+                    .HasForeignKey(d => d.InsertCommandId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Functionality_CqrsSegregate2");
+
+                entity.HasOne(d => d.UpdateCommand)
+                    .WithMany(p => p.FunctionalityUpdateCommands)
+                    .HasForeignKey(d => d.UpdateCommandId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Functionality_CqrsSegregate3");
             });
 
             modelBuilder.Entity<Module>(entity =>

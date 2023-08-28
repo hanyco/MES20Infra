@@ -118,9 +118,10 @@ public class InfraReadDbContext : InfraWriteDbContext
 public partial class InfraWriteDbContext : DbContext
 {
 #warning این جالبه
+
     [DbFunction(Name = "SOUNDEX", IsBuiltIn = true)]
-    public static string SoundEx(string query) 
-        => throw new NotImplementedException();
+    public static string SoundEx(string query) =>
+        throw new NotImplementedException();
 }
 
 public partial class Module : IMesEntity

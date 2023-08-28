@@ -23,46 +23,56 @@ namespace Services;
 [Service]
 internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 {
-    //public IEnumerable<GenerateAllCqrsCodesResultItem> GenerateAllCodes(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig? config)
-    //{
-    //    var (entityName, _, _, _) = parameters.ArgumentNotNull();
-    //    config ??= new();
-    //    if (config.ShouldGenerateGetAll)
-    //    {
-    //        yield return new($"GetAll{StringHelper.Pluralize(entityName)}", this.GenerateGetAllCode(parameters));
-    //    }
-    //    if (config.ShouldGenerateGetById)
-    //    {
-    //        yield return new($"Get{entityName}ById", this.GenerateGetByIdCode(parameters));
-    //    }
-    //    if (config.ShouldGenerateCreate)
-    //    {
-    //        yield return new($"Create{entityName}", this.GenerateCreateCode(parameters));
-    //    }
-    //    if (config.ShouldGenerateUpdate)
-    //    {
-    //        yield return new($"Update{entityName}", this.GenerateUpdateCode(parameters));
-    //    }
-    //    if (config.ShouldGenerateDelete)
-    //    {
-    //        yield return new($"Delete{entityName}", this.GenerateDeleteCode(parameters));
-    //    }
-    //}
-
     public Task<Result<Codes>> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
         {
-            CqrsQueryViewModel queryViewModel => GenerateQuery(queryViewModel),
-            CqrsCommandViewModel commandViewModel => GenerateCommand(commandViewModel),
+            CqrsQueryViewModel queryViewModel => generateQuery(queryViewModel),
+            CqrsCommandViewModel commandViewModel => generateCommand(commandViewModel),
             _ => throw new NotSupportedException()
         });
         return Task.FromResult(result);
-    }
 
-    //UNDONE CQRS Code Generator Service SaveToDatabaseAsync.
-    public Task SaveToDatabaseAsync(CqrsGenerateCodesParams parameters, CqrsCodeGenerateCodesConfig config, CancellationToken token = default) =>
-        throw new NotImplementedException();
+        static Codes generateCommand(CqrsCommandViewModel commandViewModel)
+        {
+            Check.MustBeArgumentNotNull(commandViewModel?.Name);
+
+            var paramsDto = ConvertViewModelToCodeGen(commandViewModel.ParamsDto)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var resultDto = ConvertViewModelToCodeGen(commandViewModel.ResultDto)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var cmdParam = CodeGenCommandParams.New().AddProp(paramsDto, "dto", isList: paramsDto.IsList)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var cmdResult = CodeGenCommandResult.New().AddProp(resultDto, "Result", isList: paramsDto.IsList)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var cmdHandler = CodeGenCommandHandler.New(cmdParam, cmdResult)
+                .With(x => x.props().Category = CodeCategory.Command);
+
+            var cmd = CodeGenCommandModel.New(commandViewModel.Name, commandViewModel.CqrsNameSpace, commandViewModel.DtoNameSpace, cmdHandler, cmdParam, cmdResult)
+                .With(x => x.props().Category = CodeCategory.Command);
+            return CodeGenerator.GenerateCode(cmd);
+        }
+
+        static Codes generateQuery(CqrsQueryViewModel queryViewModel)
+        {
+            Check.MustBeArgumentNotNull(queryViewModel?.Name);
+
+            var paramsDto = ConvertViewModelToCodeGen(queryViewModel.ParamsDto)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var resultDto = ConvertViewModelToCodeGen(queryViewModel.ResultDto)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var qryParams = CodeGenQueryParams.New().AddProp(paramsDto, "dto", isList: paramsDto.IsList)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var qryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result", isList: resultDto.IsList)
+                .With(x => x.props().Category = CodeCategory.Dto);
+            var qryHandler = CodeGenQueryHandler.New(qryParams, qryResult, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
+                .With(x => x.props().Category = CodeCategory.Query);
+
+            var qry = CodeGenQueryModel.New(queryViewModel.Name, queryViewModel.CqrsNameSpace, queryViewModel.DtoNameSpace, qryHandler, qryParams, qryResult, paramsDto, resultDto)
+                .With(x => x.props().Category = CodeCategory.Query);
+            return CodeGenerator.GenerateCode(qry);
+        }
+    }
 
     private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
     {
@@ -73,45 +83,5 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
             _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false);
         }
         return result;
-    }
-
-    private static Codes GenerateCommand(CqrsCommandViewModel commandViewModel)
-    {
-        Check.MustBeArgumentNotNull(commandViewModel?.Name);
-
-        var paramsDto = ConvertViewModelToCodeGen(commandViewModel.ParamsDto)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var resultDto = ConvertViewModelToCodeGen(commandViewModel.ResultDto)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var cmdParam = CodeGenCommandParams.New().AddProp(paramsDto, "dto", isList: paramsDto.IsList)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var cmdResult = CodeGenCommandResult.New().AddProp(resultDto, "Result", isList: paramsDto.IsList)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var cmdHandler = CodeGenCommandHandler.New(cmdParam, cmdResult)
-            .With(x => x.props().Category = CodeCategory.Command);
-
-        var cmd = CodeGenCommandModel.New(commandViewModel.Name, commandViewModel.CqrsNameSpace, commandViewModel.DtoNameSpace, cmdHandler, cmdParam, cmdResult)
-            .With(x => x.props().Category = CodeCategory.Command);
-        return CodeGenerator.GenerateCode(cmd);
-    }
-
-    private static Codes GenerateQuery(CqrsQueryViewModel queryViewModel)
-    {
-        Check.MustBeArgumentNotNull(queryViewModel?.Name);
-
-        var paramsDto = ConvertViewModelToCodeGen(queryViewModel.ParamsDto)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var resultDto = ConvertViewModelToCodeGen(queryViewModel.ResultDto)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var qryParams = CodeGenQueryParams.New().AddProp(paramsDto, "dto", isList: paramsDto.IsList)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var qryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result", isList: resultDto.IsList)
-            .With(x => x.props().Category = CodeCategory.Dto);
-        var qryHandler = CodeGenQueryHandler.New(qryParams, qryResult, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
-            .With(x => x.props().Category = CodeCategory.Query);
-
-        var qry = CodeGenQueryModel.New(queryViewModel.Name, queryViewModel.CqrsNameSpace, queryViewModel.DtoNameSpace, qryHandler, qryParams, qryResult, paramsDto, resultDto)
-            .With(x => x.props().Category = CodeCategory.Query);
-        return CodeGenerator.GenerateCode(qry);
     }
 }
