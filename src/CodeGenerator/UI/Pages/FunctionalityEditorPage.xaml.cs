@@ -10,6 +10,7 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
 using Library.EventsArgs;
+using Library.Exceptions;
 using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
@@ -85,6 +86,12 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         }
 
         return result ? result.WithValue(0) : result.WithValue(-3);
+    }
+
+    protected override async Task OnBindDataAsync()
+    {
+        await this.FunctionalityTreeView.BindAsync();
+        await base.OnBindDataAsync();
     }
 
     [MemberNotNull(nameof(ViewModel))]
@@ -269,5 +276,10 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         {
             this.SelectRootDtoByTableButton.IsEnabled = true;
         }
+    }
+
+    private void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
+    {
+        Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
     }
 }

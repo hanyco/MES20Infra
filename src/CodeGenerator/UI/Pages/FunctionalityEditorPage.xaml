@@ -16,11 +16,15 @@
     Loaded="Me_Loaded"
     mc:Ignorable="d">
     <Grid x:Name="Container">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" ToolTip="ToolBar" />
             <RowDefinition ToolTip="Host" />
         </Grid.RowDefinitions>
-        <ToolBar>
+        <ToolBar Grid.ColumnSpan="2">
             <Button
                 Name="CreateFunctionalityButton"
                 Click="CreateFunctionalityButton_Click"
@@ -37,6 +41,7 @@
             <Button
                 Name="DeleteFunctionalityButton"
                 Style="{StaticResource IconButton}"
+                Click="DeleteFunctionalityButton_Click"
                 ToolTip="Delete Functionality">
                 <Path Style="{StaticResource Delete}" />
             </Button>
@@ -71,7 +76,11 @@
                 <Path Style="{StaticResource SaveAll}" />
             </Button>
         </ToolBar>
-        <TabControl Grid.Row="1" TabStripPlacement="Left">
+        <usercontrols:FunctionalityTreeView Grid.Row="1" x:Name="FunctionalityTreeView"/>
+        <TabControl
+            Grid.Row="1"
+            Grid.Column="1"
+            TabStripPlacement="Left">
             <TabItem Header="Parameters">
                 <Grid>
                     <Grid.RowDefinitions>
