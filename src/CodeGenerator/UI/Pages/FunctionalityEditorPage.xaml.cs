@@ -16,7 +16,8 @@ using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
-using Library.Wpf.Windows.UI;
+
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace HanyCo.Infra.UI.Pages;
 
@@ -108,25 +109,22 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
-        this.ViewModel = new();
+        this.ViewModel = await this._service.CreateAsync();
     }
 
     private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
+        var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
+        _ = Check.If(resp != TaskDialogResult.Ok).BreakOnFail();
         _ = await this._service.DeleteAsync(this.FunctionalityTreeView.SelectedItem).ShowOrThrowAsync(this.Title);
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
-        var code = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ThrowOnFailAsync(this.Title);
-        if (!code.Message.IsNullOrEmpty())
-        {
-            Toast2.New().AddText(code.Message).Show();
-            this.Logger.Debug(code.Message);
-        }
-        this.ComponentCodeResultUserControl.Codes = code!;
+        var code = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ShowOrThrowAsync(this.Title);
+        this.ComponentCodeResultUserControl.Codes = code.GetValue();
     }
 
     private async void GenerateViewModelButton_Click(object sender, RoutedEventArgs e)

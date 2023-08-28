@@ -75,6 +75,9 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     Task<Result> IAsyncTransactional.CommitTransactionAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.CommitTransactionAsync(cancellationToken);
 
+    public Task<FunctionalityViewModel> CreateAsync(CancellationToken token = default) =>
+        Task.FromResult(new FunctionalityViewModel());
+
     public void ResetChanges() =>
         this._writeDbContext.ResetChanges();
 
