@@ -227,9 +227,10 @@ internal sealed partial class FunctionalityService
         createViewModel(data);
         return Task.CompletedTask;
 
-        void createViewModel(CreationData data) => data.ViewModel.BlazorDetailsViewModel = RawDto(data, true)
-                .With(x => x.Name = $"Get{data.ViewModel.Name}DetailsViewModel")
-                .With(x => x.IsViewModel = true);
+        static void createViewModel(CreationData data) => 
+            data.ViewModel.BlazorDetailsComponentViewModel = new()
+        {
+        };
     }
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
@@ -237,12 +238,10 @@ internal sealed partial class FunctionalityService
         createViewModel(data);
         return Task.CompletedTask;
 
-        static void createViewModel(CreationData data)
+        static void createViewModel(CreationData data) => 
+            data.ViewModel.BlazorListComponentViewModel = new()
         {
-            data.ViewModel.BlazorListViewModel = RawDto(data, true);
-            data.ViewModel.BlazorListViewModel.Name = $"Get{data.ViewModel.Name}ListViewModel";
-            data.ViewModel.BlazorListViewModel.IsViewModel = true;
-        }
+        };
     }
 
     private Task CreateBlazorPage(CreationData data, CancellationToken token)
