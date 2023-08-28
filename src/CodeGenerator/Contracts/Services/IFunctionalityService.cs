@@ -8,7 +8,7 @@ using Library.Wpf.Windows;
 
 namespace Contracts.Services;
 
-public interface IFunctionalityService : IBusinessService, IAsyncCrud<FunctionalityViewModel>
+public interface IFunctionalityService : IBusinessService, IAsyncCrud<FunctionalityViewModel>, IAsyncCreator<FunctionalityViewModel>
 {
     Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync([DisallowNull] FunctionalityViewModel model, CancellationToken token = default);
 }

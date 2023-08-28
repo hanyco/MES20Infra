@@ -19,7 +19,8 @@ public partial class CqrsExplorerTreeView : UserControl
 
     public CqrsExplorerTreeView()
     {
-        if (ControlHelper.IsDesignTime())
+         this.InitializeComponent();
+       if (ControlHelper.IsDesignTime())
         {
             return;
         }
@@ -28,7 +29,6 @@ public partial class CqrsExplorerTreeView : UserControl
         this._dtoService = DI.GetService<IDtoService>()!;
         this._queryService = DI.GetService<ICqrsQueryService>()!;
         this._commandService = DI.GetService<ICqrsCommandService>()!;
-        this.InitializeComponent();
     }
 
     public event EventHandler<ItemActingEventArgs<Task<IReadOnlyList<CqrsCommandViewModel>>>>? GettingCommands;
@@ -60,7 +60,7 @@ public partial class CqrsExplorerTreeView : UserControl
     public bool LoadQueries { get => (bool)this.GetValue(LoadQueriesProperty); set => this.SetValue(LoadQueriesProperty, value); }
     public InfraViewModelBase? SelectedItem { get => (InfraViewModelBase)this.GetValue(SelectedItemProperty); set => this.SetValue(SelectedItemProperty, value); }
 
-    public void BeginInitializing()
+    private void BeginInitializing()
         => this.IsInitializing = true;
 
     public async Task BindAsync()
@@ -80,25 +80,25 @@ public partial class CqrsExplorerTreeView : UserControl
 
         if (this.LoadDtos)
         {
-            var dtosTreeViewItemRoot = ControlHelper.BindNewItem(InfraViewModelBase.NewEmpty("Models"));
+            var dtosTreeViewItemRoot = ControlHelper.BindNewTreeViewItem(InfraViewModelBase.NewEmpty("Models"));
             var dtos = await this.OnGetDtosAsync();
-            result.Add(ControlHelper.BindNewItems(dtosTreeViewItemRoot, dtos));
+            result.Add(ControlHelper.BindNewTreeViewItems(dtosTreeViewItemRoot, dtos));
             dtosTreeViewItemRoot.IsExpanded = true;
         }
 
         if (this.LoadQueries)
         {
-            var queriesTreeViewItemRoot = ControlHelper.BindNewItem(InfraViewModelBase.NewEmpty("Queries"));
+            var queriesTreeViewItemRoot = ControlHelper.BindNewTreeViewItem(InfraViewModelBase.NewEmpty("Queries"));
             var queries = await this.OnGetQueriesAsync();
-            result.Add(ControlHelper.BindNewItems(queriesTreeViewItemRoot, queries));
+            result.Add(ControlHelper.BindNewTreeViewItems(queriesTreeViewItemRoot, queries));
             queriesTreeViewItemRoot.IsExpanded = true;
         }
 
         if (this.LoadCommands)
         {
-            var commandsViewItemRoot = ControlHelper.BindNewItem(InfraViewModelBase.NewEmpty("Commands"));
+            var commandsViewItemRoot = ControlHelper.BindNewTreeViewItem(InfraViewModelBase.NewEmpty("Commands"));
             var commands = await this.OnGetCommandsAsync();
-            result.Add(ControlHelper.BindNewItems(commandsViewItemRoot, commands));
+            result.Add(ControlHelper.BindNewTreeViewItems(commandsViewItemRoot, commands));
             commandsViewItemRoot.IsExpanded = true;
         }
 
