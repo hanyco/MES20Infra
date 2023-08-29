@@ -104,7 +104,8 @@ internal sealed partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        if (!validate(viewModel, token).TryParse(out var validationResult))
+        var validationResult = await this.ValidateAsync(viewModel, token);
+        if (!validationResult.IsSucceed)
         {
             return validationResult!;
         }
@@ -137,16 +138,6 @@ internal sealed partial class FunctionalityService
         // Get the title for the description
         ProgressData getTitle(in string description) =>
             new(Description: description, Sender: nameof(FunctionalityService));
-
-        // Validate the model
-        static Result<FunctionalityViewModel> validate(in FunctionalityViewModel model, CancellationToken token) =>
-            model.Check()
-                 .RuleFor(_ => !token.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
-                 .ArgumentNotNull()
-                 .NotNull(x => x.Name)
-                 .NotNull(x => x.NameSpace, paramName: "namespace")
-                 .NotNull(x => x.SourceDto)
-                 .RuleFor(x => x.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
 
         // Initialize the viewModel with the connection string
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)

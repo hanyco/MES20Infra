@@ -114,8 +114,8 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
-
-        (_, var code) = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ShowOrThrowAsync(this.Title);
+        (_, var code) = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ThrowOnFailAsync(this.Title);
+        
         this.ComponentCodeResultUserControl.Codes = code;
     }
 
@@ -124,7 +124,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
         this.PrepareViewModel();
         using var scope = this.ActionScopeBegin("Creating view models...");
-        (_, var viewModel) = await this._service.GenerateViewModelAsync(this.ViewModel).ShowOrThrowAsync(this.Title);
+        (_, var viewModel) = await this.ActionScopeRunAsync(() => this._service.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
         this.ViewModel = viewModel;
     }
 
@@ -147,8 +147,8 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     [MemberNotNull(nameof(ViewModel))]
     private void PrepareViewModel()
     {
-        this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name;
-        this.ViewModel.NameSpace ??= this.ViewModel.SourceDto.NameSpace;
+        this.ViewModel!.Name = this.ViewModel.SourceDto.Name;
+        this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace;
     }
 
     private void PrepareViewModelByDto(DtoViewModel? details)

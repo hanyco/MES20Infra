@@ -78,7 +78,7 @@
                 <TextBlock
                     Grid.Row="1"
                     Style="{StaticResource HighlightBlock}"
-                    Text="These paths is used while generating source code on Functionali Editor window." />
+                    Text="These paths are used while generating source code on Functionali Editor window." />
                 <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
                     <TextBlock Style="{StaticResource LongLabelBlock}" Text="Project Root:" />
                     <TextBox Width="500" Text="{Binding projectSourceRoot}" />

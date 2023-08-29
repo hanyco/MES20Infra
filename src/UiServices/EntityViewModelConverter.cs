@@ -451,8 +451,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                 ? null
                 : this._mapper.Map<CqrsSegregate>(model)
                               .ForMember(x => x.ModuleId = model.Module.Id.GetValueOrDefault())
-                              .ForMember(x => x.ParamDtoId = model.ParamsDto.Id!.Value)
-                              .ForMember(x => x.ResultDtoId = model.ResultDto.Id!.Value)
+                              .ForMember(x => x.ParamDtoId = model.ParamsDto.Id.GetValueOrDefault())
+                              .ForMember(x => x.ResultDtoId = model.ResultDto.Id.GetValueOrDefault())
                               .ForMember(x => x.SegregateType = segregateType.Cast().ToInt())
                               .ForMember(x => x.CategoryId = model.Category.Cast().ToInt());
 

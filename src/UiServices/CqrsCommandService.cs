@@ -106,13 +106,13 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         return Result<CqrsCommandViewModel>.CreateSuccess(model);
     }
 
-    public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)
+    public Task<Result<CqrsCommandViewModel>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)
         => item.ArgumentNotNull().Check()
                .NotNull(x => x.Name)
                .NotNull(x => x.ParamsDto)
-               .NotNull(x => x.ParamsDto.Id)
+               //.NotNull(x => x.ParamsDto.Id)
                .NotNull(x => x.ResultDto)
-               .NotNull(x => x.ResultDto.Id)
+               //.NotNull(x => x.ResultDto.Id)
                .Build().ToAsync();
 
     private IQueryable<CqrsSegregate> GetAllQuery()

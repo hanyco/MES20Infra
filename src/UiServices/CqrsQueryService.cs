@@ -168,7 +168,11 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
             segregate = this._converter.ToDbEntity(model)!;
 
             _ = this._writeDbContext.Add(segregate);
-            var result = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
+            if (persist)
+            {
+                _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
+            }
+
             model.Id = segregate.Id;
             return Result<CqrsQueryViewModel>.CreateSuccess(model);
         }
@@ -180,6 +184,9 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
             }
         }
     }
+
+    public void ResetChanges() =>
+        this._writeDbContext.ResetChanges();
 
     public async Task<Result<CqrsQueryViewModel>> UpdateAsync(long id, CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
     {
@@ -216,9 +223,9 @@ internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessSe
                 .NotNull()
                 .NotNull(x => x.Name)
                 .NotNull(x => x.ParamsDto)
-                .NotNull(x => x.ParamsDto.Id)
+                //.NotNull(x => x.ParamsDto.Id)
                 .NotNull(x => x.ResultDto)
-                .NotNull(x => x.ResultDto.Id)
+                //.NotNull(x => x.ResultDto.Id)
                 .Build()!;
 
     private IQueryable<CqrsSegregate> GetAllQuery()

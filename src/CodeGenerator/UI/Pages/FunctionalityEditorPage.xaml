@@ -40,8 +40,8 @@
             </Button>
             <Button
                 Name="DeleteFunctionalityButton"
-                Style="{StaticResource IconButton}"
                 Click="DeleteFunctionalityButton_Click"
+                Style="{StaticResource IconButton}"
                 ToolTip="Delete Functionality">
                 <Path Style="{StaticResource Delete}" />
             </Button>
@@ -76,7 +76,7 @@
                 <Path Style="{StaticResource SaveAll}" />
             </Button>
         </ToolBar>
-        <usercontrols:FunctionalityTreeView Grid.Row="1" x:Name="FunctionalityTreeView"/>
+        <usercontrols:FunctionalityTreeView x:Name="FunctionalityTreeView" Grid.Row="1" />
         <TabControl
             Grid.Row="1"
             Grid.Column="1"

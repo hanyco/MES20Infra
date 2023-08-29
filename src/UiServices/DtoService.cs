@@ -240,42 +240,33 @@ internal sealed class DtoService(
 
     public async Task<Result<DtoViewModel>> InsertAsync(DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
-        _ = await this.CheckValidatorAsync(viewModel);
+        var validationCheck = await this.ValidateAsync(viewModel, token);
+        if (!validationCheck.IsSucceed)
+        {
+            return validationCheck!;
+        }
+
         _ = InitializeViewModel(viewModel);
         var entity = this.ToDbEntity(viewModel);
 
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(token);
         await insertDto(viewModel, entity.Dto, token);
-        await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token);
+        // TODO: Call the blow line manually.
+        //x await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token);
         var result = await this.SubmitChangesAsync(persist, transaction).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 
         async Task insertDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
         {
-            _ = await this._writeDbContext.ReAttach(dto.Module!).DbContext
-                                          .Dtos.Add(dto)
-                                          .SaveChangesResultAsync(cancellationToken: token)
-                                          .ThrowOnFailAsync()
-                                          .With(_ => viewModel.Guid = dto.Guid);
-            await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
-        }
-        async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, CancellationToken token = default)
-        {
-            foreach (var property in properties)
+            _ = this._writeDbContext.ReAttach(dto.Module!).DbContext.Dtos.Add(dto).With(_ => viewModel.Guid = dto.Guid);
+            if (persist)
             {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                property.ParentEntityId = parentEntityId;
-                _ = await this._propertyService.InsertAsync(property, false, token);
-                if (property.SecurityDescriptors?.Any() is true)
-                {
-                    await this._securityDescriptor.SetSecurityDescriptorsAsync(property, false, token);
-                }
+                _ = await this.SaveChangesAsync(token);
             }
+            //xawait this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
         }
+        async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, CancellationToken token = default) => 
+            await this._propertyService.InsertProperties(properties, parentEntityId, persist, token);
     }
 
     public void ResetChanges()

@@ -5,6 +5,8 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services;
 
+using Library.Exceptions;
+using Library.Exceptions.Validations;
 using Library.Interfaces;
 using Library.Results;
 using Library.Threading.MultistepProgress;
@@ -87,10 +89,13 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public Task<Result<FunctionalityViewModel>> ValidateAsync(FunctionalityViewModel? viewModel, CancellationToken cancellationToken) =>
-        viewModel.Check()
-            .ArgumentNotNull()
-            .NotNull(x => x!.Name)
-            .NotNull(x => x!.NameSpace)
-            .Build().ToAsync()!;
+    public Task<Result<FunctionalityViewModel>> ValidateAsync(FunctionalityViewModel? model, CancellationToken cancellationToken) =>
+        model.Check()
+             .RuleFor(_ => !cancellationToken.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
+             .ArgumentNotNull()
+             .NotNull(x => x!.Name)
+             .NotNull(x => x!.NameSpace, paramName: "namespace")
+             .NotNull(x => x!.SourceDto)
+             .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)))
+             .Build().ToAsync()!;
 }

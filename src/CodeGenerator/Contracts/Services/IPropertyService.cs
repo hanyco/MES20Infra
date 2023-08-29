@@ -15,4 +15,6 @@ public interface IPropertyService : IBusinessService, IAsyncCrud<PropertyViewMod
     Task<IReadOnlyList<PropertyViewModel>> GetByParentIdAsync(long parentId, CancellationToken token = default);
 
     Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId, CancellationToken token = default);
+
+    Task InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default);
 }

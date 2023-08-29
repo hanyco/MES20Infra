@@ -125,6 +125,23 @@ internal sealed class PropertyService : IPropertyService
         void manipulate(Property property) => this._writeDbContext.Properties.Add(property);
     }
 
+    public async Task InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default)
+    {
+        foreach (var property in properties)
+        {
+            if (token.IsCancellationRequested)
+            {
+                break;
+            }
+
+            property.ParentEntityId = parentEntityId;
+            _ = await this.InsertAsync(property, false, token);
+            if (property.SecurityDescriptors?.Any() is true)
+            {
+                await this._securityService.SetSecurityDescriptorsAsync(property, persist, token);
+            }
+        }
+    }
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
 
