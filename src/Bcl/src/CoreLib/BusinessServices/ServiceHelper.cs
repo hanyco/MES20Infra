@@ -267,7 +267,9 @@ public static class ServiceHelper
         [DisallowNull] DbContext dbContext,
         [DisallowNull] TViewModel model,
         [DisallowNull] Func<TViewModel, TDbEntity?> convert,
-        bool persist = true, CancellationToken cancellationToken = default)
+        bool persist = true,
+        (bool UseTransaction, IDbContextTransaction? Transaction)? transactionInfo = null,
+        CancellationToken cancellationToken = default)
         where TViewModel : ICanSetKey<long?>
         where TDbEntity : class, IIdenticalEntity<long>
         where TService : IAsyncWrite<TViewModel>, IAsyncValidator<TViewModel>, IAsyncSaveChanges, ILoggerContainer
@@ -279,7 +281,7 @@ public static class ServiceHelper
                 dbContext.Add,
                 null,
                 persist,
-                (true, null),
+                transactionInfo ?? (true, null),
                 service.SaveChangesAsync,
                 onCommitted: (m, e) => m.Id = e.Id,
                 logger: service.Logger, cancellationToken: cancellationToken);
@@ -383,7 +385,7 @@ public static class ServiceHelper
         {
             logger?.Debug($"Manipulation started. Entity: {nameof(TDbEntity)}, Action:{nameof(manipulate)}");
         }
-        
+
         //! Validate manipulation
         if (validatorAsync is not null)
         {
@@ -399,12 +401,11 @@ public static class ServiceHelper
             .NotNull(() => "Entity cannot be null.").Fluent(cancellationToken) // Cannot be null
             .IfTrue(onCommitting is not null, x => onCommitting!(x)).GetValue(); // On Before commit
 
-
         //! Setup transaction
         var transaction = persist && transactionInfo is { } t and { UseTransaction: true }
             ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
             : null;
-        
+
         //! Execute manipulation
         var entry = manipulate(entity);
 
@@ -418,8 +419,8 @@ public static class ServiceHelper
                 {
                     await transaction.CommitAsync(cancellationToken);
                 }
-                saveResult = await (saveChanges is not null 
-                    ? saveChanges(cancellationToken) 
+                saveResult = await (saveChanges is not null
+                    ? saveChanges(cancellationToken)
                     : CodeHelper.CatchResultAsync(() => dbContext.SaveChangesAsync(cancellationToken)));
                 if (saveResult.IsSucceed && onCommitted is not null)
                 {
