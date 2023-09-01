@@ -23,7 +23,7 @@ public partial class CqrsEditorUserControl : UserControl
     public void Initialize(IModuleService moduleService, IDtoService dtoService)
     {
         (this._moduleService, this._dtoService) = (moduleService, dtoService);
-        ControlHelper.BindItemsSourceToEnum<CqrsSegregateCategory>(CategoryComboBox);
+        ControlHelper.BindItemsSourceToEnum<CqrsSegregateCategory>(CategoryComboBox, CqrsSegregateCategory.Read);
     }
 
     private async void SelectModuleBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)

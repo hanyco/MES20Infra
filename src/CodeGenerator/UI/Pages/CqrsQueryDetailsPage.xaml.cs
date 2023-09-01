@@ -90,7 +90,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
     private async void DeleteQueryButton_Click(object sender, RoutedEventArgs e)
     {
         var id = this.QueriesTreeView.GetSelectedValue<CqrsQueryViewModel>()?.Id;
-        Check.MustBe(id is null, () => new ValidationException("Please select a Query."));
+        Check.MustBe(id is not null, () => new ValidationException("Please select a Query."));
 
         if (MsgBox2.AskWithWarn("Are you sure to delete this item?") != TaskDialogResult.Yes)
         {
@@ -100,7 +100,6 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         _ = await this._service.DeleteByIdAsync(id.Value);
         await this.InitQueriesTreeViewAsync();
         this.IsViewModelChanged = false;
-        this.NewQueryButton.PerformClick();
     }
 
     private async void EditQueryButton_Click(object sender, RoutedEventArgs e)
