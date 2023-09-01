@@ -252,7 +252,10 @@ internal sealed class DtoService(
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(token);
         await insertDto(viewModel, entity.Dto, token);
         if (persist)
+        {
             await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token);
+        }
+
         var result = await this.SubmitChangesAsync(persist, transaction).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 
@@ -265,7 +268,7 @@ internal sealed class DtoService(
             }
             //xawait this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
         }
-        async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, CancellationToken token = default) => 
+        async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, CancellationToken token = default) =>
             await this._propertyService.InsertProperties(properties, parentEntityId, persist, token);
     }
 
@@ -390,7 +393,7 @@ internal sealed class DtoService(
 
     private (DtoEntity Dto, IEnumerable<Property> Properties, IEnumerable<PropertyViewModel> PropertyViewModels) ToDbEntity(in DtoViewModel viewModel)
     {
-        var propsVm = viewModel.Properties.ToEnumerable().ToList();
+        var propsVm = viewModel.Properties.Copy();
         viewModel.Properties.Clear();
         var dto = this._converter.ToDbEntity(viewModel)!;
         var props = propsVm.ConvertAll(x => this._converter.ToDbEntity(x, dto.Id));

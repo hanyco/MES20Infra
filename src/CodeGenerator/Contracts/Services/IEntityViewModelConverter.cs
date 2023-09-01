@@ -53,7 +53,7 @@ public interface IEntityViewModelConverter :
     IDbEntityToViewModelConverter<CqrsViewModelBase, CqrsSegregate>
 {
     [return: NotNullIfNotNull(nameof(entity))]
-    DtoViewModel FillByDbEntity(in Dto entity, in IEnumerable<Property>? properties);
+    DtoViewModel FillByDbEntity(Dto entity, in IEnumerable<Property>? properties);
 
     IEnumerable<DtoViewModel> FillByDbEntity(IEnumerable<Dto> entities);
 

@@ -22,10 +22,9 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
     ILogger ILoggerContainer.Logger => this._logger;
 
-    public DtoViewModel FillByDbEntity(in Dto dto, in IEnumerable<Property>? properties)
+    public DtoViewModel FillByDbEntity(Dto dto, in IEnumerable<Property>? properties)
     {
-        var result = this._mapper.Map<DtoViewModel>(dto);
-        result.Module = this.ToViewModel(dto.Module)!;
+        var result = this._mapper.Map<DtoViewModel>(dto).With(x => x.Module = this.ToViewModel(dto.Module)!);
         if (dto?.DbObjectId.IsNullOrEmpty() is false)
         {
             result.DbObject = new(string.Empty, dto.DbObjectId.Cast().ToLong());

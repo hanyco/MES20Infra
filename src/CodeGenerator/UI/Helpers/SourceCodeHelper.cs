@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 using Library.CodeGeneration.Models;
+using Library.Exceptions;
 using Library.Results;
 using Library.Validations;
 using Library.Wpf.Dialogs;
@@ -63,7 +64,7 @@ public static class SourceCodeHelper
             var resp = dlg.ShowDialog();
             if (resp != DialogResult.OK)
             {
-                return Result<string?>.Failure;
+                return Result<string?>.CreateFailure(new OperationCancelException());
             }
 
             await File.WriteAllTextAsync(dlg.FileName, code.Statement);
