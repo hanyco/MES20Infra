@@ -51,10 +51,14 @@
                         Click="CreateCommandMenuItem_Click"
                         Header="Manage CQRS _Commands…" />
                     <Separator />
-                    <MenuItem
+                    <!--<MenuItem
                         Name="CreateCrudMenuItem"
                         Click="CreateCrudMenuItem_Click"
-                        Header="Custom _Full CRUD…" />
+                        Header="Custom _Full CRUD…" />-->
+                    <MenuItem
+                        Name="FunctionalityEditorManuItem"
+                        Click="FunctionalityEditorManuItem_Click"
+                        Header="_Functionality" />
                 </MenuItem>
                 <MenuItem Header="_Front-End">
                     <MenuItem
@@ -70,10 +74,6 @@
                         Name="BlazorPageMenuItem"
                         Click="BlazorPageMenuItem_Click"
                         Header="Blazor _Page" />
-                    <MenuItem
-                        Name="FunctionalityEditorManuItem"
-                        Click="FunctionalityEditorManuItem_Click"
-                        Header="_Functionality" />
                 </MenuItem>
                 <MenuItem Header="_Tools">
                     <MenuItem

@@ -89,7 +89,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
     protected override async Task OnBindDataAsync()
     {
-        await this.FunctionalityTreeView.BindAsync();
+        //await this.FunctionalityTreeView.BindAsync();
         await base.OnBindDataAsync();
     }
 
@@ -100,15 +100,16 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
+        this.ViewModel = null;
         this.ViewModel = await this._service.CreateAsync();
     }
 
     private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
+        //Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
         var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
         _ = Check.If(resp != TaskDialogResult.Ok).BreakOnFail();
-        _ = await this._service.DeleteAsync(this.FunctionalityTreeView.SelectedItem).ShowOrThrowAsync(this.Title);
+        //_ = await this._service.DeleteAsync(this.FunctionalityTreeView.SelectedItem).ShowOrThrowAsync(this.Title);
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
@@ -265,7 +266,11 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                 this._databaseExplorerUserControl = new DatabaseExplorerUserControl();
                 _ = await this._databaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter);
             }
-            _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a table.")).BreakOnFail();
+            _ = HostDialog
+                    .ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality."
+                        , _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null
+                            , () => "Please select a table."))
+                    .BreakOnFail();
 
             // Did user select a DTO?
             var table = this._databaseExplorerUserControl.SelectedTable!;

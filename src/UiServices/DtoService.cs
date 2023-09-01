@@ -102,14 +102,14 @@ internal sealed class DtoService(
     public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         Check.MustBeArgumentNotNull(viewModel);
-        var result = new Codes();
+        var result = new Codes().With(x => x.props().Category = CodeCategory.Dto);
         if (!validate(viewModel).TryParse(out var validationResult))
         {
             return Result<Codes>.From(validationResult, result);
         }
 
         var codeGen = convertViewModelToCodeGen(viewModel);
-        var code = codeGen.GenerateCode(viewModel.NameSpace);
+        var code = codeGen.GenerateCode(viewModel.NameSpace).With(x=>x.props().Category = CodeCategory.Dto);
 
         return Result<Codes>.New(result.Add(code));
 

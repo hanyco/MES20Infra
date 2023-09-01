@@ -17,7 +17,7 @@
     mc:Ignorable="d">
     <Grid x:Name="Container">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -32,7 +32,7 @@
                 ToolTip="New Functionality">
                 <Path Style="{StaticResource New}" />
             </Button>
-            <Button
+            <!--<Button
                 Name="EditFunctionalityButton"
                 Style="{StaticResource IconButton}"
                 ToolTip="Edit Functionality">
@@ -44,7 +44,7 @@
                 Style="{StaticResource IconButton}"
                 ToolTip="Delete Functionality">
                 <Path Style="{StaticResource Delete}" />
-            </Button>
+            </Button>-->
             <Separator />
             <Button
                 Name="GenerateViewModelButton"
@@ -76,7 +76,7 @@
                 <Path Style="{StaticResource SaveAll}" />
             </Button>
         </ToolBar>
-        <usercontrols:FunctionalityTreeView x:Name="FunctionalityTreeView" Grid.Row="1" />
+        <!--<usercontrols:FunctionalityTreeView x:Name="FunctionalityTreeView" Width="150" Grid.Row="1" />-->
         <TabControl
             Grid.Row="1"
             Grid.Column="1"

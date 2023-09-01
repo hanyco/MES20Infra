@@ -114,7 +114,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
                             : modelDtoNameSpace is not null
                                 ? modelDtoNameSpace
                                 : string.Empty;
-        var dtoUnit = new CodeCompileUnit();
+        var dtoUnit = new CodeCompileUnit().AddRegion(AUTO_GENERATED_FILE_HEADER);
         var dtoNameSpace = dtoUnit.AddNewNameSpace(dtoNs).UseNameSpace("System");
         var interfaceNameSpaces = dto.GetBaseTypes().Select(ns => ns.Namespaces).SelectAll();
         if (interfaceNameSpaces.Any())
@@ -151,7 +151,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
     {
         foreach (var segregate in model.Segregates.Where(seg => seg.HasPartialClass))
         {
-            var unit = new CodeCompileUnit();
+            var unit = new CodeCompileUnit().AddRegion(AUTO_GENERATED_FILE_HEADER);
             var parNameSpace = AddSegregateUsingNameSpaces(model, unit);
             var type = GeneratePartialSegregate(segregate, model.Name, parNameSpace);
             var result = new GenerateCqrsSegsResult(type.Name, unit);

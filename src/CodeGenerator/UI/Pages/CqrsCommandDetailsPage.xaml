@@ -211,7 +211,7 @@
                                     <TextBlock Text="Param DTO:" />
                                     <ComboBox
                                         Name="ParamDtoComboBox"
-                                        SelectedValue="{Binding ParamDto}"
+                                        SelectedValue="{Binding ParamsDto}"
                                         Style="{StaticResource LongComboBox}" />
                                 </StackPanel>
                                 <StackPanel Style="{StaticResource FieldPanel}">
