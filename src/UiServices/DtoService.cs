@@ -109,7 +109,7 @@ internal sealed class DtoService(
         }
 
         var codeGen = convertViewModelToCodeGen(viewModel);
-        var code = codeGen.GenerateCode(viewModel.NameSpace).With(x=>x.props().Category = CodeCategory.Dto);
+        var code = codeGen.GenerateCode(viewModel.NameSpace).With(x => x.props().Category = CodeCategory.Dto);
 
         return Result<Codes>.New(result.Add(code));
 
