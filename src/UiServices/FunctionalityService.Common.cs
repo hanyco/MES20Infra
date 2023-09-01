@@ -90,14 +90,14 @@ internal partial class FunctionalityService : IFunctionalityService, IFunctional
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
     public Task<Result<FunctionalityViewModel>> ValidateAsync(FunctionalityViewModel? model, CancellationToken cancellationToken) =>
-        basicChecks(model, cancellationToken).Build<FunctionalityViewModel>().ToAsync()!;
+        BasicChecks(model, cancellationToken).Build().ToAsync()!;
 
-    private static ValidationResultSet<FunctionalityViewModel> basicChecks(FunctionalityViewModel? model, CancellationToken cancellationToken) =>
+    private static ValidationResultSet<FunctionalityViewModel> BasicChecks(FunctionalityViewModel? model, CancellationToken cancellationToken) =>
         model.Check()
              .RuleFor(_ => !cancellationToken.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
              .ArgumentNotNull()
              .NotNull(x => x!.Name)
              .NotNull(x => x!.NameSpace, paramName: "namespace")
              .NotNull(x => x!.SourceDto)
-             .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
+             .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)))!;
 }
