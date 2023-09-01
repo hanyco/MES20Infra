@@ -111,6 +111,14 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases
         /// <summary>
         /// Generates codes asynchronously based on the given view model and optional parameters.
         /// </summary>
+        /// <param name="viewModel">
+        /// The ViewModel instance.
+        /// </param>
+        /// <param name="args">Optional arguments for code generation.</param>
+        /// <param name="token">Cancellation token to cancel the code generation process.</param>
+        /// <returns>
+        /// A Result containing the generated codes or a failure message if no codes were generated.
+        /// </returns>
         Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, TArgs? arguments = default, CancellationToken token = default);
     }
 

@@ -6,8 +6,6 @@ using Contracts.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration.Models;
-using Library.Exceptions;
-using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
@@ -18,8 +16,8 @@ namespace Services;
 internal sealed partial class FunctionalityService
 {
     /// <summary>
-    /// This method generates codes asynchronously based on the provided FunctionalityViewModel and
-    /// optional arguments. It is closely related to the FunctionalityViewModel and its associated codes.
+    /// Generates codes asynchronously based on the provided FunctionalityViewModel and optional
+    /// arguments. It is closely related to the FunctionalityViewModel and its associated codes.
     /// </summary>
     /// <param name="viewModel">
     /// The FunctionalityViewModel instance containing components and view models.
@@ -37,7 +35,7 @@ internal sealed partial class FunctionalityService
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : new();
 
         // Generate codes asynchronously and combine the results.
-        var results = await GenerateCodes(viewModel, codeResult, token);
+        var results = await generateCodes(viewModel, codeResult, token);
 
         // Combine generated results if available, or return a failure message.
         return results.Any()
@@ -45,50 +43,50 @@ internal sealed partial class FunctionalityService
             : Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
 
         // Internal method to generate codes for various components and view models.
-        async Task<IEnumerable<Result<Codes>>> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes results, CancellationToken token)
+        async Task<IEnumerable<Result<Codes>>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes, CancellationToken token)
         {
             var result = new List<Result<Codes>>();
 
             // Generate codes for GetAllQueryViewModel if available.
             if (viewModel.GetAllQueryViewModel != null)
             {
-                results.GetAllQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetAllQueryViewModel, token: token));
+                codes.GetAllQueryCodes = await gatherAllCodesAsync(viewModel.GetAllQueryViewModel, token: token);
             }
 
             // Generate codes for GetByIdQueryViewModel if available.
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                results.GetByIdQueryCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.GetByIdQueryViewModel, token: token));
+                codes.GetByIdQueryCodes = await gatherAllCodesAsync(viewModel.GetByIdQueryViewModel, token: token);
             }
 
             // Generate codes for InsertCommandViewModel if available.
             if (viewModel.InsertCommandViewModel != null)
             {
-                results.InsertCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.InsertCommandViewModel, token: token));
+                codes.InsertCommandCodes = await gatherAllCodesAsync(viewModel.InsertCommandViewModel, token: token);
             }
 
             // Generate codes for UpdateCommandViewModel if available.
             if (viewModel.UpdateCommandViewModel != null)
             {
-                results.UpdateCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.UpdateCommandViewModel, token: token));
+                codes.UpdateCommandCodes = await gatherAllCodesAsync(viewModel.UpdateCommandViewModel, token: token);
             }
 
             // Generate codes for DeleteCommandViewModel if available.
             if (viewModel.DeleteCommandViewModel != null)
             {
-                results.DeleteCommandCodes = addToList(await this._cqrsCodeService.GenerateCodeAsync(viewModel.DeleteCommandViewModel, token: token));
+                codes.DeleteCommandCodes = await gatherAllCodesAsync(viewModel.DeleteCommandViewModel, token: token);
             }
 
             // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                results.BlazorListCodes = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
+                codes.BlazorListCodes = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
             }
 
             // Generate codes for BlazorDetailsComponentViewModel if available.
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                results.BlazorDetailsComponentViewModel = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+                codes.BlazorDetailsComponentViewModel = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
             }
 
             return result;
@@ -98,6 +96,17 @@ internal sealed partial class FunctionalityService
             {
                 result.Add(codeResult);
                 return codeResult;
+            }
+
+            async Task<Codes> gatherAllCodesAsync(CqrsViewModelBase cqrsViewModel, CancellationToken token)
+            {
+                var getAllCodes = new List<Result<Codes>>
+                {
+                    addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ParamsDto)),
+                    addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto)),
+                    addToList(await this._cqrsCodeService.GenerateCodeAsync(cqrsViewModel, token: token))
+                };
+                return new Codes(getAllCodes.Select(x => x.Value));
             }
         }
     }
@@ -190,20 +199,16 @@ internal sealed partial class FunctionalityService
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
         // Create an initial DTO based on the input data
-        var dto = create(data);
+        var dto = new DtoViewModel(data.ViewModel.SourceDto.Id, data.ViewModel.Name!)
+        {
+            Comment = data.COMMENT, // Set DTO comment
+            NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"), // Set DTO namespace
+            Functionality = data.ViewModel // Set DTO functionality
+        }
+        .With(x => x.Module.Id = data.ViewModel.SourceDto.Module.Id); // Set DTO module ID
 
         // If the addTableColumns parameter is true, add table columns to the DTO
         return addTableColumns ? AddColumns(data, dto) : dto;
-
-        // Internal method for creating an initial DTO
-        static DtoViewModel create(CreationData data) =>
-            new DtoViewModel(data.ViewModel.SourceDto.Id, data.ViewModel.Name!)
-            {
-                Comment = data.COMMENT, // Set DTO comment
-                NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"), // Set DTO namespace
-                Functionality = data.ViewModel // Set DTO functionality
-            }
-            .With(x => x.Module.Id = data.ViewModel.SourceDto.Module.Id); // Set DTO module ID
 
         // Internal method for adding table columns to DTO
         static DtoViewModel AddColumns(CreationData data, DtoViewModel dto)
@@ -218,10 +223,10 @@ internal sealed partial class FunctionalityService
         createViewModel(data);
         return Task.CompletedTask;
 
-        static void createViewModel(CreationData data) => 
+        static void createViewModel(CreationData data) =>
             data.ViewModel.BlazorDetailsComponentViewModel = new()
-        {
-        };
+            {
+            };
     }
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
@@ -229,10 +234,10 @@ internal sealed partial class FunctionalityService
         createViewModel(data);
         return Task.CompletedTask;
 
-        static void createViewModel(CreationData data) => 
+        static void createViewModel(CreationData data) =>
             data.ViewModel.BlazorListComponentViewModel = new()
-        {
-        };
+            {
+            };
     }
 
     private Task CreateBlazorPage(CreationData data, CancellationToken token)
@@ -254,19 +259,6 @@ internal sealed partial class FunctionalityService
             .Then(createResult)
             .RunAsync(token);
 
-        void createParams(CreationData data)
-        {
-            var dto = RawDto(data, false);
-            dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            dto.Name = $"Delete{data.ViewModel.DeleteCommandViewModel.Name}Params";
-            dto.IsParamsDto = true;
-            dto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
-            data.ViewModel.DeleteCommandViewModel.ParamsDto = dto;
-        }
-
-        Task createValidator(CancellationToken token) =>
-            Task.CompletedTask;
-
         async Task createHandler(CancellationToken token)
         {
             data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
@@ -279,14 +271,24 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token);
         }
 
+        void createParams(CreationData data)
+        {
+            data.ViewModel.DeleteCommandViewModel.ParamsDto = RawDto(data, false);
+            data.ViewModel.DeleteCommandViewModel.ParamsDto.Name = $"Delete{data.ViewModel.DeleteCommandViewModel.Name.TrimEnd("Command")}Params";
+            data.ViewModel.DeleteCommandViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            data.ViewModel.DeleteCommandViewModel.ParamsDto.IsParamsDto = true;
+            data.ViewModel.DeleteCommandViewModel.ParamsDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+        }
+
         void createResult(CreationData data)
         {
-            var dto = RawDto(data, false);
-            dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            dto.Name = $"Delete{data.ViewModel.DeleteCommandViewModel.Name}Result";
-            dto.IsResultDto = true;
-            data.ViewModel.DeleteCommandViewModel.ResultDto = dto;
+            data.ViewModel.DeleteCommandViewModel.ResultDto = RawDto(data, false);
+            data.ViewModel.DeleteCommandViewModel.ResultDto.Name = $"Delete{data.ViewModel.DeleteCommandViewModel.Name.TrimEnd("Command")}Result";
+            data.ViewModel.DeleteCommandViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            data.ViewModel.DeleteCommandViewModel.ResultDto.IsResultDto = true;
         }
+        Task createValidator(CancellationToken token) =>
+            Task.CompletedTask;
     }
 
     private async Task CreateGetAllQuery(CreationData data, CancellationToken token)
@@ -313,6 +315,7 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetAllQueryViewModel.ParamsDto = RawDto(data, false);
             data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name.TrimEnd("Query")}Params";
+            data.ViewModel.GetAllQueryViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetAllQueryViewModel.ParamsDto.IsParamsDto = true;
         }
 
@@ -320,6 +323,7 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, true);
             data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{data.ViewModel.GetAllQueryViewModel.Name.TrimEnd("Query")}Result";
+            data.ViewModel.GetAllQueryViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }
@@ -348,7 +352,8 @@ internal sealed partial class FunctionalityService
         void createParams()
         {
             data.ViewModel.GetByIdQueryViewModel.ParamsDto = RawDto(data, false);
-            data.ViewModel.GetByIdQueryViewModel.ParamsDto.Name = $"{data.ViewModel.GetByIdQueryViewModel.Name}Params";
+            data.ViewModel.GetByIdQueryViewModel.ParamsDto.Name = $"{data.ViewModel.GetByIdQueryViewModel.Name.TrimEnd("Query")}Params";
+            data.ViewModel.GetByIdQueryViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
         }
@@ -356,7 +361,8 @@ internal sealed partial class FunctionalityService
         void createResult()
         {
             data.ViewModel.GetByIdQueryViewModel.ResultDto = RawDto(data, true);
-            data.ViewModel.GetByIdQueryViewModel.ResultDto.Name = $"{data.ViewModel.GetByIdQueryViewModel.Name}Result";
+            data.ViewModel.GetByIdQueryViewModel.ResultDto.Name = $"{data.ViewModel.GetByIdQueryViewModel.Name.TrimEnd("Query")}Result";
+            data.ViewModel.GetByIdQueryViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetByIdQueryViewModel.ResultDto.IsResultDto = true;
         }
     }
@@ -387,8 +393,8 @@ internal sealed partial class FunctionalityService
         void createParams(CreationData data)
         {
             data.ViewModel.InsertCommandViewModel.ParamsDto = RawDto(data, true);
+            data.ViewModel.InsertCommandViewModel.ParamsDto.Name = $"{data.ViewModel.InsertCommandViewModel.Name.TrimEnd("Command")}Params";
             data.ViewModel.InsertCommandViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            data.ViewModel.InsertCommandViewModel.ParamsDto.Name = $"{data.ViewModel.InsertCommandViewModel.Name}Params";
             data.ViewModel.InsertCommandViewModel.ParamsDto.IsParamsDto = true;
             var idProp = data.ViewModel.InsertCommandViewModel.ParamsDto.Properties.FirstOrDefault(y => y.Name?.EqualsTo("id") is true);
             if (idProp != null)
@@ -400,7 +406,8 @@ internal sealed partial class FunctionalityService
         void createResult(CreationData data)
         {
             data.ViewModel.InsertCommandViewModel.ResultDto = RawDto(data, false);
-            data.ViewModel.InsertCommandViewModel.ResultDto.Name = $"{data.ViewModel.InsertCommandViewModel.Name}Result";
+            data.ViewModel.InsertCommandViewModel.ResultDto.Name = $"{data.ViewModel.InsertCommandViewModel.Name.TrimEnd("Command")}Result";
+            data.ViewModel.InsertCommandViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.InsertCommandViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.InsertCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
@@ -431,20 +438,19 @@ internal sealed partial class FunctionalityService
 
         void createParamsAsync(CreationData data)
         {
-            var dto = RawDto(data, true);
-            dto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
-            dto.Name = $"{data.ViewModel.UpdateCommandViewModel.Name}Params";
-            dto.IsParamsDto = true;
-            data.ViewModel.UpdateCommandViewModel.ParamsDto = dto;
+            data.ViewModel.UpdateCommandViewModel.ParamsDto = RawDto(data, true);
+            data.ViewModel.UpdateCommandViewModel.ParamsDto.Name = $"{data.ViewModel.UpdateCommandViewModel.Name.TrimEnd("Command")}Params";
+            data.ViewModel.UpdateCommandViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            data.ViewModel.UpdateCommandViewModel.ParamsDto.IsParamsDto = true;
         }
 
         void createResult(CreationData data)
         {
-            var dto = RawDto(data, false);
-            dto.Name = $"{data.ViewModel.UpdateCommandViewModel.Name}Result";
-            dto.IsResultDto = true;
-            dto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
-            data.ViewModel.UpdateCommandViewModel.ResultDto = dto;
+            data.ViewModel.UpdateCommandViewModel.ResultDto = RawDto(data, false);
+            data.ViewModel.UpdateCommandViewModel.ResultDto.Name = $"{data.ViewModel.UpdateCommandViewModel.Name.TrimEnd("Command")}Result";
+            data.ViewModel.UpdateCommandViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
+            data.ViewModel.UpdateCommandViewModel.ResultDto.IsResultDto = true;
+            data.ViewModel.UpdateCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
     }
 
