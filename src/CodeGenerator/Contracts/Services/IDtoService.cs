@@ -36,7 +36,7 @@ public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyn
     /// <param name="resultDtos">if set to <c>true</c> [result dtos].</param>
     /// <param name="viewModels">if set to <c>true</c> [view models].</param>
     /// <returns></returns>
-    public Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels, CancellationToken token = default);
+    public Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool? paramsDtos, bool? resultDtos, bool? viewModels, CancellationToken token = default);
 
     /// <summary>
     /// Gets the DTOs by module id.

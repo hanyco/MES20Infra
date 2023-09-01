@@ -41,9 +41,9 @@ public partial class CqrsExplorerTreeView : UserControl
 
     public event EventHandler<ItemActedEventArgs<InfraViewModelBase?>>? SelectedItemChanged;
 
-    public static DependencyProperty FilterDtoParamsProperty { get; } = ControlHelper.GetDependencyProperty<bool, CqrsExplorerTreeView>(nameof(FilterDtoParams), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: true);
-    public static DependencyProperty FilterResultDtoProperty { get; } = ControlHelper.GetDependencyProperty<bool, CqrsExplorerTreeView>(nameof(FilterDtoResult), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: true);
-    public static DependencyProperty FilterViewModelProperty { get; } = ControlHelper.GetDependencyProperty<bool, CqrsExplorerTreeView>(nameof(FilterViewModel), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: true);
+    public static DependencyProperty FilterDtoParamsProperty { get; } = ControlHelper.GetDependencyProperty<bool?, CqrsExplorerTreeView>(nameof(FilterDtoParams), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: null);
+    public static DependencyProperty FilterResultDtoProperty { get; } = ControlHelper.GetDependencyProperty<bool?, CqrsExplorerTreeView>(nameof(FilterDtoResult), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: null);
+    public static DependencyProperty FilterViewModelProperty { get; } = ControlHelper.GetDependencyProperty<bool?, CqrsExplorerTreeView>(nameof(FilterViewModel), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: null);
 
     public static DependencyProperty LoadCommandsProperty { get; } = ControlHelper.GetDependencyProperty<bool, CqrsExplorerTreeView>(nameof(LoadCommands), onPropertyChanged: async (me, _) => await me.BindAsync());
     public static DependencyProperty LoadDtosProperty { get; } = ControlHelper.GetDependencyProperty<bool, CqrsExplorerTreeView>(nameof(LoadDtos), onPropertyChanged: async (me, _) => await me.BindAsync());
@@ -51,9 +51,9 @@ public partial class CqrsExplorerTreeView : UserControl
 
     public static DependencyProperty SelectedItemProperty { get; } = ControlHelper.GetDependencyProperty<InfraViewModelBase?, CqrsExplorerTreeView>(propertyName: nameof(SelectedItem), onPropertyChanged: (me, _) => me.OnSelectedItemChanged());
 
-    public bool FilterDtoParams { get => (bool)this.GetValue(FilterDtoParamsProperty); set => this.SetValue(FilterDtoParamsProperty, value); }
-    public bool FilterDtoResult { get => (bool)this.GetValue(FilterResultDtoProperty); set => this.SetValue(FilterResultDtoProperty, value); }
-    public bool FilterViewModel { get => (bool)this.GetValue(FilterViewModelProperty); set => this.SetValue(FilterViewModelProperty, value); }
+    public bool? FilterDtoParams { get => (bool?)this.GetValue(FilterDtoParamsProperty); set => this.SetValue(FilterDtoParamsProperty, value); }
+    public bool? FilterDtoResult { get => (bool?)this.GetValue(FilterResultDtoProperty); set => this.SetValue(FilterResultDtoProperty, value); }
+    public bool? FilterViewModel { get => (bool?)this.GetValue(FilterViewModelProperty); set => this.SetValue(FilterViewModelProperty, value); }
     public bool IsInitializing { get; private set; }
     public bool LoadCommands { get => (bool)this.GetValue(LoadCommandsProperty); set => this.SetValue(LoadCommandsProperty, value); }
     public bool LoadDtos { get => (bool)this.GetValue(LoadDtosProperty); set => this.SetValue(LoadDtosProperty, value); }

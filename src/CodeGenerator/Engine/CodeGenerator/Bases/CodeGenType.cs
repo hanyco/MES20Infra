@@ -1,7 +1,5 @@
 ﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
 
-using Library.Collections;
-
 using static Library.Helpers.CodeGen.TypeMemberNameHelper;
 
 namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
@@ -20,7 +18,7 @@ public record CodeGenType : ICanInherit, IPropertyContainer, IAttributeContainer
         }
         if (attributes is not null && attributes.Any())
         {
-            this.Attributes.AddRange(attributes);
+            _ = this.Attributes.AddRange(attributes);
         }
         this.FullName = fullName;
         this.BaseClass = baseClass;
@@ -51,6 +49,6 @@ public record CodeGenType : ICanInherit, IPropertyContainer, IAttributeContainer
     public static CodeGenType New(in Type primitiveType) =>
         new(primitiveType);
 
-
-    public override string ToString() => this.FullName;
+    public override string ToString() =>
+        this.FullName;
 }

@@ -109,7 +109,7 @@ internal sealed class DtoService(
         }
 
         var codeGen = convertViewModelToCodeGen(viewModel);
-        var code = codeGen.GenerateCode(viewModel.NameSpace).With(x=>x.props().Category = CodeCategory.Dto);
+        var code = codeGen.GenerateCode(viewModel.NameSpace).With(x => x.props().Category = CodeCategory.Dto);
 
         return Result<Codes>.New(result.Add(code));
 
@@ -142,7 +142,7 @@ internal sealed class DtoService(
         return result;
     }
 
-    public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool paramsDtos, bool resultDtos, bool viewModels, CancellationToken token = default)
+    public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool? paramsDtos, bool? resultDtos, bool? viewModels, CancellationToken token = default)
     {
         var rawQuery = from dto in this._db.Dtos.Include(x => x.Module)
                        select dto;
@@ -153,18 +153,23 @@ internal sealed class DtoService(
         var result = this._converter.FillByDbEntity(dbResult).ToReadOnlySet();
         return result;
 
-        static Expression<Func<DtoEntity, bool>> generateWhereClause(bool paramsDtos, bool resultDtos, bool viewModels, CancellationToken token = default)
+        static Expression<Func<DtoEntity, bool>> generateWhereClause(bool? paramsDtos, bool? resultDtos, bool? viewModels, CancellationToken token = default)
         {
+            if (paramsDtos == null && resultDtos == null && viewModels == null)
+            {
+                return PredicateBuilder.True<DtoEntity>();
+            }
+
             var whereClause = PredicateBuilder.False<DtoEntity>();
-            if (paramsDtos)
+            if (paramsDtos ?? false)
             {
                 whereClause = whereClause.Or(dto => dto.IsParamsDto);
             }
-            if (resultDtos)
+            if (resultDtos ?? false)
             {
                 whereClause = whereClause.Or(dto => dto.IsResultDto);
             }
-            if (viewModels)
+            if (viewModels ?? false)
             {
                 whereClause = whereClause.Or(dto => dto.IsViewModel);
             }
