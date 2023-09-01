@@ -251,8 +251,8 @@ internal sealed class DtoService(
 
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(token);
         await insertDto(viewModel, entity.Dto, token);
-        // TODO: Call the blow line manually.
-        //x await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token);
+        if (persist)
+            await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token);
         var result = await this.SubmitChangesAsync(persist, transaction).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 

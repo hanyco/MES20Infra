@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.Exceptions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Pages;
 using HanyCo.Infra.UI.Services;
@@ -18,6 +19,7 @@ using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace HanyCo.Infra.UI.Controls.Pages;
@@ -135,7 +137,15 @@ public partial class DtoDetailsPage
         }
         _ = Application.Current.DoEvents();
         this.Debug("DTO deleting...");
-        _ = await this._service.DeleteAsync(dto).ThrowOnFailAsync(this.Title);
+        var saveResult = await this._service.DeleteAsync(dto);
+        if (saveResult.IsFailure && saveResult.Status is DbUpdateException ex)
+        {
+            if (ex.InnerException?.Message.Contains("infra.CqrsSegregate") ?? false)
+            {
+                MesException.Throw("A CQRS segregation has relation to this DTO and this DTO cannot be deleted.");
+            }
+        }
+        _ = saveResult.ThrowOnFail();
         await this.InitDtoExplorerTreeAsync();
         this.Debug("DTO deleted.");
     }
@@ -191,12 +201,12 @@ public partial class DtoDetailsPage
             this.Debug("Generating code...");
             this.GenerateCodeButton.IsEnabled = false;
             this.ComponentCodeResultUserControl.Codes = this._codeService.GenerateCodes(this.ViewModel!).ThrowOnFail(this.Title);
+            this.DtoDetails.SelectedItem = this.ResultsTabItem;
             this.Debug("Code generated.");
         }
         finally
         {
             this.GenerateCodeButton.IsEnabled = true;
-            this.DtoDetails.SelectedItem = this.ResultsTabItem;
         }
     }
 
@@ -282,7 +292,7 @@ public partial class DtoDetailsPage
 
     private async void SaveDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.MutBeNotNull(this.ViewModel);
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
 
         this.SaveDtoButton.IsEnabled = false;
         try
@@ -299,7 +309,7 @@ public partial class DtoDetailsPage
             _ = this.DtoEditUserControl.Focus();
 
             this.Debug("Saving DTO…");
-            var viewModel = this.ViewModel;
+            var viewModel = this.ViewModel!;
             var saveResult = await this._service.SaveViewModelAsync(viewModel).ThrowOnFailAsync(this.Title);
 
             this.Debug("Reloading DTO…");
