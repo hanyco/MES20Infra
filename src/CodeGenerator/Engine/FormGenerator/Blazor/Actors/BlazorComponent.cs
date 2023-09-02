@@ -65,7 +65,7 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
                 .AppendLine($"@using {commandProcessorType.NameSpace}")
                 .AppendLine($"@using {userContextType.NameSpace}")
                 .AppendLine($"@using {typeof(ComponentBase<,>).Namespace}")
-                .AppendLine($"@using {this.DataContextType!.Value.NameSpace}")
+                .AppendLine($"@using {this.DataContextType?.NameSpace}")
                 .AppendLine()
                 .AppendLine($"@inject {queryProcessorType.Name} {TypeMemberNameHelper.ToFieldName(queryProcessorType.Name!)}")
                 .AppendLine($"@inject {commandProcessorType.Name} {TypeMemberNameHelper.ToFieldName(commandProcessorType.Name!)}")
@@ -74,8 +74,8 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
                 .AppendLine()
                 .Fluent()
                 .If(this.IsGrid
-                    , sb => sb.AppendLine($"@inherits {baseTypeName}<List<{dataContextType.Value.Name}>, {this.DataContextType.Value.Name}>")
-                    , sb => sb.AppendLine($"@inherits {baseTypeName}<{dataContextType.Value.Name},{this.DataContextType.Value.Name}>"))
+                    , sb => sb.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>")
+                    , sb => sb.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>"))
                 .GetValue()!
                 .AppendLine();
     }

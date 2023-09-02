@@ -228,6 +228,7 @@ internal sealed partial class FunctionalityService
         void createViewModel(CreationData data)
         {
             data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodingService.CreateNewComponentByDto(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.SourceDto;
             data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{data.ViewModel.SourceDto.Name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{data.ViewModel.SourceDto.Name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = true;
@@ -242,6 +243,7 @@ internal sealed partial class FunctionalityService
         void createViewModel(CreationData data)
         {
             data.ViewModel.BlazorListComponentViewModel = this._blazorComponentCodingService.CreateNewComponentByDto(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.SourceDto;
             data.ViewModel.BlazorListComponentViewModel.Name = $"{data.ViewModel.SourceDto.Name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.ClassName = $"{data.ViewModel.SourceDto.Name}ListComponent";
 
@@ -258,7 +260,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorPageViewModel.Module = data.ViewModel.SourceDto.Module;
             data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
-            //data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext
             data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
         }
     }

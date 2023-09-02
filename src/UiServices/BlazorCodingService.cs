@@ -217,11 +217,11 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
 
         static void setDataContext(UiComponentViewModel model, TypePath? dataContextPropType, BlazorComponent result, CancellationToken cancellationToken = default)
         {
-            if (dataContextPropType is not { } prop)
+            if (dataContextPropType is not { } prop )
             {
                 return;
             }
-            _ = result.SetDataContextProperty(prop, model.PageDataContextProperty.Name);
+            _ = result.SetDataContextProperty(prop, model?.Name);
         }
 
         static void createChildren<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponentBase<TBlazorComponent> engine, CancellationToken cancellationToken = default)
