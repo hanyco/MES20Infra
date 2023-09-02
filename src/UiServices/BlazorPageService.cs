@@ -9,7 +9,6 @@ using HanyCo.Infra.UI.ViewModels;
 using Library.BusinessServices;
 using Library.CodeGeneration.Models;
 using Library.Exceptions.Validations;
-using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
 
@@ -17,29 +16,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
-    //x, IAsyncViewModelFiller<UiPageViewModel>
-    , IAsyncSaveChanges
-    , IResetChanges
-    , IAsyncValidator<UiPageViewModel>
-    , ILoggerContainer
+internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
+                         InfraWriteDbContext writeDbContext,
+                         IEntityViewModelConverter converter,
+                         ILogger logger) : IBlazorPageService, IBlazorPageCodingService
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly InfraReadDbContext _readDbContext;
-    private readonly InfraWriteDbContext _writeDbContext;
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
-    public BlazorPageService(InfraReadDbContext readDbContext,
-                             InfraWriteDbContext writeDbContext,
-                             IEntityViewModelConverter converter,
-                             ILogger logger)
-    {
-        this._readDbContext = readDbContext;
-        this._writeDbContext = writeDbContext;
-        this._converter = converter;
-        this.Logger = logger;
-    }
-
-    public ILogger Logger { get; }
+    public ILogger Logger { get; } = logger;
 
     public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
         => ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
@@ -67,7 +53,7 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
                     .SetPageRoute(viewModel.Route)
                     .SetNameSpace(viewModel.NameSpace)
                     .SetDataContext(dataContextType);
-        _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name))));
+        _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
 
         var result = page.GenerateCodes(arguments);
         this.Logger.Debug($"Generating code is done.");
@@ -127,7 +113,7 @@ internal sealed class BlazorPageService : IBusinessService, IBlazorPageService
             var removedComponents = await query.ToListLockAsync(this._readDbContext.AsyncLock);
             _ = this._writeDbContext.RemoveById<UiPageComponent>(removedComponents);
 
-            var save = await this.SubmitChangesAsync(persist);
+            var save = await this.SubmitChangesAsync(persist, token: cancellationToken);
             var result = (await this.GetByIdAsync(entity.Id, cancellationToken: cancellationToken))!;
             return Result<UiPageViewModel>.From(save, result);
         }

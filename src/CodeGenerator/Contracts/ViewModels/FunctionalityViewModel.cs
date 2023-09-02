@@ -26,6 +26,8 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     // Components and view models associated with the BlazorList functionality.
     public UiComponentViewModel BlazorListComponentViewModel { get; set; }
 
+    public UiPageViewModel BlazorPageViewModel { get; set; }
+
     // An instance of FunctionalityViewModelCodes to store functionality-specific codes.
     public FunctionalityViewModelCodes Codes { get; } = new();
 
@@ -58,7 +60,7 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     /// <summary>
     /// Gets or sets the codes for the BlazorDetailsComponentViewModel functionality.
     /// </summary>
-    public Codes BlazorDetailsComponentViewModel { get => this.Get(); set => this.Set(value); }
+    public Codes BlazorDetailsComponentCodes { get => this.Get(); set => this.Set(value); }
 
     /// <summary>
     /// Gets or sets the codes for the BlazorListCodes functionality.

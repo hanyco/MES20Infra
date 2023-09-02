@@ -17,59 +17,48 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace Services;
 
 [Service]
-internal partial class FunctionalityService : IFunctionalityService, IFunctionalityCodeService
-    , IBusinessService, IAsyncValidator<FunctionalityViewModel>, IAsyncTransactionSave, ILoggerContainer
+internal partial class FunctionalityService(
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext writeDbContext,
+    IEntityViewModelConverter converter,
+    IDtoService dtoService,
+    IDtoCodeService dtoCodeService,
+    ICqrsQueryService queryService,
+    ICqrsCommandService commandService,
+    ICqrsCodeGeneratorService cqrsCodeService,
+    IModuleService moduleService,
+    IProgressReport reporter,
+    ILogger logger,
+    IBlazorComponentService blazorComponentService,
+    IBlazorComponentCodingService blazorCodingService,
+    IBlazorPageService blazorPageService,
+    IBlazorPageCodingService blazorPageCodingService)
+    : IFunctionalityService
+    , IFunctionalityCodeService
+    , IBusinessService
+    , IAsyncValidator<FunctionalityViewModel>
+    , IAsyncTransactionSave
+    , ILoggerContainer
 {
     #region Fields & Properties
 
-    private readonly IBlazorCodingService _blazorCodingService;
-    private readonly IBlazorComponentService _blazorComponentService;
-    private readonly ICqrsCommandService _commandService;
-    private readonly IEntityViewModelConverter _converter;
-    private readonly ICqrsCodeGeneratorService _cqrsCodeService;
-    private readonly IDtoCodeService _dtoCodeService;
-    private readonly IDtoService _dtoService;
-    private readonly IModuleService _moduleService;
-    private readonly ICqrsQueryService _queryService;
-    private readonly InfraReadDbContext _readDbContext;
-    private readonly IProgressReport _reporter;
-    private readonly InfraWriteDbContext _writeDbContext;
-    public ILogger Logger { get; }
+    private readonly IBlazorComponentCodingService _blazorComponentCodingService = blazorCodingService;
+    private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
+    private readonly IBlazorPageCodingService _blazorPageCodingService = blazorPageCodingService;
+    private readonly IBlazorPageService _blazorPageService = blazorPageService;
+    private readonly ICqrsCommandService _commandService = commandService;
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly ICqrsCodeGeneratorService _cqrsCodeService = cqrsCodeService;
+    private readonly IDtoCodeService _dtoCodeService = dtoCodeService;
+    private readonly IDtoService _dtoService = dtoService;
+    private readonly IModuleService _moduleService = moduleService;
+    private readonly ICqrsQueryService _queryService = queryService;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly IProgressReport _reporter = reporter;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
+    public ILogger Logger { get; } = logger;
 
     #endregion Fields & Properties
-
-    #region Ctors
-
-    public FunctionalityService(
-        InfraReadDbContext readDbContext,
-        InfraWriteDbContext writeDbContext,
-        IEntityViewModelConverter converter,
-        IDtoService dtoService,
-        IDtoCodeService dtoCodeService,
-        ICqrsQueryService queryService,
-        ICqrsCommandService commandService,
-        ICqrsCodeGeneratorService cqrsCodeService,
-        IModuleService moduleService,
-        IProgressReport reporter,
-        ILogger logger,
-        IBlazorComponentService blazorComponentService,
-        IBlazorCodingService blazorCodingService)
-    {
-        (this._readDbContext, this._writeDbContext) = (readDbContext, writeDbContext);
-        this._converter = converter;
-        this.Logger = logger;
-        this._dtoService = dtoService;
-        this._dtoCodeService = dtoCodeService;
-        this._queryService = queryService;
-        this._commandService = commandService;
-        this._cqrsCodeService = cqrsCodeService;
-        this._moduleService = moduleService;
-        this._reporter = reporter;
-        this._blazorComponentService = blazorComponentService;
-        this._blazorCodingService = blazorCodingService;
-    }
-
-    #endregion Ctors
 
     Task<IDbContextTransaction> IAsyncTransactional.BeginTransactionAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.BeginTransactionAsync(cancellationToken);

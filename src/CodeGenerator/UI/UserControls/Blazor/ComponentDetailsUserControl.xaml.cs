@@ -13,7 +13,7 @@ public partial class ComponentDetailsUserControl
     public ComponentDetailsUserControl()
         => this.InitializeComponent();
 
-    public void Initialize(IBlazorCodingService service, IModuleService moduleService)
+    public void Initialize(IBlazorComponentCodingService service, IModuleService moduleService)
         => base.Initialize(service);
 
     protected override Task OnBindDataAsync(bool isFirstBinding)

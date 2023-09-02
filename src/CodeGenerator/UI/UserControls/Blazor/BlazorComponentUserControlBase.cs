@@ -20,9 +20,9 @@ public class BlazorComponentUserControlBase : AsyncDataBindUserControl
         set => this.DataContext = value;
     }
 
-    protected IBlazorCodingService Service { get; private set; }
+    protected IBlazorComponentCodingService Service { get; private set; }
 
-    public virtual void Initialize(IBlazorCodingService service)
+    public virtual void Initialize(IBlazorComponentCodingService service)
         => this.Service = service;
 
     protected override Task OnBindDataAsync(bool isFirstBinding)

@@ -38,6 +38,7 @@ public partial class BlazorPageGeneratorPage
     private readonly IBlazorComponentService _componentService;
     private readonly IModuleService _moduleService;
     private readonly IBlazorPageService _service;
+    private readonly IBlazorPageCodingService _codingService;
     private bool _canDelete;
     private bool _canEdit;
 
@@ -45,7 +46,7 @@ public partial class BlazorPageGeneratorPage
 
     public static readonly LibRoutedUICommand SaveToDiskCommand = new();
 
-    public BlazorPageGeneratorPage(IBlazorPageService service, IModuleService moduleService, IBlazorComponentService componentService, ILogger logger)
+    public BlazorPageGeneratorPage(IBlazorPageService service, IModuleService moduleService, IBlazorComponentService componentService, ILogger logger, IBlazorPageCodingService codingService)
         : base(logger)
     {
         this._service = service;
@@ -53,6 +54,7 @@ public partial class BlazorPageGeneratorPage
         this._componentService = componentService;
 
         this.InitializeComponent();
+        this._codingService = codingService;
     }
 
     public IEnumerable<UiComponentViewModel> AllComponents { get => (IEnumerable<UiComponentViewModel>)this.GetValue(AllComponentsProperty); set => this.SetValue(AllComponentsProperty, value); }
@@ -122,9 +124,9 @@ public partial class BlazorPageGeneratorPage
         }
 
         var viewModel = this._service.CreateViewModel(dto
-            , dto.Name?.RemoveEnd("Dto")
-                       .RemoveEnd("Params")
-                       .RemoveEnd("Result")
+            , dto.Name?.TrimEnd("Dto")
+                       .TrimEnd("Params")
+                       .TrimEnd("Result")
                        .AddEnd("Page"));
         viewModel.Module = dto.Module;
         this.ViewModel = viewModel;
@@ -183,7 +185,7 @@ public partial class BlazorPageGeneratorPage
         var scope = this.ActionScopeBegin("Generating code…");
         var model = this.ViewModel!;
         _ = this._service.CheckValidator(model);
-        this.ComponentCodeResultUserControl.Codes = this._service.GenerateCodes(model, new(model.GenerateMainCode, model.GeneratePartialCode, model.GenerateUiCode));
+        this.ComponentCodeResultUserControl.Codes = this._codingService.GenerateCodes(model, new(model.GenerateMainCode, model.GeneratePartialCode, model.GenerateUiCode));
         this.ResultsTabItem.IsSelected = true;
         this.Debug("Code generated.");
         scope.End();
@@ -274,7 +276,7 @@ public partial class BlazorPageGeneratorPage
     {
         this.ValidateForm();
         var viewModel = this.ViewModel!;
-        var code = this._service.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
+        var code = this._codingService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
         _ = await code.SaveToFileAskAsync();
         return "Codes saved.";
     }
@@ -289,7 +291,7 @@ public partial class BlazorPageGeneratorPage
     {
         this.ValidateForm();
         var viewModel = this.ViewModel;
-        var code = this._service.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
+        var code = this._codingService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
         _ = await code.SaveToFileAskAsync();
         this.EndActionScope("Codes saved.");
     }

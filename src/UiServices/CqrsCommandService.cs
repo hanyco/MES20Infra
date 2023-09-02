@@ -7,7 +7,6 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
 using Library.Interfaces;
-using Library.Mapping;
 using Library.Results;
 using Library.Validations;
 
@@ -16,28 +15,18 @@ using Microsoft.EntityFrameworkCore;
 namespace Services;
 
 [Service]
-internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
+internal sealed class CqrsCommandService(
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext writeDbContext,
+    IEntityViewModelConverter converter) : CqrsSegregationServiceBase,
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
     IResetChanges,
     IAsyncRead<CqrsCommandViewModel>
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly IMapper _mapper;
-    private readonly InfraReadDbContext _readDbContext;
-    private readonly InfraWriteDbContext _writeDbContext;
-
-    public CqrsCommandService(
-        IMapper mapper,
-        InfraReadDbContext readDbContext,
-        InfraWriteDbContext writeDbContext,
-        IEntityViewModelConverter converter)
-    {
-        this._mapper = mapper;
-        this._readDbContext = readDbContext;
-        this._writeDbContext = writeDbContext;
-        this._converter = converter;
-    }
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Command;
 
@@ -49,7 +38,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         Check.MustBeArgumentNotNull(model?.Id);
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
         _ = this._writeDbContext.Remove(entry.Entity);
-        return (Result)(await this.SubmitChangesAsync(persist: persist) > 0);
+        return (Result)(await this.SubmitChangesAsync(persist: persist, token: token) > 0);
     }
 
     public Task<CqrsCommandViewModel> FillByDbEntity(
@@ -93,7 +82,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         => this._writeDbContext.ChangeTracker.Clear();
 
     public async Task<Result<int>> SaveChangesAsync(CancellationToken token = default)
-        => await this._writeDbContext.SaveChangesResultAsync();
+        => await this._writeDbContext.SaveChangesResultAsync(cancellationToken: token);
 
     public async Task<Result<CqrsCommandViewModel>> UpdateAsync(long id, CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {

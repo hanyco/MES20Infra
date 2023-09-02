@@ -16,24 +16,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal sealed class CqrsQueryService : CqrsSegregationServiceBase, IBusinessService, ICqrsQueryService, IValidator<CqrsQueryViewModel>
+internal sealed class CqrsQueryService(
+    IMapper mapper,
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext writeDbContext,
+    IEntityViewModelConverter converter) : CqrsSegregationServiceBase, IBusinessService, ICqrsQueryService, IValidator<CqrsQueryViewModel>
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly IMapper _mapper;
-    private readonly InfraReadDbContext _readDbContext;
-    private readonly InfraWriteDbContext _writeDbContext;
-
-    public CqrsQueryService(
-        IMapper mapper,
-        InfraReadDbContext readDbContext,
-        InfraWriteDbContext writeDbContext,
-        IEntityViewModelConverter converter)
-    {
-        this._mapper = mapper;
-        this._readDbContext = readDbContext;
-        this._writeDbContext = writeDbContext;
-        this._converter = converter;
-    }
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly IMapper _mapper = mapper;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 

@@ -50,8 +50,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
                 .AppendLine($"@using {queryProcessorType.NameSpace}")
                 .AppendLine($"@using {commandProcessorType.NameSpace}")
                 .AppendLine($"@using {userContextType.NameSpace}").Fluent()
-                .IfTrue(!(this.DataContextType?.NameSpace.IsNullOrEmpty() ?? true), sb => sb!.AppendLine($"@using {this.DataContextType!.Value.NameSpace}"))
-, appendChildrenNameSpaces).GetValue()!
+                .IfTrue(!(this.DataContextType?.NameSpace.IsNullOrEmpty() ?? true), sb => sb!.AppendLine($"@using {this.DataContextType!.Value.NameSpace}")), appendChildrenNameSpaces).GetValue()!
                 .AppendLine()
                 .AppendLine($"@inject {queryProcessorType.Name} {TypeMemberNameHelper.ToFieldName(queryProcessorType.Name!)}")
                 .AppendLine($"@inject {commandProcessorType.Name} {TypeMemberNameHelper.ToFieldName(commandProcessorType.Name!)}")

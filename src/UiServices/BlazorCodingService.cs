@@ -25,7 +25,7 @@ using Services.Helpers;
 
 namespace Services;
 
-internal sealed class BlazorCodingService : IBlazorCodingService
+internal sealed class BlazorCodingService : IBlazorComponentCodingService
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly IDtoService _dtoService;

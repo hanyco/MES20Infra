@@ -80,13 +80,19 @@ internal sealed partial class FunctionalityService
             // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                codes.BlazorListCodes = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
+                codes.BlazorListCodes = addToList(this._blazorComponentCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
             }
 
             // Generate codes for BlazorDetailsComponentViewModel if available.
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                codes.BlazorDetailsComponentViewModel = addToList(this._blazorCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+                codes.BlazorDetailsComponentCodes = addToList(this._blazorComponentCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+            }
+
+            // Generate codes for BlazorPageViewModel if available.
+            if (viewModel.BlazorPageViewModel != null)
+            {
+                codes.BlazorDetailsComponentCodes = addToList(this._blazorPageCodingService.GenerateCodes(viewModel.BlazorPageViewModel));
             }
 
             return result;
@@ -169,9 +175,9 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                //.AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
-                //.AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
-                //.AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+                .AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
+                .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
+                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
 
                 //! The following line generates codes. The codes must be generated on demanded.
                 //x .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
@@ -234,10 +240,13 @@ internal sealed partial class FunctionalityService
         createViewModel(data);
         return Task.CompletedTask;
 
-        static void createViewModel(CreationData data) =>
-            data.ViewModel.BlazorListComponentViewModel = new()
-            {
-            };
+        void createViewModel(CreationData data)
+        {
+            data.ViewModel.BlazorPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorPageViewModel.Module = data.ViewModel.SourceDto.Module;
+            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
+            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
+        }
     }
 
     private Task CreateBlazorPage(CreationData data, CancellationToken token)

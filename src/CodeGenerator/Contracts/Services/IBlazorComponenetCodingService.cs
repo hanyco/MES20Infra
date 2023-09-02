@@ -1,5 +1,6 @@
 ﻿using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -9,7 +10,7 @@ using Library.Results;
 
 namespace Contracts.Services;
 
-public interface IBlazorCodingService : IBusinessService
+public interface IBlazorComponentCodingService : IBusinessService
 {
     bool ControlTypeHasPropertiesPage(ControlType controlType);
 
@@ -77,7 +78,7 @@ public interface IBlazorCodingService : IBusinessService
     /// Saves the specific component to path asynchronously.
     /// </summary>
     /// <param name="viewModel">The view model.</param>
-    /// <param name="path">     The path.</param>
+    /// <param name="path">The path.</param>
     /// <returns></returns>
     Task SaveToPathAsync(UiComponentViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken token = default);
 
@@ -85,8 +86,12 @@ public interface IBlazorCodingService : IBusinessService
     /// Saves the specific page to path asynchronously.
     /// </summary>
     /// <param name="viewModel">The view model.</param>
-    /// <param name="path">     The path.</param>
+    /// <param name="path">The path.</param>
     /// <param name="arguments">The arguments.</param>
     /// <returns></returns>
     Task SaveToPathAsync(UiPageViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken token = default);
+}
+
+public interface IBlazorPageCodingService : IBusinessService, ICodeGenerator<UiPageViewModel>
+{
 }
