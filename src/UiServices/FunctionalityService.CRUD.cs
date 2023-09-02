@@ -23,43 +23,44 @@ internal partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        const bool SAVE_CHANGES = true;
+        var saveChanges = true;
 
-        var validationRoles = getValidations(model, cancellationToken);
-        if (!validationRoles.Build().TryParse(out var validationChecks))
+        if (!validate(model, cancellationToken).TryParse(out var validationResult))
         {
-            return validationChecks;
+            return validationResult;
         }
 
         Result operResult;
+
         model.SourceDto.Functionality = model;
-        operResult = await this._dtoService.InsertAsync(model.SourceDto, SAVE_CHANGES, cancellationToken);
+
+        operResult = await this._dtoService.InsertAsync(model.SourceDto, saveChanges, cancellationToken);
         if (!operResult)
         {
             this._dtoService.ResetChanges();
             return operResult.WithValue(model);
         }
-        operResult = await saveQueryAsync(model.GetAllQueryViewModel, model, SAVE_CHANGES, cancellationToken);
+        operResult = await saveQueryAsync(model.GetAllQueryViewModel, model, saveChanges, cancellationToken);
         if (!operResult)
         {
             return operResult.WithValue(model);
         }
-        operResult = await saveQueryAsync(model.GetByIdQueryViewModel, model, SAVE_CHANGES, cancellationToken);
+        operResult = await saveQueryAsync(model.GetByIdQueryViewModel, model, saveChanges, cancellationToken);
         if (!operResult)
         {
             return operResult.WithValue(model);
         }
-        operResult = await saveCommandAsync(model.InsertCommandViewModel, model, SAVE_CHANGES, cancellationToken);
+        operResult = await saveCommandAsync(model.InsertCommandViewModel, model, saveChanges, cancellationToken);
         if (!operResult)
         {
             return operResult.WithValue(model);
         }
-        operResult = await saveCommandAsync(model.UpdateCommandViewModel, model, SAVE_CHANGES, cancellationToken);
+        operResult = await saveCommandAsync(model.UpdateCommandViewModel, model, saveChanges, cancellationToken);
         if (!operResult)
         {
             return operResult.WithValue(model);
         }
-        operResult = await saveCommandAsync(model.DeleteCommandViewModel, model, SAVE_CHANGES, cancellationToken);
+        operResult = await saveCommandAsync(model.DeleteCommandViewModel, model, saveChanges, cancellationToken);
         if (!operResult)
         {
             return operResult.WithValue(model);
@@ -67,14 +68,14 @@ internal partial class FunctionalityService
 
         var entity = this._converter.ToDbEntity(model);
         _ = this._writeDbContext.Functionalities.Add(entity);
-        if (SAVE_CHANGES)
+        if (saveChanges)
         {
-            operResult = await this.SubmitChangesAsync(SAVE_CHANGES, token: cancellationToken);
+            operResult = await this.SubmitChangesAsync(saveChanges, token: cancellationToken);
         }
 
         return operResult.WithValue(model);
 
-        static ValidationResultSet<FunctionalityViewModel> getValidations(FunctionalityViewModel model, CancellationToken cancellationToken) =>
+        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model, CancellationToken cancellationToken) =>
             BasicChecks(model, cancellationToken)
                     .NotNull(x => x.SourceDto)
                     .NotNull(x => x.GetAllQueryViewModel)
@@ -94,7 +95,8 @@ internal partial class FunctionalityService
                     .NotNull(x => x.DeleteCommandViewModel.ResultDto);
         async Task<Result> saveQueryAsync(CqrsQueryViewModel model, FunctionalityViewModel functionality, bool saveChanges, CancellationToken token)
         {
-            model.ParamsDto.Functionality = model.ResultDto.Functionality = functionality;
+            //! Not used. one-way to UI.
+            //x model.ParamsDto.Functionality = model.ResultDto.Functionality = functionality;
             Result result = await this._dtoService.InsertAsync(model.ParamsDto, saveChanges, token);
             if (!result)
             {

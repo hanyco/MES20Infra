@@ -76,8 +76,18 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
     public Task<CqrsCommandViewModel?> GetByIdAsync(long id, CancellationToken token = default)
         => ServiceHelper.GetByIdAsync(this, id, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
-    public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
-        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist, cancellationToken: token).ModelResult();
+    public async Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
+    {
+        var man = ServiceHelper.InsertAsync(this,
+                                                 this._writeDbContext,
+                                                 model,
+                                                 this._converter.ToDbEntity,
+                                                 persist,
+                                                 onCommitted: (m, e) => m.Id = e.Id,
+                                                 cancellationToken: token);
+        var result = await man.ModelResult();
+        return result;
+    }
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
@@ -102,7 +112,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
             .SetModified(x => x.SegregateType)
             .SetModified(x => x.CategoryId)
             .SetModified(x => x.CqrsNameSpace);
-        _ = await this.SubmitChangesAsync(persist: persist);
+        _ = await this.SubmitChangesAsync(persist: persist, token: token);
         return Result<CqrsCommandViewModel>.CreateSuccess(model);
     }
 

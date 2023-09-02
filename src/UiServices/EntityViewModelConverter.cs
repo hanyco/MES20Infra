@@ -239,12 +239,18 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
 
         var result = this._mapper.Map<Functionality>(model);
-        result.GetAllQuery = this.ToDbEntity(model.GetAllQueryViewModel.NotNull());
-        result.GetByIdQuery = this.ToDbEntity(model.GetByIdQueryViewModel.NotNull());
-        result.InsertCommand = this.ToDbEntity(model.InsertCommandViewModel.NotNull());
-        result.UpdateCommand = this.ToDbEntity(model.UpdateCommandViewModel.NotNull());
-        result.DeleteCommand = this.ToDbEntity(model.DeleteCommandViewModel.NotNull());
+        //! Not required for saving
+        //result.GetAllQuery = this.ToDbEntity(model.GetAllQueryViewModel.NotNull());
+        //result.GetByIdQuery = this.ToDbEntity(model.GetByIdQueryViewModel.NotNull());
+        //result.InsertCommand = this.ToDbEntity(model.InsertCommandViewModel.NotNull());
+        //result.UpdateCommand = this.ToDbEntity(model.UpdateCommandViewModel.NotNull());
+        //result.DeleteCommand = this.ToDbEntity(model.DeleteCommandViewModel.NotNull());
 
+        result.GetAllQueryId = model.GetAllQueryViewModel?.Id ?? 0;
+        result.GetByIdQueryId = model.GetByIdQueryViewModel?.Id ?? 0;
+        result.InsertCommandId = model.InsertCommandViewModel?.Id ?? 0;
+        result.UpdateCommandId = model.UpdateCommandViewModel?.Id ?? 0;
+        result.DeleteCommandId = model.DeleteCommandViewModel?.Id ?? 0;
         return result;
     }
 
