@@ -80,26 +80,32 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         return Task.FromResult(result);
     }
 
+    public UiComponentViewModel CreateNewComponentByDto(DtoViewModel dto)
+    {
+        Check.MustBeArgumentNotNull(dto);
+        var parsedName = dto.Name?.Replace("Dto", "Component").Replace("ViewModel", "Component") ?? string.Empty;
+        var parsedNameSpace = dto.NameSpace.Replace("Dto", "Component").Replace("ViewModel", "Component");
+        var result = new UiComponentViewModel
+        {
+            Name = parsedName,
+            PageDataContext = dto,
+            ClassName = parsedName,
+            NameSpace = parsedNameSpace,
+            Guid = Guid.NewGuid()
+        };
+        _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
+        return result;
+    }
+
     public async Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(dto?.Id);
         var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value, cancellationToken)).NotNull(() => new NotFoundValidationException());
-        var propsEntity = await this._propertyService.GetDbPropertiesByParentIdAsync(dto.Id!.Value, cancellationToken);
-        var parsedName = entity.Name?.Replace("Dto", "Component").Replace("ViewModel", "Component") ?? string.Empty;
-        var parsedNameSpace = entity.NameSpace.Replace("Dto", "Component").Replace("ViewModel", "Component");
-        var result = new UiComponentViewModel
-        {
-            Name = parsedName,
-            PageDataContext = entity,
-            ClassName = parsedName,
-            NameSpace = parsedNameSpace,
-        };
-        _ = result.UiProperties.AddRange(entity.Properties.Compact().Select(x => this.GetProperty(x)));
-        return result;
+        return this.CreateNewComponentByDto(dto);
     }
 
-    public UiComponentActionViewModel CreateUnboundAction()
-        => new() { Caption = "New Action", IsEnabled = true, TriggerType = TriggerType.Button, Name = "NewAction", };
+    public UiComponentActionViewModel CreateUnboundAction() =>
+        new() { Caption = "New Action", IsEnabled = true, TriggerType = TriggerType.Button, Name = "NewAction", };
 
     public UiComponentPropertyViewModel CreateUnboundProperty()
         => new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
@@ -124,24 +130,6 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
 
     public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
         => new(CreateComponent(model).GenerateCodes(arguments ?? new GenerateCodesParameters()));
-
-    public UiComponentPropertyViewModel GetProperty(in PropertyViewModel propertyViewModel)
-    {
-        Check.MutBeNotNull(propertyViewModel, nameof(propertyViewModel));
-        Check.MutBeNotNull(propertyViewModel.Name, nameof(propertyViewModel.Name));
-
-        var result = new UiComponentPropertyViewModel
-        {
-            Name = propertyViewModel.Name,
-            Property = propertyViewModel,
-            ControlType = propertyViewModel.Type.ToControlType(propertyViewModel.IsList, propertyViewModel.IsNullable, propertyViewModel.Dto).Control,
-            Caption = string.Equals(propertyViewModel.Name, "id")
-                            ? propertyViewModel.Name
-                            : propertyViewModel.Name.SeparateCamelCase(),
-            IsEnabled = true
-        };
-        return result;
-    }
 
     public async Task<UiComponentPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
     {

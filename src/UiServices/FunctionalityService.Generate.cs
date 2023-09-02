@@ -177,11 +177,7 @@ internal sealed partial class FunctionalityService
 
                 .AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
                 .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"))
-                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
-
-                //! The following line generates codes. The codes must be generated on demanded.
-                //x .AddStep(this.GenerateCodes, getTitle($"Generating {data.ViewModel.Name} Codes…"))
-                ;
+                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"));
 
         // Finalize the process
         static string getResultMessage(in CreationData result, CancellationToken token)
@@ -229,10 +225,13 @@ internal sealed partial class FunctionalityService
         createViewModel(data);
         return Task.CompletedTask;
 
-        static void createViewModel(CreationData data) =>
-            data.ViewModel.BlazorDetailsComponentViewModel = new()
-            {
-            };
+        void createViewModel(CreationData data)
+        {
+            data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodingService.CreateNewComponentByDto(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{data.ViewModel.SourceDto.Name}DetailsComponent";
+            data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{data.ViewModel.SourceDto.Name}DetailsComponent";
+            data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = true;
+        }
     }
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
@@ -242,10 +241,10 @@ internal sealed partial class FunctionalityService
 
         void createViewModel(CreationData data)
         {
-            data.ViewModel.BlazorPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto);
-            data.ViewModel.BlazorPageViewModel.Module = data.ViewModel.SourceDto.Module;
-            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
-            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
+            data.ViewModel.BlazorListComponentViewModel = this._blazorComponentCodingService.CreateNewComponentByDto(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorListComponentViewModel.Name = $"{data.ViewModel.SourceDto.Name}ListComponent";
+            data.ViewModel.BlazorListComponentViewModel.ClassName = $"{data.ViewModel.SourceDto.Name}ListComponent";
+
         }
     }
 
@@ -254,8 +253,13 @@ internal sealed partial class FunctionalityService
         createPageViewModel(data);
         return Task.CompletedTask;
 
-        static void createPageViewModel(CreationData data)
+        void createPageViewModel(CreationData data)
         {
+            data.ViewModel.BlazorPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorPageViewModel.Module = data.ViewModel.SourceDto.Module;
+            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
+            //data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext
+            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
         }
     }
 

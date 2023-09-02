@@ -464,4 +464,22 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     [return: NotNullIfNotNull(nameof(entity))]
     private DtoViewModel? InnerToViewModel(Dto? entity)
         => entity is null ? null : this._mapper.Map<DtoViewModel>(entity);
+
+    public UiComponentPropertyViewModel ToUiComponentProperty(in PropertyViewModel propertyViewModel)
+    {
+        Check.MutBeNotNull(propertyViewModel, nameof(propertyViewModel));
+        Check.MutBeNotNull(propertyViewModel.Name, nameof(propertyViewModel.Name));
+
+        var result = new UiComponentPropertyViewModel
+        {
+            Name = propertyViewModel.Name,
+            Property = propertyViewModel,
+            ControlType = propertyViewModel.Type.ToControlType(propertyViewModel.IsList, propertyViewModel.IsNullable, propertyViewModel.Dto).Control,
+            Caption = string.Equals(propertyViewModel.Name, "id")
+                            ? propertyViewModel.Name
+                            : propertyViewModel.Name.SeparateCamelCase(),
+            IsEnabled = true
+        };
+        return result;
+    }
 }

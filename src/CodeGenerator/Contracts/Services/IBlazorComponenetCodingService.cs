@@ -29,6 +29,7 @@ public interface IBlazorComponentCodingService : IBusinessService
     /// <param name="dto">The dto.</param>
     /// <returns></returns>
     Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken token = default);
+    UiComponentViewModel CreateNewComponentByDto(DtoViewModel dto);
 
     /// <summary>
     /// Creates a unbound action.
@@ -64,14 +65,7 @@ public interface IBlazorComponentCodingService : IBusinessService
     /// <param name="model">The model.</param>
     /// <returns></returns>
     Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null);
-
-    /// <summary>
-    /// Gets the property.
-    /// </summary>
-    /// <param name="propertyViewModel">The property view model.</param>
-    /// <returns></returns>
-    UiComponentPropertyViewModel GetProperty(in PropertyViewModel propertyViewModel);
-
+    
     bool HasPropertiesPage(ControlType? ct);
 
     /// <summary>

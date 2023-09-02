@@ -44,12 +44,10 @@ public partial class ComponentPropertiesUserControl
 
     #endregion BlazorComponentPropertyViewModel SelectedProperty
 
-    private DtoViewModel? SelectedDto;
+    private IEntityViewModelConverter _converter;
+    private DtoViewModel? _selectedDto;
 
-    public ComponentPropertiesUserControl()
-    {
-        this.InitializeComponent();
-    }
+    public ComponentPropertiesUserControl() => this.InitializeComponent();
 
     public ControlType? SelectedControlType { get; set; }
     public IEnumerable<UiComponentPropertyViewModel?>? SelectedProperties { get; set; }
@@ -86,7 +84,7 @@ public partial class ComponentPropertiesUserControl
         var properties = this.ViewModel.PageDataContextProperty is null
             ? await propertyService.GetByParentIdAsync(this.ViewModel.PageDataContext.Id!.Value)
             : await propertyService.GetByDtoIdAsync(this.ViewModel.PageDataContextProperty.Id!.Value);
-        _ = this.ViewModel.UiProperties.AddRange(properties.Select(x => codingService.GetProperty(x)));
+        _ = this.ViewModel.UiProperties.AddRange(properties.Select(x => this._converter.ToUiComponentProperty(x)));
         _ = this.PropertiesListView.BindItemsSource(this.ViewModel.UiProperties);
     }
 
@@ -98,7 +96,7 @@ public partial class ComponentPropertiesUserControl
             return;
         }
         var dto = resp.Value;
-        this.SelectedDto = dto;
+        this._selectedDto = dto;
         var controlType = ControlTypeHelper.ByDtoViewModel(dto);
         _ = this.SelectedProperty.NotNull(nameof(this.SelectedProperty))
                                  .ForMember(x => x.ControlType = controlType)
@@ -120,8 +118,8 @@ public partial class ComponentPropertiesUserControl
     {
         switch (this.SelectedControlType)
         {
-            case ControlType.DataGrid when this.SelectedDto is null:
-                _ = CodeHelper.ThrowOnError(() => new RequiredValidationException("لطفا یک DTO انتخاب نمایید."));
+            case ControlType.DataGrid when this._selectedDto is null:
+                _ = ThrowOnError(() => new RequiredValidationException("Please select a DTO."));
                 break;
 
             case ControlType.DataGrid:
@@ -132,7 +130,7 @@ public partial class ComponentPropertiesUserControl
         void setDataGrid()
         {
             var grid = new BlazorTable();
-            var dto = this.SelectedDto;
+            var dto = this._selectedDto;
             _ = grid.SetDataColumns(dto.Properties.Select(x => new DataColumnBindingInfo(x.Name, x.TypeFullName)).ToArray());
 
             var component = grid ?? new();
@@ -141,6 +139,7 @@ public partial class ComponentPropertiesUserControl
         }
     }
 
+    [Obsolete]
     private void ControlTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         this.SelectedControlType = e.GetSelection<ControlType?>();
@@ -179,7 +178,7 @@ public partial class ComponentPropertiesUserControl
         await this.BindDataAsync();
     }
 
-    private async void PropertiesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void PropertiesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var prop = this.PropertiesListView.GetSelection<UiComponentPropertyViewModel>(e);
         this.SelectedProperty = prop;
@@ -187,7 +186,5 @@ public partial class ComponentPropertiesUserControl
         //await this.BindDataAsync();
     }
 
-    private void UserControl_Loaded(object sender, RoutedEventArgs e)
-    {
-    }
+    private void UserControl_Loaded(object sender, RoutedEventArgs e) => this._converter = DI.GetService<IEntityViewModelConverter>();
 }

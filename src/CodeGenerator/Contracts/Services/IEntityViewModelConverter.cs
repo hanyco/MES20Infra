@@ -6,7 +6,6 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Data.Markers;
-using Library.Data.SqlServer.Dynamics;
 using Library.Interfaces;
 
 namespace Contracts.Services;
@@ -61,6 +60,9 @@ public interface IEntityViewModelConverter :
     DtoViewModel FillViewModel(in DtoViewModel viewModel, in Dto dto, in IEnumerable<Property> properties);
 
     [return: NotNullIfNotNull(nameof(viewModel))]
+    UiBootstrapPositionViewModel? FillViewModelByDbEntity(in UiBootstrapPositionViewModel? viewModel, in UiBootstrapPosition? dbEntity);
+
+    [return: NotNullIfNotNull(nameof(viewModel))]
     Property? ToDbEntity(PropertyViewModel? viewModel, long parentId);
 
     [return: NotNullIfNotNull(nameof(viewModel))]
@@ -69,6 +71,6 @@ public interface IEntityViewModelConverter :
     [return: NotNullIfNotNull(nameof(entity))]
     DtoViewModel? ToViewModel(in Dto? entity, in IEnumerable<SecurityDescriptorViewModel>? securityDescriptors = null);
 
-    [return: NotNullIfNotNull(nameof(viewModel))]
-    UiBootstrapPositionViewModel? FillViewModelByDbEntity(in UiBootstrapPositionViewModel? viewModel, in UiBootstrapPosition? dbEntity);
+    [return: NotNullIfNotNull(nameof(propertyViewModel))]
+    UiComponentPropertyViewModel? ToUiComponentProperty(in PropertyViewModel propertyViewModel);
 }
