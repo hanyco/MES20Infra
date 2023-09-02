@@ -375,7 +375,7 @@ public static class ServiceHelper
         Checker.MutBeNotNull(manipulate);
         Checker.MustBeNotNull(convertToEntity);
         //! Check that all arguments are not null
-        if (Checker.IfArgumentIsNotNull(model).TryParse(out var res1))
+        if (!Checker.IfArgumentIsNotNull(model).TryParse(out var res1))
         {
             return getResult(res1);
         }

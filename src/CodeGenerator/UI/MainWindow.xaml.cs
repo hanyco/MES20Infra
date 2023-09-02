@@ -6,6 +6,7 @@ using HanyCo.Infra.UI.Controls.Pages;
 using HanyCo.Infra.UI.Pages;
 
 using Library.EventsArgs;
+using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Windows;
 using Library.Wpf.Dialogs;
@@ -149,7 +150,16 @@ public partial class MainWindow
         try
         {
             this._logger.Debug("Connecting to database...");
-            _ = await this._writeDbContext.Database.EnsureCreatedAsync();
+            var created = await this._writeDbContext.Database.EnsureCreatedAsync();
+            if (created)
+            {
+                MsgBox2.Warn(
+                    "Database created.",
+                    "Database not found. But created from schema information.",
+                    footerText: "Please do not forget to initialize database, if required.",
+                    footerIcon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Warning);
+            }
+
             this._logger.Debug("Ready.");
         }
         catch (SqlException ex) when (ex.ErrorCode == -2146232060)
@@ -166,6 +176,10 @@ public partial class MainWindow
                 detailsExpandedText: message.Details,
                 window: this,
                 controls: new Microsoft.WindowsAPICodePack.Dialogs.TaskDialogControl[] { closeButton, continueButton });
+        }
+        catch (Exception ex)
+        {
+            _ = Result.CreateFailure("Exception occurred on connecting to database", ex).ThrowOnFail();
         }
     }
 }

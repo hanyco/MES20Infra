@@ -294,7 +294,7 @@ internal sealed class DtoService(
         await removeDeletedProperties(viewModel.DeletedProperties, token);
         await updateDto(viewModel, entity.Dto, token);
         await updateProperties(entity.PropertyViewModels, entity.Dto, token);
-        var result = await this.SubmitChangesAsync(persist, transaction).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
+        var result = await this.SubmitChangesAsync(persist, transaction, token: token).With(_ => viewModel.Id = entity.Dto.Id);
         return Result<DtoViewModel>.From(result, viewModel);
 
         async Task updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
@@ -352,7 +352,7 @@ internal sealed class DtoService(
         var validation = viewModel.Check()
             .ArgumentNotNull()
             .NotNullOrEmpty(x => x!.Name, () => "DTO name cannot be null.")
-            .RuleFor(x => x!.Module.Id is not null and not 0, () => "Module name cannot be null.")
+            .RuleFor(x => x!.Module?.Id is not null and not 0, () => "Module name cannot be null.")
             .Build();
         if (!validation.IsSucceed)
         {

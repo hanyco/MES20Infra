@@ -77,7 +77,7 @@ internal sealed class CqrsCommandService : CqrsSegregationServiceBase,
         => ServiceHelper.GetByIdAsync(this, id, this.GetAllQuery(), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
 
     public Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
-        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist).ModelResult();
+        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist, cancellationToken: token).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();

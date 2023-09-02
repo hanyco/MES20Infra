@@ -26,7 +26,7 @@ internal partial class FunctionalityService
         const bool SAVE_CHANGES = true;
 
         var validationRoles = getValidations(model, cancellationToken);
-        if (validationRoles.Build().TryParse(out var validationChecks))
+        if (!validationRoles.Build().TryParse(out var validationChecks))
         {
             return validationChecks;
         }
