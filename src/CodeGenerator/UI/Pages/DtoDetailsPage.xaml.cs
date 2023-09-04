@@ -9,6 +9,7 @@ using HanyCo.Infra.Exceptions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.Pages;
 using HanyCo.Infra.UI.Services;
+using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
@@ -33,6 +34,7 @@ public partial class DtoDetailsPage
     private readonly IDbTableService _dbTableService;
     private readonly IProgressReport _reporter;
     private readonly IDtoService _service;
+    private DatabaseExplorerUserControl? _databaseExplorerUserControl;
 
     public DtoDetailsPage(
         IDtoService dtoService,
@@ -76,7 +78,7 @@ public partial class DtoDetailsPage
 
     private void AddColumnToDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        var node = this.DatabaseExplorerUserControl.SelectedDbObjectNode;
+        var node = this._databaseExplorerUserControl?.SelectedDbObjectNode;
         var dbObject = node?.Value;
 
         if (dbObject is DbColumnViewModel column)
@@ -109,7 +111,13 @@ public partial class DtoDetailsPage
 
     private async void CreateDtoWithTableMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        var tableNode = this.DatabaseExplorerUserControl.SelectedDbObjectNode;
+        if (this._databaseExplorerUserControl == null)
+        {
+            this._databaseExplorerUserControl = new();
+            _ = await this._databaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter);
+        }
+        _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Table", "Select a Table to create a DTO.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a Table.")).BreakOnFail();
+        var tableNode = this._databaseExplorerUserControl.SelectedDbObjectNode;
         Check.MustBeNotNull(tableNode, () => "Please select a table");
 
         //var columns = tableNode.Children?.FirstOrDefault()?.Children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>());
@@ -150,25 +158,18 @@ public partial class DtoDetailsPage
         this.Debug("DTO deleted.");
     }
 
-    private void DtoDetailsPage_Binding(object sender, EventArgs e)
+    private async void DtoDetailsPage_Binding(object sender, EventArgs e)
     {
         var scope = this.ActionScopeBegin("Initializing... Please wait.");
-        _ = MsgBox2.ShowProgress(new (Func<Task> Operation, string Description)[]
-                                 {
-                                     (new Func<Task>(() => this.DatabaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter)), "Exploring database tables…"),
-                                     (this.InitDtoExplorerTreeAsync, "Reading DTOs…"),
-                                     (this.DtoEditUserControl.BindAsync, "Binding Properties…")
-                                 },
-                                 this.Title,
-                                 "Initializing... Please wait.",
-                                 "Depending on the size of the database, this operation may take few seconds.", isCancallable: true);
-        _ = this.RefreshFormState();
+        await this.InitDtoExplorerTreeAsync();
+        await this.DtoEditUserControl.BindAsync();
+        this.RefreshFormState();
 
         scope.End();
     }
 
-    private void DtoDetailsPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        => this.RefreshFormState();
+    private void DtoDetailsPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e) =>
+        this.RefreshFormState();
 
     private void DtoExplorerTreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
@@ -228,11 +229,10 @@ public partial class DtoDetailsPage
     /// <summary>
     /// Refreshes the state of the form.
     /// </summary>
-    private DtoDetailsPage RefreshFormState()
+    private void RefreshFormState()
     {
         this.NewDtoFromTableButton.IsEnabled =
         this.NewDtoButton.IsEnabled =
-        this.DatabaseExplorerUserControl.IsEnabled =
         this.EditDtoButton.IsEnabled =
         this.DeleteDtoButton.IsEnabled =
         this.AddToDtoButton.IsEnabled =
@@ -250,7 +250,6 @@ public partial class DtoDetailsPage
         {
             this.NewDtoFromTableButton.IsEnabled = true;
             this.NewDtoButton.IsEnabled = true;
-            this.DatabaseExplorerUserControl.IsEnabled = true;
             this.EditDtoButton.IsEnabled = true;
             this.DeleteDtoButton.IsEnabled = true;
 
@@ -268,13 +267,12 @@ public partial class DtoDetailsPage
             this.SecurityDescriptorButton.IsEnabled = true;
             this.AddToDtoButton.IsEnabled = true;
         }
-        return this;
     }
 
     private void ResetFormButton_Click(object sender, RoutedEventArgs e)
     {
         this.ViewModel = null;
-        _ = this.RefreshFormState();
+        this.RefreshFormState();
         this._service.ResetChanges();
         this.EndActionScope();
     }

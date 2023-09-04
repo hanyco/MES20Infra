@@ -9,10 +9,13 @@
     mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="25*" />
-            <ColumnDefinition Width="85*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <TreeView x:Name="CodeNamesTreeView" SelectedItemChanged="CodeNamesTreeView_SelectedItemChanged" />
+        <TreeView
+            x:Name="CodeNamesTreeView"
+            Width="250"
+            SelectedItemChanged="CodeNamesTreeView_SelectedItemChanged" />
         <ContentControl x:Name="CodeStatementContentControl" Grid.Column="1" />
     </Grid>
 </blazor:BlazorComponentUserControlBase>

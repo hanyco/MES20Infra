@@ -17,7 +17,8 @@ namespace HanyCo.Infra.UI.UserControls;
 /// <summary>
 /// Interaction logic for DtoEditUserControl.xaml
 /// </summary>
-public partial class DtoEditUserControl : UserControl, IAsyncBindable, IUnidirectionalViewModel<DtoViewModel?>, IInitialzable, ISupportReadOnly
+public partial class DtoEditUserControl : UserControl, 
+    IAsyncBindable, IUnidirectionalViewModel<DtoViewModel?>, IInitialzable, ISupportReadOnly
 {
     public static readonly DependencyProperty? SelectedPropertyProperty = ControlHelper.GetDependencyProperty<PropertyViewModel?, DtoEditUserControl>(nameof(SelectedProperty));
     private int _maxPropId;

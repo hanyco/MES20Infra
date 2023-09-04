@@ -14,7 +14,8 @@ public partial class ComponentCodeResultUserControl
 {
     // Using a DependencyProperty as the backing store for Codes. This enables animation, styling,
     // binding, etc...
-    public static readonly DependencyProperty CodesProperty = ControlHelper.GetDependencyProperty<Codes?, ComponentCodeResultUserControl>(nameof(Codes), onPropertyChanged: (me, _) => me.OnCodesChanged());
+    public static readonly DependencyProperty CodesProperty =
+        ControlHelper.GetDependencyProperty<Codes?, ComponentCodeResultUserControl>(nameof(Codes), onPropertyChanged: (me, _) => me.OnCodesChanged());
 
     public ComponentCodeResultUserControl() =>
         this.InitializeComponent();
@@ -34,6 +35,14 @@ public partial class ComponentCodeResultUserControl
                 : new CodeDetailsUserControl { DataContext = code };
     }
 
-    private void OnCodesChanged() =>
-        this.CodeNamesTreeView.BindItems(this.Codes);
+    private void OnCodesChanged()
+    {
+        if (this.Codes?.Any() is true)
+        {
+            this.CodeNamesTreeView
+                .BindItems(this.Codes)
+                .SetSelectedItemIndex(0)
+                .Visibility = this.Codes?.Count == 1 ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
 }

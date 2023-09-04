@@ -1355,6 +1355,20 @@ public static class EnumerableHelper
         }
     }
 
+    public static IEnumerable<object> ToEnumerable(this IEnumerable items)
+    {
+        //Check if the source is null
+        if (items is null)
+        {
+            //If it is, return an empty IEnumerable
+            yield break;
+        }
+        foreach (var item in items)
+        {
+            yield return item;
+        }
+    }
+
     /// <summary>
     /// Converts an IAsyncEnumerable to an IEnumerable.
     /// </summary>

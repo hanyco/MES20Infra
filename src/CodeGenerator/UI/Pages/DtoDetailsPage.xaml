@@ -112,57 +112,12 @@
                 <ColumnDefinition Width="Auto" ToolTip="Panes" />
                 <ColumnDefinition ToolTip="ModelDetails" />
             </Grid.ColumnDefinitions>
-            <TabControl x:Name="Panes" Width="Auto">
-                <TabItem Header="Tables">
-                    <Grid
-                        x:Name="ServerExplorer"
-                        Grid.Column="0"
-                        Width="250">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" ToolTip="Titlebar" />
-                            <RowDefinition Height="Auto" ToolTip="Toolbar" />
-                            <RowDefinition ToolTip="TreeView Host" />
-                        </Grid.RowDefinitions>
-                        <TextBlock
-                            x:Name="ServerExplorerTitle"
-                            Grid.Row="0"
-                            Text="Server Explorer" />
-                        <usercontrols:DatabaseExplorerUserControl
-                            x:Name="DatabaseExplorerUserControl"
-                            Grid.Row="2"
-                            MouseDoubleClick="DtoExplorerTreeView_MouseDoubleClick"
-                            SelectedDbObjectNodeChanged="DatabaseExplorerUserControl_SelectedDbObjectNodeChanged">
-                            <usercontrols:DatabaseExplorerUserControl.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Click="CreateDtoWithTableMenuItem_Click" Header="Create Model…" />
-                                </ContextMenu>
-                            </usercontrols:DatabaseExplorerUserControl.ContextMenu>
-                        </usercontrols:DatabaseExplorerUserControl>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Models">
-                    <Grid
-                        x:Name="DtoExplorer"
-                        Grid.Column="0"
-                        Width="250">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" ToolTip="Titlebar" />
-                            <RowDefinition Height="Auto" ToolTip="Toolbar" />
-                            <RowDefinition ToolTip="TreeView Host" />
-                        </Grid.RowDefinitions>
-                        <TextBlock
-                            x:Name="DtoExplorerTitle"
-                            Grid.Row="0"
-                            Text="Model Explorer" />
-                        <usercontrols:CqrsExplorerTreeView
-                            x:Name="CqrsExplorerTreeView"
-                            Grid.Row="2"
-                            ItemDoubleClicked="CqrsExplorerTreeView_ItemDoubleClicked"
-                            LoadDtos="True"
-                            SelectedItemChanged="CqrsExplorerTreeView_SelectedItemChanged" />
-                    </Grid>
-                </TabItem>
-            </TabControl>
+            <usercontrols:CqrsExplorerTreeView
+                x:Name="CqrsExplorerTreeView"
+                Width="250"
+                ItemDoubleClicked="CqrsExplorerTreeView_ItemDoubleClicked"
+                LoadDtos="True"
+                SelectedItemChanged="CqrsExplorerTreeView_SelectedItemChanged" />
             <TabControl x:Name="DtoDetails" Grid.Column="1">
                 <TabItem Header="General">
                     <usercontrols:DtoEditUserControl x:Name="DtoEditUserControl" />

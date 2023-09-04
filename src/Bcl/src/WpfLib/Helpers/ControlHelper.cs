@@ -15,9 +15,12 @@ using System.Windows.Threading;
 
 using Library.ComponentModel;
 using Library.Data.Models;
+using Library.Results;
 using Library.Wpf.Bases;
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
+
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 using WinRT;
 
@@ -43,8 +46,20 @@ public static class ControlHelper
         items.Filter = predicate;
     }
 
+    public static async Task<Result> AskToSaveIfChangedAsync<TPage>([DisallowNull] this TPage page, [DisallowNull] string ask = "Do you want to save changes?")
+    where TPage : IStatefulPage, IAsyncSavePage =>
+        page.NotNull().IsViewModelChanged
+        ? MsgBox2.AskWithCancel(ask) switch
+        {
+            TaskDialogResult.Cancel or TaskDialogResult.Close => Result.Failure,
+            TaskDialogResult.Yes => await page.SaveDbAsync(),
+            TaskDialogResult.No => Result.Success,
+            _ => Result.Failure
+        }
+        : Result.Success;
+
     public static THeaderedItemsControl BindDataContext<THeaderedItemsControl>(this THeaderedItemsControl itemsControl, object dataContext, string? header = null)
-                where THeaderedItemsControl : HeaderedItemsControl
+                    where THeaderedItemsControl : HeaderedItemsControl
     {
         Check.MustBeArgumentNotNull(itemsControl);
 
@@ -53,21 +68,25 @@ public static class ControlHelper
         return itemsControl;
     }
 
-    public static TItemsControl BindItems<TItemsControl>(this TItemsControl itemsControl, IEnumerable? items)
-        where TItemsControl : ItemsControl
-    {
-        Check.MustBeArgumentNotNull(itemsControl);
+    public static TTreeView BindItems<TTreeView>(this TTreeView treeView, IEnumerable? items)
+        where TTreeView : TreeView => BindItems<TTreeView, TreeViewItem>(treeView, items);
 
-        itemsControl.ItemsSource = null;
-        itemsControl.Items.Clear();
+    public static TItemsControl BindItems<TItemsControl, THeaderedItemsControl>(this TItemsControl treeView, IEnumerable? items)
+        where TItemsControl : ItemsControl
+        where THeaderedItemsControl : HeaderedItemsControl, new()
+    {
+        Check.MustBeArgumentNotNull(treeView);
+
+        treeView.ItemsSource = null;
+        treeView.Items.Clear();
         if (items is not null)
         {
             foreach (var item in items)
             {
-                _ = itemsControl.Items.Add(new TreeViewItem { DataContext = item, Header = item?.ToString() });
+                _ = treeView.Items.Add(new THeaderedItemsControl { DataContext = item, Header = item?.ToString() });
             }
         }
-        return itemsControl;
+        return treeView;
     }
 
     public static TSelector BindItemsSource<TSelector>(this TSelector selector, IEnumerable? items)
@@ -108,10 +127,10 @@ public static class ControlHelper
         return selector;
     }
 
-    public static Selector BindItemsSourceToEnum<TEnum>(this Selector selector, TEnum? selectedItem = null) where TEnum : struct => 
+    public static Selector BindItemsSourceToEnum<TEnum>(this Selector selector, TEnum? selectedItem = null) where TEnum : struct =>
         BindItemsSource(selector, Enum.GetValues(typeof(TEnum)), null, selectedItem);
 
-    public static TreeViewItem BindNewTreeViewItem(object dataContext, string? header = null) => 
+    public static TreeViewItem BindNewTreeViewItem(object dataContext, string? header = null) =>
         new TreeViewItem().BindDataContext(dataContext, header);
 
     public static TreeViewItem BindNewTreeViewItems(this TreeViewItem parentItem, IEnumerable items)
@@ -453,7 +472,7 @@ public static class ControlHelper
         var itemsSource = control.ItemsSource;
         control.ItemsSource = null;
         control.ItemsSource = itemsSource;
-        control.SetSelectedItem(selectedItem);
+        _ = control.SetSelectedItem(selectedItem);
     }
 
     public static void Refresh(this UIElement uiElement)
