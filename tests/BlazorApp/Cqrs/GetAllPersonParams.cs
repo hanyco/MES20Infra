@@ -15,34 +15,10 @@ namespace Test.Hr.Dtos
     
     
     /// <summary>
-    /// The data transfer object of InsertPersonParams
+    /// The data transfer object of GetAllPersonParams
     /// </summary>
-    public sealed partial class InsertPersonParams : IDto
+    public sealed partial class GetAllPersonParams : IDto
     {
-        
-    public String FirstName
-    {
-        get;
-        set;
-    }
-        
-    public String LastName
-    {
-        get;
-        set;
-    }
-        
-    public DateTime DateOfBirth
-    {
-        get;
-        set;
-    }
-        
-    public Int32 Height
-    {
-        get;
-        set;
-    }
     }
 }
 #endregion

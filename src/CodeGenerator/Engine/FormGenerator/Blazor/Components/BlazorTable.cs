@@ -63,12 +63,16 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent, 
         return base.Reset();
     }
 
-    public BlazorTable SetDataColumns(params DataColumnBindingInfo[] bindings)
+    public BlazorTable SetDataColumns(IEnumerable<DataColumnBindingInfo> bindings)
     {
         _ = this.DataTemplate.DataColumns.ClearAndAddRange(bindings);
         return this;
     }
-
+    public BlazorTable AddDataColumns(IEnumerable<DataColumnBindingInfo> bindings)
+    {
+        _ = this.DataTemplate.DataColumns.AddRange(bindings);
+        return this;
+    }
     public BlazorTable SetDataContextName(string? value)
     {
         this.DataTemplate.DataContextName = value;

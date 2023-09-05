@@ -12,7 +12,7 @@ public partial class CodeDetailsUserControl
 
     public Code Code
     {
-        get => this.DataContext?.Cast().As<Code>() ?? Code._empty;
+        get => this.DataContext?.Cast().As<Code>() ?? Code.Empty;
         set
         {
             if (this.DataContext?.Cast().As<Code>() == value)

@@ -348,19 +348,24 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
         }
 
         var htmlFileName = Path.ChangeExtension($"{this.Name}.tmp", this.HtmlFileExtension);
-        return Code.ToCode(this.Name, Languages.BlazorCodeBehind, statement, false, htmlFileName);
+        return Code.ToCode(this.Name, Languages.BlazorFront, statement, false, htmlFileName);
 
         StringBuilder generateDetailsCode(StringBuilder sb) =>
             this.Children.GenerateChildrenCode(sb);
 
         StringBuilder generateGridCode(StringBuilder sb)
         {
-            var columns = this.Properties.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
+            var actions = this.Actions.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
                 .AddImmuted(new("Actions", this.Actions.Select(x => new BlazorButton(x.Name, x.Name, body: x.Caption) { OnClick = $"() => this.{x.EventHandlerName}(item.Id)" })));
+            var properties = this.Properties.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
+                .AddImmuted(new("Properties", this.Properties.Select(x => new HtmlTableCellHead(x.Caption, name: x.Name))));
             var table = BlazorTable.New($"{this.DataContextType}Grid", $"{this.DataContextType}Grid")
                 .SetDataContextName("this.DataContext")
-                .SetDataColumns(columns.ToArray());
-            return sb.Append(table.GenerateUiCode().Statement);
+                .SetDataColumns(actions)
+                .AddDataColumns(properties);
+            var uiCode = table.GenerateUiCode();
+
+            return sb.Append(uiCode.Statement);
         }
     }
 

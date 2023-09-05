@@ -6,10 +6,10 @@ namespace Test.Hr.Queries
     using System.Threading.Tasks;
     
     
-    public sealed partial class GetAllPeopleQueryHandler
+    public sealed partial class GetAllPersonsHandler
     {
         
-        public async Task<GetAllPeopleQueryResult> HandleAsync(GetAllPeopleQueryParameter parameter)
+        public async Task<GetAllPersonsResult> HandleAsync(GetAllPersonsParameter parameter)
         {
             throw new System.NotImplementedException();
         }

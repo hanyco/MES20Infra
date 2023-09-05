@@ -320,10 +320,11 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         {
             var id = model.UiProperties.FirstOrDefault(x => x.Name.EqualsTo("id"));
             var idType = TypePath.New(id?.Property.Type.ToFullTypeName());
-            //foreach (var uiProp in model.UiProperties)
-            //{
-            //    result.Properties.Add(new PropertyActor(null, uiProp.Name, uiProp.Caption));
-            //}
+            foreach (var uiProp in model.UiProperties)
+            {
+                //result.Properties.Add(new PropertyActor(null, uiProp.Name, uiProp.Caption));
+                result.Properties.Add(new PropertyActor(null, uiProp.Name, uiProp.Caption));
+            }
             foreach (var uiAction in model.UiActions)
             {
                 var args = model.IsGrid ? new[] { new MethodArgument(idType, "id") } : null;

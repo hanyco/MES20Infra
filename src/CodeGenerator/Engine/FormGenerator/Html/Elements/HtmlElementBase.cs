@@ -7,8 +7,8 @@ using Library.Validations;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
-public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, IUiCodeGenerator
-        where THtmlElement : HtmlElementBase<THtmlElement>, IHtmlElement
+public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerator
+        where TSelf : HtmlElementBase<TSelf>, IHtmlElement
 {
     private bool _isEnabled;
     private string? _style;
@@ -76,36 +76,36 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
 
     protected virtual string TagName { get; }
 
-    public static bool operator !=(HtmlElementBase<THtmlElement> left, HtmlElementBase<THtmlElement> right)
+    public static bool operator !=(HtmlElementBase<TSelf> left, HtmlElementBase<TSelf> right)
         => !(left == right);
 
-    public static bool operator ==(HtmlElementBase<THtmlElement> left, HtmlElementBase<THtmlElement> right)
+    public static bool operator ==(HtmlElementBase<TSelf> left, HtmlElementBase<TSelf> right)
         => left?.Equals(right) ?? false;
 
-    public THtmlElement AddCssClass(string cssClass)
+    public TSelf AddCssClass(string cssClass)
                 => this.This().Fluent(() => this.CssClasses.Add(cssClass));
 
     public override bool Equals(object? obj)
         => obj switch
         {
-            THtmlElement other => obj.GetType() == this.GetType() && other.TagName.EqualsTo(this.TagName),
+            TSelf other => obj.GetType() == this.GetType() && other.TagName.EqualsTo(this.TagName),
             _ => false
         };
 
-    public bool Equals(THtmlElement? other)
+    public bool Equals(TSelf? other)
         => this.Equals(other?.Cast().As<object>());
 
     public virtual Code GenerateUiCode(in GenerateCodesParameters? arguments = null)
     {
         this.OnGeneratingCode();
         var statement = this.OnGenerateCodeStatement();
-        return !statement.IsNullOrEmpty() ? new Code(this.TagName, Languages.BlazorCodeBehind, statement, false) : Code._empty;
+        return !statement.IsNullOrEmpty() ? new Code(this.TagName, Languages.BlazorCodeBehind, statement, false) : Code.Empty;
     }
 
     public override int GetHashCode()
         => HashCode.Combine(this.TagName, this.Id ?? this.Name);
 
-    public THtmlElement SetIsEnabled(bool value)
+    public TSelf SetIsEnabled(bool value)
     {
         if (this._isEnabled == value)
         {
@@ -124,13 +124,13 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         return this.This();
     }
 
-    public THtmlElement SetPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null)
+    public TSelf SetPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null)
         => this.This().Fluent(() => this.Position = new BootstrapPosition(order, row, col, colSpan));
 
     public override string ToString()
         => $"ID: {this.Id ?? this.Name}, Type:{this.GetType().Name}";
 
-    protected virtual THtmlElement CodeGenAddAttributes(in StringBuilder statement)
+    protected virtual TSelf CodeGenAddAttributes(in StringBuilder statement)
     {
         Check.MustBeArgumentNotNull(statement);
         foreach ((var key, var value) in this.Attributes!)
@@ -140,7 +140,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         return this.This();
     }
 
-    protected virtual THtmlElement CodeGenAddBlazorAttributes(in StringBuilder statement)
+    protected virtual TSelf CodeGenAddBlazorAttributes(in StringBuilder statement)
     {
         Check.MustBeArgumentNotNull(statement!);
         foreach (var blazorAttribute in this.BlazorAttributes)
@@ -155,7 +155,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         return this.This();
     }
 
-    protected virtual THtmlElement CodeGenAddBody(in StringBuilder statement)
+    protected virtual TSelf CodeGenAddBody(in StringBuilder statement)
     {
         if (!this.Body.IsNullOrEmpty())
         {
@@ -164,7 +164,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         return this.This();
     }
 
-    protected virtual THtmlElement CodeGenAddCssClasses(StringBuilder statement)
+    protected virtual TSelf CodeGenAddCssClasses(StringBuilder statement)
     {
         var cssClasses = string.Join(' ', this.CssClasses.ToArray());
         //! Concurrency
@@ -189,7 +189,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         return this.This()!;
     }
 
-    protected virtual THtmlElement CodeGenAddId(in StringBuilder statement)
+    protected virtual TSelf CodeGenAddId(in StringBuilder statement)
     {
         if (this.Id is not null)
         {
@@ -198,7 +198,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         return this.This();
     }
 
-    protected virtual THtmlElement CodeGenAddName(in StringBuilder statement)
+    protected virtual TSelf CodeGenAddName(in StringBuilder statement)
     {
         if (this.Name is not null)
         {
@@ -207,25 +207,25 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
         return this.This();
     }
 
-    protected THtmlElement CodeGenAppend(in StringBuilder statement, in string value)
+    protected TSelf CodeGenAppend(in StringBuilder statement, in string value)
     {
         _ = statement.ArgumentNotNull(nameof(statement)).Append(value);
         return this.This();
     }
 
-    protected virtual THtmlElement CodeGenCloseElement(in StringBuilder statement)
+    protected virtual TSelf CodeGenCloseElement(in StringBuilder statement)
         => this.CodeGenAppend(statement, $"</{this.TagName}>");
 
-    protected virtual THtmlElement CodeGenCloseParentalTag(in StringBuilder statement)
+    protected virtual TSelf CodeGenCloseParentalTag(in StringBuilder statement)
         => this.CodeGenAppend(statement, $">");
 
-    protected virtual THtmlElement CodeGenCloseSingleTag(in StringBuilder statement)
+    protected virtual TSelf CodeGenCloseSingleTag(in StringBuilder statement)
         => this.CodeGenAppend(statement, "/>");
 
-    protected virtual THtmlElement CodeGenOpenTag(in StringBuilder statement)
+    protected virtual TSelf CodeGenOpenTag(in StringBuilder statement)
         => this.CodeGenAppend(statement, $"<{this.TagName}");
 
-    protected virtual THtmlElement OnCodeGenAddChildren(in StringBuilder statement)
+    protected virtual TSelf OnCodeGenAddChildren(in StringBuilder statement)
     {
         if (statement is null)
         {
@@ -320,6 +320,6 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
     protected virtual void OnGeneratingCode()
     { }
 
-    private THtmlElement This()
-        => this.Cast().As<THtmlElement>()!;
+    private TSelf This()
+        => this.Cast().As<TSelf>()!;
 }

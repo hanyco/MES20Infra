@@ -15,21 +15,21 @@ namespace Test.Hr.Queries
     
     
     /// <summary>
-    /// The parameter of GetByIdPersonQuery
+    /// The parameter of GetAllPersons
     /// </summary>
-    public sealed partial class GetByIdPersonQueryParameter : IQueryParameter<GetByIdPersonQueryResult>
+    public sealed partial class GetAllPersonsParameter : IQueryParameter<GetAllPersonsResult>
     {
         
-    public GetByIdPersonParams Params
+    public GetAllPersonParams Params
     {
         get;
         
     }
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="GetByIdPersonQueryParameter"/> class.
+        /// Initializes a new instance of the <see cref="GetAllPersonsParameter"/> class.
         /// </summary>
-        public GetByIdPersonQueryParameter(GetByIdPersonParams @params)
+        public GetAllPersonsParameter(GetAllPersonParams @params)
         {
             this.Params = @params;
         }

@@ -8,16 +8,16 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Test.Hr.Commands
+namespace Test.Hr.Queries
 {
-    using Library.Cqrs.Models.Commands;
     using Library.Cqrs.Models.Queries;
+    using Library.Cqrs.Models.Commands;
     
     
     /// <summary>
-    /// The handler of UpdatePersonCommand
+    /// The handler of GetAllPersons
     /// </summary>
-    public sealed partial class UpdatePersonCommandHandler : ICommandHandler<UpdatePersonCommandParameter, UpdatePersonCommandResult>
+    public sealed partial class GetAllPersonsHandler : IQueryHandler<GetAllPersonsParameter, GetAllPersonsResult>
     {
         
     public ICommandProcessor CommandProcessor
@@ -33,9 +33,9 @@ namespace Test.Hr.Commands
     }
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="UpdatePersonCommandHandler"/> class.
+        /// Initializes a new instance of the <see cref="GetAllPersonsHandler"/> class.
         /// </summary>
-        public UpdatePersonCommandHandler(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public GetAllPersonsHandler(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             this.CommandProcessor = commandProcessor;
             this.QueryProcessor = queryProcessor;

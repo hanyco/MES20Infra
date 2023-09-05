@@ -79,7 +79,7 @@ public partial class CodeDetailsPage
                            ICqrsCodeGeneratorService codeGeneratorService, ILogger logger)
         : base(logger)
     {
-        this.SelectedCode = Code._empty;
+        this.SelectedCode = Code.Empty;
         this._DtoService = dtoService;
         this._QueryService = queryService;
         this._CommandService = commandService;

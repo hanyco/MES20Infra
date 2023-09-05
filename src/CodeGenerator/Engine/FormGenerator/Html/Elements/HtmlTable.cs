@@ -59,19 +59,18 @@ public class HtmlTableCell : HtmlElementBase<HtmlTableCell>, IHtmlElement, IHasI
         => this.Fluent(() => this.InnerText = string.Empty);
 }
 
-public class HtmlTableCellHead : HtmlElementBase<HtmlTableCellHead>, IHtmlElement, IHasInnerText, IResetable<HtmlTableCellHead>, IBindable
+public class HtmlTableCellHead : HtmlElementBase<HtmlTableCellHead>, IHtmlElement, IHasInnerText, IBindable, IResetable<HtmlTableCellHead>
 {
-    public HtmlTableCellHead(string? innerText = null, string? labelPrefix = null)
-        : base("th", null, null, null, labelPrefix)
-        => (this.InnerText, this.AddRowDiv) = (innerText, false);
+    public HtmlTableCellHead(string? innerText = null, string? id = null, string? name = null, string? body = null, string? labelPrefix = null)
+        : base("th", id, name, body, labelPrefix) => (this.InnerText, this.AddRowDiv) = (innerText, false);
 
     public string? InnerText { get; set; }
 
-    public void Bind()
-        => this.Body = this.InnerText;
+    public void Bind() =>
+        this.Body = this.InnerText;
 
-    public virtual HtmlTableCellHead Reset()
-        => this.Fluent(() => this.InnerText = string.Empty);
+    public virtual HtmlTableCellHead Reset() =>
+        this.Fluent(() => this.InnerText = string.Empty);
 }
 
 public class HtmlTableHead : HtmlElementBase<HtmlTableHead>, IHtmlElement, IParent<HtmlTableCellHead>, IResetable<HtmlTableHead>, IBindable
