@@ -79,7 +79,7 @@ public partial class CodeDetailsPage
                            ICqrsCodeGeneratorService codeGeneratorService, ILogger logger)
         : base(logger)
     {
-        this.SelectedCode = Code.Empty;
+        this.SelectedCode = Code._empty;
         this._DtoService = dtoService;
         this._QueryService = queryService;
         this._CommandService = commandService;
@@ -98,14 +98,14 @@ public partial class CodeDetailsPage
         static TreeViewItem GetTreeItem(IEnumerable<CqrsQueryViewModel> segregates)
         {
             var result = new TreeViewItem { Header = "Queries" };
-            _ = segregates.ForEach(x => result.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() })).Build();
+            _ = segregates.CreateIterator(x => result.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() })).Build();
             return result;
         }
 
         static TreeViewItem GetCommandItems(IEnumerable<CqrsCommandViewModel> segregates)
         {
             var resiult = new TreeViewItem { Header = "Commands" };
-            _ = segregates.ForEach(x => resiult.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() })).Build();
+            _ = segregates.CreateIterator(x => resiult.Items.Add(new TreeViewItem { DataContext = x, Header = x.ToString() })).Build();
             return resiult;
         }
     }

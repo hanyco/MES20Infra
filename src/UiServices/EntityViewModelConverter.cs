@@ -193,7 +193,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                                      _ => SecurityDescriptorStrategy.None
                                  })
                                  .ForMember(x => x.Id = model.Id)!;
-        _ = model.ClaimSet.ForEachEager(x =>
+        _ = model.ClaimSet.ForEach(x =>
         {
             if (this._mapper.Map<SecurityClaim>(x) is { } claim)
             {
@@ -283,7 +283,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
         if (securityDescriptors is not null)
         {
-            _ = securityDescriptors.ForEachEager(result.SecurityDescriptors.Add);
+            _ = securityDescriptors.ForEach(result.SecurityDescriptors.Add);
         }
         return result;
     }

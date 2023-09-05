@@ -137,14 +137,6 @@
                     <TextBlock Style="{StaticResource LabelBlock}" Text="Name:" />
                     <TextBox d:Text="Caption" Text="{Binding Name}" />
                 </StackPanel>
-                <StackPanel Style="{StaticResource FieldPanel}">
-                    <TextBlock Style="{StaticResource LabelBlock}" Text="Trigger Type:" />
-                    <ComboBox Name="TriggerTypeComboBox" SelectedValue="{Binding TriggerType}" />
-                </StackPanel>
-                <!--<StackPanel Style="{StaticResource FieldPanel}">
-                    <TextBlock Style="{StaticResource LabelBlock}" Text="Enable:" />
-                    <CheckBox Content="Is _Enabled" IsChecked="{Binding IsEnabled}" />
-                </StackPanel>-->
                 <StackPanel x:Name="CaptionStackPanel" Style="{StaticResource FieldPanel}">
                     <TextBlock Style="{StaticResource LabelBlock}" Text="Caption:" />
                     <TextBox d:Text="Caption" Text="{Binding Caption}" />

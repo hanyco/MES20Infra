@@ -48,7 +48,7 @@ public partial class EntitySecurityDescriptorViewUserControl
         }
 
         this.ViewModel.Clear();
-        _ = viewModel.ForEach(this.ViewModel.Add);
+        _ = viewModel.CreateIterator(this.ViewModel.Add);
     }
 
     private void DeleteItemsButton_Click(object sender, RoutedEventArgs e)

@@ -19,7 +19,7 @@ internal static class EntityViewModelConverterHelper
         if (viewModel is not null)
         {
             var secs = viewModel.Guid is { } guid ? await securityDescriptorService.GetByEntityIdAsync(guid) : Enumerable.Empty<SecurityDescriptorViewModel>();
-            secs.ForEachEager(viewModel.SecurityDescriptors.Add);
+            secs.ForEach(viewModel.SecurityDescriptors.Add);
         }
         return viewModel;
     }
@@ -35,7 +35,7 @@ internal static class EntityViewModelConverterHelper
     }
     public static TViewModel? ToViewModel<TViewModel, TDbEntity>([DisallowNull] this IDbEntityToViewModelConverter<TViewModel, TDbEntity> converter, TDbEntity? entity, IEnumerable<SecurityDescriptorViewModel>? securityDescriptors)
         where TViewModel : IHasSecurityDescriptor =>
-        MapperExtensions.ForMemberIfNotNull(converter.ToViewModel(entity), x => securityDescriptors?.ForEachEager(x.SecurityDescriptors.Add));
+        MapperExtensions.ForMemberIfNotNull(converter.ToViewModel(entity), x => securityDescriptors?.ForEach(x.SecurityDescriptors.Add));
 
     [return: NotNull]
     public static IEnumerable<TViewModel?> ToViewModel<TViewModel, TDbEntity>([DisallowNull] this IDbEntityToViewModelConverter<TViewModel, TDbEntity> converter, IEnumerable<(TDbEntity? Entity, IEnumerable<SecurityDescriptorViewModel> SecurityDescriptors)> entitiesInfo)

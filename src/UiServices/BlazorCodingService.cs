@@ -107,8 +107,8 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
     public UiComponentActionViewModel CreateUnboundAction() =>
         new() { Caption = "New Action", IsEnabled = true, TriggerType = TriggerType.Button, Name = "NewAction", };
 
-    public UiComponentPropertyViewModel CreateUnboundProperty()
-        => new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
+    public UiComponentPropertyViewModel CreateUnboundProperty() =>
+        new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
 
     public Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop, CancellationToken cancellationToken = default)
     {
@@ -217,7 +217,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
 
         static void setDataContext(UiComponentViewModel model, TypePath? dataContextPropType, BlazorComponent result, CancellationToken cancellationToken = default)
         {
-            if (dataContextPropType is not { } prop )
+            if (dataContextPropType is not { } prop)
             {
                 return;
             }

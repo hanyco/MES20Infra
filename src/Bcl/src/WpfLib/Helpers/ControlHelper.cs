@@ -33,7 +33,7 @@ public static class ControlHelper
     public static DataGrid AddColumns(this DataGrid dataGrid, IEnumerable<IDataColumnBindingInfo> dataColumns)
     {
         Check.MustBeArgumentNotNull(dataGrid);
-        _ = dataColumns.ToDataGridColumn().ForEach(dataGrid.Columns.Add).Build();
+        _ = dataColumns.ToDataGridColumn().CreateIterator(dataGrid.Columns.Add).Build();
         return dataGrid;
     }
 
@@ -47,7 +47,7 @@ public static class ControlHelper
     }
 
     public static async Task<Result> AskToSaveIfChangedAsync<TPage>([DisallowNull] this TPage page, [DisallowNull] string ask = "Do you want to save changes?")
-    where TPage : IStatefulPage, IAsyncSavePage =>
+        where TPage : IStatefulPage, IAsyncSavePage =>
         page.NotNull().IsViewModelChanged
         ? MsgBox2.AskWithCancel(ask) switch
         {
@@ -151,13 +151,17 @@ public static class ControlHelper
         FrameworkElement target,
         DependencyProperty targetDependencyProperty,
         string path,
-        BindingMode bindingMode = BindingMode.TwoWay) => target?.SetBinding(targetDependencyProperty, new Binding { Source = source, Path = new PropertyPath(path), Mode = bindingMode });
+        BindingMode bindingMode = BindingMode.TwoWay) => 
+        target?.SetBinding(targetDependencyProperty, new Binding { Source = source, Path = new PropertyPath(path), Mode = bindingMode });
 
-    public static void EnsureVisible(this ListViewItem item) => item.ArgumentNotNull(nameof(item)).Parent.Cast().As<ListView>()?.ScrollIntoView(item);
+    public static void EnsureVisible(this ListViewItem item) => 
+        item.ArgumentNotNull().Parent.Cast().As<ListView>()?.ScrollIntoView(item);
 
-    public static void EnsureVisibleItem(this DataGrid dg, object item) => dg.ArgumentNotNull(nameof(dg)).ScrollIntoView(item);
+    public static void EnsureVisibleItem(this DataGrid dg, object item) => 
+        dg.ArgumentNotNull().ScrollIntoView(item);
 
-    public static void EnsureVisibleItem(this ListBox lv, object item) => lv.ArgumentNotNull(nameof(lv)).ScrollIntoView(item);
+    public static void EnsureVisibleItem(this ListBox lv, object item) => 
+        lv.ArgumentNotNull().ScrollIntoView(item);
 
     public static void ExpandAll(this TreeViewItem item, bool isExpanded = true)
     {
@@ -172,9 +176,11 @@ public static class ControlHelper
         item.BringIntoView();
     }
 
-    public static void Flick(FrameworkElement element, int duration = 500) => Catch(() => Animations.Flick(element, duration));
+    public static void Flick(FrameworkElement element, int duration = 500) =>
+        Catch(() => Animations.Flick(element, duration));
 
-    public static IEnumerable<TreeViewItem> GetAllItems([DisallowNull] this TreeView tree) => EnumerableHelper.GetAll(() => tree.ArgumentNotNull(nameof(tree)).Items.Cast<TreeViewItem>(), item => item.Items.Cast<TreeViewItem>());
+    public static IEnumerable<TreeViewItem> GetAllItems([DisallowNull] this TreeView tree) =>
+        EnumerableHelper.GetAll(() => tree.ArgumentNotNull().Items.Cast<TreeViewItem>(), item => item.Items.Cast<TreeViewItem>());
 
     public static DataGridCell? GetCell(this DataGrid grid, int row, int column)
     {
@@ -207,7 +213,7 @@ public static class ControlHelper
     public static IEnumerable<Visual> GetChildren(this Visual visual, bool loopThrough = true)
     {
         var result = new List<Visual>();
-        EnumerableHelper.ForEachTreeNode(visual,
+        EnumerableHelper.ForEach(visual,
             c =>
             {
                 return !loopThrough && !Equals(c, visual)
@@ -280,8 +286,11 @@ public static class ControlHelper
     public static bool GetIsViewModelChanged<TPage>(this TPage page)
         where TPage : IStatefulPage => page.IsViewModelChanged;
 
+    public static TModel? GetModelFromNewValue<TModel>(this RoutedPropertyChangedEventArgs<object> newValue)
+        where TModel : class => newValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<TModel>();
+
     public static TParent? GetParentByType<TParent>(this DependencyObject depObj)
-            where TParent : DependencyObject
+        where TParent : DependencyObject
     {
         var parent = depObj;
         while ((parent = VisualTreeHelper.GetParent(parent)) is not null)
@@ -295,7 +304,8 @@ public static class ControlHelper
         return null;
     }
 
-    public static Window GetParentWindow(this DependencyObject dependencyObject) => Window.GetWindow(dependencyObject);
+    public static Window GetParentWindow(this DependencyObject dependencyObject) => 
+        Window.GetWindow(dependencyObject);
 
     public static DataGridRow GetRow(this DataGrid grid, int index)
     {
@@ -314,11 +324,11 @@ public static class ControlHelper
     }
 
     public static T? GetSelectedValue<T>(this TreeView treeView) where T : class
-        => treeView.ArgumentNotNull(nameof(treeView)).SelectedItem.Cast().As<TreeViewItem>()?.DataContext.Cast().As<T>();
+        => treeView.ArgumentNotNull().SelectedItem.Cast().As<TreeViewItem>()?.DataContext.Cast().As<T>();
 
     [Obsolete("Use listView.GetSelection, instead.")]
     public static T? GetSelection<T>(this SelectionChangedEventArgs e)
-        => e.ArgumentNotNull(nameof(e)).AddedItems.Cast<object?>().FirstOrDefault().Cast().To<T?>();
+        => e.ArgumentNotNull().AddedItems.Cast<object?>().FirstOrDefault().Cast().To<T?>();
 
     public static T? GetSelection<T>([DisallowNull] this ListView listView, SelectionChangedEventArgs e)
         => e?.AddedItems.Any() is true ? e.AddedItems[0].Cast().To<T?>() : GetSelections<T>(listView).FirstOrDefault();
@@ -357,7 +367,7 @@ public static class ControlHelper
         new Win32WindowForm(window);
 
     public static TItemsControl HandleChanges<TItemsControl, TNotifyCollectionChanged>(this TItemsControl control, TNotifyCollectionChanged collection, Action<TItemsControl, TNotifyCollectionChanged, NotifyCollectionChangedEventArgs> handler)
-            where TItemsControl : ItemsControl
+        where TItemsControl : ItemsControl
         where TNotifyCollectionChanged : INotifyCollectionChanged
     {
         collection.CollectionChanged += (e1, e2) => handler?.Invoke(control, collection, e2);
@@ -387,7 +397,7 @@ public static class ControlHelper
             case Key.Space:
                 {
                     var items = multiSelector.SelectedItems.Cast<dynamic>().ToArray();
-                    _ = items.ForEach(instance => instance.IsChecked = items.Any(o => !o.IsChecked));
+                    _ = items.CreateIterator(instance => instance.IsChecked = items.Any(o => !o.IsChecked));
                     break;
                 }
 
@@ -422,9 +432,11 @@ public static class ControlHelper
         }
     }
 
-    public static bool IsDesignTime() => Application.Current?.MainWindow is null;
+    public static bool IsDesignTime() => 
+        Application.Current?.MainWindow is null;
 
-    public static bool MoveToNextUIElement() => Keyboard.FocusedElement is UIElement elementWithFocus && elementWithFocus.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+    public static bool MoveToNextUIElement() => 
+        Keyboard.FocusedElement is UIElement elementWithFocus && elementWithFocus.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
     public static void PerformClick(this Button button)
     {

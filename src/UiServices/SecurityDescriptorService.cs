@@ -136,7 +136,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
             var (_, (_, e)) = await ServiceHelper.UpdateAsync<SecurityDescriptorViewModel, SecurityDescriptor, Guid>(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, x =>
                 {
                     _ = this._writeDbContext.Attach(x).SetModified(y => y.Name).SetModified(y => y.IsEnabled).SetModified(y => y.Strategy);
-                    _ = x.SecurityClaims.ForEachEager(c => this._writeDbContext.Attach(c).SetModified(y => y.ClaimType).SetModified(y => y.ClaimValue));
+                    _ = x.SecurityClaims.ForEach(c => this._writeDbContext.Attach(c).SetModified(y => y.ClaimType).SetModified(y => y.ClaimValue));
                     return x;
                 }, false, cancellationToken: cancellationToken);
             return e!;

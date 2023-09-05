@@ -99,7 +99,7 @@ public abstract class HtmlElementBase<THtmlElement> : IEquatable<THtmlElement>, 
     {
         this.OnGeneratingCode();
         var statement = this.OnGenerateCodeStatement();
-        return !statement.IsNullOrEmpty() ? new Code(this.TagName, Languages.BlazorCodeBehind, statement, false) : Code.Empty;
+        return !statement.IsNullOrEmpty() ? new Code(this.TagName, Languages.BlazorCodeBehind, statement, false) : Code._empty;
     }
 
     public override int GetHashCode()
