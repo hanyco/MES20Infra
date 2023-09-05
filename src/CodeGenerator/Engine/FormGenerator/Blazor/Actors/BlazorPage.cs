@@ -64,7 +64,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             void appendChildrenNameSpaces(StringBuilder sb) =>
                 this.Children.OfType<IBlazorComponent>()
                     .Select(x => x.NameSpace).Compact().Distinct()
-                    .ForEachEager(nameSpace => sb.AppendLine($"@using {nameSpace}"));
+                    .ForEach(nameSpace => sb.AppendLine($"@using {nameSpace}"));
         }
     }
 
@@ -77,7 +77,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
     protected override void OnInitializingUiCode(GenerateCodesParameters? arguments)
     {
         CommonExtensions.GetAllChildren(this);
-        _ = this.GetAllChildren().OfType<BlazorComponent>().ForEach(x =>
+        _ = this.GetAllChildren().OfType<BlazorComponent>().CreateIterator(x =>
         {
             x.ShouldGenerateFullUiCode = false;
         }).Build();

@@ -111,19 +111,28 @@ public partial class DtoDetailsPage
 
     private async void CreateDtoWithTableMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (this._databaseExplorerUserControl == null)
+        this.ActionScopeBegin();
+        this.IsEnabled = false;
+        try
         {
-            this._databaseExplorerUserControl = new();
-            _ = await this._databaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter);
-        }
-        _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Table", "Select a Table to create a DTO.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a Table.")).BreakOnFail();
-        var tableNode = this._databaseExplorerUserControl.SelectedDbObjectNode;
-        Check.MustBeNotNull(tableNode, () => "Please select a table");
+            if (this._databaseExplorerUserControl == null)
+            {
+                this._databaseExplorerUserControl = new();
+                _ = await this._databaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter);
+            }
+            _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Table", "Select a Table to create a DTO.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a Table.")).BreakOnFail();
+            var tableNode = this._databaseExplorerUserControl.SelectedDbObjectNode;
+            Check.MustBeNotNull(tableNode, () => "Please select a table");
 
-        //var columns = tableNode.Children?.FirstOrDefault()?.Children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>());
-        var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, tableNode.Value.Name!);
-        this.ViewModel = this._service.CreateByDbTable(DbTableViewModel.FromDbObjectViewModel(tableNode!), columns.Compact());
-        this.Debug("DTO initialized.");
+            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, tableNode.Value.Name!);
+            this.ViewModel = this._service.CreateByDbTable(DbTableViewModel.FromDbObjectViewModel(tableNode!), columns.Compact());
+            this.EndActionScope();
+            RefreshFormState();
+        }
+        finally
+        {
+            this.IsEnabled = true;
+        }
     }
 
     private void DatabaseExplorerUserControl_SelectedDbObjectNodeChanged(object sender, ItemActedEventArgs<Node<DbObjectViewModel>> e)
@@ -334,7 +343,7 @@ public partial class DtoDetailsPage
             this.EndActionScope();
             return;
         }
-        _ = x.SelectedItems.ForEachEager(this.ViewModel.SecurityDescriptors.Add);
+        _ = x.SelectedItems.ForEach(this.ViewModel.SecurityDescriptors.Add);
         this.Debug("Security Descriptor is set up.");
     }
 }

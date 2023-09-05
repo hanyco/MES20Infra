@@ -11,7 +11,6 @@ using HanyCo.Infra.UI.ViewModels;
 using Library.BusinessServices;
 using Library.CodeGeneration.Models;
 using Library.EventsArgs;
-using Library.Exceptions;
 using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
@@ -87,11 +86,9 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         return result;
     }
 
-    protected override async Task OnBindDataAsync()
-    {
+    protected override async Task OnBindDataAsync() =>
         //await this.FunctionalityTreeView.BindAsync();
         await base.OnBindDataAsync();
-    }
 
     [MemberNotNull(nameof(ViewModel))]
     private void CheckIfInitiated() =>
@@ -104,7 +101,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this.ViewModel = await this._service.CreateAsync();
     }
 
-    private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
+    private void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         //Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
         var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
@@ -116,7 +113,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
         (_, var code) = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ThrowOnFailAsync(this.Title);
-        
+
         this.ComponentCodeResultUserControl.Codes = code;
     }
 
@@ -219,11 +216,17 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    private async void SaveToDbButton_Click(object sender, RoutedEventArgs e) =>
-        await this.SaveDbAsync().ShowOrThrowAsync(this.Title);
+    private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
+    {
+        _ = ControlHelper.MoveToNextUIElement();
+        _ = await this.SaveDbAsync().ShowOrThrowAsync(this.Title);
+    }
 
-    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e) =>
-        await this.SaveCodes().ShowOrThrowAsync(this.Title);
+    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
+    {
+        _ = ControlHelper.MoveToNextUIElement();
+        _ = await this.SaveCodes().ShowOrThrowAsync(this.Title);
+    }
 
     private async void SelectRootDtoByDtoButton_Click(object sender, RoutedEventArgs e)
     {

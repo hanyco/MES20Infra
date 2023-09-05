@@ -49,7 +49,7 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent, 
                 InnerText = bindingPathOrElement switch
                 {
                     IHtmlElement element => element.GenerateUiCode()?.Statement,
-                    IEnumerable<IHtmlElement> elements => new Codes(elements.Select(x => x.GenerateUiCode())).ComposeAll(Environment.NewLine).Statement,
+                    IEnumerable<IHtmlElement> elements => elements.Select(x => x.GenerateUiCode()).ToCodes().ComposeAll(Environment.NewLine).Statement,
                     string bindingPath => $"@item.{bindingPath}",
                     _ => string.Empty,
                 }

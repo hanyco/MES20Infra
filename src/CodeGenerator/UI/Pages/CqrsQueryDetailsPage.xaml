@@ -8,7 +8,7 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
-    x:Name="Me"
+    x:Name="Me" Loaded="Me_Loaded"
     Title="CQRS - Query Details"
     d:DataContext="{d:DesignInstance ViewModels:CqrsQueryViewModel,
                                      IsDesignTimeCreatable=True}"

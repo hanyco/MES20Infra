@@ -108,7 +108,7 @@ public partial class CqrsExplorerTreeView : UserControl
         {
             _ = this.TreeView.Items.Add(item);
         }
-        _ = this.TreeView.Items.Cast<TreeViewItem>().ForEachEager(x => selectedHeaders.Contains(x.Header).IfTrue(() => x.IsSelected = true));
+        _ = this.TreeView.Items.Cast<TreeViewItem>().ForEach(x => selectedHeaders.Contains(x.Header).IfTrue(() => x.IsSelected = true));
     }
 
     public void EndInitializing()

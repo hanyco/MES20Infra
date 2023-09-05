@@ -29,14 +29,14 @@ internal sealed class CqrsQueryService(
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 
-    public Task<CqrsQueryViewModel> CreateAsync(CancellationToken token = default)
-        => Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandler = true, HasPartialOnInitialize = true });
+    public Task<CqrsQueryViewModel> CreateAsync(CancellationToken token = default) =>
+        Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandler = true, HasPartialOnInitialize = true });
 
-    public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
-        => ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
+    public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default) =>
+        ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
 
-    public async Task<int> DeleteByIdAsync(long id, CancellationToken token = default)
-        => await this._writeDbContext.RemoveById<CqrsSegregate>(id).SaveChangesAsync(token);
+    public async Task<int> DeleteByIdAsync(long id, CancellationToken token = default) =>
+        await this._writeDbContext.RemoveById<CqrsSegregate>(id).SaveChangesAsync(token);
 
     public CqrsQueryViewModel FillByDbEntity(
         CqrsQueryViewModel @this,
@@ -80,7 +80,7 @@ internal sealed class CqrsQueryService(
                         where cq.Id == dbQueryId
                         select cq;
         var dbResult = await segrQuery.FirstOrDefaultAsync(cancellationToken: token);
-        return this.FillByDbEntity(@this, dbResult!, moduleName, paramDtoName, resultDtoName);
+        return this.FillByDbEntity(@this, dbResult.NotNull(() => "Query not found."), moduleName, paramDtoName, resultDtoName);
     }
 
     public async Task<CqrsQueryViewModel> FillViewModelAsync(CqrsQueryViewModel model,
@@ -155,7 +155,10 @@ internal sealed class CqrsQueryService(
         CqrsSegregate? segregate = null;
         try
         {
-            _ = this.CheckValidator(model);
+            if (!this.Validate(model).TryParse(out var vc))
+            {
+                return vc;
+            }
 
             segregate = this._converter.ToDbEntity(model)!;
 

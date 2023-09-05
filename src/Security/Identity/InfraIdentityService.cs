@@ -135,7 +135,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
 
         var user = await this._userManager.FindByIdAsync(userId) ?? throw new ObjectNotFoundException($"User {userId} not found.");
         var result = await this._userManager.GetRolesAsync(user);
-        return EnumerableHelper.DefaultIfEmpty(result);
+        return EnumerableHelper.DefaultIfNull(result);
     }
 
     public async Task<bool> HasUserClaim(string userId, string claimType)

@@ -59,23 +59,17 @@ public partial class BlazorComponentActionsUserControl
     public BlazorComponentActionsUserControl()
         => this.InitializeComponent();
 
-    protected override async Task OnBindDataAsync(bool _isFirstBinding)
+    protected override Task OnBindDataAsync(bool _isFirstBinding)
     {
         if (this.ViewModel is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        if (this.ViewModel.UiActions is not null)
-        {
-            //this.SelectedPropertyComboBox.BindItemsSource(this.ViewModel.UiActions);
-        }
-
-        _ = this.TriggerTypeComboBox.BindItemsSource(EnumHelper.GetItems<TriggerType>());
         this.SelectedActionGrid.RebindDataContext();
         _ = this.ActionsListView.BindItemsSource(this.ViewModel.UiActions);
 
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     private void ActionsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

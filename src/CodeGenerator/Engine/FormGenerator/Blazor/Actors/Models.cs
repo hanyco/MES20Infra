@@ -20,13 +20,14 @@ public record FieldActor()
     public FieldInfo ToFieldInfo() => new();
 }
 public record MethodActor(string? Name,
+    
                           string? Caption = null,
                           bool IsPartial = false,
                           string? Body = null,
                           string? ReturnType = null,
                           MemberAttributes? AccessModifier = null,
                           MethodArgument[]? Arguments = null,
-                          string? EventHandlerName= null)
+                          string? EventHandlerName = null)
 {
     public MethodInfo ToMethodInfo() => new();
 }

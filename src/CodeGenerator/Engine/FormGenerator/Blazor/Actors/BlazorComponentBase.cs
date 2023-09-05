@@ -276,7 +276,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
             }
         }
 
-        return new Codes(codes);
+        return codes.ToCodes();
 
         TBlazorComponent validate(GenerateCodesParameters arguments)
         {
@@ -340,9 +340,19 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
     protected virtual Code OnGeneratingUiCode(in GenerateCodesParameters? arguments = null)
     {
         Func<StringBuilder, StringBuilder> generate = this.IsGrid ? generateGridCode : generateDetailsCode;
-        return generateHtmlCode(generate);
+        var statement = this.OnGeneratingHtmlCode(new()).With(x => generate(x)).ToString();
 
-        StringBuilder generateDetailsCode(StringBuilder sb) => this.Children.GenerateChildrenCode(sb);
+        if (statement.IsNullOrEmpty())
+        {
+            return Code.Empty;
+        }
+
+        var htmlFileName = Path.ChangeExtension($"{this.Name}.tmp", this.HtmlFileExtension);
+        return Code.ToCode(this.Name, Languages.BlazorCodeBehind, statement, false, htmlFileName);
+
+        StringBuilder generateDetailsCode(StringBuilder sb) =>
+            this.Children.GenerateChildrenCode(sb);
+
         StringBuilder generateGridCode(StringBuilder sb)
         {
             var columns = this.Properties.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
@@ -351,22 +361,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
                 .SetDataContextName("this.DataContext")
                 .SetDataColumns(columns.ToArray());
             return sb.Append(table.GenerateUiCode().Statement);
-        }
-
-        Code generateHtmlCode(Func<StringBuilder, StringBuilder> generate)
-        {
-            var statementBuilder = New<StringBuilder>();
-            var statement = statementBuilder.Fluent(this.OnGeneratingHtmlCode)
-                .With(generate)
-                .ToString();
-
-            if (statement.IsNullOrEmpty())
-            {
-                return Code.Empty;
-            }
-
-            var htmlFileName = Path.ChangeExtension($"{this.Name}.tmp", this.HtmlFileExtension);
-            return Code.ToCode(this.Name, Languages.BlazorCodeBehind, statement, false, htmlFileName);
         }
     }
 

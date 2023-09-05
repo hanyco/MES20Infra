@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Windows;
-using System.Windows.Controls;
 
 using Contracts.Services;
 using Contracts.ViewModels;
@@ -65,7 +64,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
             if (result)
             {
                 this.IsViewModelChanged = false;
-                this.Logger.Debug("CQRS Query saved."); 
+                this.Logger.Debug("CQRS Query saved.");
             }
             return result;
         }
@@ -140,8 +139,11 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         this.Logger.Debug("Ready.");
     }
 
-    private async void NewQueryButton_Click(object sender, RoutedEventArgs e)
-        => await this.NewQueryViewModelAsync();
+    private void Me_Loaded(object sender, RoutedEventArgs e) => 
+        this.RefreshFormState();
+
+    private async void NewQueryButton_Click(object sender, RoutedEventArgs e) => 
+        await this.NewQueryViewModelAsync();
 
     private async Task NewQueryViewModelAsync()
     {
@@ -162,14 +164,11 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         this.RefreshFormState();
     }
 
-    private async void QueriesTreeView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        => await this.LoadQueryViewModelAsync();
+    private async void QueriesTreeView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) =>
+        await this.LoadQueryViewModelAsync();
 
-    private void QueriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-    {
-        var cQuery = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<CqrsQueryViewModel>();
-        this.EditQueryButton.IsEnabled = this.DeleteQueryButton.IsEnabled = cQuery is not null;
-    }
+    private void QueriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) =>
+        this.EditQueryButton.IsEnabled = this.DeleteQueryButton.IsEnabled = e.GetModelFromNewValue<CqrsQueryViewModel>() is not null;
 
     private void RefreshFormState()
     {
@@ -182,7 +181,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
             = this.SaveToDbButton.IsEnabled
             = this.GenerateCodeButton.IsEnabled
             = this.ResetFormButton.IsEnabled
-            //= this.QueryDetailsGrid.IsEnabled
+            = this.WindowBodyGrid.IsEnabled
             = this.ViewModel is not null;
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Drawing;
+using System.Windows;
 using System.Windows.Controls;
 
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -116,6 +117,7 @@ public partial class MainWindow
         this.RunInControlThread(() =>
         {
             this.StatusProgressBar.Visibility = Visibility.Collapsed;
+            this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
             this.Log(e.Item ?? "Ready.");
             this.StatusProgressBar.Refresh();
         });
@@ -128,10 +130,12 @@ public partial class MainWindow
                 this.StatusProgressBar.Visibility = Visibility.Visible;
                 this.StatusProgressBar.Maximum = e.Item.Max.Cast().ToInt(0);
                 this.StatusProgressBar.Value = e.Item.Current.Cast().ToInt(0);
+                this.StatusProgressBar.Background = System.Windows.Media.Brushes.Maroon;
             }
             else
             {
                 this.StatusProgressBar.Visibility = Visibility.Collapsed;
+                this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
             }
             if (!e.Item.Description.IsNullOrEmpty())
             {
