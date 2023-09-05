@@ -344,7 +344,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
 
         if (statement.IsNullOrEmpty())
         {
-            return Code._empty;
+            return Code.Empty;
         }
 
         var htmlFileName = Path.ChangeExtension($"{this.Name}.tmp", this.HtmlFileExtension);
