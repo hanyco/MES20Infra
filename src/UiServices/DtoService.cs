@@ -314,7 +314,7 @@ internal sealed class DtoService(
         {
             foreach (var prop in properties)
             {
-                var property = this._converter.ToDbEntity(prop, dto.Id)!;
+                var property = this._converter.ToDbEntity(prop).With(x => x.Id = dto.Id);
                 _ = Catch(() => this._writeDbContext.Detach(property));
                 _ = Catch(() => this._writeDbContext.Detach(dto.Module!));
                 _ = this._writeDbContext.Attach(property)
@@ -401,7 +401,7 @@ internal sealed class DtoService(
         var propsVm = viewModel.Properties.Copy();
         viewModel.Properties.Clear();
         var dto = this._converter.ToDbEntity(viewModel)!;
-        var props = propsVm.ConvertAll(x => this._converter.ToDbEntity(x, dto.Id));
+        var props = propsVm.ConvertAll(x => this._converter.ToDbEntity(x).With(x => x.Id = dto.Id));
         return (dto, props!, propsVm);
     }
 }

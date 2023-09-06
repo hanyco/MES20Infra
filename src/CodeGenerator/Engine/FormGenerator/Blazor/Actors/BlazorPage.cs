@@ -41,8 +41,11 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             var memoryCacheType = TypePath.New<IMemoryCache>();
             var userContextType = TypePath.New<IUserContext>();
 
+            var route = this.PageRoute.IsNullOrEmpty() ? $"@page \"{this.Name}\"" : $"@page \"{this.PageRoute}\"";
+            if (!route.StartsWith("/"))
+                route = route.AddStart("/");
             var result = FluencyHelper.With(codeStringBuilder
-                .AppendLine(this.PageRoute.IsNullOrEmpty() ? $"@page \"/{this.Name}\"" : $"@page \"{this.PageRoute}\"")
+                .AppendLine(route)
                 .AppendLine()
                 .AppendLine($"@namespace {this.NameSpace}")
                 .AppendLine()

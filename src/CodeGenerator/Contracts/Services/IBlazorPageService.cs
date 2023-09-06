@@ -17,5 +17,19 @@ public interface IBlazorPageService : IBusinessService
 
 {
     UiPageViewModel CreateViewModel(DtoViewModel dto, string? name = null) =>
-        new() { Dto = dto, Name = name ?? dto.Name.TrimEnd("Dto"), ClassName = name ?? dto.Name!.TrimEnd("Dto").AddEnd("Page") };
+        new()
+        {
+            Dto = dto,
+            Name = name ?? dto.Name.Puralize()?.AddEnd("Page"),
+            ClassName = name ?? dto.Name.Puralize()?.AddEnd("Page")
+        };
+}
+
+file static class Puralizer
+{
+    internal static string? Puralize(this string? name) =>
+        name?.TrimEnd("Dto")
+             .TrimEnd("Params")
+             .TrimEnd("Result")
+             .TrimEnd("ViewModel");
 }

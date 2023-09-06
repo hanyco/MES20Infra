@@ -35,10 +35,10 @@ public partial class BlazorPageGeneratorPage
         ControlHelper.GetDependencyProperty<UiComponentViewModel, BlazorPageGeneratorPage>(nameof(SelectedComponentInAll));
 
     private readonly bool _canReset = true;
+    private readonly IBlazorPageCodingService _codingService;
     private readonly IBlazorComponentService _componentService;
     private readonly IModuleService _moduleService;
     private readonly IBlazorPageService _service;
-    private readonly IBlazorPageCodingService _codingService;
     private bool _canDelete;
     private bool _canEdit;
 
@@ -123,13 +123,7 @@ public partial class BlazorPageGeneratorPage
             return;
         }
 
-        var viewModel = this._service.CreateViewModel(dto
-            , dto.Name?.TrimEnd("Dto")
-                       .TrimEnd("Params")
-                       .TrimEnd("Result")
-                       .AddEnd("Page"));
-        viewModel.Module = dto.Module;
-        this.ViewModel = viewModel;
+        this.ViewModel = this._service.CreateViewModel(dto).With(x => x.Module = dto.Module);
         await this.BindAllComponentsView();
         this.IsEditMode = true;
         this.EndActionScope();
@@ -150,7 +144,7 @@ public partial class BlazorPageGeneratorPage
         var deleteResult = await this._service.DeleteAsync(page).ThrowOnFailAsync(this.Title);
         this.IsEditMode = false;
         await this.BindPageTreeViewAsync();
-        this.EndActionScope(deleteResult);
+        _ = this.EndActionScope(deleteResult);
     }
 
     private void EditBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
@@ -169,8 +163,7 @@ public partial class BlazorPageGeneratorPage
         var scope = this.ActionScopeBegin("Loading...");
         var id = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView)?.Id;
         Check.MustBeNotNull(id, () => "Please select a page to edit.");
-        var viewModel = await this._service.GetByIdAsync(id.Value);
-        this.ViewModel = viewModel;
+        this.ViewModel = await this._service.GetByIdAsync(id.Value);
         await this.BindAllComponentsView();
         this.IsEditMode = true;
         scope.End();
@@ -219,7 +212,6 @@ public partial class BlazorPageGeneratorPage
 
     private void PageTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
             => this._canEdit = this._canDelete = !this.IsEditMode && e.NewValue is not null;
-
 
     private void RefreshPageComponents()
     {
