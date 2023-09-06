@@ -96,7 +96,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
     {
         foreach (var seg in model.Segregates)
         {
-            var unit = new CodeCompileUnit().AddRegion(AUTO_GENERATED_FILE_HEADER);
+            var unit = new CodeCompileUnit();//.AddRegion(AUTO_GENERATED_FILE_HEADER);
             var mainNameSpace = AddSegregateUsingNameSpaces(model, unit);
             var type = GenerateSegregate(seg, model.Name, mainNameSpace, model.DtoNameSpace);
             var result = new GenerateCqrsSegsResult(type.Name, unit);

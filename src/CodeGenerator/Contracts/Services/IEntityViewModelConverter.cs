@@ -60,10 +60,7 @@ public interface IEntityViewModelConverter :
     DtoViewModel FillViewModel(in DtoViewModel viewModel, in Dto dto, in IEnumerable<Property> properties);
 
     [return: NotNullIfNotNull(nameof(viewModel))]
-    UiBootstrapPositionViewModel? FillViewModelByDbEntity(in UiBootstrapPositionViewModel? viewModel, in UiBootstrapPosition? dbEntity);
-
-    [return: NotNullIfNotNull(nameof(viewModel))]
-    Property? ToDbEntity(PropertyViewModel? viewModel, long parentId);
+    UiBootstrapPositionViewModel? FillByDbEntity(in UiBootstrapPositionViewModel? viewModel, in UiBootstrapPosition? dbEntity);
 
     [return: NotNullIfNotNull(nameof(viewModel))]
     PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? viewModel);
@@ -72,5 +69,5 @@ public interface IEntityViewModelConverter :
     DtoViewModel? ToViewModel(in Dto? entity, in IEnumerable<SecurityDescriptorViewModel>? securityDescriptors = null);
 
     [return: NotNullIfNotNull(nameof(propertyViewModel))]
-    UiComponentPropertyViewModel? ToUiComponentProperty(in PropertyViewModel propertyViewModel);
+    UiComponentPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel);
 }

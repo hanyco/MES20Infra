@@ -1,0 +1,22 @@
+@page "/person"
+
+@namespace Test.Hr.Pages
+
+@using Microsoft.Extensions.Caching.Memory
+@using Library.Cqrs.Models.Queries
+@using Library.Cqrs.Models.Commands
+@using HanyCo.Infra.Security.Model
+@using Test.Hr.ViewModels
+@using Test.Hr.Components
+
+@inject IQueryProcessor _queryProcessor
+@inject ICommandProcessor _commandProcessor
+@inject IMemoryCache _memoryCache
+@inject IUserContext _userContext
+
+@inherits HanyCo.Infra.Blazor.PageBase<PersonViewModel>
+
+
+<div class='row'>
+    <PersonListComponent DataContext='@this.DataContext' PageDataContext='@this.DataContext'/>
+</div>
