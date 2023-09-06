@@ -18,25 +18,19 @@ using Microsoft.EntityFrameworkCore;
 namespace Services;
 
 [Service]
-public sealed class BlazorComponentService :
+public sealed class BlazorComponentService(
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext writeDbContext,
+    IEntityViewModelConverter entityViewModelConverter) :
     IBlazorComponentService,
-    IAsyncValidator<UiComponentViewModel>,
     IAsyncSaveChanges,
     IResetChanges,
-    IService
+    IService,
+    IAsyncValidator<UiComponentViewModel>
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly InfraReadDbContext _readDbContext;
-    private readonly InfraWriteDbContext _writeDbContext;
-
-    public BlazorComponentService(InfraReadDbContext readDbContext,
-                    InfraWriteDbContext writeDbContext,
-        IEntityViewModelConverter entityViewModelConverter)
-    {
-        this._readDbContext = readDbContext;
-        this._writeDbContext = writeDbContext;
-        this._converter = entityViewModelConverter;
-    }
+    private readonly IEntityViewModelConverter _converter = entityViewModelConverter;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     /// <summary>
     /// Deletes the asynchronous.
@@ -90,9 +84,14 @@ public sealed class BlazorComponentService :
                        where c.Id == model.Id
                        select c;
         var cmp = await cmpQuery.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        model = this._converter.ToViewModel(cmp)!;
-        _ = model?.UiProperties?.AddRange(this._converter.ToViewModel(cmp?.UiComponentProperties)!);
-        _ = model?.UiActions?.AddRange(this._converter.ToViewModel(cmp?.UiComponentActions)!);
+        if (cmp is null)
+        {
+            return null;
+        }
+
+        model = this._converter.ToViewModel(cmp);
+        _ = model.UiProperties!.AddRange(this._converter.ToViewModel(cmp.UiComponentProperties));
+        _ = model.UiActions!.AddRange(this._converter.ToViewModel(cmp.UiComponentActions));
         return model;
     }
 
@@ -195,7 +194,7 @@ public sealed class BlazorComponentService :
 
         async Task<Result<UiComponentViewModel>> saveChanges()
         {
-            var result = await this.SubmitChangesAsync(persist);
+            var result = await this.SubmitChangesAsync(persist, token: cancellationToken);
             model.Id = entity.Id;
             return Result<UiComponentViewModel>.From(result, model);
         }
@@ -208,7 +207,8 @@ public sealed class BlazorComponentService :
         var nameQuery = from c in this._readDbContext.UiComponents
                         where c.Name == model.Name && c.Id != model.Id
                         select c.Id;
-        Check.MustBe(await nameQuery.AnyAsync(cancellationToken: cancellationToken), () => new ObjectDuplicateValidationException(nameof(model.Name)));
-        return new(model);
+        var duplicate = await nameQuery.AnyAsync(cancellationToken: cancellationToken);
+        var isDuplicated = Check.If(duplicate, () => new ObjectDuplicateValidationException(model.Name));
+        return isDuplicated ? isDuplicated.WithValue(model) : Result<UiComponentViewModel>.CreateSuccess(model);
     }
 }
