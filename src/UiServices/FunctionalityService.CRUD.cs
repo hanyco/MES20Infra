@@ -30,53 +30,53 @@ internal partial class FunctionalityService
             return validationResult;
         }
 
-        Result operResult;
+        Result actionResult;
 
         model.SourceDto.Functionality = model;
 
-        operResult = await this._dtoService.InsertAsync(model.SourceDto, saveChanges, cancellationToken);
-        if (!operResult)
+        actionResult = await this._dtoService.InsertAsync(model.SourceDto, saveChanges, cancellationToken);
+        if (!actionResult)
         {
             this._dtoService.ResetChanges();
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await saveQueryAsync(model.GetAllQueryViewModel, model, saveChanges, cancellationToken);
-        if (!operResult)
+        actionResult = await saveQueryAsync(model.GetAllQueryViewModel, model, saveChanges, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await saveQueryAsync(model.GetByIdQueryViewModel, model, saveChanges, cancellationToken);
-        if (!operResult)
+        actionResult = await saveQueryAsync(model.GetByIdQueryViewModel, model, saveChanges, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await saveCommandAsync(model.InsertCommandViewModel, model, saveChanges, cancellationToken);
-        if (!operResult)
+        actionResult = await saveCommandAsync(model.InsertCommandViewModel, model, saveChanges, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await saveCommandAsync(model.UpdateCommandViewModel, model, saveChanges, cancellationToken);
-        if (!operResult)
+        actionResult = await saveCommandAsync(model.UpdateCommandViewModel, model, saveChanges, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await saveCommandAsync(model.DeleteCommandViewModel, model, saveChanges, cancellationToken);
-        if (!operResult)
+        actionResult = await saveCommandAsync(model.DeleteCommandViewModel, model, saveChanges, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
 
         var entity = this._converter.ToDbEntity(model);
         _ = this._writeDbContext.Functionalities.Add(entity);
         if (saveChanges)
         {
-            operResult = await this.SubmitChangesAsync(saveChanges, token: cancellationToken);
+            actionResult = await this.SubmitChangesAsync(saveChanges, token: cancellationToken);
         }
 
-        return operResult.WithValue(model);
+        return actionResult.WithValue(model);
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model, CancellationToken cancellationToken) =>
-            BasicChecks(model, cancellationToken)
+            BasicChecks(model)
                     .NotNull(x => x.SourceDto)
                     .NotNull(x => x.GetAllQueryViewModel)
                     .NotNull(x => x.GetAllQueryViewModel.ParamsDto)
@@ -144,46 +144,45 @@ internal partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel>> UpdateAsync(long id, FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        var validationCheck = await this.ValidateAsync(model, cancellationToken);
-        if (validationCheck.IsSucceed)
+        if (!this.Validate(model).TryParse(out var validationCheck))
         {
-            return validationCheck.WithValue(model);
+            return validationCheck;
         }
         if (model.SourceDto is null or { Id: null })
         {
             return Result<FunctionalityViewModel>.CreateFailure(model, () => new NullValueValidationException(nameof(model.SourceDto)))!;
         }
 
-        Result operResult;
-        operResult = await this._dtoService.UpdateAsync(model.SourceDto.Id.Value, model.SourceDto, false, cancellationToken);
-        if (!operResult)
+        Result actionResult;
+        actionResult = await this._dtoService.UpdateAsync(model.SourceDto.Id.Value, model.SourceDto, false, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await this._queryService.UpdateAsync(model.GetAllQueryViewModel.Id.Value, model.GetAllQueryViewModel, false, cancellationToken);
-        if (!operResult)
+        actionResult = await this._queryService.UpdateAsync(model.GetAllQueryViewModel.Id!.Value, model.GetAllQueryViewModel, false, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await this._queryService.UpdateAsync(model.GetByIdQueryViewModel.Id.Value, model.GetByIdQueryViewModel, false, cancellationToken);
-        if (!operResult)
+        actionResult = await this._queryService.UpdateAsync(model.GetByIdQueryViewModel.Id!.Value, model.GetByIdQueryViewModel, false, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await this._commandService.UpdateAsync(model.InsertCommandViewModel.Id.Value, model.InsertCommandViewModel, false, cancellationToken);
-        if (!operResult)
+        actionResult = await this._commandService.UpdateAsync(model.InsertCommandViewModel.Id!.Value, model.InsertCommandViewModel, false, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await this._commandService.UpdateAsync(model.UpdateCommandViewModel.Id.Value, model.UpdateCommandViewModel, false, cancellationToken);
-        if (!operResult)
+        actionResult = await this._commandService.UpdateAsync(model.UpdateCommandViewModel.Id!.Value, model.UpdateCommandViewModel, false, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
-        operResult = await this._commandService.UpdateAsync(model.DeleteCommandViewModel.Id.Value, model.DeleteCommandViewModel, false, cancellationToken);
-        if (!operResult)
+        actionResult = await this._commandService.UpdateAsync(model.DeleteCommandViewModel.Id!.Value, model.DeleteCommandViewModel, false, cancellationToken);
+        if (!actionResult)
         {
-            return operResult.WithValue(model);
+            return actionResult.WithValue(model);
         }
         var result = await ServiceHelper.UpdateAsync(this, this._readDbContext, model, this._converter.ToDbEntity, false, logger: this.Logger, cancellationToken: cancellationToken).ModelResult();
         if (persist)

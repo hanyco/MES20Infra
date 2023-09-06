@@ -97,7 +97,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
     public UiPage? ToDbEntity(UiPageViewModel? model) =>
         model is null ? null : this._mapper.Map<UiPage>(model)
-                      .ForMember(x => x.DtoId = model.Dto?.Id)
+                      .ForMember(x => x.DtoId = model.DataContext?.Id)
                       .ForMember(x => x.Dto = null)
                       .ForMember(x => x.ModuleId = model.Module.Id ?? default)
                       .ForMember(x => x.Module = null!)
@@ -277,7 +277,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public UiPageViewModel? ToViewModel(UiPage? entity) =>
         entity is null ? null : this._mapper.Map<UiPageViewModel>(entity)
             .ForMember(x => x.Components.AddRange(entity.UiPageComponents.Select(this.ToViewModel).Compact().OrderBy(x => x.Position)))
-            .ForMember(x => x.Dto = this.ToViewModel(entity.Dto))
+            .ForMember(x => x.DataContext = this.ToViewModel(entity.Dto))
             .ForMember(x => x.Module = this.ToViewModel(entity.Module));
 
     public PropertyViewModel? ToViewModel(Property? entity) =>

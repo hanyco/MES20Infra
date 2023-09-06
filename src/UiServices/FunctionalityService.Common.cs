@@ -1,4 +1,6 @@
-﻿using Contracts.Services;
+﻿using System.Threading;
+
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -36,7 +38,7 @@ internal partial class FunctionalityService(
     : IFunctionalityService
     , IFunctionalityCodeService
     , IBusinessService
-    , IAsyncValidator<FunctionalityViewModel>
+    , IValidator<FunctionalityViewModel>
     , IAsyncTransactionSave
     , ILoggerContainer
 {
@@ -78,15 +80,14 @@ internal partial class FunctionalityService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public Task<Result<FunctionalityViewModel>> ValidateAsync(FunctionalityViewModel? model, CancellationToken cancellationToken) =>
-        BasicChecks(model, cancellationToken).Build().ToAsync()!;
-
-    private static ValidationResultSet<FunctionalityViewModel> BasicChecks(FunctionalityViewModel? model, CancellationToken cancellationToken) =>
+    private static ValidationResultSet<FunctionalityViewModel> BasicChecks(FunctionalityViewModel? model) =>
         model.Check()
-             .RuleFor(_ => !cancellationToken.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
+             //x.RuleFor(_ => !cancellationToken.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
              .ArgumentNotNull()
              .NotNull(x => x!.Name)
              .NotNull(x => x!.NameSpace, paramName: "namespace")
              .NotNull(x => x!.SourceDto)
              .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)))!;
+    public Result<FunctionalityViewModel> Validate(in FunctionalityViewModel item) =>
+        BasicChecks(item);
 }

@@ -337,7 +337,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         Check.MustBeArgumentNotNull(model);
         Check.MustBeArgumentNotNull(model.Name, nameof(model.Name));
 
-        var dataContextType = TypePath.New(model.Dto?.Name, model.Dto?.NameSpace);
+        var dataContextType = TypePath.New(model.DataContext?.Name, model.DataContext?.NameSpace);
         var result = BlazorPage.New(model.Name).SetPageRoute(model.Route).SetNameSpace(model.NameSpace).SetDataContext(dataContextType);
         return result;
     }

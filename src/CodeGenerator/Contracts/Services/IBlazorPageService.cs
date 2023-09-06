@@ -12,24 +12,8 @@ public interface IBlazorPageService : IBusinessService
     , IValidator<UiPageViewModel>
     , IAsyncSaveChanges
     , IResetChanges
-    , IAsyncValidator<UiPageViewModel>
+    //, IAsyncValidator<UiPageViewModel>
     , ILoggerContainer
-
 {
-    UiPageViewModel CreateViewModel(DtoViewModel dto, string? name = null) =>
-        new()
-        {
-            Dto = dto,
-            Name = name ?? dto.Name.Puralize()?.AddEnd("Page"),
-            ClassName = name ?? dto.Name.Puralize()?.AddEnd("Page")
-        };
-}
-
-file static class Puralizer
-{
-    internal static string? Puralize(this string? name) =>
-        name?.TrimEnd("Dto")
-             .TrimEnd("Params")
-             .TrimEnd("Result")
-             .TrimEnd("ViewModel");
+    UiPageViewModel CreateViewModel(DtoViewModel dto, string? name = null, ModuleViewModel? module = null, string? nameSpace = null, Guid? guid = null, string? route = null, DbObjectViewModel? propertyDbObject = null);
 }

@@ -119,8 +119,7 @@ internal sealed partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        var validationResult = await this.ValidateAsync(viewModel, token);
-        if (!validationResult.IsSucceed)
+        if (!this.Validate(viewModel).TryParse(out var validationResult))
         {
             return validationResult!;
         }
@@ -246,7 +245,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.SourceDto;
             data.ViewModel.BlazorListComponentViewModel.Name = $"{data.ViewModel.SourceDto.Name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.ClassName = $"{data.ViewModel.SourceDto.Name}ListComponent";
-
         }
     }
 

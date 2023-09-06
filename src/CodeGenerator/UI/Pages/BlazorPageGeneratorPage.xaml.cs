@@ -100,7 +100,7 @@ public partial class BlazorPageGeneratorPage
     private async Task BindAllComponentsView()
     {
         this.AllComponents = Enumerable.Empty<UiComponentViewModel>();
-        if (this.ViewModel?.Dto?.Id is not { } dtoId)
+        if (this.ViewModel?.DataContext?.Id is not { } dtoId)
         {
             return;
         }
@@ -305,7 +305,7 @@ public partial class BlazorPageGeneratorPage
     {
         //! It's kinda impossible. Just to shut VS up.
         Check.MustBeNotNull(this.ViewModel, () => new ValidationException("Please create a new Page or edit one."));
-        _ = this._service.CheckValidator(this.ViewModel);
+        _ = this._service.Validate(this.ViewModel);
     }
 
     private void ViewModelComponents_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

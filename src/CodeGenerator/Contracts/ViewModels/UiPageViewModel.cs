@@ -29,7 +29,7 @@ public sealed class UiPageViewModel : UiComponentViewModelBase
 
     public ObservableCollection<UiComponentViewModel> Components { get; } = new();
 
-    public DtoViewModel Dto { get => this._dataContext; set => this.SetProperty(ref this._dataContext, value); }
+    public DtoViewModel DataContext { get => this._dataContext; set => this.SetProperty(ref this._dataContext, value); }
 
     public bool GenerateMainCode { get => this._GenerateMainCode; set => this.SetProperty(ref this._GenerateMainCode, value); }
 

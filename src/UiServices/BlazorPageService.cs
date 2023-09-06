@@ -27,28 +27,57 @@ internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
 
     public ILogger Logger { get; } = logger;
 
-    public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-        => ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
-
-    public async Task<UiPageViewModel?> FillViewModelAsync(UiPageViewModel? model, CancellationToken cancellationToken = default)
+    public UiPageViewModel CreateViewModel(
+        DtoViewModel dto,
+        string? name = null,
+        ModuleViewModel? module = null,
+        string? nameSpace = null,
+        Guid? guid = null,
+        string? route = null,
+        DbObjectViewModel? propertyDbObject = null)
     {
-        if (model is null)
+        var pureName = Puralize(name ?? dto.Name);
+        var result = new UiPageViewModel
         {
-            return null;
-        }
-        if (model.Id is not { } id)
+            DataContext = new(),
+            Name = pureName?.AddEnd("Page"),
+            ClassName = pureName?.AddEnd("Page"),
+            Guid = guid ?? Guid.NewGuid(),
+            GenerateMainCode = true,
+            GeneratePartialCode = true,
+            GenerateUiCode = true,
+            Module = module,
+            NameSpace = nameSpace,
+            Route = route
+        };
+        var listProp = new PropertyViewModel
         {
-            throw new NullValueValidationException(nameof(model.Id));
-        }
-        model = await this.GetByIdAsync(id, cancellationToken);
-        return model;
+            Dto = dto,
+            Type = PropertyType.Dto,
+            IsList = true,
+            Name = $"{StringHelper.Pluralize(pureName)}Dto",
+            DbObject = propertyDbObject
+        };
+        var detailsProp = new PropertyViewModel
+        {
+            Dto = dto,
+            Type = PropertyType.Dto,
+            Name = $"{pureName}Dto",
+            DbObject = propertyDbObject
+        };
+
+        _ = result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
+        return result;
     }
+
+    public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
+        ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
 
     public Result<Codes> GenerateCodes(in UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         _ = this.CheckValidator(viewModel);
         this.Logger.Debug($"Generating code is started.");
-        var dataContextType = TypePath.New(viewModel.Dto?.Name, viewModel.Dto?.NameSpace);
+        var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
         var page = new BlazorPage(viewModel.Name!)
                     .SetPageRoute(viewModel.Route)
                     .SetNameSpace(viewModel.NameSpace)
@@ -78,8 +107,8 @@ internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
     public Task<UiPageViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         => ServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiPages.Include(x => x.Dto).Include(x => x.Module).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContext).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContextProperty).Include(x => x.UiPageComponents).ThenInclude(x => x.Position), this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<Result<UiPageViewModel>> InsertAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
+    public Task<Result<UiPageViewModel>> InsertAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
+        ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, x => this.Validate(x), persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
@@ -89,10 +118,9 @@ internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
 
     public async Task<Result<UiPageViewModel>> UpdateAsync(long id, UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        var validation = await this.ValidateAsync(model, cancellationToken);
-        if (!validation.IsSucceed)
+        if (!this.Validate(model).TryParse(out var validation))
         {
-            return Result<UiPageViewModel>.From(validation, model);
+            return validation;
         }
         model.Id = id;
         var entity = this._converter.ToDbEntity(model)!;
@@ -128,10 +156,16 @@ internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
              .NotNull(x => x.Name)
              .NotNull(x => x.NameSpace)
              .NotNull(x => x.ClassName)
-             .NotNull(x => x.Dto)
+             .NotNull(x => x.DataContext)
              .NotNull(x => x.Module)
              .NotNull(x => x.Route).Build();
 
-    public Task<Result<UiPageViewModel>> ValidateAsync(UiPageViewModel model, CancellationToken cancellationToken = default) =>
-        this.Validate(model).ToAsync();
+    private static string? Puralize(string? name) =>
+                                                name?.TrimEnd("Dto")
+             .TrimEnd("Params")
+             .TrimEnd("Result")
+             .TrimEnd("ViewModel");
+
+    //public Task<Result<UiPageViewModel>> ValidateAsync(UiPageViewModel model, CancellationToken cancellationToken = default) =>
+    //    this.Validate(model).ToAsync();
 }
