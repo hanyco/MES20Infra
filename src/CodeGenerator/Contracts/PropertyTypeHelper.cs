@@ -12,7 +12,7 @@ public static class PropertyTypeHelper
         => dbType switch
         {
             "nvarchar" or "varchar" or "nchar" => PropertyType.String,
-            "int" => PropertyType.Interger,
+            "int" => PropertyType.Integer,
             "bigint" => PropertyType.Long,
             "smallint" => PropertyType.Short,
             "float" => PropertyType.Float,
@@ -34,7 +34,7 @@ public static class PropertyTypeHelper
             (PropertyType.Boolean, false or null) => (ControlType.CheckBox, new { IsNullable = isNullable }),
             (PropertyType.DateTime, false or null) => (ControlType.DateTimePicker, new { IsNullable = isNullable }),
             (PropertyType.Guid, false or null) => (ControlType.TextBox, new { IsNullable = isNullable }),
-            (PropertyType.Interger, false or null) => (ControlType.NumericTextBox, (Numeric: (32, 0), IsNullable: isNullable)),
+            (PropertyType.Integer, false or null) => (ControlType.NumericTextBox, (Numeric: (32, 0), IsNullable: isNullable)),
             (PropertyType.Long, false or null) => (ControlType.NumericTextBox, (Numeric: (64, 0), IsNullable: isNullable)),
             (PropertyType.Short, false or null) => (ControlType.NumericTextBox, (Numeric: (2, 0), IsNullable: isNullable)),
             (PropertyType.Float, false or null) => (ControlType.NumericTextBox, (Numeric: (32, 10), IsNullable: isNullable)),
@@ -52,7 +52,7 @@ public static class PropertyTypeHelper
         {
             PropertyType.None => string.Empty,
             PropertyType.String => typeof(string).FullName!,
-            PropertyType.Interger => typeof(int).FullName!,
+            PropertyType.Integer => typeof(int).FullName!,
             PropertyType.Long => typeof(long).FullName!,
             PropertyType.Short => typeof(short).FullName!,
             PropertyType.Float => typeof(float).FullName!,

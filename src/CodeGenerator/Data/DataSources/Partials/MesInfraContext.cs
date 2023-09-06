@@ -47,7 +47,7 @@ public enum PropertyType
 {
     None,
     String = 1,
-    Interger = 2,
+    Integer = 2,
     Long = 3,
     Short = 4,
     Float = 5,

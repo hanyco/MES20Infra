@@ -181,7 +181,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
             = this.SaveToDbButton.IsEnabled
             = this.GenerateCodeButton.IsEnabled
             = this.ResetFormButton.IsEnabled
-            = this.WindowBodyGrid.IsEnabled
+            = this.DtoDetailsTabCobtrol.IsEnabled
             = this.ViewModel is not null;
     }
 

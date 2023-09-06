@@ -219,7 +219,7 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
             check(result.RequiresTwoFactor, "This user attempting to sign-in requires two factor authentication.");
             check(false, "Invalid username or password.");
         }
-        var token = Guid.NewGuid().ToString(); // UNDONE: Not done yet.
+        var token = Guid.NewGuid().ToString(); // Undone
         return new(token);
 
         [StackTraceHidden]
@@ -284,6 +284,6 @@ internal sealed class InfraIdentityService : ISecurityService, IInfraUserService
         => await this.Fluent(() => this._userManager.FindByIdAsync(userId),
             user => user is null ? Result<InfraIdentityUser>.Failure : Result<InfraIdentityUser?>.CreateSuccess(user));
 
-    private async Task<Result> SendConfirmationMailAsync(string userName, string confirmationToken) // UNDONE: Not done yet.
+    private async Task<Result> SendConfirmationMailAsync(string userName, string confirmationToken) // Undone
         => await Task.FromResult(Result.CreateSuccess(message: "Confirmation mail sent, if the email address was valid."));
 }

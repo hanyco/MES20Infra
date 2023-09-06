@@ -84,6 +84,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         => model is null ? null : this._mapper.Map<UiComponent>(model)
             .ForMember(x => x.PageDataContextId = model.PageDataContext?.Id)
             .ForMember(x => x.PageDataContextPropertyId = model.PageDataContextProperty?.Id)
+            .ForMember(x=>x.IsGrid = model.IsGrid)
             .Fluent()
             .IfTrue(model.UiProperties.Any() is true, x => x.UiComponentProperties = model.UiProperties.Select(this.ToDbEntity).ToList()!)
             .IfTrue(model.UiActions.Any() is true, x => x.UiComponentActions = model.UiActions.Select(this.ToDbEntity).ToList()!);
@@ -317,6 +318,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
 
         var result = this._mapper.Map<UiComponentViewModel>(entity)
+            .ForMember(x => x.IsGrid = entity.IsGrid ?? false)
             .ForMember(x => x.UiProperties!.AddRange(this.ToViewModel(entity.UiComponentProperties)))
             .ForMember(x => x.UiActions!.AddRange(this.ToViewModel(entity.UiComponentActions)))
             .ForMember(x => x.PageDataContext = this.ToViewModel(entity.PageDataContext))
@@ -467,8 +469,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
     public UiComponentPropertyViewModel ToUiComponentProperty(in PropertyViewModel propertyViewModel)
     {
-        Check.MutBeNotNull(propertyViewModel, nameof(propertyViewModel));
-        Check.MutBeNotNull(propertyViewModel.Name, nameof(propertyViewModel.Name));
+        Check.MutBeNotNull(propertyViewModel);
+        Check.MutBeNotNull(propertyViewModel.Name);
 
         var result = new UiComponentPropertyViewModel
         {

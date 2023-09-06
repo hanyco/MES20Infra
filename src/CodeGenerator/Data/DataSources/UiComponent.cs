@@ -27,5 +27,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public virtual ICollection<UiComponentAction> UiComponentActions { get; set; }
         public virtual ICollection<UiComponentProperty> UiComponentProperties { get; set; }
         public virtual ICollection<UiPageComponent> UiPageComponents { get; set; }
+        public bool? IsGrid { get; set; }
     }
 }

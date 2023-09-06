@@ -8,13 +8,14 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
-    x:Name="Me" Loaded="Me_Loaded"
+    x:Name="Me"
     Title="CQRS - Query Details"
     d:DataContext="{d:DesignInstance ViewModels:CqrsQueryViewModel,
                                      IsDesignTimeCreatable=True}"
     d:DesignHeight="650"
     d:DesignWidth="858"
     BindingData="PageBase_Binding"
+    Loaded="Me_Loaded"
     mc:Ignorable="d">
     <Grid Name="WindowContentGrid">
         <Grid.RowDefinitions>
@@ -95,7 +96,7 @@
                     MouseDoubleClick="QueriesTreeView_MouseDoubleClick"
                     SelectedItemChanged="QueriesTreeView_SelectedItemChanged" />
             </Grid>
-            <TabControl Grid.Column="2">
+            <TabControl x:Name="DtoDetailsTabCobtrol" Grid.Column="2">
                 <TabItem Header="Query">
                     <usercontrols:CqrsEditorUserControl x:Name="CqrsEditorUserControl" Grid.Column="1" />
                 </TabItem>

@@ -117,7 +117,7 @@ internal sealed class SecurityDescriptorService : ISecurityDescriptorService,
         }
     }
 
-    //ToDo: Not done yet.
+    //Undone
     public Task UnassignEntity(Guid entityId, IEnumerable<Id>? securityDescriptorIds = null, bool persist = true, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 

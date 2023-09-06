@@ -149,7 +149,8 @@ public sealed class BlazorComponentService(
         void updateEntity() =>
             entry.SetModified(x => x.Caption)
                  .SetModified(x => x.IsEnabled)
-                 .SetModified(x => x.Name);
+                 .SetModified(x => x.Name)
+                 .SetModified(x=>x.IsGrid);
 
         void updateProperties()
         {

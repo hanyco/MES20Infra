@@ -76,7 +76,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         {
                 new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),
                 new("Name", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),
-                new("Age", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Interger),
+                new("Age", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer),
         });
         return model;
     }

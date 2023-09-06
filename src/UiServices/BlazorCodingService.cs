@@ -117,16 +117,16 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
     }
 
-    public GenerateCodeResult GenerateBlazorCodeBehinds(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
-    {
-        arguments ??= new GenerateCodesParameters();
-        var engine = CreateComponent(model);
-        var result = engine.GenerateBehindCode(arguments);
-        return result;
-    }
+    //public GenerateCodeResult GenerateBlazorCodeBehinds(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
+    //{
+    //    arguments ??= new GenerateCodesParameters();
+    //    var engine = CreateComponent(model);
+    //    var result = engine.GenerateBehindCode(arguments);
+    //    return result;
+    //}
 
-    public Code? GenerateBlazorHtmlCode(in UiComponentViewModel model)
-        => CreateComponent(model).GenerateUiCode();
+    //public Code? GenerateBlazorHtmlCode(in UiComponentViewModel model)
+    //    => CreateComponent(model).GenerateUiCode();
 
     public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
         => new(CreateComponent(model).GenerateCodes(arguments ?? new GenerateCodesParameters()));
@@ -320,10 +320,9 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         {
             var id = model.UiProperties.FirstOrDefault(x => x.Name.EqualsTo("id"));
             var idType = TypePath.New(id?.Property.Type.ToFullTypeName());
-            foreach (var uiProp in model.UiProperties)
+            foreach (UiComponentPropertyViewModel uiProp in model.UiProperties)
             {
-                //result.Properties.Add(new PropertyActor(null, uiProp.Name, uiProp.Caption));
-                result.Properties.Add(new PropertyActor(null, uiProp.Name, uiProp.Caption));
+                result.Properties.Add(new PropertyActor(uiProp.Property.TypeFullName, uiProp.Name, uiProp.Caption));
             }
             foreach (var uiAction in model.UiActions)
             {

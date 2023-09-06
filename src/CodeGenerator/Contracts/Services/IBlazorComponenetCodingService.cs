@@ -45,19 +45,19 @@ public interface IBlazorComponentCodingService : IBusinessService
 
     Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop, CancellationToken token = default);
 
-    /// <summary>
-    /// Generates the blazor code behind.
-    /// </summary>
-    /// <param name="model">The model.</param>
-    /// <returns></returns>
-    GenerateCodeResult GenerateBlazorCodeBehinds(in UiComponentViewModel model, GenerateCodesParameters? arguments = null);
+    ///// <summary>
+    ///// Generates the blazor code behind.
+    ///// </summary>
+    ///// <param name="model">The model.</param>
+    ///// <returns></returns>
+    //GenerateCodeResult GenerateBlazorCodeBehinds(in UiComponentViewModel model, GenerateCodesParameters? arguments = null);
 
-    /// <summary>
-    /// Generates the blazor HTML code.
-    /// </summary>
-    /// <param name="model">The model.</param>
-    /// <returns></returns>
-    Code? GenerateBlazorHtmlCode(in UiComponentViewModel model);
+    ///// <summary>
+    ///// Generates the blazor HTML code.
+    ///// </summary>
+    ///// <param name="model">The model.</param>
+    ///// <returns></returns>
+    //Code? GenerateBlazorHtmlCode(in UiComponentViewModel model);
 
     /// <summary>
     /// Generates the code behind and html codes.

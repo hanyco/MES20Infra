@@ -79,9 +79,9 @@ public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescript
     {
         get
         {
-            if (this._type is PropertyType.None && this.DbObject is not null)
+            if (this._type is PropertyType.None && this.DbObject is DbColumnViewModel dbColumn)
             {
-                var dbType = this.DbObject.Cast().As<DbColumnViewModel>()?.DbType;
+                var dbType = dbColumn.DbType;
                 if (!dbType.IsNullOrEmpty())
                 {
                     this._type = PropertyTypeHelper.FromDbType(dbType);
