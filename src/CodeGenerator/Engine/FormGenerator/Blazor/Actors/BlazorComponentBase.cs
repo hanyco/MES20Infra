@@ -18,7 +18,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 
 [Immutable]
 [Fluent]
-public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICodeGenerator, IComponentCodeUnit, IParent<IHtmlElement>
+public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>//, ICodeGenerator,  IComponentCodeUnit
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
     private static readonly string[] _parametersAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
@@ -249,7 +249,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
                         .AddNewClass(this.Name, isPartial: true);
     }
 
-    public Codes GenerateCodes(in GenerateCodesParameters? arguments = null)
+    public Codes GenerateCodes(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {
         var args = arguments ?? new GenerateCodesParameters(true, true, true);
         _ = validate(args);
@@ -259,7 +259,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
             var htmlCode = this.GenerateUiCode(args);
             if (htmlCode is { } c)
             {
-                codes.Add(c.With(x => x.props().Category = CodeCategory.Component));
+                codes.Add(c.With(x => x.props().Category = category));
             }
         }
         if (args.GenerateMainCode || args.GeneratePartialCode)
@@ -268,12 +268,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
 
             if (mainCs is { } c2)
             {
-                codes.Add(c2.With(x => x.props().Category = CodeCategory.Component));
+                codes.Add(c2.With(x => x.props().Category = category));
             }
 
             if (partialCs is { } c3)
             {
-                codes.Add(c3.With(x => x.props().Category = CodeCategory.Component));
+                codes.Add(c3.With(x => x.props().Category = category));
             }
         }
 
@@ -314,12 +314,14 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
         }
     }
 
-    public Code GenerateUiCode(in GenerateCodesParameters? arguments = null)
+    public Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {
         this.OnInitializingUiCode(arguments);
-        return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = CodeCategory.Component);
+        return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = category);
     }
 
+    public Code GenerateUiCode(in GenerateCodesParameters? arguments = null) =>
+        this.GenerateUiCode(CodeCategory.Component, arguments);
     public TBlazorComponent SetDataContext(TypePath value)
         => this.This(() => this.DataContextType = value);
 

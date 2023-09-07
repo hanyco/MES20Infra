@@ -1,6 +1,7 @@
 ﻿using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -12,6 +13,8 @@ using Library.Results;
 using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
+
+using Services.Helpers;
 
 namespace Services;
 
@@ -40,7 +43,7 @@ internal sealed class BlazorPageService(
         {
             return null;
         }
-        var pureName = Puralize(name ?? dto.Name);
+        var pureName = CommonHelper.Purify(name ?? dto.Name);
         var result = new UiPageViewModel
         {
             Name = pureName?.AddEnd("Page"),
@@ -50,7 +53,7 @@ internal sealed class BlazorPageService(
             GeneratePartialCode = true,
             GenerateUiCode = true,
             Module = module ?? dto.Module,
-            NameSpace = nameSpace ?? $"{Puralize(dto.NameSpace)}.Pages",
+            NameSpace = nameSpace ?? $"{CommonHelper.Purify(dto.NameSpace)}.Pages",
             Route = route ?? $"/{pureName?.ToLower()}"
         };
         if (dto.IsViewModel)
@@ -106,7 +109,7 @@ internal sealed class BlazorPageService(
                     .SetDataContext(dataContextType);
         _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
 
-        var result = page.GenerateCodes(arguments);
+        var result = page.GenerateCodes(CodeCategory.Page, arguments);
         this.Logger.Debug($"Generating code is done.");
 
         return Result<Codes>.New(result);
@@ -181,13 +184,4 @@ internal sealed class BlazorPageService(
              .NotNull(x => x.DataContext)
              .NotNull(x => x.Module)
              .NotNull(x => x.Route).Build();
-
-    private static string? Puralize(string? name) =>
-        name?.TrimEnd(".")
-             .TrimEnd("Dto")
-             .TrimEnd("Params")
-             .TrimEnd("Result")
-             .TrimEnd("ViewModel")
-             .TrimEnd("ViewModels")
-             .TrimEnd(".");
 }

@@ -4,6 +4,7 @@ using System.IO;
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
@@ -83,8 +84,8 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
     public UiComponentViewModel CreateViewModel(DtoViewModel dto)
     {
         Check.MustBeArgumentNotNull(dto);
-        var parsedName = dto.Name?.Replace("Dto", "Component").Replace("ViewModel", "Component") ?? string.Empty;
-        var parsedNameSpace = dto.NameSpace.Replace("Dto", "Component").Replace("ViewModel", "Component");
+        var parsedName = CommonHelper.Purify(dto.Name) ?? string.Empty;
+        var parsedNameSpace = CommonHelper.Purify(dto.NameSpace);
         var result = new UiComponentViewModel
         {
             Name = parsedName,
@@ -129,7 +130,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
     //    => CreateComponent(model).GenerateUiCode();
 
     public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
-        => new(CreateComponent(model).GenerateCodes(arguments ?? new GenerateCodesParameters(true, true, true)));
+        => new(CreateComponent(model).GenerateCodes(CodeCategory.Component, arguments ?? new GenerateCodesParameters(true, true, true)));
 
     public async Task<UiComponentPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
     {
@@ -158,30 +159,30 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
             _ => false,
         };
 
-    public async Task SaveToPathAsync(UiComponentViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
-    {
-        Check.MutBeNotNull(viewModel);
-        Check.MutBeNotNull(viewModel.ClassName);
-        Check.MutBeNotNull(path);
+    //public async Task SaveToPathAsync(UiComponentViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
+    //{
+    //    Check.MutBeNotNull(viewModel);
+    //    Check.MutBeNotNull(viewModel.ClassName);
+    //    Check.MutBeNotNull(path);
 
-        var codes = this.GenerateCodes(viewModel, arguments).Value;
-        foreach (var code in codes.Compact())
-        {
-            await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, cancellationToken: cancellationToken);
-        }
-    }
+    //    var codes = this.GenerateCodes(viewModel, arguments).Value;
+    //    foreach (var code in codes.Compact())
+    //    {
+    //        await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, cancellationToken: cancellationToken);
+    //    }
+    //}
 
-    public Task SaveToPathAsync(UiPageViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
-    {
-        var page = CreatePage(viewModel, cancellationToken);
-        var codes = page.GenerateCodes(arguments);
-        var writeTasks = TaskList.New();
-        foreach (var code in codes.Compact())
-        {
-            _ = writeTasks.Add(File.WriteAllTextAsync(Path.Combine(path, code.Name), code.Statement, cancellationToken: cancellationToken));
-        }
-        return writeTasks.WhenAllAsync();
-    }
+    //public Task SaveToPathAsync(UiPageViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
+    //{
+    //    var page = CreatePage(viewModel, cancellationToken);
+    //    var codes = page.GenerateCodes(arguments);
+    //    var writeTasks = TaskList.New();
+    //    foreach (var code in codes.Compact())
+    //    {
+    //        _ = writeTasks.Add(File.WriteAllTextAsync(Path.Combine(path, code.Name), code.Statement, cancellationToken: cancellationToken));
+    //    }
+    //    return writeTasks.WhenAllAsync();
+    //}
 
     private static BlazorComponent CreateComponent(in UiComponentViewModel model)
     {

@@ -65,7 +65,9 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     /// <summary>
     /// Gets or sets the codes for the BlazorListCodes functionality.
     /// </summary>
-    public Codes BlazorListCodes { get => this.Get(); set => this.Set(value); }
+    public Codes BlazorListComponentCodes { get => this.Get(); set => this.Set(value); }
+
+    public Codes BlazorPageCodes { get => this.Get(); set => this.Set(value); }
 
     /// <summary>
     /// Gets or sets the codes for the DeleteCommandCodes functionality.
@@ -86,6 +88,8 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     /// Gets or sets the codes for the InsertCommandCodes functionality.
     /// </summary>
     public Codes InsertCommandCodes { get => this.Get(); set => this.Set(value); }
+
+    public Codes SourceDtoCodes { get => this.Get(); set => this.Set(value); }
 
     /// <summary>
     /// Gets or sets the codes for the UpdateCommandCodes functionality.

@@ -1,0 +1,28 @@
+@namespace Test.Hr
+
+@using Microsoft.Extensions.Caching.Memory
+@using Library.Cqrs.Models.Queries
+@using Library.Cqrs.Models.Commands
+@using HanyCo.Infra.Security.Model
+@using HanyCo.Infra.Blazor
+@using Test.Hr
+
+@inject IQueryProcessor _queryProcessor
+@inject ICommandProcessor _commandProcessor
+@inject IMemoryCache _memoryCache
+@inject IUserContext _userContext
+
+@inherits ComponentBase<PersonDto,PersonDto>
+
+<div class='row'>
+    <label id='IdLabel' name='IdLabel'>Id</label>
+    <input id='IdNumericTextBox' name='IdNumericTextBox' type='number' @bind='this.DataContext.Id'/>
+    <label id='FirstNameLabel' name='FirstNameLabel'>First Name</label>
+    <input id='FirstNameTextBox' name='FirstNameTextBox' type='text' @bind='this.DataContext.FirstName'/>
+    <label id='LastNameLabel' name='LastNameLabel'>Last Name</label>
+    <input id='LastNameTextBox' name='LastNameTextBox' type='text' @bind='this.DataContext.LastName'/>
+    <label id='DateOfBirthLabel' name='DateOfBirthLabel'>Date Of Birth</label>
+    <input id='DateOfBirthDatePicker' name='DateOfBirthDatePicker' type='datetime-local' @bind='this.DataContext.DateOfBirth'/>
+    <label id='HeightLabel' name='HeightLabel'>Height</label>
+    <input id='HeightNumericTextBox' name='HeightNumericTextBox' type='number' @bind='this.DataContext.Height'/>
+</div>
