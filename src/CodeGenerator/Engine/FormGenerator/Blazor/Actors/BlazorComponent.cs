@@ -51,13 +51,13 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
         var memoryCacheType = TypePath.New<IMemoryCache>();
         var userContextType = TypePath.New<IUserContext>();
         var baseTypeName = typeof(ComponentBase<,>).Name[..^2];
-        TypePath? dataContextType = (this.DataContextType, this.DataContextProprty) switch
+        var dataContextType = (this.DataContextType, this.DataContextProprty) switch
         {
             (_, { } dc) => dc.Type,
             ({ } dc, null) => dc,
             _ => null
         };
-        return codeStringBuilder
+        _ = codeStringBuilder
                 .AppendLine($"@namespace {this.NameSpace}")
                 .AppendLine()
                 .AppendLine($"@using {memoryCacheType.NameSpace}")
@@ -71,13 +71,17 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
                 .AppendLine($"@inject {commandProcessorType.Name} {TypeMemberNameHelper.ToFieldName(commandProcessorType.Name!)}")
                 .AppendLine($"@inject {memoryCacheType.Name} {TypeMemberNameHelper.ToFieldName(memoryCacheType.Name!)}")
                 .AppendLine($"@inject {userContextType.Name} {TypeMemberNameHelper.ToFieldName(userContextType.Name!)}")
-                .AppendLine()
-                .Fluent()
-                .If(this.IsGrid
-                    , sb => sb.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>")
-                    , sb => sb.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>"))
-                .GetValue()!
                 .AppendLine();
+        if (this.IsGrid)
+        {
+            _ = codeStringBuilder.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>");
+        }
+        else
+        {
+            _ = codeStringBuilder.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>");
+        }
+        _ = codeStringBuilder.AppendLine();
+        return codeStringBuilder;
     }
 
     protected override Code OnGeneratingUiCode(in GenerateCodesParameters? arguments = null)

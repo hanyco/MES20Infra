@@ -51,7 +51,7 @@ internal sealed partial class FunctionalityService
 
             if (viewModel.SourceDto != null)
             {
-                var codeGenRes = addToList(_dtoCodeService.GenerateCodes(viewModel.SourceDto));
+                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.SourceDto));
                 if (!codeGenRes)
                 {
                     return result;
@@ -120,6 +120,29 @@ internal sealed partial class FunctionalityService
                 codes.DeleteCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
+            // Generate codes for BlazorPageViewModel if available.
+            if (viewModel.BlazorPageViewModel != null)
+            {
+                var codeGenRes = addToList(this._blazorPageCodingService.GenerateCodes(viewModel.BlazorPageViewModel));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+
+                codes.BlazorPageCodes = codeGenRes;
+            }
+
+            if (viewModel.BlazorPageViewModel?.DataContext != null)
+            {
+                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorPageViewModel.DataContext));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+
+                codes.BlazorPageDataContextCodes = codeGenRes;
+            }
+
             // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
@@ -142,18 +165,6 @@ internal sealed partial class FunctionalityService
                 }
 
                 codes.BlazorDetailsComponentCodes = codeGenRes;
-            }
-
-            // Generate codes for BlazorPageViewModel if available.
-            if (viewModel.BlazorPageViewModel != null)
-            {
-                var codeGenRes = addToList(this._blazorPageCodingService.GenerateCodes(viewModel.BlazorPageViewModel));
-                if (!codeGenRes)
-                {
-                    return result;
-                }
-
-                codes.BlazorPageCodes = codeGenRes;
             }
 
             return result;
@@ -289,10 +300,11 @@ internal sealed partial class FunctionalityService
         {
             var name = CommonHelper.Purify(data.ViewModel.SourceDto.Name);
             data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodingService.CreateViewModel(data.ViewModel.SourceDto);
-            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList is not true);
             data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = false;
+            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorPageViewModel.DataContext;
+            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
         }
     }
@@ -307,10 +319,11 @@ internal sealed partial class FunctionalityService
             var name = StringHelper.Pluralize(CommonHelper.Purify(data.ViewModel.SourceDto.Name));
 
             data.ViewModel.BlazorListComponentViewModel = this._blazorComponentCodingService.CreateViewModel(data.ViewModel.SourceDto);
-            data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList is true);
             data.ViewModel.BlazorListComponentViewModel.Name = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.ClassName = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.IsGrid = true;
+            data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.BlazorPageViewModel.DataContext;
+            data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList == true);
             data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
         }
     }

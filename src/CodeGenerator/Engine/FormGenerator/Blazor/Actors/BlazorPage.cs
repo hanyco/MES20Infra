@@ -75,7 +75,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
                 inherits = inherits.AddGenericType(dct2.Name);
             }
 
-            _ = codeStringBuilder.AppendLine($"@{inherits}");
+            _ = codeStringBuilder.AppendLine($"@inherits {inherits}");
             _ = codeStringBuilder.AppendLine();
             return result;
         }

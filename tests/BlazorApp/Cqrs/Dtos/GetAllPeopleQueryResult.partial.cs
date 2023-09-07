@@ -17,10 +17,10 @@ namespace Test.Hr.Queries
     /// <summary>
     /// The result of GetAllPeopleQuery
     /// </summary>
-    public sealed partial class GetAllPeopleQueryResult : IQueryResult<IEnumerable<GetAllPeopleResult>>
+    public sealed partial class GetAllPeopleQueryResult : IQueryResult<List<GetAllPeopleResult>>
     {
         
-    public IEnumerable<GetAllPeopleResult> Result
+    public List<GetAllPeopleResult> Result
     {
         get;
         
@@ -29,7 +29,7 @@ namespace Test.Hr.Queries
         /// <summary>
         /// Initializes a new instance of the <see cref="GetAllPeopleQueryResult"/> class.
         /// </summary>
-        public GetAllPeopleQueryResult(IEnumerable<GetAllPeopleResult> result)
+        public GetAllPeopleQueryResult(List<GetAllPeopleResult> result)
         {
             this.Result = result;
         }

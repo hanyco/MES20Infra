@@ -1,4 +1,3 @@
-
 @page "/person"
 
 @namespace Test.Hr.Pages
@@ -14,11 +13,10 @@
 @inject IMemoryCache _memoryCache
 @inject IUserContext _userContext
 
-@HanyCo.Infra.Blazor.PageBase<PersonViewModel>
+@inherits HanyCo.Infra.Blazor.PageBase<PersonViewModel>
 
 
 <div class='row'>
     <PeopleListComponent DataContext='@this.DataContext?.PeopleListDto' PageDataContext='@this.DataContext'/>
     <PersonDetailsComponent DataContext='@this.DataContext?.PersonDetailsDto' PageDataContext='@this.DataContext'/>
 </div>
-

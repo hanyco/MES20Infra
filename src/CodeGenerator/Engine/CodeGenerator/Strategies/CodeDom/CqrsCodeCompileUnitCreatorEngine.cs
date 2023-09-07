@@ -73,7 +73,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
             var propType = prop.Type.Name;
             if (prop.IsList)
             {
-                propType = $"IEnumerable<{propType}>";
+                propType = $"List<{propType}>";
                 _ = classNameSpace.UseNameSpace("System.Collections.Generic");
             }
             if (prop.IsNullable)

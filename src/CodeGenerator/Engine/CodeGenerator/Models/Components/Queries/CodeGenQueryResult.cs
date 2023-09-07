@@ -30,7 +30,7 @@ public sealed record CodeGenQueryResult : CodeGenCqrsSegregateType
             var propType = prop.Type.FullName;
             if (prop.IsList)
             {
-                propType = $"IEnumerable<{propType}>";
+                propType = $"List<{propType}>";
             }
 
             if (prop.IsNullable)
