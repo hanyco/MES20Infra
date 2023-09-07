@@ -116,26 +116,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Result">
-                <TabControl>
-                    <TabItem Header="Back-end">
-                        <TabControl>
-                            <TabItem Header="Get All Query" />
-                            <TabItem Header="Get By Id Query" />
-                            <TabItem Header="Insert Command" />
-                            <TabItem Header="Update Command" />
-                            <TabItem Header="Delete Command" />
-                        </TabControl>
-                    </TabItem>
-                    <TabItem Header="Front-end">
-                        <TabControl>
-                            <TabItem Header="Blazor List Page" />
-                            <TabItem Header="Blazor Details Page" />
-                        </TabControl>
-                    </TabItem>
-                    <TabItem Header="All Codes">
-                        <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" Codes="{Binding CodesResults, Mode=OneWay}" />
-                    </TabItem>
-                </TabControl>
+                <blazor:ComponentCodeResultUserControl x:Name="ComponentCodeResultUserControl" Codes="{Binding CodesResults, Mode=OneWay}" />
             </TabItem>
         </TabControl>
     </Grid>

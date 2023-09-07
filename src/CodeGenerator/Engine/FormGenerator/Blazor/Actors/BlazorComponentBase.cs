@@ -1,5 +1,6 @@
 ﻿using System.CodeDom;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
@@ -250,7 +251,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
 
     public Codes GenerateCodes(in GenerateCodesParameters? arguments = null)
     {
-        var args = arguments ?? new GenerateCodesParameters();
+        var args = arguments ?? new GenerateCodesParameters(true, true, true);
         _ = validate(args);
         var codes = new List<Code>();
         if (args.GenerateUiCode)
@@ -258,7 +259,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
             var htmlCode = this.GenerateUiCode(args);
             if (htmlCode is { } c)
             {
-                codes.Add(c);
+                codes.Add(c.With(x => x.props().Category = CodeCategory.Component));
             }
         }
         if (args.GenerateMainCode || args.GeneratePartialCode)
@@ -267,12 +268,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
 
             if (mainCs is { } c2)
             {
-                codes.Add(c2);
+                codes.Add(c2.With(x => x.props().Category = CodeCategory.Component));
             }
 
             if (partialCs is { } c3)
             {
-                codes.Add(c3);
+                codes.Add(c3.With(x => x.props().Category = CodeCategory.Component));
             }
         }
 
@@ -316,7 +317,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, ICod
     public Code GenerateUiCode(in GenerateCodesParameters? arguments = null)
     {
         this.OnInitializingUiCode(arguments);
-        return this.OnGeneratingUiCode(arguments);
+        return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = CodeCategory.Component);
     }
 
     public TBlazorComponent SetDataContext(TypePath value)

@@ -8,7 +8,6 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
 using Library.CodeGeneration.Models;
-using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
 
@@ -16,10 +15,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
-                         InfraWriteDbContext writeDbContext,
-                         IEntityViewModelConverter converter,
-                         ILogger logger) : IBlazorPageService, IBlazorPageCodingService
+internal sealed class BlazorPageService(
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext writeDbContext,
+    IEntityViewModelConverter converter,
+    ILogger logger) : IBlazorPageService, IBlazorPageCodingService
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
@@ -27,7 +27,7 @@ internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
 
     public ILogger Logger { get; } = logger;
 
-    public UiPageViewModel CreateViewModel(
+    public UiPageViewModel? CreateViewModel(
         DtoViewModel dto,
         string? name = null,
         ModuleViewModel? module = null,
@@ -36,37 +36,59 @@ internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
         string? route = null,
         DbObjectViewModel? propertyDbObject = null)
     {
+        if (dto == null)
+        {
+            return null;
+        }
         var pureName = Puralize(name ?? dto.Name);
         var result = new UiPageViewModel
         {
-            DataContext = new(),
             Name = pureName?.AddEnd("Page"),
             ClassName = pureName?.AddEnd("Page"),
             Guid = guid ?? Guid.NewGuid(),
             GenerateMainCode = true,
             GeneratePartialCode = true,
             GenerateUiCode = true,
-            Module = module,
-            NameSpace = nameSpace,
-            Route = route
+            Module = module ?? dto.Module,
+            NameSpace = nameSpace ?? $"{Puralize(dto.NameSpace)}.Pages",
+            Route = route ?? $"/{pureName?.ToLower()}"
         };
-        var listProp = new PropertyViewModel
+        if (dto.IsViewModel)
         {
-            Dto = dto,
-            Type = PropertyType.Dto,
-            IsList = true,
-            Name = $"{StringHelper.Pluralize(pureName)}Dto",
-            DbObject = propertyDbObject
-        };
-        var detailsProp = new PropertyViewModel
+            result.DataContext = dto;
+        }
+        else
         {
-            Dto = dto,
-            Type = PropertyType.Dto,
-            Name = $"{pureName}Dto",
-            DbObject = propertyDbObject
-        };
-
-        _ = result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
+            var listProp = new PropertyViewModel
+            {
+                Dto = dto,
+                Type = PropertyType.Dto,
+                IsList = true,
+                IsNullable = true,
+                Name = $"{StringHelper.Pluralize(pureName)}ListDto",
+                DbObject = propertyDbObject
+            };
+            var detailsProp = new PropertyViewModel
+            {
+                Dto = dto,
+                Type = PropertyType.Dto,
+                IsList = false,
+                IsNullable = true,
+                Name = $"{pureName}DetailsDto",
+                DbObject = propertyDbObject
+            };
+            result.DataContext = dto.IsViewModel ? dto : new()
+            {
+                Name = $"{pureName}ViewModel",
+                IsViewModel = true,
+                DbObject = dto.DbObject,
+                Guid = dto.Guid,
+                IsList = dto.IsList,
+                NameSpace = dto.NameSpace,
+                Module = dto.Module
+            };
+            _ = result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
+        }
         return result;
     }
 
@@ -161,11 +183,11 @@ internal sealed class BlazorPageService(InfraReadDbContext readDbContext,
              .NotNull(x => x.Route).Build();
 
     private static string? Puralize(string? name) =>
-                                                name?.TrimEnd("Dto")
+        name?.TrimEnd(".")
+             .TrimEnd("Dto")
              .TrimEnd("Params")
              .TrimEnd("Result")
-             .TrimEnd("ViewModel");
-
-    //public Task<Result<UiPageViewModel>> ValidateAsync(UiPageViewModel model, CancellationToken cancellationToken = default) =>
-    //    this.Validate(model).ToAsync();
+             .TrimEnd("ViewModel")
+             .TrimEnd("ViewModels")
+             .TrimEnd(".");
 }

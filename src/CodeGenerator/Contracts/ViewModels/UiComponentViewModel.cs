@@ -28,6 +28,7 @@ public class UiComponentViewModel : UiComponentViewModelBase
     public string? NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
 
     public long? PageComponentId { get; set; }
+
     public DtoViewModel? PageDataContext { get => this._pageDataContext; set => this.SetProperty(ref this._pageDataContext, value); }
 
     public PropertyViewModel? PageDataContextProperty { get => this._pageDataContextProperty; set => this.SetProperty(ref this._pageDataContextProperty, value); }

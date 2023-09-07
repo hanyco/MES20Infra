@@ -1,4 +1,6 @@
-﻿using Contracts.ViewModels;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.ViewModels;
 
@@ -15,5 +17,6 @@ public interface IBlazorPageService : IBusinessService
     //, IAsyncValidator<UiPageViewModel>
     , ILoggerContainer
 {
-    UiPageViewModel CreateViewModel(DtoViewModel dto, string? name = null, ModuleViewModel? module = null, string? nameSpace = null, Guid? guid = null, string? route = null, DbObjectViewModel? propertyDbObject = null);
+    [return: NotNullIfNotNull(nameof(dto))]
+    UiPageViewModel? CreateViewModel(DtoViewModel dto, string? name = null, ModuleViewModel? module = null, string? nameSpace = null, Guid? guid = null, string? route = null, DbObjectViewModel? propertyDbObject = null);
 }

@@ -13,7 +13,6 @@ using Library.EventsArgs;
 using Library.Exceptions.Validations;
 using Library.Validations;
 using Library.Wpf.Dialogs;
-using Library.Wpf.Windows.Input.Commands;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
 
@@ -29,22 +28,29 @@ public partial class BlazorPageGeneratorPage
     public static readonly DependencyProperty AllComponentsProperty
         = ControlHelper.GetDependencyProperty<IEnumerable<UiComponentViewModel>, BlazorPageGeneratorPage>(nameof(AllComponents));
 
-    public static readonly DependencyProperty IsEditModeProperty = DependencyProperty.Register("IsEditMode", typeof(bool), typeof(BlazorPageGeneratorPage), new PropertyMetadata(false));
+    public static readonly DependencyProperty IsEditModeProperty
+        = ControlHelper.GetDependencyProperty<bool, BlazorPageGeneratorPage>(nameof(IsEditMode), onPropertyChanged: (me, _) =>
+        {
+            me.CreatePageButton.IsEnabled
+            = me.EditPageButton.IsEnabled
+            = me.DeletePageButton.IsEnabled
+            = !me.IsEditMode;
+            me.SaveToDbButton.IsEnabled
+            = me.GenerateCodeButton.IsEnabled
+            = me.SaveToDiskButton.IsEnabled
+            = me.ResetButton.IsEnabled
+            = me.IsEditMode;
+        });
 
     public static readonly DependencyProperty SelectedComponentInAllProperty =
         ControlHelper.GetDependencyProperty<UiComponentViewModel, BlazorPageGeneratorPage>(nameof(SelectedComponentInAll));
 
-    private readonly bool _canReset = true;
     private readonly IBlazorPageCodingService _codingService;
     private readonly IBlazorComponentService _componentService;
     private readonly IModuleService _moduleService;
     private readonly IBlazorPageService _service;
-    private bool _canDelete;
-    private bool _canEdit;
 
     #endregion Fields
-
-    public static readonly LibRoutedUICommand SaveToDiskCommand = new();
 
     public BlazorPageGeneratorPage(IBlazorPageService service, IModuleService moduleService, IBlazorComponentService componentService, ILogger logger, IBlazorPageCodingService codingService)
         : base(logger)
@@ -118,21 +124,21 @@ public partial class BlazorPageGeneratorPage
 
     private async Task CreatePage()
     {
-        if (!SelectCqrsDialog.Show<DtoViewModel>(out var result, new("Select ViewModel", SelectCqrsDialog.LoadEntity.Dto, SelectCqrsDialog.FilterDto.ViewModel)) || result is not { } dto)
+        if (!SelectCqrsDialog.Show<DtoViewModel>(out var result, new("Select ViewModel", SelectCqrsDialog.LoadEntity.Dto)) || result is not { } dto)
         {
             return;
         }
 
-        this.ViewModel = this._service.CreateViewModel(dto).With(x => x.Module = dto.Module);
+        this.ViewModel = this._service.CreateViewModel(dto);
         await this.BindAllComponentsView();
         this.IsEditMode = true;
         this.EndActionScope();
     }
 
-    private void DeleteBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = !this.IsEditMode && this._canDelete;
+    private async void CreatePageButton_Click(object sender, RoutedEventArgs e) =>
+        await this.Logger.LogBlockAsync(this.CreatePage);
 
-    private async void DeleteBlazorPageCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+    private async Task DeletePage()
     {
         var page = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView);
         Check.MustBeNotNull(page, () => new ValidationException("Please select a page to edit."));
@@ -147,13 +153,10 @@ public partial class BlazorPageGeneratorPage
         _ = this.EndActionScope(deleteResult);
     }
 
-    private void EditBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = !this.IsEditMode && this._canEdit;
+    private async void DeletePageButton_Click(object sender, RoutedEventArgs e) =>
+        await this.DeletePage();
 
-    private async void EditBlazorPageCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
-        => await this.EditComponent();
-
-    private async Task EditComponent()
+    private async Task EditPage()
     {
         if (this.IsEditMode)
         {
@@ -168,6 +171,9 @@ public partial class BlazorPageGeneratorPage
         this.IsEditMode = true;
         scope.End();
     }
+
+    private async void EditPageButton_Click(object sender, RoutedEventArgs e) =>
+        await this.EditPage();
 
     private void ElementPositionUserControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
@@ -185,17 +191,7 @@ public partial class BlazorPageGeneratorPage
         return Task.CompletedTask;
     }
 
-    private void GenerateCodeCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = this.IsEditMode;
-
-    private async void GenerateCodeCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
-        => await this.GenerateCodeAsync();
-
-    private void NewCommandBinding_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = !this.IsEditMode;
-
-    private async void NewCommandBinding_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
-        => await this.Logger.LogBlockAsync(this.CreatePage);
+    private async void GenerateCodeButton_Click(object sender, RoutedEventArgs e) => await this.GenerateCodeAsync();
 
     private async void Page_BindingData(object sender, EventArgs e)
     {
@@ -208,10 +204,10 @@ public partial class BlazorPageGeneratorPage
     }
 
     private async void PageTreeView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        => await this.EditComponent();
+        => await this.EditPage();
 
     private void PageTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-            => this._canEdit = this._canDelete = !this.IsEditMode && e.NewValue is not null;
+    { }
 
     private void RefreshPageComponents()
     {
@@ -242,10 +238,7 @@ public partial class BlazorPageGeneratorPage
         this.Debug("Selected component removed.");
     }
 
-    private void ResetBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = this.IsEditMode && this._canReset;
-
-    private async void ResetBlazorPageCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+    private async void ResetButton_Click(object sender, RoutedEventArgs e)
     {
         this.ViewModel = null;
         this.IsEditMode = false;
@@ -253,10 +246,7 @@ public partial class BlazorPageGeneratorPage
         this.EndActionScope();
     }
 
-    private void SaveBlazorPageCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = this.IsEditMode;
-
-    private async void SaveBlazorPageCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+    private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
     {
         this.ValidateForm();
         this.ViewModel = await this._service.SaveViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
@@ -273,11 +263,7 @@ public partial class BlazorPageGeneratorPage
         return "Codes saved.";
     }
 
-    private void SaveToDiskCommand_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = this.IsEditMode;
-
-    private async void SaveToDiskCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
-        => await this.Logger.LogBlockAsync(this.SaveToDisk);
+    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e) => await this.Logger.LogBlockAsync(this.SaveToDisk);
 
     private async void SaveToFileButton_Click(object sender, RoutedEventArgs e)
     {
@@ -291,23 +277,16 @@ public partial class BlazorPageGeneratorPage
     private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
         => e.Item = this._moduleService;
 
-    private void ValidateCommandBinding_CanExecute(object sender, System.Windows.Input.CanExecuteRoutedEventArgs e)
-        => e.CanExecute = this.IsEditMode;
-
-    private void ValidateCommandBinding_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
-    {
-        this.ValidateForm();
-        _ = MsgBox2.Show("Form state is valid.");
-    }
-
     [MemberNotNull(nameof(ViewModel))]
-    private void ValidateForm()
-    {
-        //! It's kinda impossible. Just to shut VS up.
-        Check.MustBeNotNull(this.ViewModel, () => new ValidationException("Please create a new Page or edit one."));
-        _ = this._service.Validate(this.ViewModel);
-    }
+    private void ValidateForm() 
+        => this._service.Validate(this.ViewModel!);
 
     private void ViewModelComponents_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         => this.RefreshPageComponents();
+
+    private void Me_Loaded(object sender, RoutedEventArgs e)
+    {
+        this.IsEditMode = true;
+        this.IsEditMode = false;
+    }
 }

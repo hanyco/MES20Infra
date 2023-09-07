@@ -5,14 +5,13 @@
     xmlns:UserControls="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:blazor="clr-namespace:HanyCo.Infra.UI.Pages.Blazor"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:infraCommands="clr-namespace:HanyCo.Infra.UI.Commands"
-    xmlns:libCommands="clr-namespace:Library.Wpf.Windows.Input.Commands;assembly=Library.Wpf"
     xmlns:libConverters="clr-namespace:Library.Wpf.Converters;assembly=Library.Wpf"
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     xmlns:viewmodels="clr-namespace:HanyCo.Infra.UI.ViewModels;assembly=Contracts"
     x:Name="Me"
+    Loaded="Me_Loaded"
     Title="Blazor Page Code Generator"
     d:DataContext="{d:DesignInstance Type=viewmodels:UiPageViewModel,
                                      IsDesignTimeCreatable=True}"
@@ -24,43 +23,6 @@
         <libConverters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <libConverters:ObjectNullToBooleanConverter x:Key="ObjectNullToBooleanConverter" />
     </Page.Resources>
-    <local:PageBase.CommandBindings>
-        <CommandBinding
-            CanExecute="NewCommandBinding_CanExecute"
-            Command="libCommands:LibCommonCommands.New"
-            Executed="NewCommandBinding_Executed" />
-        <CommandBinding
-            CanExecute="EditBlazorPageCommand_CanExecute"
-            Command="libCommands:LibCommonCommands.Edit"
-            Executed="EditBlazorPageCommand_Executed" />
-        <CommandBinding
-            CanExecute="DeleteBlazorPageCommand_CanExecute"
-            Command="libCommands:LibCommonCommands.Delete"
-            Executed="DeleteBlazorPageCommand_Executed" />
-        <CommandBinding
-            CanExecute="ResetBlazorPageCommand_CanExecute"
-            Command="libCommands:LibCommonCommands.Reset"
-            Executed="ResetBlazorPageCommand_Executed" />
-        <CommandBinding
-            CanExecute="SaveBlazorPageCommand_CanExecute"
-            Command="libCommands:LibCommonCommands.Save"
-            Executed="SaveBlazorPageCommand_Executed" />
-        <CommandBinding
-            CanExecute="GenerateCodeCommand_CanExecute"
-            Command="infraCommands:InfraCommands.GenerateCodeCommand"
-            Executed="GenerateCodeCommand_Executed" />
-        <CommandBinding
-            CanExecute="ValidateCommandBinding_CanExecute"
-            Command="libCommands:LibCommonCommands.Validate"
-            Executed="ValidateCommandBinding_Executed" />
-        <CommandBinding
-            CanExecute="SaveToDiskCommand_CanExecute"
-            Command="{x:Static local:BlazorPageGeneratorPage.SaveToDiskCommand}"
-            Executed="SaveToDiskCommand_Executed" />
-    </local:PageBase.CommandBindings>
-    <Page.InputBindings>
-        <KeyBinding Command="{Binding SaveToDiskCommand, ElementName=Me}" Gesture="CTRL+Shift+S" />
-    </Page.InputBindings>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" ToolTip="Explorer" />
@@ -90,51 +52,52 @@
             </ToggleButton>
             <Separator />
             <Button
-                Command="libCommands:LibCommonCommands.New"
+                x:Name="CreatePageButton"
+                Click="CreatePageButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="New Page">
                 <Path Style="{StaticResource New}" />
             </Button>
             <Button
-                Command="libCommands:LibCommonCommands.Edit"
+                x:Name="EditPageButton"
+                Click="EditPageButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="Edit Page">
                 <Path Style="{StaticResource Edit}" />
             </Button>
             <Button
-                Command="libCommands:LibCommonCommands.Delete"
+                x:Name="DeletePageButton"
+                Click="DeletePageButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="Delete Page">
                 <Path Style="{StaticResource Delete}" />
             </Button>
             <Separator />
             <Button
-                Command="libCommands:LibCommonCommands.Validate"
-                Style="{StaticResource IconButton}"
-                ToolTip="Validate Form…">
-                <Path Style="{StaticResource CheckboxMarkedOutline}" />
-            </Button>
-            <Button
-                Command="libCommands:LibCommonCommands.Save"
+                x:Name="SaveToDbButton"
+                Click="SaveToDbButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="Save Page to Database">
-                <Path x:Name="SavePageButton" Style="{StaticResource SaveToDb}" />
+                <Path Style="{StaticResource SaveToDb}" />
             </Button>
             <Button
-                Command="infraCommands:InfraCommands.GenerateCodeCommand"
+                x:Name="GenerateCodeButton"
+                Click="GenerateCodeButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="Generate Source Code">
-                <Path x:Name="GenerateCodeButton" Style="{StaticResource CodeFile}" />
+                <Path Style="{StaticResource CodeFile}" />
             </Button>
             <Button
-                Command="{x:Static local:BlazorPageGeneratorPage.SaveToDiskCommand}"
+                x:Name="SaveToDiskButton"
+                Click="SaveToDiskButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="Save Source to disk…">
                 <Path Style="{StaticResource Save}" />
             </Button>
             <Separator />
             <Button
-                Command="libCommands:LibCommonCommands.Reset"
+                x:Name="ResetButton"
+                Click="ResetButton_Click"
                 Style="{StaticResource IconButton}"
                 ToolTip="Reset Page">
                 <Path Style="{StaticResource BackupRestore}" />
@@ -196,17 +159,6 @@
                         </WrapPanel>
                     </Grid>
                     <Separator Grid.Row="1" />
-                    <Grid Grid.Row="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
-                        <TextBlock Style="{StaticResource HighlightBlock}" Text="DataContext Configurations" />
-                        <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
-                            <TextBlock Text="DataContext" />
-                            <TextBox IsReadOnly="True" Text="{Binding DataContext}" />
-                        </StackPanel>
-                    </Grid>
                     <Separator Grid.Row="3" />
                     <Grid Grid.Row="4">
                         <Grid.RowDefinitions>
@@ -221,6 +173,9 @@
                         </StackPanel>
                     </Grid>
                 </Grid>
+            </TabItem>
+            <TabItem Header="DataContext">
+                <UserControls:DtoEditUserControl DataContext="{Binding DataContext}" IsReadOnly="True" />
             </TabItem>
             <TabItem Header="Components">
                 <Grid x:Name="TabContent">

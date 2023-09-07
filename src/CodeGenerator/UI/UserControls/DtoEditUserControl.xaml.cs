@@ -17,9 +17,10 @@ namespace HanyCo.Infra.UI.UserControls;
 /// <summary>
 /// Interaction logic for DtoEditUserControl.xaml
 /// </summary>
-public partial class DtoEditUserControl : UserControl, 
+public partial class DtoEditUserControl : UserControl,
     IAsyncBindable, IUnidirectionalViewModel<DtoViewModel?>, IInitialzable, ISupportReadOnly
 {
+    public static readonly DependencyProperty IsReadOnlyProperty = ControlHelper.GetDependencyProperty<bool, DtoEditUserControl>(nameof(IsReadOnly));
     public static readonly DependencyProperty? SelectedPropertyProperty = ControlHelper.GetDependencyProperty<PropertyViewModel?, DtoEditUserControl>(nameof(SelectedProperty));
     private int _maxPropId;
     private IModuleService _moduleService = null!;
@@ -27,7 +28,11 @@ public partial class DtoEditUserControl : UserControl,
     public DtoEditUserControl() =>
         this.InitializeComponent();
 
-    public bool IsReadOnly { get; set; }
+    public bool IsReadOnly
+    {
+        get => (bool)this.GetValue(IsReadOnlyProperty);
+        set => this.SetValue(IsReadOnlyProperty, value);
+    }
 
     public PropertyViewModel? SelectedProperty
     {
@@ -54,7 +59,7 @@ public partial class DtoEditUserControl : UserControl,
             this.PropertyDetails.ViewModel = null;
         }
 
-        this.PropertyDetails.IsEnabled = viewModel is not null;
+        this.PropertyDetails.IsEnabled = !this.IsReadOnly && viewModel is not null;
     }
 
     private void DeletePropertyButton_Click(object sender, RoutedEventArgs e)
@@ -139,6 +144,6 @@ public partial class DtoEditUserControl : UserControl,
         }
 
         this.PropertyDetails.RebindDataContext(this.SelectedProperty);
-        this.PropertyDetails.IsEnabled = this.PropertyDetails.ViewModel is not null;
+        this.PropertyDetails.IsEnabled =!IsReadOnly && this.PropertyDetails.ViewModel is not null;
     }
 }

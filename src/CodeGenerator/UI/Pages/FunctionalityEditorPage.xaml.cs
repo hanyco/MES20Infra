@@ -5,6 +5,7 @@ using System.Windows;
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 

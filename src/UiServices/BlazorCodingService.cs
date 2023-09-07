@@ -80,7 +80,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         return Task.FromResult(result);
     }
 
-    public UiComponentViewModel CreateNewComponentByDto(DtoViewModel dto)
+    public UiComponentViewModel CreateViewModel(DtoViewModel dto)
     {
         Check.MustBeArgumentNotNull(dto);
         var parsedName = dto.Name?.Replace("Dto", "Component").Replace("ViewModel", "Component") ?? string.Empty;
@@ -91,7 +91,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
             PageDataContext = dto,
             ClassName = parsedName,
             NameSpace = parsedNameSpace,
-            Guid = Guid.NewGuid()
+            Guid = Guid.NewGuid(),
         };
         _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
         return result;
@@ -101,7 +101,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
     {
         Check.MustBeArgumentNotNull(dto?.Id);
         var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value, cancellationToken)).NotNull(() => new NotFoundValidationException());
-        return this.CreateNewComponentByDto(dto);
+        return this.CreateViewModel(dto);
     }
 
     public UiComponentActionViewModel CreateUnboundAction() =>
@@ -129,7 +129,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
     //    => CreateComponent(model).GenerateUiCode();
 
     public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
-        => new(CreateComponent(model).GenerateCodes(arguments ?? new GenerateCodesParameters()));
+        => new(CreateComponent(model).GenerateCodes(arguments ?? new GenerateCodesParameters(true, true, true)));
 
     public async Task<UiComponentPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
     {

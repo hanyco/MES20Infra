@@ -7,6 +7,7 @@ using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Commands;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries;
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.ViewModels;

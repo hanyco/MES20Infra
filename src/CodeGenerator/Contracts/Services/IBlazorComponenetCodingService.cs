@@ -29,7 +29,7 @@ public interface IBlazorComponentCodingService : IBusinessService
     /// <param name="dto">The dto.</param>
     /// <returns></returns>
     Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken token = default);
-    UiComponentViewModel CreateNewComponentByDto(DtoViewModel dto);
+    UiComponentViewModel CreateViewModel(DtoViewModel dto);
 
     /// <summary>
     /// Creates a unbound action.
