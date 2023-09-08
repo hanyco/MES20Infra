@@ -369,10 +369,11 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             };
             _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
             _ = table.Actions.AddRange(this.Actions.Where(x => x.showOnGrid)
-                .Select(x => new BlazorTableRowAction(x.Name, x.Caption) { OnClick = x.EventHandlerName }));
+                .Select(x => new BlazorTableRowAction(x.Name!, x.Caption!) { OnClick = x.EventHandlerName }));
             var tableCode = table.GenerateUiCode().Statement;
 
             var result = sb.AppendLine()
+                .AppendLine("<div class=\"row\">")
                 .AppendLine(buttonsCode)
                 .AppendLine("</div>")
                 .AppendLine("<div class=\"row\">")
