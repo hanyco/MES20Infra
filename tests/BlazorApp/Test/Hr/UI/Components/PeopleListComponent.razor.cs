@@ -9,10 +9,6 @@ namespace Test.Hr
     public sealed partial class PeopleListComponent
     {
         
-        public void NewButton_OnClick(long id)
-        {
-        }
-        
         protected override async Task OnInitializedAsync()
         {
         }

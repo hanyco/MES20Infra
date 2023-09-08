@@ -28,7 +28,7 @@ public partial class BlazorGridPropertiesPage : ControlPropertyPage
 
     protected override void OnOk() => base.OnOk();
 
-    private void AddColumnButton_Click(object sender, RoutedEventArgs e) => this.BlazorGrid.DataTemplate.DataColumns.Add(new());
+    private void AddColumnButton_Click(object sender, RoutedEventArgs e) => this.BlazorGrid.Columns.Add(new("", ""));
 
     private void DeleteColumnButton_Click(object sender, RoutedEventArgs e)
     {

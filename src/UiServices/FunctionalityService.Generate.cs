@@ -372,13 +372,31 @@ internal sealed partial class FunctionalityService
             HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel newButton = new()
             {
                 Caption = "New",
-                EventHandlerName = "NewButton_OnClick",
+                EventHandlerName = "NewButton_OnClick()",
                 Guid = Guid.NewGuid(),
                 Name = "NewButton",
                 TriggerType = TriggerType.FormButton,
                 Description = $"Creates new {name}"
             };
-            data.ViewModel.BlazorListComponentViewModel.UiActions.Add(newButton);
+            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel editButton = new()
+            {
+                Caption = "Edit",
+                EventHandlerName = "Edit(item.Id)",
+                Guid = Guid.NewGuid(),
+                Name = "EditButton",
+                TriggerType = TriggerType.RowButton,
+                Description = $"Edits selected {name}"
+            };
+            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel deleteButton = new()
+            {
+                Caption = "Delete",
+                EventHandlerName = "Delete(item.Id)",
+                Guid = Guid.NewGuid(),
+                Name = "DeleteButton",
+                TriggerType = TriggerType.RowButton,
+                Description = $"Deletes selected {name}"
+            };
+            data.ViewModel.BlazorListComponentViewModel.UiActions.AddRange(new[] { newButton, editButton, deleteButton });
         }
     }
 
