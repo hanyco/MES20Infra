@@ -13,7 +13,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components
             string? name = null,
             string? onClick = null,
             string? body = null,
-            ButtonType type = ButtonType.Button,
+            ButtonType type = ButtonType.FormButton,
             string? prefix = null)
             : base(id, name, onClick, body, type, prefix)
         {

@@ -299,6 +299,7 @@ internal sealed partial class FunctionalityService
         void createViewModel(CreationData data)
         {
             var name = CommonHelper.Purify(data.ViewModel.SourceDto.Name);
+
             data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodingService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{name}DetailsComponent";
@@ -306,6 +307,22 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorPageViewModel.DataContext;
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
+            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel saveButton = new()
+            {
+                Caption = "Save",
+                //CqrsSegregate = data.ViewModel.InsertCommandViewModel,
+                EventHandlerName = "SaveButton_OnClick",
+                Guid = Guid.NewGuid(),
+                IsEnabled = true,
+                Name = "SaveButton",
+                TriggerType = TriggerType.FormButton,
+                Description = "Save the data to database",
+                Position = new()
+                {
+                    Col = 3
+                }
+            };
+            data.ViewModel.BlazorDetailsComponentViewModel.UiActions.Add(saveButton);
         }
     }
 

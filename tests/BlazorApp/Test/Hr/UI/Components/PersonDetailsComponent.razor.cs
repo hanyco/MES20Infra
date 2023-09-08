@@ -12,5 +12,17 @@ namespace Test.Hr
         protected override async Task OnInitializedAsync()
         {
         }
+        
+        private void ValidateForm()
+        {
+        }
+        
+        private void OnInsertPersonCommandCalling(Test.Hr.Dtos.InsertPersonParams parameter)
+        {
+        }
+        
+        private void OnInsertPersonCommandCalled(Test.Hr.Dtos.InsertPersonParams parameter, Test.Hr.Dtos.InsertPersonResult result)
+        {
+        }
     }
 }

@@ -106,7 +106,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
     }
 
     public UiComponentActionViewModel CreateUnboundAction() =>
-        new() { Caption = "New Action", IsEnabled = true, TriggerType = TriggerType.Button, Name = "NewAction", };
+        new() { Caption = "New Action", IsEnabled = true, TriggerType = TriggerType.FormButton, Name = "NewAction", };
 
     public UiComponentPropertyViewModel CreateUnboundProperty() =>
         new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
@@ -290,7 +290,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
             {
                 if (action.TriggerType.GetKind() == TriggerKind.Button)
                 {
-                    HtmlButton button = new BlazorButton(name: action.Name, body: action.Caption, type: action.TriggerType.ToButtonType())
+                    HtmlButton button = new BlazorButton(name: action.Name, body: action.Caption, type: action.TriggerType.ToButtonType(), onClick: action.EventHandlerName)
                     {
                         Position = action.Position.ToBootstrapPosition()
                     };

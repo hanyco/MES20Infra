@@ -68,10 +68,8 @@ public enum SecurityDescriptorStrategy
 
 public enum TriggerType
 {
-    Load,
-    Button,
-    Submit,
-    Reset
+    FormButton,
+    RowButton,
 }
 
 public partial class CqrsSegregate : IMesEntity

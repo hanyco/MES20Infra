@@ -32,19 +32,16 @@ public static class TriggerTypeHelper
     public static TriggerKind GetKind(this TriggerType triggerType) =>
         triggerType switch
         {
-            TriggerType.Button => TriggerKind.Button,
-            TriggerType.Submit => TriggerKind.Button,
-            TriggerType.Reset => TriggerKind.Button,
-            TriggerType.Load => TriggerKind.Load,
+            TriggerType.FormButton => TriggerKind.Button,
+            TriggerType.RowButton => TriggerKind.Button,
             _ => throw new NotImplementedException()
         };
 
     public static ButtonType ToButtonType(this TriggerType triggerType) =>
         triggerType switch
         {
-            TriggerType.Button => ButtonType.Button,
-            TriggerType.Submit => ButtonType.Submit,
-            TriggerType.Reset => ButtonType.Reset,
+            TriggerType.FormButton => ButtonType.FormButton,
+            TriggerType.RowButton => ButtonType.RowButton,
             _ => throw new NotImplementedException(),
         };
 }

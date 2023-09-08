@@ -19,8 +19,12 @@ namespace Test.Hr
     
     public sealed partial class PersonDetailsComponent
     {
-        
+
         public PersonDetailsComponent()
+        {
+        }
+
+        private void SaveButton_OnClick()
         {
         }
     }

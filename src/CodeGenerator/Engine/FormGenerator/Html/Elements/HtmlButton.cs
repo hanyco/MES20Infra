@@ -18,7 +18,7 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         string? name = null,
         string? onClick = null,
         string? body = null,
-        ButtonType type = ButtonType.Button,
+        ButtonType type = ButtonType.FormButton,
         string? prefix = null)
         : base("button", id, name, body, prefix)
     {
@@ -90,8 +90,8 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
     {
         get => this.GetAttribute("type") switch
         {
-            "button" => ButtonType.Button,
-            "sumbit" => ButtonType.Submit,
+            "button" => ButtonType.FormButton,
+            "sumbit" => ButtonType.RowButton,
             "reset" => ButtonType.Reset,
             _ => throw new NotSupportedException(),
         }; set => _ = this.SetAttribute("type", value.ToString().ToLowerInvariant());
@@ -185,8 +185,8 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
 
     public enum ButtonType
     {
-        Submit,
-        Button,
+        RowButton,
+        FormButton,
         Reset
     }
 }

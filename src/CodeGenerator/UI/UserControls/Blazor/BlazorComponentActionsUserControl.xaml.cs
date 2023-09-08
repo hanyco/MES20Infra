@@ -48,7 +48,7 @@ public partial class BlazorComponentActionsUserControl
         {
             if (this.SelectedAction is not null)
             {
-                var isButton = this.SelectedAction.TriggerType is not TriggerType.Load;
+                var isButton = true;
                 this.CaptionStackPanel.IsEnabled = this.ElementPositionUserControl.IsEnabled = isButton;
             }
         }
