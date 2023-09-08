@@ -55,7 +55,7 @@ public static class HtmlElementExtensions
         static IEnumerable<IHtmlElement> validatePositions(IEnumerable<IHtmlElement> children)
             => children.ArgumentNotNull()
                        .Any(x => x?.Position.Order is not null and not 0) && children.Any(x => x?.Position.Row is not null and not 0)
-                           ? throw new ValidationException()
+                           ? throw new ValidationException("Cannot set both `order` and `row` at a same time.")
                            : children;
 
         static IEnumerable<IHtmlElement> sortData(IEnumerable<IHtmlElement> children)
@@ -87,13 +87,13 @@ public static class HtmlElementExtensions
             {
                 if (lastRow is -1)
                 {
-                    _ = statement.AppendLine("<div class='row'>");
+                    _ = statement.AppendLine("<div class='row here1'>");
                     lastRow = child.Position.Row;
                 }
                 else if ((colIndex + colSpan) > 12 || lastRow != child.Position.Row)
                 {
                     _ = statement.AppendLine("</div>");
-                    _ = statement.AppendLine("<div class='row'>");
+                    _ = statement.AppendLine("<div class='row here2'>");
                     colIndex = 0;
                     lastRow = child.Position.Row;
                 }

@@ -319,7 +319,8 @@ internal sealed partial class FunctionalityService
                 Description = "Save the data to database",
                 Position = new()
                 {
-                    Col = 3
+                    Col = 2,
+                    Offset = 10
                 }
             };
             data.ViewModel.BlazorDetailsComponentViewModel.UiActions.Add(saveButton);

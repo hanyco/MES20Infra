@@ -1,84 +1,80 @@
-﻿using Contracts.ViewModels;
+﻿
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
 using Library.Mapping;
 using Library.Validations;
 
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+namespace Contracts.ViewModels;
 
-namespace HanyCo.Infra.UI.ViewModels;
-
-/// <summary>
-/// <seealso cref="Contracts.ViewModels.InfraViewModelBase" />
-/// <seealso cref="System.IComparable" />
-/// <seealso cref="System.IComparable{HanyCo.Infra.UI.ViewModels.UiBootstrapPositionViewModel}" />
+/// <summary> <seealso cref="InfraViewModelBase" /> <seealso
+/// cref="IComparable" /> <seealso
+/// cref="IComparable{UiBootstrapPositionViewModel}" />
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparable, IComparable<UiBootstrapPositionViewModel>
 {
     #region Fields
 
-    private int? _Col;
-    private int? _ColSpan;
-    private int? _Order;
-    private int? _Row;
-    private int? _RowSpan;
+    private int? _col;
+    private int? _colSpan;
+    private int? _order;
+    private int? _row;
+    private int? _rowSpan;
+    private int? _offset;
 
-    #endregion
+    #endregion Fields
 
     /// <summary>
     /// Gets or sets the col.
     /// </summary>
-    /// <value>
-    /// The col.
-    /// </value>
-    public int? Col { get => this._Col; set => this.SetProperty(ref this._Col, value); }
+    /// <value>The col.</value>
+    public int? Col { get => this._col; set => this.SetProperty(ref this._col, value); }
 
     /// <summary>
     /// Gets or sets the col span.
     /// </summary>
-    /// <value>
-    /// The col span.
-    /// </value>
-    public int? ColSpan { get => this._ColSpan; set => this.SetProperty(ref this._ColSpan, value); }
+    /// <value>The col span.</value>
+    public int? ColSpan { get => this._colSpan; set => this.SetProperty(ref this._colSpan, value); }
+
+    public int? Offset { get => this._offset; set => this.SetProperty(ref this._offset, value); }
 
     /// <summary>
     /// Gets or sets the order.
     /// </summary>
-    /// <value>
-    /// The order.
-    /// </value>
-    public int? Order { get => this._Order; set => this.SetProperty(ref this._Order, value); }
+    /// <value>The order.</value>
+    public int? Order { get => this._order; set => this.SetProperty(ref this._order, value); }
 
     /// <summary>
     /// Gets or sets the row.
     /// </summary>
-    /// <value>
-    /// The row.
-    /// </value>
-    public int? Row { get => this._Row; set => this.SetProperty(ref this._Row, value); }
+    /// <value>The row.</value>
+    public int? Row { get => this._row; set => this.SetProperty(ref this._row, value); }
 
     /// <summary>
     /// Gets or sets the row span.
     /// </summary>
-    /// <value>
-    /// The row span.
-    /// </value>
-    public int? RowSpan { get => this._RowSpan; set => this.SetProperty(ref this._RowSpan, value); }
+    /// <value>The row span.</value>
+    public int? RowSpan { get => this._rowSpan; set => this.SetProperty(ref this._rowSpan, value); }
 
-    public UiBootstrapPositionViewModel FillWith([DisallowNull] UiBootstrapPositionViewModel positionViewModel)
-    {
-        Check.MutBeNotNull(positionViewModel);
-        var mapper = new Mapper();
-        mapper.Map(positionViewModel, this);
-        //this.Order = positionViewModel.Order;
-        //this.Row = positionViewModel.Row;
-        //this.Col = positionViewModel.Col;
-        //this.RowSpan = positionViewModel.RowSpan;
-        //this.ColSpan = positionViewModel.ColSpan;
-        return this;
-    }
+    public static bool operator !=(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
+        => !(left == right);
+
+    public static bool operator <(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
+        => left is null ? right is not null : left.CompareTo(right) < 0;
+
+    public static bool operator <=(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
+        => left is null || left.CompareTo(right) <= 0;
+
+    public static bool operator ==(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
+                => left is null ? right is null : left.Equals(right);
+
+    public static bool operator >(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
+        => left is not null && left.CompareTo(right) > 0;
+
+    public static bool operator >=(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
+        => left is null ? right is null : left.CompareTo(right) >= 0;
 
     public int CompareTo(UiBootstrapPositionViewModel? other)
     {
@@ -128,11 +124,6 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
     public int CompareTo(object? obj)
         => obj is not UiBootstrapPositionViewModel position ? -1 : this.CompareTo(position);
 
-    /// <summary>
-    /// Equalses the specified object.
-    /// </summary>
-    /// <param name="obj">The object.</param>
-    /// <returns></returns>
     public override bool Equals(object? obj)
         => ReferenceEquals(this, obj) || obj switch
         {
@@ -140,11 +131,24 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
             _ => this.CompareTo(obj) == 0
         };
 
+    public UiBootstrapPositionViewModel FillWith([DisallowNull] UiBootstrapPositionViewModel positionViewModel)
+    {
+        Check.MutBeNotNull(positionViewModel);
+        var mapper = new Mapper();
+        _ = mapper.Map(positionViewModel, this);
+        //this.Order = positionViewModel.Order;
+        //this.Row = positionViewModel.Row;
+        //this.Col = positionViewModel.Col;
+        //this.RowSpan = positionViewModel.RowSpan;
+        //this.ColSpan = positionViewModel.ColSpan;
+        return this;
+    }
+
     public override int GetHashCode()
         => HashCode.Combine(this.Order, this.Row, this.Col);
 
     /// <summary>
-    /// Converts to bootstrapposition.
+    /// Converts to bootstrap position.
     /// </summary>
     /// <returns></returns>
     public BootstrapPosition ToBootstrapPosition()
@@ -153,7 +157,8 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
             Order = this.Order,
             Row = this.Row,
             Col = this.Col,
-            ColSpan = this.ColSpan
+            ColSpan = this.ColSpan,
+            Offset = this.Offset,
         };
 
     /// <summary>
@@ -161,14 +166,50 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
     /// </summary>
     /// <returns></returns>
     public override string ToString()
-        => (this.Order, this.Row, this.Col) switch
+    {
+        if (NumberHelper.IsNullOrZero(this.Order, this.Row, this.Col, this.Offset))
         {
-            (null, null, null) => "(default)",
-            (not null, _, _) => $"Order: {this.Order}",
-            (_, not null, null) => $"({this.Row}, null)",
-            (_, null, not null) => $"(invalid)",
-            _ => $"({this.Row},{this.Col})"
-        };
+            return "(default)";
+        }
+
+        if (!this.Order.IsNullOrZero() && NumberHelper.IsNullOrZero(this.Row, this.Col, this.Offset))
+        {
+            return $"Order: {this.Order}";
+        }
+
+        if (!this.Order.IsNullOrZero())
+        {
+            return "(invalid)";
+        }
+
+        var result = new StringBuilder();
+        if (!this.Row.IsNullOrZero())
+        {
+            _ = result.Append($" Row: {this.Row}");
+        }
+
+        if (!this.Col.IsNullOrZero())
+        {
+            _ = result.Append($" Col: {this.Col}");
+        }
+
+        if (!this.RowSpan.IsNullOrZero())
+        {
+            _ = result.Append($" Rowspan: {this.Col}");
+        }
+
+        if (!this.ColSpan.IsNullOrZero())
+        {
+            _ = result.Append($" Colspan: {this.Col}");
+        }
+
+        if (!this.Offset.IsNullOrZero())
+        {
+            _ = result.Append($" Offset: {this.Col}");
+        }
+
+        return $"({result.ToString().Trim()})";
+    }
 
     /// <summary>
     /// Gets the debugger display.
@@ -176,23 +217,4 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
     /// <returns></returns>
     private string GetDebuggerDisplay()
         => this.ToString();
-
-
-    public static bool operator ==(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
-                => left is null ? right is null : left.Equals(right);
-
-    public static bool operator !=(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
-        => !(left == right);
-
-    public static bool operator <(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
-        => left is null ? right is not null : left.CompareTo(right) < 0;
-
-    public static bool operator <=(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
-        => left is null || left.CompareTo(right) <= 0;
-
-    public static bool operator >(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
-        => left is not null && left.CompareTo(right) > 0;
-
-    public static bool operator >=(UiBootstrapPositionViewModel left, UiBootstrapPositionViewModel right)
-        => left is null ? right is null : left.CompareTo(right) >= 0;
 }

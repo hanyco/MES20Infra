@@ -10,22 +10,25 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
 #pragma warning disable IDE0032 // Use auto property
     private int? _col;
     private int? _colSpan;
+    private int? _offset;
 #pragma warning restore IDE0032 // Use auto property
 
-    public BootstrapPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null)
+    public BootstrapPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null, int? offset = null)
     {
         this.Order = order;
         this.Row = row;
         this.Col = col;
         this.ColSpan = colSpan;
+        this.Offset = offset;
     }
 
     public int? Order { get; init; }
     public int? Row { get; init; }
     public int? Col { get => _col; init => _col = value; }
     public int? ColSpan { get => _colSpan; init => _colSpan = value; }
+    public int? Offset { get => _offset; init => _offset = value; }
 
-    public bool IsInitailized => this.Order is not null || this.Row is not null || this.Col is not null || this.ColSpan is not null;
+    public bool IsInitialized => this.Order is not null || this.Row is not null || this.Col is not null || this.ColSpan is not null;
 
     public BootstrapPosition SetColSpan(int? value)
         => this.Fluent<BootstrapPosition>((Action)(() => this._colSpan = value));
@@ -75,7 +78,7 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
         => obj.ArgumentNotNull(nameof(obj)).GetHashCode();
 
     public override string? ToString()
-        => !this.IsInitailized ? null : $"Order: {this.Order}, Location:({this.Row},{this.Col}), ColSpan:{this.ColSpan}";
+        => !this.IsInitialized ? null : $"Order: {this.Order}, Location:({this.Row},{this.Col}), ColSpan:{this.ColSpan}";
 
     public static bool operator <(BootstrapPosition left, BootstrapPosition right)
         => left.ArgumentNotNull().CompareTo(right.ArgumentNotNull()) < 0;

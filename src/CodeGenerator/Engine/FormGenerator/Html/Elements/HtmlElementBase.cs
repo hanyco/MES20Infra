@@ -67,7 +67,9 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
 
     protected virtual string? LabelPrefix { get; }
 
-    /// <summary>Gets the full name of the normalized.</summary>
+    /// <summary>
+    /// Gets the full name of the normalized.
+    /// </summary>
     /// <value>The full name of the normalized.</value>
     protected virtual string NormalizedFullName
         => this.LabelPrefix.IsNullOrEmpty()
@@ -166,24 +168,38 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
 
     protected virtual TSelf CodeGenAddCssClasses(StringBuilder statement)
     {
-        var cssClasses = string.Join(' ', this.CssClasses.ToArray());
-        //! Concurrency
         var pos = this.Position;
-        if (pos.ColSpan is not null and not 1)
+        var buffer = new StringBuilder();
+
+        if (pos.Row is not null and not 0 and not 1)
         {
-            cssClasses = $" col-{pos.ColSpan} {cssClasses}";
+            _ = buffer.Append($" row-{pos.Row}");
         }
-        cssClasses = pos.Col switch
+
+        if (pos.Col is not null and not 0 and not 1)
         {
-            > 0 => $"col-{pos.Col} {cssClasses}",
-            //x 0 or null => $"col {cssClasses}",
-            0 or null => $"{cssClasses}",
-            _ => null
-        };
+            _ = buffer.Append($" col-{pos.Col}");
+        }
+
+        if (pos.ColSpan is not null and not 0 and not 1)
+        {
+            _ = buffer.Append($" colspan-{pos.ColSpan}");
+        }
+
+        if (pos.Offset is not null and not 0 and not 1)
+        {
+            _ = buffer.Append($" offset-{pos.Offset}");
+        }
+
+        if (this.CssClasses.Any())
+        {
+            _ = buffer.Append(' ').Append(string.Join(' ', this.CssClasses.ToArray()).Trim());
+        }
+        var cssClasses = buffer.ToString().Trim();
 
         if (!cssClasses.IsNullOrEmpty())
         {
-            _ = statement.ArgumentNotNull(nameof(statement)).Append($" class='{cssClasses.Trim()}'");
+            _ = statement.ArgumentNotNull(nameof(statement)).Append($" class='{cssClasses}'");
         }
 
         return this.This()!;
@@ -246,6 +262,7 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
         }
 
         #region New way. But it's not done yet. 🥀
+
         ////var element = new Library.CodeGeneration.HtmlGeneration.HtmlElement(this.NormalizedFullName);
         ////if (this.Id is not null)
         ////{
@@ -290,8 +307,9 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
         ////    }
         ////    _ = element.AddAttribute(key, value);
         ////}
-        ////var tmpCode = element.ToHtml(); 
-        #endregion
+        ////var tmpCode = element.ToHtml();
+
+        #endregion New way. But it's not done yet. 🥀
 
         _ = this.CodeGenOpenTag(statement)
                 .CodeGenAddId(statement)

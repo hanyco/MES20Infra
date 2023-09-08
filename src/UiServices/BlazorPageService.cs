@@ -104,9 +104,9 @@ internal sealed class BlazorPageService(
         this.Logger.Debug($"Generating code is started.");
         var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
         var page = new BlazorPage(viewModel.Name!)
-                    .SetPageRoute(viewModel.Route)
-                    .SetNameSpace(viewModel.NameSpace)
-                    .SetDataContext(dataContextType);
+            .SetPageRoute(viewModel.Route)
+            .SetNameSpace(viewModel.NameSpace)
+            .SetDataContext(dataContextType);
         _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
 
         var result = page.GenerateCodes(CodeCategory.Page, arguments);
@@ -114,16 +114,12 @@ internal sealed class BlazorPageService(
 
         return Result<Codes>.New(result);
 
-        static IHtmlElement toHtmlElement(UiComponentViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty)
-        {
-            var result = BlazorComponent.New(component.Name!)
+        static IHtmlElement toHtmlElement(UiComponentViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
+            BlazorComponent.New(component.Name!)
                 .SetNameSpace(component.NameSpace)
                 .SetDataContext(dataContextType)
                 .SetDataContextProperty(dataContextTypeProperty)
-                .SetPosition(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan);
-
-            return result;
-        }
+                .SetPosition(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan, component.Position.Offset);
     }
 
     public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync(CancellationToken cancellationToken = default)

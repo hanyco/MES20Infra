@@ -256,7 +256,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         var codes = new List<Code>();
         if (args.GenerateUiCode)
         {
-            var htmlCode = this.GenerateUiCode(args);
+            var htmlCode = this.GenerateUiCode(category, args);
             if (htmlCode is { } c)
             {
                 codes.Add(c.With(x => x.props().Category = category));
@@ -331,8 +331,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public TBlazorComponent SetNameSpace(string? value)
         => this.This(() => this.NameSpace = value);
 
-    public TBlazorComponent SetPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null)
-        => this.This(() => this.Position = new(order, row, col, colSpan));
+    public TBlazorComponent SetPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null, int? offset = null)
+        => this.This(() => this.Position = new(order, row, col, colSpan, offset));
 
     protected virtual string? GetBaseTypes()
         => null;
