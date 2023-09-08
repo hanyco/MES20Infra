@@ -293,13 +293,14 @@ internal sealed partial class FunctionalityService
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
-        createViewModel(data);
-        return Task.CompletedTask;
+        var name = CommonHelper.Purify(data.ViewModel.SourceDto.Name);
+        return TaskRunner.StartWith(data)
+            .Then(createViewModel)
+            .Then(addActions)
+            .RunAsync(token);
 
         void createViewModel(CreationData data)
         {
-            var name = CommonHelper.Purify(data.ViewModel.SourceDto.Name);
-
             data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodingService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{name}DetailsComponent";
@@ -307,6 +308,10 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorPageViewModel.DataContext;
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
+        }
+
+        static void addActions(CreationData data)
+        {
             HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel saveButton = new()
             {
                 Caption = "Save",
@@ -320,23 +325,39 @@ internal sealed partial class FunctionalityService
                 Position = new()
                 {
                     Col = 2,
-                    Offset = 4,
+                    Offset = 2,
                     Row = 1,
                 }
             };
+            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel cancelButton = new()
+            {
+                Caption = "Cancel",
+                EventHandlerName = "CancelButton_OnClick",
+                Guid = Guid.NewGuid(),
+                IsEnabled = true,
+                Name = "CancelButton",
+                TriggerType = TriggerType.FormButton,
+                Position = new()
+                {
+                    Col = 2,
+                    Offset = 1
+                }
+            };
             data.ViewModel.BlazorDetailsComponentViewModel.UiActions.Add(saveButton);
+            data.ViewModel.BlazorDetailsComponentViewModel.UiActions.Add(cancelButton);
         }
     }
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
     {
-        createViewModel(data);
-        return Task.CompletedTask;
+        var name = StringHelper.Pluralize(CommonHelper.Purify(data.ViewModel.SourceDto.Name));
+        return TaskRunner.StartWith(data)
+            .Then(createViewModel)
+            .Then(addActions)
+            .RunAsync(token);
 
         void createViewModel(CreationData data)
         {
-            var name = StringHelper.Pluralize(CommonHelper.Purify(data.ViewModel.SourceDto.Name));
-
             data.ViewModel.BlazorListComponentViewModel = this._blazorComponentCodingService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorListComponentViewModel.Name = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.ClassName = $"{name}ListComponent";
@@ -344,6 +365,20 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.BlazorPageViewModel.DataContext;
             data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList == true);
             data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
+        }
+
+        void addActions(CreationData data)
+        {
+            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel newButton = new()
+            {
+                Caption = "New",
+                EventHandlerName = "NewButton_OnClick",
+                Guid = Guid.NewGuid(),
+                Name = "NewButton",
+                TriggerType = TriggerType.FormButton,
+                Description = $"Creates new {name}"
+            };
+            data.ViewModel.BlazorListComponentViewModel.UiActions.Add(newButton);
         }
     }
 

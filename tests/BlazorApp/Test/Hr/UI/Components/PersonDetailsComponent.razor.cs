@@ -13,15 +13,11 @@ namespace Test.Hr
         {
         }
         
-        private void ValidateForm()
+        private void SaveButton_OnClick()
         {
         }
         
-        private void OnInsertPersonCommandCalling(Test.Hr.Dtos.InsertPersonParams parameter)
-        {
-        }
-        
-        private void OnInsertPersonCommandCalled(Test.Hr.Dtos.InsertPersonParams parameter, Test.Hr.Dtos.InsertPersonResult result)
+        private void CancelButton_OnClick()
         {
         }
     }

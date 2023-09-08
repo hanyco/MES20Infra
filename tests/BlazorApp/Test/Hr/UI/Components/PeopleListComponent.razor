@@ -15,15 +15,22 @@
 @inherits ComponentBase<List<PersonDto>, PersonViewModel>
 
 <table id='Test.Hr.PersonViewModelGrid' name='Test.Hr.PersonViewModelGrid'>
+<div class='row'>
     <thead>
+<div class='row'>
     <tr/>
+</div>
 </thead>
     <tbody>
 @if (this.DataContext is not null)
   @foreach (var item in this.DataContext)
   {
+<div class='row'>
     <tr>
-    <td/>
+<div class='row'>
+    <td>@item.NewButton</td>
+    <td>
+<button id='NewButton' name='NewButton' class='btn btn-success' type='formbutton' @onclick='() => this.NewButton_OnClick(item.Id)'>New</button></td>
     <td>@item.Id</td>
     <td>@item.FirstName</td>
     <td>@item.LastName</td>
@@ -35,7 +42,10 @@
 <th name='LastName'>Last Name</th>
 <th name='DateOfBirth'>Date Of Birth</th>
 <th name='Height'>Height</th></td>
+</div>
 </tr>
+</div>
   }
 </tbody>
+</div>
 </table>

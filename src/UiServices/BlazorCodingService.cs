@@ -290,7 +290,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             static IHtmlElement createLabel([DisallowNull] UiComponentPropertyViewModel prop) =>
                 new BlazorLabel($"{prop.ArgumentNotNull().Name}Label", body: prop.Caption.NotNull(New<NotFoundValidationException>))
                 {
-                    Position = prop.Position.ToBootstrapPosition().SetRow(1).SetCol(1),
+                    Position = prop.Position.ToBootstrapPosition().SetRow(1).SetCol(2),
                     IsEnabled = prop.IsEnabled
                 };
         }

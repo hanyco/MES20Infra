@@ -16,9 +16,6 @@
       <None Include="Pages\Index.razor" />
       <None Include="Pages\_Host.cshtml" />
       <None Include="Pages\_Layout.cshtml" />
-      <None Include="Test\Hr\UI\Components\PeopleListComponent.razor" />
-      <None Include="Test\Hr\UI\Components\PersonDetailsComponent.razor" />
-      <None Include="Test\Hr\UI\Pages\PersonPage.razor" />
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.4.0" />
