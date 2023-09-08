@@ -7,7 +7,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration.Models;
-using Library.Data.Models;
 using Library.DesignPatterns.Behavioral.Observation;
 using Library.Exceptions.Validations;
 using Library.Helpers.CodeGen;
@@ -359,21 +358,27 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         StringBuilder generateGridCode(StringBuilder sb)
         {
-            //var actions = this.Actions.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
-            //    .AddImmuted(new("Actions", this.Actions.Select(x => new BlazorButton(x.Name, x.Name, body: x.Caption) { OnClick = $"() => this.{x.EventHandlerName}(item.Id)" })));
-            //var properties = this.Properties.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
-            //    .AddImmuted(new("Properties", this.Properties.Select(x => new HtmlTableCellHead(x.Caption, name: x.Name))));
-            
-            var table = new BlazorTable()
+            var buttonsCode = this.Actions.Where(x => !x.showOnGrid)
+                .Select(x => new BlazorButton(name: x.Name, body: x.Caption, onClick: x.EventHandlerName)
+                .With(x => x.Position.SetCol(1)))
+                .Select(x => x.GenerateUiCode().Statement).Merge(Environment.NewLine);
+
+            var table = new BlazorTable
             {
                 DataContextName = "this.DataContext"
             };
-            table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
-            table.Actions.AddRange(this.Actions.Where(x => x.showOnGrid)
+            _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
+            _ = table.Actions.AddRange(this.Actions.Where(x => x.showOnGrid)
                 .Select(x => new BlazorTableRowAction(x.Name, x.Caption) { OnClick = x.EventHandlerName }));
-            var uiCode = table.GenerateUiCode();
+            var tableCode = table.GenerateUiCode().Statement;
 
-            return sb.Append(uiCode.Statement);
+            var result = sb.AppendLine()
+                .AppendLine(buttonsCode)
+                .AppendLine("</div>")
+                .AppendLine("<div class=\"row\">")
+                .AppendLine(tableCode)
+                .AppendLine("</div>");
+            return result;
         }
     }
 

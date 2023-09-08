@@ -11,12 +11,10 @@ namespace Test.Hr
         
         protected override async Task OnInitializedAsync()
         {
-            
         }
         
         private void SaveButton_OnClick()
         {
-            
         }
         
         private void CancelButton_OnClick()

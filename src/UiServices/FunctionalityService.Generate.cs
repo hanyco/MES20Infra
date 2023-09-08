@@ -372,7 +372,7 @@ internal sealed partial class FunctionalityService
             HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel newButton = new()
             {
                 Caption = "New",
-                EventHandlerName = "NewButton_OnClick()",
+                EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
                 Name = "NewButton",
                 TriggerType = TriggerType.FormButton,
@@ -381,7 +381,7 @@ internal sealed partial class FunctionalityService
             HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel editButton = new()
             {
                 Caption = "Edit",
-                EventHandlerName = "Edit(item.Id)",
+                EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
                 Name = "EditButton",
                 TriggerType = TriggerType.RowButton,
@@ -390,7 +390,7 @@ internal sealed partial class FunctionalityService
             HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel deleteButton = new()
             {
                 Caption = "Delete",
-                EventHandlerName = "Delete(item.Id)",
+                EventHandlerName = "Delete",
                 Guid = Guid.NewGuid(),
                 Name = "DeleteButton",
                 TriggerType = TriggerType.RowButton,

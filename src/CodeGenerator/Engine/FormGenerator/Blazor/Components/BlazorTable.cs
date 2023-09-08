@@ -46,8 +46,8 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
             }
             foreach (var action in this.Actions)
             {
-                var onClick = action.OnClick.IsNullOrEmpty()
-                    ? $"\"@(() => {action.OnClick})\""
+                var onClick = !action.OnClick.IsNullOrEmpty()
+                    ? $"\"@(() => {action.OnClick}(item.Id))\""
                     : $"\"@(() => this.{action.Name}_OnClick(item.Id))\"";
                 _ = buffer.Append($"{HtmlDoc.INDENT.Repeat(3)}<td>")
                     .Append($"<button id=\"{this.Name}\" name=\"{this.Name}\" ")
