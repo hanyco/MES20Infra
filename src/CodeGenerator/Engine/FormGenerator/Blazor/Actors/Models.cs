@@ -20,7 +20,7 @@ public record FieldActor()
     public FieldInfo ToFieldInfo() => new();
 }
 public record MethodActor(string? Name,
-    
+    bool showOnGrid = false,
                           string? Caption = null,
                           bool IsPartial = false,
                           string? Body = null,

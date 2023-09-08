@@ -46,11 +46,11 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
             }
             foreach (var action in this.Actions)
             {
-                var onClick = !action.OnClick.IsNullOrEmpty()
+                var onClick = action.OnClick.IsNullOrEmpty()
                     ? $"\"@(() => {action.OnClick})\""
                     : $"\"@(() => this.{action.Name}_OnClick(item.Id))\"";
                 _ = buffer.Append($"{HtmlDoc.INDENT.Repeat(3)}<td>")
-                    .Append($"<button id=\"{action.Name}\" name=\"{action.Name}\" ")
+                    .Append($"<button id=\"{this.Name}\" name=\"{this.Name}\" ")
                     .Append($"@onclick={onClick}>{action.Title}")
                     .Append("</button>")
                     .Append("</td>")
@@ -63,47 +63,23 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
         _ = buffer.AppendLine($"{HtmlDoc.INDENT}</tbody>");
         _ = buffer.AppendLine("</table>");
         return buffer.ToString();
-public sealed class BlazorTableBody : HtmlTableBody, IBlazorComponent, IHasInnerText, IBindable
-{
-    public BlazorTableBody(string? labelPrefix = null, IEnumerable<HtmlTableRow>? rows = null)
-        : base(labelPrefix, rows)
-    {
-public sealed class BlazorTableBody : HtmlTableBody, IBlazorComponent, IHasInnerText, IBindable
-{
-    public BlazorTableBody(string? labelPrefix = null, IEnumerable<HtmlTableRow>? rows = null)
-        : base(labelPrefix, rows)
-    {
     }
+}
+
+public sealed class BlazorTableColumn(string bindingName, string title) : NotifyPropertyChanged
+{
+    private string _bindingName = bindingName;
+    private string _title = title;
+    public string BindingName { get => this._bindingName; set => this.SetProperty(ref this._bindingName, value); }
+    public string Title { get => this._title; set => this.SetProperty(ref this._title, value); }
+}
+
 public sealed class BlazorTableRowAction(string name, string title) : NotifyPropertyChanged
 {
-    private string _name = name;
     private string? _onClick;
     private string _title = title;
-    public string Name { get => this._name; set => this.SetProperty(ref this._name, value); }
+    private string _name = name;
     public string? OnClick { get => this._onClick; set => this.SetProperty(ref this._onClick, value); }
     public string Title { get => this._title; set => this.SetProperty(ref this._title, value); }
-    //public record struct DataColumn(string Caption, string? BindingPath);
-
-    //[Library.SourceGenerator.Contracts.AutoNotifyAttribute]
-    private string? _dataContextName;
-
-    public ObservableHashSet<DataColumnBindingInfo> DataColumns { get; } = new();
-
-    public string? DataContextName
-    {
-        get => this._dataContextName;
-        set => this.SetProperty(ref this._dataContextName, value);
-    }
-    //public record struct DataColumn(string Caption, string? BindingPath);
-
-    //[Library.SourceGenerator.Contracts.AutoNotifyAttribute]
-    private string? _dataContextName;
-
-    public ObservableHashSet<DataColumnBindingInfo> DataColumns { get; } = new();
-
-    public string? DataContextName
-    {
-        get => this._dataContextName;
-        set => this.SetProperty(ref this._dataContextName, value);
-    }
+    public string Name { get => this._name; set => this.SetProperty(ref this._name, value); }
 }

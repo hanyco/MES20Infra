@@ -172,7 +172,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
             foreach (var child in this.Children)
             {
-                //! 𝒯𝒽𝒾𝓈 𝓂𝓊𝓈𝓉 𝒷𝑒 𝒸𝒽𝒶𝓃𝑔𝑒𝒹 𝓁𝒶𝓉𝑒𝓇
+                //! 𝒯𝒽𝒾𝓈 𝓂𝓊𝓈𝓉 𝒷𝑒 𝒸𝒽𝒶𝓃𝑔𝑒𝒹 𝓁𝒶𝓉𝑒𝓇 (Fixed)
                 if (child is BlazorComponent)
                 {
                     continue;
@@ -369,9 +369,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 DataContextName = "this.DataContext"
             };
             table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
-            table.Actions.AddRange(this.Actions
-                //.Where(x=>x.
-                .Select(x => new BlazorTableRowAction(x.Name, x.Caption) { OnClick= x.EventHandlerName }));
+            table.Actions.AddRange(this.Actions.Where(x => x.showOnGrid)
+                .Select(x => new BlazorTableRowAction(x.Name, x.Caption) { OnClick = x.EventHandlerName }));
             var uiCode = table.GenerateUiCode();
 
             return sb.Append(uiCode.Statement);

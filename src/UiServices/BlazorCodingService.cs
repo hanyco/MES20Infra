@@ -295,7 +295,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             foreach (var uiAction in model.UiActions)
             {
                 var args = model.IsGrid ? new[] { new MethodArgument(idType, "id") } : null;
-                result.Actions.Add(new(uiAction.Name, uiAction.Caption, Arguments: args, EventHandlerName: uiAction.EventHandlerName));
+                result.Actions.Add(new(uiAction.Name, uiAction.TriggerType == TriggerType.RowButton, uiAction.Caption, Arguments: args, EventHandlerName: uiAction.EventHandlerName));
             }
         }
     }
