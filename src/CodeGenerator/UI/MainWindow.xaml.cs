@@ -61,8 +61,9 @@ public partial class MainWindow
     private void CreateQueryMenuItem_Click(object sender, RoutedEventArgs e) =>
         this.Navigate<CqrsQueryDetailsPage>();
 
-    private void EditSecurityDescriptor_Click(object sender, RoutedEventArgs e) =>
-        this.Navigate<SecurityDescriptorEditorPage>();
+    private void EditSecurityDescriptor_Click(object sender, RoutedEventArgs e)
+    {
+    }
 
     private void FunctionalityEditorManuItem_Click(object sender, RoutedEventArgs e) =>
         this.Navigate<FunctionalityEditorPage>();

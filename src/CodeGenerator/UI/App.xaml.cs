@@ -111,7 +111,6 @@ public partial class App : LibApp
                .AddTransient<CreateTableCrudPage>()
                .AddTransient<BlazorComponentGenertorPage>()
                .AddTransient<BlazorPageGeneratorPage>()
-               .AddTransient<SecurityDescriptorEditorPage>()
                .AddTransient<FunctionalityEditorPage>();
 
             _ = services.AddTransient<SelectCqrsDialog>();

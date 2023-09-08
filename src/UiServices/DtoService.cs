@@ -74,7 +74,7 @@ internal sealed class DtoService(
         {
             _ = await this._propertyService.DeleteByParentIdAsync(model.Id!.Value, false, token);
             _ = this._writeDbContext.RemoveById<DtoEntity>(model.Id!.Value);
-            return await this.SubmitChangesAsync(persist: persist);
+            return await this.SubmitChangesAsync(persist: persist, token: token);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_CqrsSegregate_Dto"))
         {
@@ -186,9 +186,8 @@ internal sealed class DtoService(
         {
             return null;
         }
-        var dtoSecs = await getDtoSecurityDescriptor(dbResult, token);
         var properties = await getProperties(dbResult, token);
-        var result = this._converter.ToViewModel(dbResult, dtoSecs)!.ForMember(x => x.Properties.AddRange(properties));
+        var result = this._converter.ToViewModel(dbResult)!.ForMember(x => x.Properties.AddRange(properties));
 
         return result;
 
@@ -225,10 +224,6 @@ internal sealed class DtoService(
         Task<IReadOnlyList<PropertyViewModel>> getProperties(DtoEntity dbResult, CancellationToken token = default)
             => this._propertyService.GetByParentIdAsync(dbResult.Id, token);
 
-        async Task<IEnumerable<SecurityDescriptorViewModel>> getDtoSecurityDescriptor(DtoEntity dbResult, CancellationToken token = default)
-            => dbResult.Guid.IsNullOrEmpty()
-                    ? new List<SecurityDescriptorViewModel>()
-                    : await this._securityDescriptor.GetByEntityIdAsync(dbResult.Guid, token);
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetByModuleId(long id, CancellationToken token = default)
@@ -309,7 +304,6 @@ internal sealed class DtoService(
                                     .SetModified(x => x.IsResultDto)
                                     .SetModified(x => x.IsViewModel);
 
-            await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
         }
         async Task updateProperties(IEnumerable<PropertyViewModel> properties, DtoEntity dto, CancellationToken token = default)
         {
@@ -329,7 +323,6 @@ internal sealed class DtoService(
                                         .SetModified(x => x.Comment)
                                         .SetModified(x => x.TypeFullName)
                                         .SetModified(x => x.DtoId);
-                await this._securityDescriptor.SetSecurityDescriptorsAsync(prop, false, token);
             }
         }
         async Task removeDeletedProperties(IEnumerable<PropertyViewModel>? deletedProperties, CancellationToken token = default)

@@ -77,8 +77,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
     public SecurityClaim? ToDbEntity(ClaimViewModel? model) =>
         model is null ? null : this._mapper.Map<SecurityClaim>(model)
-            .ForMember(x => x.Id = model.Id)
-            .ForMember(x => x.SecurityDescriptorId = model.SecuritytDescriptorId ?? Guid.Empty);
+            .ForMember(x => x.Id = model.Id);
 
     public UiComponent? ToDbEntity(UiComponentViewModel? model) =>
         model is null ? null : this._mapper.Map<UiComponent>(model)
@@ -142,36 +141,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         return result;
     }
 
-    public SecurityDescriptor? ToDbEntity(SecurityDescriptorViewModel? model)
-    {
-        if (model is null)
-        {
-            return null;
-        }
-
-        var result = this._mapper.Map<SecurityDescriptor>(model)
-            .ForMember(x => x.SecurityDescriptorStrategy = model switch
-            {
-                { IsNoSec: true } => SecurityDescriptorStrategy.None,
-                { IsClaimBased: true } => SecurityDescriptorStrategy.Claim,
-                _ => SecurityDescriptorStrategy.None
-            })
-            .ForMember(x => x.Id = model.Id)!;
-        _ = model.ClaimSet.ForEach(x =>
-        {
-            if (this._mapper.Map<SecurityClaim>(x) is { } claim)
-            {
-                result.SecurityClaims.Add(claim);
-            }
-        });
-        if (!model.EntityId.IsNullOrEmpty() && !result.EntitySecurities.Any(x => x.EntityId == model.EntityId))
-        {
-            result.EntitySecurities.Add(new() { EntityId = model.EntityId, IsEnabled = true, SecurityDescriptorId = model.Id });
-        }
-
-        return result;
-    }
-
     public CqrsSegregate? ToDbEntity(CqrsQueryViewModel? model) =>
         this.CqrsViewModelToDbEntityInner(model, CqrsSegregateType.Query);
 
@@ -225,7 +194,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             IsEnabled = !propertyViewModel.Name.EqualsTo("id")
         };
 
-    public DtoViewModel? ToViewModel(in Dto? entity, in IEnumerable<SecurityDescriptorViewModel>? securityDescriptors = null)
+    public DtoViewModel? ToViewModel(in Dto? entity)
     {
         if (entity is null)
         {
@@ -241,10 +210,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         if (entity.Module is not null)
         {
             result.Module = this.ToViewModel(entity.Module)!;
-        }
-        if (securityDescriptors is not null)
-        {
-            _ = securityDescriptors.ForEach(result.SecurityDescriptors.Add);
         }
         return result;
     }
@@ -286,14 +251,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.Type = PropertyTypeHelper.FromPropertyTypeId(entity.PropertyType))
             .ForMember(x => x.Dto = this.InnerToViewModel(entity.Dto));
 
-    public SecurityDescriptorViewModel? ToViewModel(SecurityDescriptor? entity) =>
-        entity is null ? null : this._mapper.Map<SecurityDescriptorViewModel>(entity)
-            .ForMember(x => x.Id = entity.Id)
-            .ForMember(x => x.IsNoSec = entity.SecurityDescriptorStrategy == SecurityDescriptorStrategy.None)
-            .ForMember(x => x.IsClaimBased = entity.SecurityDescriptorStrategy == SecurityDescriptorStrategy.Claim)
-            .ForMember(x => x.ClaimSet.AddRange(entity.SecurityClaims.Select(y => this._mapper.Map<ClaimViewModel>(y)
-            .ForMember(z => z.SecuritytDescriptorId = entity.Id))));
-
     public CqrsViewModelBase? ToViewModel(CqrsSegregate? entity) =>
         entity is null ? null : EnumHelper.ToEnum<CqrsSegregateType>(entity.SegregateType) switch
         {
@@ -326,7 +283,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.InsertCommandViewModel = this.ToViewModel(entity.InsertCommand).Cast().As<CqrsCommandViewModel>())
             .ForMember(x => x.UpdateCommandViewModel = this.ToViewModel(entity.UpdateCommand).Cast().As<CqrsCommandViewModel>())
             .ForMember(x => x.DeleteCommandViewModel = this.ToViewModel(entity.DeleteCommand).Cast().As<CqrsCommandViewModel>());
-
+    [return: NotNullIfNotNull("entity")]
+    public DtoViewModel? ToViewModel(Dto? entity) => throw new NotImplementedException();
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType) =>
         model == null ? null : this._mapper.Map<CqrsSegregate>(model)
             .ForMember(x => x.ModuleId = model.Module.Id.GetValueOrDefault())

@@ -70,9 +70,5 @@
             <TextBlock Style="{StaticResource LongLabelBlock}" Text="Security Descriptor" />
             <Separator />
         </StackPanel>
-        <usercontrols:EntitySecurityDescriptorViewUserControl
-            Grid.Row="7"
-            MinWidth="{StaticResource ContentControlLongWidth}"
-            DataContext="{Binding SecurityDescriptors}" />
     </Grid>
 </UserControl>

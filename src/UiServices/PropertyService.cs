@@ -37,11 +37,6 @@ internal sealed class PropertyService : IPropertyService
         Check.MustBeArgumentNotNull(model?.Id);
 
         _ = this._writeDbContext.RemoveById<Property>(model.Id.Value);
-        if (model.Guid is not null)
-        {
-            await this._securityService.UnassignEntity(model.Guid.Value, persist: false, token: cancellationToken);
-        }
-
         _ = await this.SubmitChangesAsync(persist: persist);
 
         return Result.Success;
@@ -95,8 +90,7 @@ internal sealed class PropertyService : IPropertyService
                     where x.Id == id
                     select x;
         var dbResult = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        var sec = dbResult is null ? null : await this._securityService.GetByEntityIdAsync(dbResult.Guid);
-        var result = this._converter.ToViewModel<PropertyViewModel, Property>(dbResult, sec);
+        var result = this._converter.ToViewModel(dbResult);
         return result;
     }
 
@@ -106,7 +100,7 @@ internal sealed class PropertyService : IPropertyService
                     where x.ParentEntityId == parentId
                     select x;
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var viewModels = await this._converter.ToViewModelAsync<PropertyViewModel, Property>(dbResult, this._securityService).ToListCompactAsync(cancellationToken: cancellationToken);
+        var viewModels = this._converter.ToViewModel(dbResult).Compact().ToReadOnlyList();
         return viewModels;
     }
 
@@ -136,10 +130,6 @@ internal sealed class PropertyService : IPropertyService
 
             property.ParentEntityId = parentEntityId;
             _ = await this.InsertAsync(property, false, token);
-            if (property.SecurityDescriptors?.Any() is true)
-            {
-                await this._securityService.SetSecurityDescriptorsAsync(property, persist, token);
-            }
         }
     }
     public void ResetChanges()
@@ -174,13 +164,6 @@ internal sealed class PropertyService : IPropertyService
         if (item.ParentEntityId == 0)
         {
             errors.Add((ValidationExceptionBase.ErrorCode, "Parent entity Id cannot be null or 0"));
-        }
-        if (item.SecurityDescriptors?.Any() is true)
-        {
-            foreach (var secDesc in item.SecurityDescriptors)
-            {
-                //x_ = result.With(await this._securityService.ValidateAsync(secDesc));
-            }
         }
         var result = Result<PropertyViewModel>.New(item, errors: errors);
         return await Task.FromResult(result);

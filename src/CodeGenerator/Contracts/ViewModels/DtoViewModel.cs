@@ -7,7 +7,7 @@ using Library.Helpers.CodeGen;
 
 namespace Contracts.ViewModels;
 
-public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
+public sealed class DtoViewModel : InfraViewModelBase
 {
     private string? _comment;
     private DbObjectViewModel _dbObject = null!;
@@ -67,6 +67,4 @@ public sealed class DtoViewModel : InfraViewModelBase, IHasSecurityDescriptor
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
 
     public ObservableCollection<PropertyViewModel> Properties { get; } = new();
-
-    public ObservableCollection<SecurityDescriptorViewModel> SecurityDescriptors { get; } = new();
 }

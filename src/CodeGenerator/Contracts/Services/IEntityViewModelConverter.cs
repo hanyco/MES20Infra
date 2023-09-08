@@ -37,13 +37,11 @@ public interface IEntityViewModelConverter :
 
     IDbEntityToViewModelConverter<UiComponentViewModel, UiPageComponent>,
 
-    IDbEntityToViewModelConverter<SecurityDescriptorViewModel, SecurityDescriptor>,
-    IViewModelToDbEntityConverter<SecurityDescriptorViewModel, SecurityDescriptor>,
-
     IDbEntityToViewModelConverter<FunctionalityViewModel, Functionality>,
     IViewModelToDbEntityConverter<FunctionalityViewModel, Functionality>,
 
     IViewModelToDbEntityConverter<DtoViewModel, Dto>,
+    IDbEntityToViewModelConverter<DtoViewModel, Dto>,
 
     IViewModelToDbEntityConverter<ClaimViewModel, SecurityClaim>,
 
@@ -64,9 +62,6 @@ public interface IEntityViewModelConverter :
 
     [return: NotNullIfNotNull(nameof(viewModel))]
     PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? viewModel);
-
-    [return: NotNullIfNotNull(nameof(entity))]
-    DtoViewModel? ToViewModel(in Dto? entity, in IEnumerable<SecurityDescriptorViewModel>? securityDescriptors = null);
 
     [return: NotNullIfNotNull(nameof(propertyViewModel))]
     UiComponentPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel);

@@ -331,19 +331,6 @@ public partial class DtoDetailsPage
 
     private void SecurityDescriptorButton_Click(object sender, RoutedEventArgs e)
     {
-        Check.MutBeNotNull(this.ViewModel);
-
-        var x = new SecurityDescriptorLookupPage(this.Logger, this.ViewModel.SecurityDescriptors.ToObservableCollection());
-        var hostDialog = HostDialog.Create(x)
-            .SetTile("DTO Security Descriptor")
-            .SetPrompt("Add or remove security descriptors.")
-            .SetOwnerToDefault();
-        if (hostDialog.Show() != true)
-        {
-            this.EndActionScope();
-            return;
-        }
-        _ = x.SelectedItems.ForEach(this.ViewModel.SecurityDescriptors.Add);
-        this.Debug("Security Descriptor is set up.");
+        
     }
 }

@@ -1,12 +1,10 @@
-﻿using System.Collections.ObjectModel;
-
-using HanyCo.Infra.Internals.Data.DataSources;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
 
 namespace Contracts.ViewModels;
 
-public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescriptor
+public sealed class PropertyViewModel : InfraViewModelBase
 {
     private string? _comment;
     private DbObjectViewModel? _dbObject;
@@ -72,8 +70,6 @@ public sealed class PropertyViewModel : InfraViewModelBase, IHasSecurityDescript
         get => this._parentEntityId;
         set => this.SetProperty(ref this._parentEntityId, value);
     }
-
-    public ObservableCollection<SecurityDescriptorViewModel> SecurityDescriptors { get; } = new();
 
     public PropertyType Type
     {

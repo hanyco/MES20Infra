@@ -4,7 +4,7 @@ using Contracts.ViewModels;
 
 namespace HanyCo.Infra.UI.ViewModels;
 
-public sealed class ModuleViewModel : InfraViewModelBase, IHasSecurityDescriptor
+public sealed class ModuleViewModel : InfraViewModelBase
 {
     private ModuleViewModel _parent;
 
@@ -23,5 +23,4 @@ public sealed class ModuleViewModel : InfraViewModelBase, IHasSecurityDescriptor
         set => this.SetProperty(ref this._parent, value);
     }
 
-    public ObservableCollection<SecurityDescriptorViewModel> SecurityDescriptors { get; } = new();
 }

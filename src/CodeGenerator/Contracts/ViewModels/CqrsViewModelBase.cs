@@ -7,7 +7,7 @@ using HanyCo.Infra.UI.ViewModels;
 
 namespace Contracts.ViewModels;
 
-public abstract class CqrsViewModelBase : InfraViewModelBase, IHasSecurityDescriptor
+public abstract class CqrsViewModelBase : InfraViewModelBase
 {
     private CqrsSegregateCategory _category;
     private string _comment;
@@ -87,7 +87,6 @@ public abstract class CqrsViewModelBase : InfraViewModelBase, IHasSecurityDescri
         set => this.SetProperty(ref this._resultDto, value);
     }
 
-    public ObservableCollection<SecurityDescriptorViewModel> SecurityDescriptors { get; } = new();
     protected abstract CqrsSegregateType SegregateType { get; }
 
     public override string ToString() => base.ToString();
