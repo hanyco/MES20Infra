@@ -167,12 +167,12 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
     /// <returns></returns>
     public override string ToString()
     {
-        if (NumberHelper.IsNullOrZero(this.Order, this.Row, this.Col, this.Offset))
+        if (NumberHelper.IsNullOrZero(this.Order, this.Col, this.Offset) && this.Row is null)
         {
             return "(default)";
         }
 
-        if (!this.Order.IsNullOrZero() && NumberHelper.IsNullOrZero(this.Row, this.Col, this.Offset))
+        if (!this.Order.IsNullOrZero() && NumberHelper.IsNullOrZero(this.Col, this.Offset) && this.Row is null)
         {
             return $"Order: {this.Order}";
         }
@@ -183,9 +183,9 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
         }
 
         var result = new StringBuilder();
-        if (!this.Row.IsNullOrZero())
+        if (this.Row != null)
         {
-            _ = result.Append($" Row: {this.Row}");
+            _ = result.Append($" IsRow: {this.Row}");
         }
 
         if (!this.Col.IsNullOrZero())
@@ -195,12 +195,12 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
 
         if (!this.RowSpan.IsNullOrZero())
         {
-            _ = result.Append($" Rowspan: {this.Col}");
+            _ = result.Append($" RowSpan: {this.Col}");
         }
 
         if (!this.ColSpan.IsNullOrZero())
         {
-            _ = result.Append($" Colspan: {this.Col}");
+            _ = result.Append($" ColSpan: {this.Col}");
         }
 
         if (!this.Offset.IsNullOrZero())

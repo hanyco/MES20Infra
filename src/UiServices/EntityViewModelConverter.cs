@@ -222,7 +222,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             Caption = string.Equals(propertyViewModel.Name, "id")
                 ? propertyViewModel.Name
                 : propertyViewModel.Name.SeparateCamelCase(),
-            IsEnabled = true
+            IsEnabled = !propertyViewModel.Name.EqualsTo("id")
         };
 
     public DtoViewModel? ToViewModel(in Dto? entity, in IEnumerable<SecurityDescriptorViewModel>? securityDescriptors = null)

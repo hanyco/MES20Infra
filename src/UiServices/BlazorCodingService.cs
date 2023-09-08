@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 using Contracts.Services;
 using Contracts.ViewModels;
@@ -15,7 +14,6 @@ using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
-using Library.Collections;
 using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
@@ -26,23 +24,15 @@ using Services.Helpers;
 
 namespace Services;
 
-internal sealed class BlazorCodingService : IBlazorComponentCodingService
+internal sealed class BlazorCodingService(IDtoService dtoService,
+                           IPropertyService propertyService,
+                           IEntityViewModelConverter converter,
+                           InfraReadDbContext readDbContext) : IBlazorComponentCodingService
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly IDtoService _dtoService;
-    private readonly IPropertyService _propertyService;
-    private readonly InfraReadDbContext _readDbContext;
-
-    public BlazorCodingService(IDtoService dtoService,
-                               IPropertyService propertyService,
-                               IEntityViewModelConverter converter,
-                               InfraReadDbContext readDbContext)
-    {
-        this._dtoService = dtoService;
-        this._propertyService = propertyService;
-        this._converter = converter;
-        this._readDbContext = readDbContext;
-    }
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly IDtoService _dtoService = dtoService;
+    private readonly IPropertyService _propertyService = propertyService;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
 
     public bool ControlTypeHasPropertiesPage(ControlType controlType)
         => controlType switch
@@ -81,23 +71,6 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         return Task.FromResult(result);
     }
 
-    public UiComponentViewModel CreateViewModel(DtoViewModel dto)
-    {
-        Check.MustBeArgumentNotNull(dto);
-        var parsedName = CommonHelper.Purify(dto.Name) ?? string.Empty;
-        var parsedNameSpace = CommonHelper.Purify(dto.NameSpace);
-        var result = new UiComponentViewModel
-        {
-            Name = parsedName,
-            PageDataContext = dto,
-            ClassName = parsedName,
-            NameSpace = parsedNameSpace,
-            Guid = Guid.NewGuid(),
-        };
-        _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
-        return result;
-    }
-
     public async Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(dto?.Id);
@@ -110,6 +83,28 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
 
     public UiComponentPropertyViewModel CreateUnboundProperty() =>
         new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
+
+    public UiComponentViewModel CreateViewModel(DtoViewModel dto)
+    {
+        _ = dto.Check()
+            .ArgumentNotNull().ThrowOnFail()
+            .NotNull(x => x.Name)
+            .NotNull(x => x.NameSpace)
+            .ThrowOnFail();
+
+        var name = CommonHelper.Purify(dto.Name)!;
+        var parsedNameSpace = CommonHelper.Purify(dto.NameSpace);
+        var result = new UiComponentViewModel
+        {
+            Name = name,
+            PageDataContext = dto,
+            ClassName = name,
+            NameSpace = parsedNameSpace,
+            Guid = Guid.NewGuid(),
+        };
+        _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
+        return result;
+    }
 
     public Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop, CancellationToken cancellationToken = default)
     {
@@ -159,31 +154,6 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
             _ => false,
         };
 
-    //public async Task SaveToPathAsync(UiComponentViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
-    //{
-    //    Check.MutBeNotNull(viewModel);
-    //    Check.MutBeNotNull(viewModel.ClassName);
-    //    Check.MutBeNotNull(path);
-
-    //    var codes = this.GenerateCodes(viewModel, arguments).Value;
-    //    foreach (var code in codes.Compact())
-    //    {
-    //        await File.WriteAllTextAsync(Path.Combine(path, code.FileName), code.Statement, cancellationToken: cancellationToken);
-    //    }
-    //}
-
-    //public Task SaveToPathAsync(UiPageViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken cancellationToken = default)
-    //{
-    //    var page = CreatePage(viewModel, cancellationToken);
-    //    var codes = page.GenerateCodes(arguments);
-    //    var writeTasks = TaskList.New();
-    //    foreach (var code in codes.Compact())
-    //    {
-    //        _ = writeTasks.Add(File.WriteAllTextAsync(Path.Combine(path, code.Name), code.Statement, cancellationToken: cancellationToken));
-    //    }
-    //    return writeTasks.WhenAllAsync();
-    //}
-
     private static BlazorComponent CreateComponent(in UiComponentViewModel model)
     {
         Check.MustBeArgumentNotNull(model?.Name);
@@ -228,9 +198,16 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         static void createChildren<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponentBase<TBlazorComponent> engine, CancellationToken cancellationToken = default)
             where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
         {
-            foreach (var prop in model.UiProperties)
+            for (var propertyIndex = 0; propertyIndex < model.UiProperties.Count; propertyIndex++)
             {
+                var prop = model.UiProperties[propertyIndex];
                 var bindPropName = $"this.DataContext.{prop.Name}";
+                var position = prop.Position.ToBootstrapPosition();
+
+                if (position.IsDefault())
+                {
+                    _ = position.SetCol(5);
+                }
                 switch (prop.ControlType)
                 {
                     case ControlType.None:
@@ -241,22 +218,22 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
 
                     case ControlType.CheckBox:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorCheckBox($"{prop.Name}CheckBox", bind: bindPropName) { Position = prop.Position.ToBootstrapPosition() });
+                        engine.Children.Add(new BlazorCheckBox($"{prop.Name}CheckBox", bind: bindPropName) { Position = position });
                         break;
 
                     case ControlType.TextBox:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = prop.Position.ToBootstrapPosition() });
+                        engine.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = position });
                         break;
 
                     case ControlType.DateTimePicker:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = prop.Position.ToBootstrapPosition() });
+                        engine.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = position });
                         break;
 
                     case ControlType.NumericTextBox:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorNumericTextBox($"{prop.Name}NumericTextBox", bind: bindPropName) { Position = prop.Position.ToBootstrapPosition() });
+                        engine.Children.Add(new BlazorNumericTextBox($"{prop.Name}NumericTextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.CurrencyBox:
@@ -276,7 +253,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
 
                     case ControlType.DataGrid:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorTable($"{bindPropName}Grid", bind: bindPropName) { Position = prop.Position.ToBootstrapPosition() });
+                        engine.Children.Add(new BlazorTable($"{bindPropName}Grid", bind: bindPropName) { Position = position });
                         break;
 
                     case ControlType.ExternalViewBox:
@@ -310,10 +287,11 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
                     engine.Children.Add(button);
                 }
             }
-            static IHtmlElement createLabel([DisallowNull] UiComponentPropertyViewModel prop)
-                => new BlazorLabel($"{prop.ArgumentNotNull().Name}Label", body: prop.Caption.NotNull(New<NotFoundValidationException>))
+            static IHtmlElement createLabel([DisallowNull] UiComponentPropertyViewModel prop) =>
+                new BlazorLabel($"{prop.ArgumentNotNull().Name}Label", body: prop.Caption.NotNull(New<NotFoundValidationException>))
                 {
-                    Position = prop.Position.ToBootstrapPosition().SetColSpan(1)
+                    Position = prop.Position.ToBootstrapPosition().SetRow(1).SetCol(1),
+                    IsEnabled = prop.IsEnabled
                 };
         }
 
@@ -321,7 +299,7 @@ internal sealed class BlazorCodingService : IBlazorComponentCodingService
         {
             var id = model.UiProperties.FirstOrDefault(x => x.Name.EqualsTo("id"));
             var idType = TypePath.New(id?.Property.Type.ToFullTypeName());
-            foreach (UiComponentPropertyViewModel uiProp in model.UiProperties)
+            foreach (var uiProp in model.UiProperties)
             {
                 result.Properties.Add(new PropertyActor(uiProp.Property.TypeFullName, uiProp.Name, uiProp.Caption));
             }

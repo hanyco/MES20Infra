@@ -54,70 +54,53 @@ public static class HtmlElementExtensions
 
         static IEnumerable<IHtmlElement> validatePositions(IEnumerable<IHtmlElement> children)
             => children.ArgumentNotNull()
-                       .Any(x => x?.Position.Order is not null and not 0) && children.Any(x => x?.Position.Row is not null and not 0)
+                       .Any(x => x?.Position.Order is not null and not 0) && children.Any(x => x?.Position.Row is not null)
                            ? throw new ValidationException("Cannot set both `order` and `row` at a same time.")
                            : children;
 
         static IEnumerable<IHtmlElement> sortData(IEnumerable<IHtmlElement> children)
         {
-            IOrderedEnumerable<IHtmlElement>? result = null;
-            if (!children.Any(x => x?.Position.Order is not null and not 0) && !children.Any(x => x?.Position.Row is not null and not 0))
-            {
-                result = children.OrderBy(x => 1);
-            }
-            else if (children.Any(x => x.Position.Order is not null and not 0))
-            {
-                result = children.Where(x => x.Position.Order is not null and not 0)
-                    .OrderBy(x => x.Position.Order)
-                    .AddRangeImmuted(children.Where(x => x.Position.Order is null or 0))
-                    .OrderBy(x => 1);
-            }
-            else if (children.Any(x => x.Position.Row is not null and not 0))
-            {
-                result = children.OrderBy(x => x.Position.Row);
-            }
+            //IOrderedEnumerable<IHtmlElement>? result = null;
+            //if (!children.Any(x => x?.Position.Order is not null and not 0) && !children.Any(x => x?.Position.Row is not null and not 0))
+            //{
+            //    result = children.OrderBy(x => 1);
+            //}
+            //else if (children.Any(x => x.Position.Order is not null and not 0))
+            //{
+            //    result = children.Where(x => x.Position.Order is not null and not 0)
+            //        .OrderBy(x => x.Position.Order)
+            //        .AddRangeImmuted(children.Where(x => x.Position.Order is null or 0))
+            //        .OrderBy(x => 1);
+            //}
+            //else if (children.Any(x => x.Position.Row is not null))
+            //{
+            //    result = children.OrderBy(x => x.Position.Row);
+            //}
 
-            return result.Compact();
+            //return result.Compact();
+            return children;
         }
 
-        static int setupChildCodeStatement(StringBuilder statement, ref int colIndex, ref int? lastRow, IHtmlElement child, bool addRowDiv)
+        static int setupChildCodeStatement(StringBuilder statementBuilder, IHtmlElement child, bool addRowDiv)
         {
-            var colSpan = child.Position.ColSpan is null or < 1 ? 1 : child.Position.ColSpan.Value;
-            if (addRowDiv)
+            if(child.Position.Row is not null)
             {
-                if (lastRow is -1)
-                {
-                    _ = statement.AppendLine("<div class='row here1'>");
-                    lastRow = child.Position.Row;
-                }
-                else if ((colIndex + colSpan) > 12 || lastRow != child.Position.Row)
-                {
-                    _ = statement.AppendLine("</div>");
-                    _ = statement.AppendLine("<div class='row here2'>");
-                    colIndex = 0;
-                    lastRow = child.Position.Row;
-                }
+                _ = statementBuilder.AppendLine("</div>")
+                    .AppendLine("<div class='row'>");
             }
-            _ = child.Position.SetColSpan(colSpan);
-            _ = statement.AppendLine($"{HtmlDoc.INDENT}{child.GenerateUiCode().Statement}");
-            return colSpan;
+            _ = statementBuilder.AppendLine($"{HtmlDoc.INDENT}{child.GenerateUiCode().Statement}");
+            return 0;
         }
 
         static void createDetails(StringBuilder statementBuilder, bool manageRow, IEnumerable<IHtmlElement> orderedData)
         {
-            var colIndex = 0;
-            int? lastRow = -1;
-
+            _ = statementBuilder.AppendLine("<div class='row'>"); 
             foreach (var child in orderedData)
             {
                 child.Cast().As<IBindable>()?.Bind();
-                var colSpan = setupChildCodeStatement(statementBuilder, ref colIndex, ref lastRow, child, manageRow);
-                colIndex += colSpan;
+                var colSpan = setupChildCodeStatement(statementBuilder, child, manageRow);
             }
-            if (lastRow is not -1)
-            {
-                _ = statementBuilder.AppendLine("</div>");
-            }
+            _ = statementBuilder.AppendLine("</div>");
         }
     }
 

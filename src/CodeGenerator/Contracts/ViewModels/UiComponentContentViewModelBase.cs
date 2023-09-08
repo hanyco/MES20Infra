@@ -7,7 +7,7 @@ public abstract class UiComponentContentViewModelBase : InfraViewModelBase
     #region Fields
 
     private string _caption;
-    private bool _isEnabled;
+    private bool _isEnabled = true;
     private UiBootstrapPositionViewModel _position = new();
 
     #endregion Fields

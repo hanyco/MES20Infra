@@ -93,7 +93,7 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
         else
         {
             var element = new HtmlElement(this.Name);
-            if (this.Position?.Col is not null and not 0 and not 1)
+            if (this.Position?.Col is not null and not 0)
             {
                 element.Attributes.Add($"col-{this.Position.Col}", null);
             }

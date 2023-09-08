@@ -10,7 +10,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerator
         where TSelf : HtmlElementBase<TSelf>, IHtmlElement
 {
-    private bool _isEnabled;
+    private bool _isEnabled = true;
     private string? _style;
 
     protected HtmlElementBase(string tagName, string? id = null, string? name = null, string? body = null, string? labelPrefix = null)
@@ -171,22 +171,22 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
         var pos = this.Position;
         var buffer = new StringBuilder();
 
-        if (pos.Row is not null and not 0 and not 1)
-        {
-            _ = buffer.Append($" row-{pos.Row}");
-        }
+        //if (pos.Row is not null)
+        //{
+        //    _ = buffer.Append($" row");
+        //}
 
-        if (pos.Col is not null and not 0 and not 1)
+        if (pos.Col is not null and not 0)
         {
             _ = buffer.Append($" col-{pos.Col}");
         }
 
-        if (pos.ColSpan is not null and not 0 and not 1)
+        if (pos.ColSpan is not null and not 0)
         {
             _ = buffer.Append($" colspan-{pos.ColSpan}");
         }
 
-        if (pos.Offset is not null and not 0 and not 1)
+        if (pos.Offset is not null and not 0)
         {
             _ = buffer.Append($" offset-{pos.Offset}");
         }

@@ -320,7 +320,8 @@ internal sealed partial class FunctionalityService
                 Position = new()
                 {
                     Col = 2,
-                    Offset = 10
+                    Offset = 4,
+                    Row = 1,
                 }
             };
             data.ViewModel.BlazorDetailsComponentViewModel.UiActions.Add(saveButton);

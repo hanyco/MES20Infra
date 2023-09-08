@@ -11,19 +11,20 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
     private int? _col;
     private int? _colSpan;
     private int? _offset;
+    private int? _row;
 #pragma warning restore IDE0032 // Use auto property
 
-    public BootstrapPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null, int? offset = null)
+    public BootstrapPosition(int? order = null, int? isRow = null, int? col = null, int? colSpan = null, int? offset = null)
     {
         this.Order = order;
-        this.Row = row;
+        this.Row = isRow;
         this.Col = col;
         this.ColSpan = colSpan;
         this.Offset = offset;
     }
 
     public int? Order { get; init; }
-    public int? Row { get; init; }
+    public int? Row { get => _row; init => _row = value; }
     public int? Col { get => _col; init => _col = value; }
     public int? ColSpan { get => _colSpan; init => _colSpan = value; }
     public int? Offset { get => _offset; init => _offset = value; }
@@ -31,9 +32,9 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
     public bool IsInitialized => this.Order is not null || this.Row is not null || this.Col is not null || this.ColSpan is not null;
 
     public BootstrapPosition SetColSpan(int? value)
-        => this.Fluent<BootstrapPosition>((Action)(() => this._colSpan = value));
+        => this.Fluent<BootstrapPosition>(() => this._colSpan = value);
     public BootstrapPosition SetCol(int? value)
-        => this.Fluent<BootstrapPosition>((Action)(() => this._col = value));
+        => this.Fluent<BootstrapPosition>(() => this._col = value);
     public int CompareTo(BootstrapPosition? other)
     {
         if (other is { } o)
@@ -42,9 +43,9 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
             {
                 return rOrder;
             }
-            else if (compare(this.Row, o.Row) is { } rRow)
+            else if (this.Row != o.Row)
             {
-                return rRow;
+                return 1;
             }
             else if (compare(this.Col, o.Col) is { } rCol)
             {
@@ -72,13 +73,16 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
         => (x is null && y is null) || x?.CompareTo(y) == 0;
 
     public override int GetHashCode()
-        => ObjectHelper.GetHashCode(this, this.Order ?? -1, this.Row ?? -1, this.Col ?? -1);
+        => ObjectHelper.GetHashCode(this, this.Order ?? -1, this.Row??-1, this.Col ?? -1);
 
     public int GetHashCode([DisallowNull] BootstrapPosition obj)
         => obj.ArgumentNotNull(nameof(obj)).GetHashCode();
 
     public override string? ToString()
         => !this.IsInitialized ? null : $"Order: {this.Order}, Location:({this.Row},{this.Col}), ColSpan:{this.ColSpan}";
+
+    public BootstrapPosition SetRow(int? row) =>
+        this.Fluent(this._row = row);
 
     public static bool operator <(BootstrapPosition left, BootstrapPosition right)
         => left.ArgumentNotNull().CompareTo(right.ArgumentNotNull()) < 0;
@@ -91,4 +95,7 @@ public sealed record BootstrapPosition : IEquatable<BootstrapPosition>, IEqualit
 
     public static bool operator >=(BootstrapPosition left, BootstrapPosition right)
         => left.ArgumentNotNull().CompareTo(right.ArgumentNotNull()) >= 0;
+
+    public bool IsDefault()
+        => !this.IsInitialized;
 }
