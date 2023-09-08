@@ -322,6 +322,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
     public Code GenerateUiCode(in GenerateCodesParameters? arguments = null) =>
         this.GenerateUiCode(CodeCategory.Component, arguments);
+
     public TBlazorComponent SetDataContext(TypePath value)
         => this.This(() => this.DataContextType = value);
 
@@ -358,14 +359,17 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         StringBuilder generateGridCode(StringBuilder sb)
         {
-            var actions = this.Actions.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
-                .AddImmuted(new("Actions", this.Actions.Select(x => new BlazorButton(x.Name, x.Name, body: x.Caption) { OnClick = $"() => this.{x.EventHandlerName}(item.Id)" })));
-            var properties = this.Properties.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
-                .AddImmuted(new("Properties", this.Properties.Select(x => new HtmlTableCellHead(x.Caption, name: x.Name))));
-            var table = BlazorTable.New($"{this.DataContextType}Grid", $"{this.DataContextType}Grid")
-                .SetDataContextName("this.DataContext")
-                .SetDataColumns(actions)
-                .AddDataColumns(properties);
+            //var actions = this.Actions.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
+            //    .AddImmuted(new("Actions", this.Actions.Select(x => new BlazorButton(x.Name, x.Name, body: x.Caption) { OnClick = $"() => this.{x.EventHandlerName}(item.Id)" })));
+            //var properties = this.Properties.Select(x => new DataColumnBindingInfo(x.Caption, x.Name))
+            //    .AddImmuted(new("Properties", this.Properties.Select(x => new HtmlTableCellHead(x.Caption, name: x.Name))));
+            
+            var table = new BlazorTable()
+            {
+                DataContextName = "this.DataContext"
+            };
+            table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
+            table.Actions.AddRange(this.Actions.Select(x => new BlazorTableRowAction(x.Name, x.Caption, $"() => this.{x.EventHandlerName}(item.Id)")));
             var uiCode = table.GenerateUiCode();
 
             return sb.Append(uiCode.Statement);

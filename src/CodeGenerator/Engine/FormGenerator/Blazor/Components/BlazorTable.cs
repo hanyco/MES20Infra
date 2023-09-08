@@ -1,141 +1,84 @@
-﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
+﻿using System.Collections.ObjectModel;
+
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
 using Library.CodeGeneration.Models;
 using Library.ComponentModel;
-using Library.Data.Models;
-
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 
-public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent, IBindable
+public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
 {
-    private BlazorTableBody _Body;
-
-    public BlazorTable()
-        : base("table", null, null, null, null)
-    {
-    }
-
-    public BlazorTable(string? id = null, string? name = null, string? labelPrefix = null, HtmlTableHead? head = null, BlazorTableBody? body = null, string? bind = null)
-        : base("table", id, name, labelPrefix, head)
-    {
-        this.Body = body ?? new();
-        _ = this.SetDataContextName(bind);
-    }
-
-    //public string? DataContextName { get => this.Body.DataContextName; set => this.SetDataContextName(value); }
-    public BlazorTableDataTemplate DataTemplate { get; } = new();
-
-    public HtmlTableRow DataTemplateRow => this.Body.DataTemplateRow;
-    public string? NameSpace { get; }
-    private new BlazorTableBody Body { get => this._Body ??= new(); set => this._Body = value; }
-
-    public static BlazorTable New(string? id = null, string? name = null, string? labelPrefix = null, HtmlTableHead? head = null, BlazorTableBody? body = null, string? bind = null)
-        => new(id, name, labelPrefix, head, body, bind);
-
-    public void Bind()
-    {
-        this.Body.DataContextName = this.DataTemplate.DataContextName;
-        this.Head.Children.Clear();
-        this.Body.Children.Clear();
-        this.Body.InnerText = string.Empty;
-        foreach (var (caption, bindingPathOrElement) in this.DataTemplate.DataColumns)
-        {
-            this.Head.Children.Add(new() { InnerText = caption });
-            this.Body.DataTemplateRow.Children.Add(new()
-            {
-                InnerText = bindingPathOrElement switch
-                {
-                    IHtmlElement element => element.GenerateUiCode()?.Statement,
-                    IEnumerable<IHtmlElement> elements => elements.Select(x => x.GenerateUiCode()).ToCodes().ComposeAll(Environment.NewLine).Statement,
-                    string bindingPath => $"@item.{bindingPath}",
-                    _ => string.Empty,
-                }
-            });
-        }
-    }
-
-    public override BlazorTable Reset()
-    {
-        _ = (this.Body?.Reset());
-        return base.Reset();
-    }
-
-    public BlazorTable SetDataColumns(IEnumerable<DataColumnBindingInfo> bindings)
-    {
-        _ = this.DataTemplate.DataColumns.ClearAndAddRange(bindings);
-        return this;
-    }
-    public BlazorTable AddDataColumns(IEnumerable<DataColumnBindingInfo> bindings)
-    {
-        _ = this.DataTemplate.DataColumns.AddRange(bindings);
-        return this;
-    }
-    public BlazorTable SetDataContextName(string? value)
-    {
-        this.DataTemplate.DataContextName = value;
-        return this;
-    }
-
-    protected override string? OnGenerateCodeStatement()
-    {
-        this.Children.Clear();
-        _ = this.Children.AddRange(new IHtmlElement[] { this.Head, this.Body });
-        return base.OnGenerateCodeStatement();
-    }
-}
-
-public sealed class BlazorTableBody : HtmlTableBody, IBlazorComponent, IHasInnerText, IBindable
-{
-    public BlazorTableBody(string? labelPrefix = null, IEnumerable<HtmlTableRow>? rows = null)
-        : base(labelPrefix, rows)
-    {
-    }
-
+    public ObservableCollection<BlazorTableRowAction> Actions { get; } = new ObservableCollection<BlazorTableRowAction>();
+    Dictionary<string, string?> IBlazorComponent.BlazorAttributes { get; } = null!;
+    public ObservableCollection<BlazorTableColumn> Columns { get; } = new ObservableCollection<BlazorTableColumn>();
     public string? DataContextName { get; set; }
-    public HtmlTableRow DataTemplateRow { get; } = new();
-    public string? NameSpace { get; }
+    string? IBlazorComponent.NameSpace { get; }
 
-    public new void Bind()
+    protected override string OnGenerateCodeStatement()
     {
-        var me = this.Cast().As<IHtmlElement>()!;
-        me.Children.Clear();
-        me.Children.Add(this.DataTemplateRow);
-    }
+        var buffer = new StringBuilder();
+        _ = buffer.AppendLine("<table class=\"table\">")
+            .AppendLine($"{HtmlDoc.INDENT}<thead>")
+            .AppendLine($"{HtmlDoc.INDENT.Repeat(2)}<tr>");
+        foreach (var column in this.Columns)
+        {
+            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}<th>{column.Title}</th>");
+        }
+        foreach (var action in this.Actions)
+        {
+            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}<th>{action.Title}</th>");
+        }
+        _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(2)}</tr>")
+            .AppendLine($"{HtmlDoc.INDENT}</thead>");
 
-    protected override HtmlTableBody OnCodeGenAddChildren(in StringBuilder statement)
-    {
+        _ = buffer.AppendLine($"{HtmlDoc.INDENT}<tbody>");
         if (!this.DataContextName.IsNullOrEmpty())
         {
-            _ = statement.AppendLine($"@if ({this.DataContextName} is not null)".ToString());
-            _ = statement.AppendLine($"  @foreach (var item in {this.DataContextName})".ToString())
-                .AppendLine("  {");
+            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(2)}@if ({this.DataContextName} is not null)");
+            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}@foreach (var item in {this.DataContextName})")
+                .AppendLine($"{HtmlDoc.INDENT.Repeat(3)}{{");
+            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(2)}<tr>");
+            foreach (var column in this.Columns)
+            {
+                _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}<td>@item.{column.BindingName}</td>");
+            }
+            foreach (var action in this.Actions)
+            {
+                var onClick = action.OnClick.IsNullOrEmpty()
+                    ? $"\"@(() => {action.OnClick})\""
+                    : $"\"@(() => this.{action.Name}_OnClick(item.Id))\"";
+                _ = buffer.Append($"{HtmlDoc.INDENT.Repeat(3)}<td>")
+                    .Append($"<button id={this.Name} name={this.Name}")
+                    .Append($"@onclick={onClick}>{action.Title}")
+                    .Append("</button>")
+                    .Append("</td>");
+            }
+            _ = buffer.AppendLine()
+                .AppendLine($"{HtmlDoc.INDENT.Repeat(2)}</tr>");
+            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}}}");
         }
-        _ = base.OnCodeGenAddChildren(statement);
-        if (!this.DataContextName.IsNullOrEmpty())
-        {
-            _ = statement.AppendLine("  }");
-        }
-
-        return this;
+        _ = buffer.AppendLine($"{HtmlDoc.INDENT}</tbody>");
+        _ = buffer.AppendLine("</table>");
+        return buffer.ToString();
     }
 }
 
-//public partial class BlazorTableDataTemplate
-public class BlazorTableDataTemplate : NotifyPropertyChanged
+public sealed class BlazorTableColumn(string bindingName, string title) : NotifyPropertyChanged
 {
-    //public record struct DataColumn(string Caption, string? BindingPath);
+    private string _bindingName = bindingName;
+    private string _title = title;
+    public string BindingName { get => this._bindingName; set => this.SetProperty(ref this._bindingName, value); }
+    public string Title { get => this._title; set => this.SetProperty(ref this._title, value); }
+}
 
-    //[Library.SourceGenerator.Contracts.AutoNotifyAttribute]
-    private string? _dataContextName;
-
-    public ObservableHashSet<DataColumnBindingInfo> DataColumns { get; } = new();
-
-    public string? DataContextName
-    {
-        get => this._dataContextName;
-        set => this.SetProperty(ref this._dataContextName, value);
-    }
+public sealed class BlazorTableRowAction(string name, string? title, string? onClick) : NotifyPropertyChanged
+{
+    private string? _onClick = onClick;
+    private string? _title = title;
+    private string? _name = name;
+    public string? OnClick { get => this._onClick; set => this.SetProperty(ref this._onClick, value); }
+    public string? Title { get => this._title; set => this.SetProperty(ref this._title, value); }
+    public string? Name { get => this._name; set => this.SetProperty(ref this._name, value); }
 }

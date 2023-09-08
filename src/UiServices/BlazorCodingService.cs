@@ -113,17 +113,6 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
         return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
     }
 
-    //public GenerateCodeResult GenerateBlazorCodeBehinds(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
-    //{
-    //    arguments ??= new GenerateCodesParameters();
-    //    var engine = CreateComponent(model);
-    //    var result = engine.GenerateBehindCode(arguments);
-    //    return result;
-    //}
-
-    //public Code? GenerateBlazorHtmlCode(in UiComponentViewModel model)
-    //    => CreateComponent(model).GenerateUiCode();
-
     public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
         => new(CreateComponent(model).GenerateCodes(CodeCategory.Component, arguments ?? new GenerateCodesParameters(true, true, true)));
 
@@ -223,12 +212,12 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
 
                     case ControlType.TextBox:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = position });
+                        engine.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.DateTimePicker:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = position });
+                        engine.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.NumericTextBox:
@@ -253,7 +242,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
 
                     case ControlType.DataGrid:
                         engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorTable($"{bindPropName}Grid", bind: bindPropName) { Position = position });
+                        engine.Children.Add(new BlazorTable { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.ExternalViewBox:
@@ -309,15 +298,5 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                 result.Actions.Add(new(uiAction.Name, uiAction.Caption, Arguments: args, EventHandlerName: uiAction.EventHandlerName));
             }
         }
-    }
-
-    private static BlazorPage CreatePage(in UiPageViewModel model, CancellationToken cancellationToken = default)
-    {
-        Check.MustBeArgumentNotNull(model);
-        Check.MustBeArgumentNotNull(model.Name, nameof(model.Name));
-
-        var dataContextType = TypePath.New(model.DataContext?.Name, model.DataContext?.NameSpace);
-        var result = BlazorPage.New(model.Name).SetPageRoute(model.Route).SetNameSpace(model.NameSpace).SetDataContext(dataContextType);
-        return result;
     }
 }

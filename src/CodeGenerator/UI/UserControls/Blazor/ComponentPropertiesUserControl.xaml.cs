@@ -10,7 +10,6 @@ using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Pages.ControlProperties;
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.Data.Models;
 using Library.Exceptions.Validations;
 using Library.Mapping;
 using Library.Validations;
@@ -131,7 +130,7 @@ public partial class ComponentPropertiesUserControl
         {
             var grid = new BlazorTable();
             var dto = this._selectedDto;
-            _ = grid.SetDataColumns(dto.Properties.Select(x => new DataColumnBindingInfo(x.Name, x.TypeFullName)).ToArray());
+            _ = grid.Columns.AddRange(dto.Properties.Select(x => new BlazorTableColumn(x.Name, x.DbObject.Name)).ToArray());
 
             var component = grid ?? new();
             ControlPropertiesDialog dlg = new() { MyPage = new BlazorGridPropertiesPage { BlazorGrid = component } };
