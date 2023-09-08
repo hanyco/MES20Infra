@@ -63,17 +63,17 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
         _ = buffer.AppendLine($"{HtmlDoc.INDENT}</tbody>");
         _ = buffer.AppendLine("</table>");
         return buffer.ToString();
-    }
-}
-
-public sealed class BlazorTableColumn(string bindingName, string title) : NotifyPropertyChanged
+public sealed class BlazorTableBody : HtmlTableBody, IBlazorComponent, IHasInnerText, IBindable
 {
-    private string _bindingName = bindingName;
-    private string _title = title;
-    public string BindingName { get => this._bindingName; set => this.SetProperty(ref this._bindingName, value); }
-    public string Title { get => this._title; set => this.SetProperty(ref this._title, value); }
-}
-
+    public BlazorTableBody(string? labelPrefix = null, IEnumerable<HtmlTableRow>? rows = null)
+        : base(labelPrefix, rows)
+    {
+public sealed class BlazorTableBody : HtmlTableBody, IBlazorComponent, IHasInnerText, IBindable
+{
+    public BlazorTableBody(string? labelPrefix = null, IEnumerable<HtmlTableRow>? rows = null)
+        : base(labelPrefix, rows)
+    {
+    }
 public sealed class BlazorTableRowAction(string name, string title) : NotifyPropertyChanged
 {
     private string _name = name;
@@ -82,4 +82,28 @@ public sealed class BlazorTableRowAction(string name, string title) : NotifyProp
     public string Name { get => this._name; set => this.SetProperty(ref this._name, value); }
     public string? OnClick { get => this._onClick; set => this.SetProperty(ref this._onClick, value); }
     public string Title { get => this._title; set => this.SetProperty(ref this._title, value); }
+    //public record struct DataColumn(string Caption, string? BindingPath);
+
+    //[Library.SourceGenerator.Contracts.AutoNotifyAttribute]
+    private string? _dataContextName;
+
+    public ObservableHashSet<DataColumnBindingInfo> DataColumns { get; } = new();
+
+    public string? DataContextName
+    {
+        get => this._dataContextName;
+        set => this.SetProperty(ref this._dataContextName, value);
+    }
+    //public record struct DataColumn(string Caption, string? BindingPath);
+
+    //[Library.SourceGenerator.Contracts.AutoNotifyAttribute]
+    private string? _dataContextName;
+
+    public ObservableHashSet<DataColumnBindingInfo> DataColumns { get; } = new();
+
+    public string? DataContextName
+    {
+        get => this._dataContextName;
+        set => this.SetProperty(ref this._dataContextName, value);
+    }
 }
