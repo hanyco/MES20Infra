@@ -3,7 +3,7 @@ using Library.Types;
 
 namespace HanyCo.Infra.Security.Identity;
 
-public sealed class InfraIdentityRole : IdentityRole<Id>, IRoleModel
+public sealed class InfraIdentityRole : IdentityRole<Id>
 {
     public InfraIdentityRole()
     {

@@ -21,10 +21,10 @@ internal sealed class PropertyService : IPropertyService
 {
     private readonly IEntityViewModelConverter _converter;
     private readonly InfraReadDbContext _readDbContext;
-    private readonly ISecurityDescriptorService _securityService;
+    private readonly ISecurityService _securityService;
     private readonly InfraWriteDbContext _writeDbContext;
 
-    public PropertyService(InfraReadDbContext readDbContext, InfraWriteDbContext writeDbContext, IEntityViewModelConverter converter, ISecurityDescriptorService securityService)
+    public PropertyService(InfraReadDbContext readDbContext, InfraWriteDbContext writeDbContext, IEntityViewModelConverter converter, ISecurityService securityService)
     {
         this._readDbContext = readDbContext;
         this._writeDbContext = writeDbContext;

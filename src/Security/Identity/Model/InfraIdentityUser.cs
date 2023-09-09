@@ -5,7 +5,7 @@ using Library.Types;
 
 namespace HanyCo.Infra.Security.Identity;
 
-public sealed class InfraIdentityUser : IdentityUser<Id>, IUserModel, IEntity
+public sealed class InfraIdentityUser : IdentityUser<Id>, IEntity
 {
     public InfraIdentityUser()
     {

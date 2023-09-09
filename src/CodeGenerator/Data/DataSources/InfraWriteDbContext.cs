@@ -19,12 +19,11 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public virtual DbSet<CqrsSegregate> CqrsSegregates { get; set; } = null!;
         public virtual DbSet<CrudCode> CrudCodes { get; set; } = null!;
         public virtual DbSet<Dto> Dtos { get; set; } = null!;
-        public virtual DbSet<EntitySecurity> EntitySecurities { get; set; } = null!;
+        public virtual DbSet<EntityClaim> EntityClaims { get; set; } = null!;
         public virtual DbSet<Functionality> Functionalities { get; set; } = null!;
         public virtual DbSet<Module> Modules { get; set; } = null!;
         public virtual DbSet<Property> Properties { get; set; } = null!;
         public virtual DbSet<SecurityClaim> SecurityClaims { get; set; } = null!;
-        public virtual DbSet<SecurityDescriptor> SecurityDescriptors { get; set; } = null!;
         public virtual DbSet<SystemMenu> SystemMenus { get; set; } = null!;
         public virtual DbSet<Translation> Translations { get; set; } = null!;
         public virtual DbSet<UiBootstrapPosition> UiBootstrapPositions { get; set; } = null!;
@@ -33,6 +32,7 @@ namespace HanyCo.Infra.Internals.Data.DataSources
         public virtual DbSet<UiComponentProperty> UiComponentProperties { get; set; } = null!;
         public virtual DbSet<UiPage> UiPages { get; set; } = null!;
         public virtual DbSet<UiPageComponent> UiPageComponents { get; set; } = null!;
+        public virtual DbSet<UserClaimAccess> UserClaimAccesses { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -110,17 +110,16 @@ namespace HanyCo.Infra.Internals.Data.DataSources
                     .HasForeignKey(d => d.ModuleId);
             });
 
-            modelBuilder.Entity<EntitySecurity>(entity =>
+            modelBuilder.Entity<EntityClaim>(entity =>
             {
-                entity.ToTable("EntitySecurity", "infra");
+                entity.ToTable("EntityClaim", "infra");
 
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
-                entity.HasOne(d => d.SecurityDescriptor)
-                    .WithMany(p => p.EntitySecurities)
-                    .HasForeignKey(d => d.SecurityDescriptorId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_EntitySecurity_SecurityDescriptor");
+                entity.HasOne(d => d.Claim)
+                    .WithMany(p => p.EntityClaims)
+                    .HasForeignKey(d => d.ClaimId)
+                    .HasConstraintName("FK_EntityClaim_SecurityClaim");
             });
 
             modelBuilder.Entity<Functionality>(entity =>
@@ -186,6 +185,7 @@ namespace HanyCo.Infra.Internals.Data.DataSources
                 entity.HasOne(d => d.Dto)
                     .WithMany(p => p.Properties)
                     .HasForeignKey(d => d.DtoId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_Property_Dto");
             });
 
@@ -195,24 +195,7 @@ namespace HanyCo.Infra.Internals.Data.DataSources
 
                 entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
-                entity.Property(e => e.ClaimType).HasMaxLength(50);
-
-                entity.Property(e => e.ClaimValue).HasMaxLength(50);
-
-                entity.HasOne(d => d.SecurityDescriptor)
-                    .WithMany(p => p.SecurityClaims)
-                    .HasForeignKey(d => d.SecurityDescriptorId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_SecurityClaim_SecurityDescriptor1");
-            });
-
-            modelBuilder.Entity<SecurityDescriptor>(entity =>
-            {
-                entity.ToTable("SecurityDescriptor", "infra");
-
-                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-
-                entity.Property(e => e.Name).HasMaxLength(50);
+                entity.Property(e => e.Key).HasMaxLength(50);
             });
 
             modelBuilder.Entity<SystemMenu>(entity =>
@@ -283,7 +266,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
                 entity.HasOne(d => d.Position)
                     .WithMany(p => p.UiComponentActions)
                     .HasForeignKey(d => d.PositionId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_UiComponentAction_UiBootstrapPosition");
 
                 entity.HasOne(d => d.UiComponent)
@@ -304,7 +286,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources
                 entity.HasOne(d => d.Position)
                     .WithMany(p => p.UiComponentProperties)
                     .HasForeignKey(d => d.PositionId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_UiComponentProperty_UiBootstrapPosition");
 
                 entity.HasOne(d => d.Property)
@@ -359,13 +340,25 @@ namespace HanyCo.Infra.Internals.Data.DataSources
                 entity.HasOne(d => d.Position)
                     .WithMany(p => p.UiPageComponents)
                     .HasForeignKey(d => d.PositionId)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_UiPageComponent_UiBootstrapPosition");
 
                 entity.HasOne(d => d.UiComponent)
                     .WithMany(p => p.UiPageComponents)
                     .HasForeignKey(d => d.UiComponentId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_UiPageComponent_UiComponent");
+            });
+
+            modelBuilder.Entity<UserClaimAccess>(entity =>
+            {
+                entity.ToTable("UserClaimAccess", "infra");
+
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+
+                entity.HasOne(d => d.Claim)
+                    .WithMany(p => p.UserClaimAccesses)
+                    .HasForeignKey(d => d.ClaimId)
+                    .HasConstraintName("FK_UserClaimAccess_SecurityClaim");
             });
 
             OnModelCreatingPartial(modelBuilder);

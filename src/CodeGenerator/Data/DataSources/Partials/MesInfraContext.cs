@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.Markers;
 
 using Library.Data.Markers;
-using Library.Helpers;
 using Library.Threading;
 
 using Microsoft.EntityFrameworkCore;
@@ -60,12 +58,6 @@ public enum PropertyType
     Custom = 30,
 }
 
-public enum SecurityDescriptorStrategy
-{
-    None = 0,
-    Claim = 1,
-}
-
 public enum TriggerType
 {
     FormButton,
@@ -84,7 +76,7 @@ public partial class Dto : IMesEntity
 {
 }
 
-public partial class EntitySecurity : IIdenticalEntity<Guid>
+public partial class EntityClaim : IIdenticalEntity<Guid>
 {
 }
 
@@ -134,17 +126,11 @@ public partial class SecurityClaim : IIdenticalEntity<Guid>
 {
 }
 
-public partial class SecurityDescriptor : IIdenticalEntity<Guid>
+public partial class SystemMenu : IMesEntity
 {
-    [NotMapped]
-    public SecurityDescriptorStrategy SecurityDescriptorStrategy
-    {
-        get => EnumHelper.ToEnum<SecurityDescriptorStrategy>(this.Strategy);
-        set => this.Strategy = Convert.ToByte(value);
-    }
 }
 
-public partial class SystemMenu : IMesEntity
+public partial class Translation : IMesEntity
 {
 }
 
@@ -172,6 +158,6 @@ public partial class UiPageComponent : IMesEntity
 {
 }
 
-public partial class Translation : IMesEntity
+public partial class UserClaimAccess : IIdenticalEntity<Guid>
 {
 }

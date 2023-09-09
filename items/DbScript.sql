@@ -1,6 +1,6 @@
 ﻿USE [master]
 GO
-/****** Object:  Database [MesInfra]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Database [MesInfra]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE DATABASE [MesInfra]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -80,13 +80,13 @@ ALTER DATABASE [MesInfra] SET QUERY_STORE = OFF
 GO
 USE [MesInfra]
 GO
-/****** Object:  Schema [infra]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Schema [infra]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE SCHEMA [infra]
 GO
-/****** Object:  Schema [sec]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Schema [sec]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE SCHEMA [sec]
 GO
-/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -100,7 +100,7 @@ CREATE TABLE [dbo].[__EFMigrationsHistory](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -116,7 +116,7 @@ CREATE TABLE [dbo].[AspNetRoleClaims](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -132,7 +132,7 @@ CREATE TABLE [dbo].[AspNetRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -148,7 +148,7 @@ CREATE TABLE [dbo].[AspNetUserClaims](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -165,7 +165,7 @@ CREATE TABLE [dbo].[AspNetUserLogins](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -180,7 +180,7 @@ CREATE TABLE [dbo].[AspNetUserRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -207,7 +207,7 @@ CREATE TABLE [dbo].[AspNetUsers](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -225,7 +225,7 @@ CREATE TABLE [dbo].[AspNetUserTokens](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Person]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [dbo].[Person]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -238,7 +238,7 @@ CREATE TABLE [dbo].[Person](
 	[Height] [int] NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[CqrsSegregate]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[CqrsSegregate]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -262,7 +262,7 @@ CREATE TABLE [infra].[CqrsSegregate](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[CrudCode]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[CrudCode]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -286,7 +286,7 @@ CREATE TABLE [infra].[CrudCode](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Dto]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[Dto]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -309,23 +309,22 @@ CREATE TABLE [infra].[Dto](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[EntitySecurity]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[EntityClaim]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [infra].[EntitySecurity](
+CREATE TABLE [infra].[EntityClaim](
 	[Id] [uniqueidentifier] ROWGUIDCOL  NOT NULL,
 	[EntityId] [uniqueidentifier] NOT NULL,
-	[SecurityDescriptorId] [uniqueidentifier] NOT NULL,
-	[IsEnabled] [bit] NULL,
- CONSTRAINT [PK_EntitySecurity] PRIMARY KEY CLUSTERED 
+	[ClaimId] [uniqueidentifier] NOT NULL,
+ CONSTRAINT [PK_EntityClaim] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Functionality]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[Functionality]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -347,7 +346,7 @@ CREATE TABLE [infra].[Functionality](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Module]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[Module]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -363,7 +362,7 @@ CREATE TABLE [infra].[Module](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Property]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[Property]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -388,40 +387,22 @@ CREATE TABLE [infra].[Property](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[SecurityClaim]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[SecurityClaim]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [infra].[SecurityClaim](
 	[Id] [uniqueidentifier] ROWGUIDCOL  NOT NULL,
-	[ClaimType] [nvarchar](50) NOT NULL,
-	[ClaimValue] [nvarchar](50) NULL,
-	[SecurityDescriptorId] [uniqueidentifier] NOT NULL,
+	[Key] [nvarchar](50) NOT NULL,
+	[Parent] [uniqueidentifier] NULL,
  CONSTRAINT [PK_SecurityClaim_1] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[SecurityDescriptor]    Script Date: 9/2/2023 7:57:13 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [infra].[SecurityDescriptor](
-	[Id] [uniqueidentifier] ROWGUIDCOL  NOT NULL,
-	[IncludeChildren] [bit] NOT NULL,
-	[Strategy] [tinyint] NOT NULL,
-	[Name] [nvarchar](50) NOT NULL,
-	[IsEnabled] [bit] NULL,
- CONSTRAINT [PK_SecurityDescriptor] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [infra].[SystemMenu]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[SystemMenu]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -438,7 +419,7 @@ CREATE TABLE [infra].[SystemMenu](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[Translation]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[Translation]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -450,7 +431,7 @@ CREATE TABLE [infra].[Translation](
 	[Value] [nvarchar](max) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiBootstrapPosition]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[UiBootstrapPosition]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -467,7 +448,7 @@ CREATE TABLE [infra].[UiBootstrapPosition](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiComponent]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[UiComponent]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -482,13 +463,14 @@ CREATE TABLE [infra].[UiComponent](
 	[NameSpace] [nvarchar](max) NOT NULL,
 	[PageDataContextId] [bigint] NULL,
 	[PageDataContextPropertyId] [bigint] NULL,
+	[IsGrid] [bit] NULL,
  CONSTRAINT [PK_UiComponent] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiComponentAction]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[UiComponentAction]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -509,7 +491,7 @@ CREATE TABLE [infra].[UiComponentAction](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiComponentProperty]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[UiComponentProperty]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -530,7 +512,7 @@ CREATE TABLE [infra].[UiComponentProperty](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiPage]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[UiPage]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -550,7 +532,7 @@ CREATE TABLE [infra].[UiPage](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [infra].[UiPageComponent]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Table [infra].[UiPageComponent]    Script Date: 9/9/2023 3:40:46 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -567,9 +549,25 @@ CREATE TABLE [infra].[UiPageComponent](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+/****** Object:  Table [infra].[UserClaimAccess]    Script Date: 9/9/2023 3:40:46 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [infra].[UserClaimAccess](
+	[Id] [uniqueidentifier] ROWGUIDCOL  NOT NULL,
+	[UserId] [uniqueidentifier] NOT NULL,
+	[ClaimId] [uniqueidentifier] NOT NULL,
+	[AccessType] [int] NOT NULL,
+ CONSTRAINT [PK_UserClaimAccess] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetRoleClaims_RoleId]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [IX_AspNetRoleClaims_RoleId]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetRoleClaims_RoleId] ON [dbo].[AspNetRoleClaims]
 (
 	[RoleId] ASC
@@ -577,7 +575,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetRoleClaims_RoleId] ON [dbo].[AspNetRoleClaim
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [RoleNameIndex]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [RoleNameIndex]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [RoleNameIndex] ON [dbo].[AspNetRoles]
 (
 	[NormalizedName] ASC
@@ -587,7 +585,7 @@ WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNOR
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUserClaims_UserId]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [IX_AspNetUserClaims_UserId]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUserClaims_UserId] ON [dbo].[AspNetUserClaims]
 (
 	[UserId] ASC
@@ -595,7 +593,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUserClaims_UserId] ON [dbo].[AspNetUserClaim
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUserLogins_UserId]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [IX_AspNetUserLogins_UserId]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUserLogins_UserId] ON [dbo].[AspNetUserLogins]
 (
 	[UserId] ASC
@@ -603,7 +601,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUserLogins_UserId] ON [dbo].[AspNetUserLogin
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_AspNetUserRoles_RoleId]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [IX_AspNetUserRoles_RoleId]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE NONCLUSTERED INDEX [IX_AspNetUserRoles_RoleId] ON [dbo].[AspNetUserRoles]
 (
 	[RoleId] ASC
@@ -611,7 +609,7 @@ CREATE NONCLUSTERED INDEX [IX_AspNetUserRoles_RoleId] ON [dbo].[AspNetUserRoles]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [EmailIndex]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [EmailIndex]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE NONCLUSTERED INDEX [EmailIndex] ON [dbo].[AspNetUsers]
 (
 	[NormalizedEmail] ASC
@@ -619,7 +617,7 @@ CREATE NONCLUSTERED INDEX [EmailIndex] ON [dbo].[AspNetUsers]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UserNameIndex]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [UserNameIndex]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UserNameIndex] ON [dbo].[AspNetUsers]
 (
 	[NormalizedUserName] ASC
@@ -627,13 +625,13 @@ CREATE UNIQUE NONCLUSTERED INDEX [UserNameIndex] ON [dbo].[AspNetUsers]
 WHERE ([NormalizedUserName] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_CqrsSegregate_ResultDtoId]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [IX_CqrsSegregate_ResultDtoId]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CqrsSegregate_ResultDtoId] ON [infra].[CqrsSegregate]
 (
 	[ResultDtoId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_Dto_ModuleId]    Script Date: 9/2/2023 7:57:13 PM ******/
+/****** Object:  Index [IX_Dto_ModuleId]    Script Date: 9/9/2023 3:40:46 AM ******/
 CREATE NONCLUSTERED INDEX [IX_Dto_ModuleId] ON [infra].[Dto]
 (
 	[ModuleId] ASC
@@ -645,7 +643,7 @@ ALTER TABLE [infra].[CrudCode] ADD  CONSTRAINT [DF_CrudCode_Guid]  DEFAULT (news
 GO
 ALTER TABLE [infra].[Dto] ADD  CONSTRAINT [DF_Dto_Guid]  DEFAULT (newid()) FOR [Guid]
 GO
-ALTER TABLE [infra].[EntitySecurity] ADD  CONSTRAINT [DF_EntitySecurity_Id]  DEFAULT (newid()) FOR [Id]
+ALTER TABLE [infra].[EntityClaim] ADD  CONSTRAINT [DF_EntityClaim_Id]  DEFAULT (newid()) FOR [Id]
 GO
 ALTER TABLE [infra].[Functionality] ADD  CONSTRAINT [DF_Functionality_Guid]  DEFAULT (newid()) FOR [Guid]
 GO
@@ -655,8 +653,6 @@ ALTER TABLE [infra].[Property] ADD  CONSTRAINT [DF_Property_Guid]  DEFAULT (newi
 GO
 ALTER TABLE [infra].[SecurityClaim] ADD  CONSTRAINT [DF_SecurityClaim_Id]  DEFAULT (newid()) FOR [Id]
 GO
-ALTER TABLE [infra].[SecurityDescriptor] ADD  CONSTRAINT [DF_SecurityDescriptor_Id]  DEFAULT (newid()) FOR [Id]
-GO
 ALTER TABLE [infra].[SystemMenu] ADD  CONSTRAINT [DF_SystemMenu_Guid]  DEFAULT (newid()) FOR [Guid]
 GO
 ALTER TABLE [infra].[UiComponent] ADD  CONSTRAINT [DF_UiComponent_Guid]  DEFAULT (newsequentialid()) FOR [Guid]
@@ -664,6 +660,8 @@ GO
 ALTER TABLE [infra].[UiPage] ADD  CONSTRAINT [DF_UiPage_Guid]  DEFAULT (newsequentialid()) FOR [Guid]
 GO
 ALTER TABLE [infra].[UiPageComponent] ADD  CONSTRAINT [DF_UiPageComponent_Guid]  DEFAULT (newsequentialid()) FOR [Guid]
+GO
+ALTER TABLE [infra].[UserClaimAccess] ADD  CONSTRAINT [DF_UserClaimAccess_Id]  DEFAULT (newid()) FOR [Id]
 GO
 ALTER TABLE [dbo].[AspNetRoleClaims]  WITH CHECK ADD  CONSTRAINT [FK_AspNetRoleClaims_AspNetRoles_RoleId] FOREIGN KEY([RoleId])
 REFERENCES [dbo].[AspNetRoles] ([Id])
@@ -726,10 +724,11 @@ REFERENCES [infra].[Module] ([Id])
 GO
 ALTER TABLE [infra].[Dto] CHECK CONSTRAINT [FK_Dto_Module_ModuleId]
 GO
-ALTER TABLE [infra].[EntitySecurity]  WITH CHECK ADD  CONSTRAINT [FK_EntitySecurity_SecurityDescriptor] FOREIGN KEY([SecurityDescriptorId])
-REFERENCES [infra].[SecurityDescriptor] ([Id])
+ALTER TABLE [infra].[EntityClaim]  WITH CHECK ADD  CONSTRAINT [FK_EntityClaim_SecurityClaim] FOREIGN KEY([ClaimId])
+REFERENCES [infra].[SecurityClaim] ([Id])
+ON DELETE CASCADE
 GO
-ALTER TABLE [infra].[EntitySecurity] CHECK CONSTRAINT [FK_EntitySecurity_SecurityDescriptor]
+ALTER TABLE [infra].[EntityClaim] CHECK CONSTRAINT [FK_EntityClaim_SecurityClaim]
 GO
 ALTER TABLE [infra].[Functionality]  WITH CHECK ADD  CONSTRAINT [FK_Functionality_CqrsSegregate] FOREIGN KEY([GetAllQueryId])
 REFERENCES [infra].[CqrsSegregate] ([Id])
@@ -761,11 +760,6 @@ REFERENCES [infra].[Dto] ([Id])
 ON DELETE CASCADE
 GO
 ALTER TABLE [infra].[Property] CHECK CONSTRAINT [FK_Property_Dto]
-GO
-ALTER TABLE [infra].[SecurityClaim]  WITH CHECK ADD  CONSTRAINT [FK_SecurityClaim_SecurityDescriptor1] FOREIGN KEY([SecurityDescriptorId])
-REFERENCES [infra].[SecurityDescriptor] ([Id])
-GO
-ALTER TABLE [infra].[SecurityClaim] CHECK CONSTRAINT [FK_SecurityClaim_SecurityDescriptor1]
 GO
 ALTER TABLE [infra].[UiComponent]  WITH CHECK ADD  CONSTRAINT [FK_UiComponent_Dto1] FOREIGN KEY([PageDataContextId])
 REFERENCES [infra].[Dto] ([Id])
@@ -836,6 +830,12 @@ ALTER TABLE [infra].[UiPageComponent]  WITH CHECK ADD  CONSTRAINT [FK_UiPageComp
 REFERENCES [infra].[UiPage] ([Id])
 GO
 ALTER TABLE [infra].[UiPageComponent] CHECK CONSTRAINT [FK_UiPageComponent_UiPage]
+GO
+ALTER TABLE [infra].[UserClaimAccess]  WITH CHECK ADD  CONSTRAINT [FK_UserClaimAccess_SecurityClaim] FOREIGN KEY([ClaimId])
+REFERENCES [infra].[SecurityClaim] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [infra].[UserClaimAccess] CHECK CONSTRAINT [FK_UserClaimAccess_SecurityClaim]
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'مکان در کامپوننت' , @level0type=N'SCHEMA',@level0name=N'infra', @level1type=N'TABLE',@level1name=N'UiComponentAction', @level2type=N'COLUMN',@level2name=N'Id'
 GO

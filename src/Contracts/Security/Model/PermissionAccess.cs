@@ -1,6 +1,6 @@
 ﻿namespace HanyCo.Infra.Security.Model;
 
-public enum PermissionType
+public enum PermissionAccess
 {
     Allow,
     Deny

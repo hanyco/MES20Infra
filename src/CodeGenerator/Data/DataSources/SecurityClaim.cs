@@ -5,11 +5,17 @@ namespace HanyCo.Infra.Internals.Data.DataSources
 {
     public partial class SecurityClaim
     {
-        public Guid Id { get; set; }
-        public string ClaimType { get; set; } = null!;
-        public string? ClaimValue { get; set; }
-        public Guid SecurityDescriptorId { get; set; }
+        public SecurityClaim()
+        {
+            EntityClaims = new HashSet<EntityClaim>();
+            UserClaimAccesses = new HashSet<UserClaimAccess>();
+        }
 
-        public virtual SecurityDescriptor SecurityDescriptor { get; set; } = null!;
+        public Guid Id { get; set; }
+        public string Key { get; set; } = null!;
+        public Guid? Parent { get; set; }
+
+        public virtual ICollection<EntityClaim> EntityClaims { get; set; }
+        public virtual ICollection<UserClaimAccess> UserClaimAccesses { get; set; }
     }
 }

@@ -1,11 +1,10 @@
-﻿namespace HanyCo.Infra.Security.Model;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
+namespace HanyCo.Infra.Security.Model;
 public interface IUserContext
 {
-    bool IsLoggedIn { get; }
-    string UserName { get; }
-    long UserId { get; }
-    long CompanyId { get; }
-    DateTime LastSignedInTime { get; }
-    long PrinicipalId { get; }
 }

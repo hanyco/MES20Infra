@@ -34,14 +34,14 @@ internal sealed class DtoService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
-    ISecurityDescriptorService securityDescriptor,
+    ISecurityService securityDescriptor,
     IPropertyService propertyService)
     : IDtoService, IDtoCodeService, IAsyncValidator<DtoViewModel>, IAsyncSaveChanges, IResetChanges
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _db = readDbContext;
     private readonly IPropertyService _propertyService = propertyService;
-    private readonly ISecurityDescriptorService _securityDescriptor = securityDescriptor;
+    private readonly ISecurityService _securityDescriptor = securityDescriptor;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     public Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
