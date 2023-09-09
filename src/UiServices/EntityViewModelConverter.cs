@@ -76,8 +76,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.ControlTypeId = model.ControlType?.Cast().ToInt() ?? 0);
 
     public SecurityClaim? ToDbEntity(ClaimViewModel? model) =>
-        model is null ? null : this._mapper.Map<SecurityClaim>(model)
-            .ForMember(x => x.Id = model.Id);
+        model is null ? null : this._mapper.Map<SecurityClaim>(model);
 
     public UiComponent? ToDbEntity(UiComponentViewModel? model) =>
         model is null ? null : this._mapper.Map<UiComponent>(model)
@@ -194,7 +193,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             IsEnabled = !propertyViewModel.Name.EqualsTo("id")
         };
 
-    public DtoViewModel? ToViewModel(in Dto? entity)
+    public DtoViewModel? ToViewModel(Dto? entity)
     {
         if (entity is null)
         {
@@ -283,8 +282,11 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.InsertCommandViewModel = this.ToViewModel(entity.InsertCommand).Cast().As<CqrsCommandViewModel>())
             .ForMember(x => x.UpdateCommandViewModel = this.ToViewModel(entity.UpdateCommand).Cast().As<CqrsCommandViewModel>())
             .ForMember(x => x.DeleteCommandViewModel = this.ToViewModel(entity.DeleteCommand).Cast().As<CqrsCommandViewModel>());
-    [return: NotNullIfNotNull("entity")]
-    public DtoViewModel? ToViewModel(Dto? entity) => throw new NotImplementedException();
+
+    [return: NotNullIfNotNull(nameof(entity))]
+    public ClaimViewModel? ToViewModel(SecurityClaim? entity) =>
+        entity is null ? null : this._mapper.Map<ClaimViewModel>(entity);
+
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType) =>
         model == null ? null : this._mapper.Map<CqrsSegregate>(model)
             .ForMember(x => x.ModuleId = model.Module.Id.GetValueOrDefault())

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
@@ -10,7 +11,6 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
 using Library.EventsArgs;
-using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
 using Library.Wpf.Dialogs;
@@ -59,11 +59,12 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         Check.MutBeNotNull(this.ViewModel);
         try
         {
+            this.ViewModel.SecurityClaims = this.SecurityClaimCollectorUserControl.ClaimViewModels;
             var result = await this._service.SaveViewModelAsync(this.ViewModel);
             if (result)
             {
                 this.IsViewModelChanged = false;
-                this.Logger.Debug("CQRS Command saved."); 
+                this.Logger.Debug("CQRS Command saved.");
             }
             return result;
         }
@@ -115,9 +116,9 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
                 .NotNull(x => this.ViewModel.ResultDto)
                 .NotNull(x => this.ViewModel.ResultDto.Id)
                 .ThrowOnFail();
-        var props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ParamsDto.Id.Value);
+        var props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ParamsDto.Id!.Value);
         _ = this.ViewModel.ParamsDto.Properties.ClearAndAddRange(props);
-        props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id.Value);
+        props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id!.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
         var codes = await this._codeGeneratorService.GenerateCodeAsync(this.ViewModel);
         this.ComponentCodeResultUserControl.Codes = codes;
@@ -130,8 +131,8 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         _ = this.CommandsTreeView.BindItems(cCommands);
     }
 
-    private void InitFormInfo()
-        => this.CategoryComboBox.BindItemsSourceToEnum<CqrsSegregateCategory>(CqrsSegregateCategory.Create);
+    private void InitFormInfo() =>
+        this.CategoryComboBox.BindItemsSourceToEnum<CqrsSegregateCategory>(CqrsSegregateCategory.Create);
 
     private async Task LoadCommandViewModelAsync()
     {
@@ -141,16 +142,19 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         }
         var selectedViewModel = this.CommandsTreeView.GetSelectedValue<CqrsCommandViewModel>();
         Check.MustBe(selectedViewModel?.Id is not null, () => new ValidationException("Please select a Command."));
-        _ = await this.Logger.LogBlockAsync(async () =>
-        {
-            var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
-            Check.MustBeNotNull(viewModel, () => "ID not found");
-            this.ViewModel = viewModel.HandlePropertyChanges(this.ViewModel_PropertyChanged);
-        }, "Loading…");
+        
+        var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
+        Check.MustBeNotNull(viewModel, () => "ID not found");
+        
+        this.ViewModel = viewModel.HandlePropertyChanges(this.ViewModel_PropertyChanged);
+        this.SecurityClaimCollectorUserControl.ClaimViewModels = this.ViewModel.SecurityClaims;
     }
 
+    private void Me_Loaded(object sender, RoutedEventArgs e) => 
+        this.SecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.SecurityClaimCollectorUserControl_OnAutoGenerateClaim);
+
     private async void NewCommandButton_Click(object sender, RoutedEventArgs e)
-        => await this.NewCommandViewModelAsync();
+            => await this.NewCommandViewModelAsync();
 
     private async Task NewCommandViewModelAsync()
     {
@@ -206,6 +210,11 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         _ = await this.SaveDbAsync();
     }
 
+    private IEnumerable<ClaimViewModel> SecurityClaimCollectorUserControl_OnAutoGenerateClaim() =>
+        this.ViewModel?.Name.IsNullOrEmpty() ?? true
+            ? Enumerable.Empty<ClaimViewModel>()
+            : EnumerableHelper.ToEnumerable(new ClaimViewModel { Key = this.ViewModel.Name });
+
     private async void SelectModuleBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
     {
         this.ResultDtoComboBox.ItemsSource = null;
@@ -226,9 +235,9 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     //private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
     //    => e.Item = this._moduleService;
 
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        => this.IsViewModelChanged = true;
-
     private void SelectModuleUserControl_Initializing(object sender, InitialItemEventArgs<IModuleService> e)
         => e.Item = this._moduleService;
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+            => this.IsViewModelChanged = true;
 }

@@ -18,6 +18,7 @@ public sealed class DtoViewModel : InfraViewModelBase
     private bool _isViewModel;
     private ModuleViewModel _module = null!;
     private string _nameSpace = null!;
+    private IEnumerable<ClaimViewModel>? _securityClaims;
 
     public DtoViewModel()
     { }
@@ -62,6 +63,11 @@ public sealed class DtoViewModel : InfraViewModelBase
     {
         get => base.Name;
         set => this.SetProperty(ref this._name, value, orderPropertyNames: new[] { nameof(this.FullName) });
+    }
+    public IEnumerable<ClaimViewModel> SecurityClaims
+    {
+        get => this._securityClaims;
+        set => this.SetProperty(ref this._securityClaims, value);
     }
 
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }

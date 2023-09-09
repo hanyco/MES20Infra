@@ -44,6 +44,7 @@ public interface IEntityViewModelConverter :
     IDbEntityToViewModelConverter<DtoViewModel, Dto>,
 
     IViewModelToDbEntityConverter<ClaimViewModel, SecurityClaim>,
+    IDbEntityToViewModelConverter<ClaimViewModel, SecurityClaim>,
 
     IViewModelToDbEntityConverter<CqrsQueryViewModel, CqrsSegregate>,
     IViewModelToDbEntityConverter<CqrsCommandViewModel, CqrsSegregate>,

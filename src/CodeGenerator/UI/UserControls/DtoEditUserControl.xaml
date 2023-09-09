@@ -12,6 +12,7 @@
                                      IsDesignTimeCreatable=True}"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    Loaded="Me_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanInverterConverter x:Key="BooleanInverterConverter" />
@@ -37,7 +38,18 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
+            <StackPanel Grid.RowSpan="4" Grid.Column="4">
+                <TextBlock Style="{StaticResource Heading}" Text="Security" />
+                <local:SecurityClaimCollectorUserControl
+                    x:Name="DtoSecurityClaimCollectorUserControl"
+                    MinWidth="300"
+                    MinHeight="120" />
+            </StackPanel>
+
             <TextBlock
                 Grid.ColumnSpan="3"
                 d:Text="Table Name"

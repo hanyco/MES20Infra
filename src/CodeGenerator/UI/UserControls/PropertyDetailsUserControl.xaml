@@ -66,9 +66,5 @@
             <TextBlock Style="{StaticResource LabelBlock}" Text="Comments:" />
             <TextBox Style="{StaticResource Multiline}" Text="{Binding Comment}" />
         </StackPanel>
-        <StackPanel Grid.Row="6" Style="{StaticResource FieldPanel}">
-            <TextBlock Style="{StaticResource LongLabelBlock}" Text="Security Descriptor" />
-            <Separator />
-        </StackPanel>
     </Grid>
 </UserControl>

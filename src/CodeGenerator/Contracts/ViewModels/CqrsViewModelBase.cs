@@ -1,7 +1,5 @@
 ﻿#nullable disable
 
-using System.Collections.ObjectModel;
-
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -20,6 +18,7 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     private ModuleViewModel _module;
     private DtoViewModel _paramDto;
     private DtoViewModel _resultDto;
+    private IEnumerable<ClaimViewModel> _securityClaims;
 
     public CqrsSegregateCategory Category
     {
@@ -87,7 +86,11 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         set => this.SetProperty(ref this._resultDto, value);
     }
 
-    protected abstract CqrsSegregateType SegregateType { get; }
+    public IEnumerable<ClaimViewModel> SecurityClaims
+    {
+        get => this._securityClaims;
+        set => this.SetProperty(ref this._securityClaims, value);
+    }
 
-    public override string ToString() => base.ToString();
+    protected abstract CqrsSegregateType SegregateType { get; }
 }

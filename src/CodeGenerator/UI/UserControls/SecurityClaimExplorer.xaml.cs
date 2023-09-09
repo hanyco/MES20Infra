@@ -1,6 +1,7 @@
 ﻿using System.Windows.Controls;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using Library.ComponentModel;
 
@@ -19,10 +20,12 @@ public partial class SecurityClaimExplorer : UserControl, IAsyncInitialzable
         this.InitializeComponent();
     }
 
+    public ClaimViewModel? SelectedClaim => this.ClaimTreeView.GetSelectedValue<ClaimViewModel>();
+
     public async Task InitializeAsync()
     {
         var claims = await this._securityService.GetAllAsync();
-        var rootNode = new TreeViewItem();
+        var rootNode = new TreeViewItem { Header = "Security Claims" };
         EnumerableHelper.BuildTree(
             claims.Where(x => x.Parent == null),
             c => new TreeViewItem().With(x => x.DataContext = c),
@@ -30,6 +33,6 @@ public partial class SecurityClaimExplorer : UserControl, IAsyncInitialzable
             t => rootNode.Items.Add(t),
             (p, c) => p.Items.Add(c)
             );
-        this.ClaimTreeView.ItemsSource = rootNode.Items;
+        _ = this.ClaimTreeView.Items.ClearAndAdd(rootNode);
     }
 }

@@ -10,7 +10,10 @@ using Library.Exceptions.Validations;
 using Library.Validations;
 using Library.Wpf.Dialogs;
 
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.WindowsAPICodePack.Dialogs;
+
+using Key = System.Windows.Input.Key;
 
 namespace HanyCo.Infra.UI.UserControls;
 
@@ -40,7 +43,8 @@ public partial class DtoEditUserControl : UserControl,
         set => this.SetValue(SelectedPropertyProperty, value);
     }
 
-    public DtoViewModel? ViewModel => this.DataContext.Cast().As<DtoViewModel>();
+    public DtoViewModel? ViewModel => 
+        this.DataContext.Cast().As<DtoViewModel>()?.With(x => x.SecurityClaims = this.DtoSecurityClaimCollectorUserControl.ClaimViewModels);
 
     public async Task BindAsync()
     {
@@ -60,6 +64,7 @@ public partial class DtoEditUserControl : UserControl,
         }
 
         this.PropertyDetails.IsEnabled = !this.IsReadOnly && viewModel is not null;
+        this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);
     }
 
     private void DeletePropertyButton_Click(object sender, RoutedEventArgs e)
@@ -98,6 +103,14 @@ public partial class DtoEditUserControl : UserControl,
         }
         return true;
     }
+
+    private IEnumerable<ClaimViewModel> DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim() =>
+        this.ViewModel?.Name.IsNullOrEmpty() ?? true
+            ? Enumerable.Empty<ClaimViewModel>()
+            : EnumerableHelper.ToEnumerable(new ClaimViewModel { Key = this.ViewModel.Name });
+
+    private void Me_Loaded(object sender, RoutedEventArgs e) =>
+        this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);
 
     private void NewPropertyButton_Click(object sender, RoutedEventArgs e)
     {
@@ -144,6 +157,6 @@ public partial class DtoEditUserControl : UserControl,
         }
 
         this.PropertyDetails.RebindDataContext(this.SelectedProperty);
-        this.PropertyDetails.IsEnabled =!IsReadOnly && this.PropertyDetails.ViewModel is not null;
+        this.PropertyDetails.IsEnabled = !this.IsReadOnly && this.PropertyDetails.ViewModel is not null;
     }
 }
