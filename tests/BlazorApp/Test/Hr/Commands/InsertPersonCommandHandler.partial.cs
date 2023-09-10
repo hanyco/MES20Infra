@@ -11,11 +11,13 @@ namespace Test.Hr.Commands
 {
     using Library.Cqrs.Models.Commands;
     using Library.Cqrs.Models.Queries;
+    using HanyCo.Infra.Security.Markers;
     
     
     /// <summary>
     /// The handler of InsertPersonCommand
     /// </summary>
+    [SecurityDescriptorAttribute(Key="InsertPersonCommand")]
     public sealed partial class InsertPersonCommandHandler : ICommandHandler<InsertPersonCommandParameter, InsertPersonCommandResult>
     {
         

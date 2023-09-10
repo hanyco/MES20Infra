@@ -269,6 +269,13 @@ internal sealed partial class FunctionalityService
         }
     }
 
+    private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model)
+    {
+        return data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
+            ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
+            : Enumerable.Empty<ClaimViewModel>();
+    }
+
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
         // Create an initial DTO based on the input data
@@ -293,7 +300,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
-        var name = CommonHelper.Purify(data.ViewModel.SourceDto.Name);
+        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name);
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(addActions)
@@ -350,7 +357,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
     {
-        var name = StringHelper.Pluralize(CommonHelper.Purify(data.ViewModel.SourceDto.Name));
+        var name = StringHelper.Pluralize(CommonHelpers.Purify(data.ViewModel.SourceDto.Name));
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(addActions)
@@ -396,7 +403,7 @@ internal sealed partial class FunctionalityService
                 TriggerType = TriggerType.RowButton,
                 Description = $"Deletes selected {name}"
             };
-            data.ViewModel.BlazorListComponentViewModel.UiActions.AddRange(new[] { newButton, editButton, deleteButton });
+            _ = data.ViewModel.BlazorListComponentViewModel.UiActions.AddRange(new[] { newButton, editButton, deleteButton });
         }
     }
 
@@ -411,12 +418,13 @@ internal sealed partial class FunctionalityService
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)
     {
-        var name = $"Delete{CommonHelper.Purify(data.SourceDtoName)}";
+        var name = $"Delete{CommonHelpers.Purify(data.SourceDtoName)}";
         return TaskRunner.StartWith(data)
             .Then(createHandler)
             .Then(createParams)
             .Then(createValidator)
             .Then(createResult)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         async Task createHandler(CancellationToken token)
@@ -447,17 +455,22 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.DeleteCommandViewModel.ResultDto.IsResultDto = true;
         }
+
         Task createValidator(CancellationToken token) =>
             Task.CompletedTask;
+
+        void setupSecurity(CreationData data) =>
+            data.ViewModel.DeleteCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.DeleteCommandViewModel);
     }
 
     private async Task CreateGetAllQuery(CreationData data, CancellationToken token)
     {
-        var name = $"GetAll{StringHelper.Pluralize(CommonHelper.Purify(data.SourceDtoName))}";
+        var name = $"GetAll{StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName))}";
         var result = await TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(createParams)
             .Then(createResult)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         async Task createViewModel(CreationData data, CancellationToken token)
@@ -488,15 +501,19 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }
+
+        void setupSecurity(CreationData data) =>
+            data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetAllQueryViewModel);
     }
 
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
-        var name = $"GetById{CommonHelper.Purify(data.SourceDtoName)}";
+        var name = $"GetById{CommonHelpers.Purify(data.SourceDtoName)}";
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(createParams)
             .Then(createResult)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         async Task createViewModel(CancellationToken token)
@@ -527,16 +544,20 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetByIdQueryViewModel.ResultDto.IsResultDto = true;
         }
+
+        void setupSecurity(CreationData data) =>
+            data.ViewModel.GetByIdQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetByIdQueryViewModel);
     }
 
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
     {
-        var name = $"Insert{CommonHelper.Purify(data.SourceDtoName)}";
+        var name = $"Insert{CommonHelpers.Purify(data.SourceDtoName)}";
         return TaskRunner.StartWith(data)
             .Then(createHandler)
             .Then(createParams)
             .Then(createValidator)
             .Then(createResult)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         static Task createValidator(CreationData data, CancellationToken token) => Task.CompletedTask;
@@ -574,16 +595,20 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommandViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.InsertCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
+
+        void setupSecurity(CreationData data) =>
+            data.ViewModel.InsertCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.InsertCommandViewModel);
     }
 
     private Task CreateUpdateCommand(CreationData data, CancellationToken token)
     {
-        var name = $"Update{CommonHelper.Purify(data.SourceDtoName)}";
+        var name = $"Update{CommonHelpers.Purify(data.SourceDtoName)}";
         return TaskRunner.StartWith(data)
             .Then(createHandler)
             .Then(createParamsAsync)
             .Then(createResult)
             .Then(createValidator)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         static Task createValidator(CreationData data, CancellationToken token) =>
@@ -617,6 +642,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommandViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.UpdateCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
+
+        void setupSecurity(CreationData data) =>
+            data.ViewModel.UpdateCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.UpdateCommandViewModel);
     }
 
     private sealed class CreationData(FunctionalityViewModel result, string sourceDtoName, CancellationTokenSource tokenSource)

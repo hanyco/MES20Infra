@@ -11,8 +11,8 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries
     [Immutable]
     public sealed record CodeGenQueryHandler : CodeGenCqrsSegregateType
     {
-        private CodeGenQueryHandler(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, IEnumerable<CodeGenProp>? props = null)
-            : base("Handler", null, props)
+        private CodeGenQueryHandler(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, IEnumerable<string>? securityKeys, IEnumerable<CodeGenProp>? props = null)
+            : base("Handler", securityKeys, null, props)
         {
             this.QueryParam = queryParam;
             this.QueryResult = queryResult;
@@ -37,17 +37,8 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries
 
         public override SegregationRole Role { get; } = SegregationRole.QueryHandler;
 
-        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult)
-            => new(queryParam, queryResult, Enumerable.Empty<CodeGenProp>());
-
-        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, params (string Type, string Name)[] props)
-            => new(queryParam, queryResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)));
-
-        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, params (Type Type, string Name)[] props)
-            => new(queryParam, queryResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)));
-
-        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, params (Type Type, string Name, bool HasSetter)[] props)
-            => new(queryParam, queryResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false, hasSetter: p.HasSetter)));
+        public static CodeGenQueryHandler New(CodeGenQueryParams queryParam, CodeGenQueryResult queryResult, IEnumerable<string>? securityKeys, params (Type Type, string Name)[] props)
+            => new(queryParam, queryResult, securityKeys, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)));
 
         protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
         {

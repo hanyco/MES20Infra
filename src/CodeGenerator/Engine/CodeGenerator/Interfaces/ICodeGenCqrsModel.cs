@@ -9,4 +9,5 @@ public interface ICodeGenCqrsModel
     IEnumerable<CodeGenDto> Dtos { get; }
     string Name { get; }
     IEnumerable<ICodeGenCqrsSegregate> Segregates { get; }
+    IEnumerable<string> SecurityKeys { get; }
 }

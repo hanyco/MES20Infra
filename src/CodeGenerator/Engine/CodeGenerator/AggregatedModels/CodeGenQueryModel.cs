@@ -26,6 +26,7 @@ public class CodeGenQueryModel : ICodeGenCqrsModel
         in CodeGenQueryHandler handler,
         in CodeGenQueryParams param,
         in CodeGenQueryResult result,
+        in IEnumerable<string> securityKeys,
         params CodeGenDto[] dtos)
     {
         this.Name = name;
@@ -34,6 +35,7 @@ public class CodeGenQueryModel : ICodeGenCqrsModel
         this.Handler = handler;
         this.Param = param;
         this.Result = result;
+        this.SecurityKeys = securityKeys;
         this.Dtos = dtos;
     }
 
@@ -93,6 +95,8 @@ public class CodeGenQueryModel : ICodeGenCqrsModel
         }
     }
 
+    public IEnumerable<string> SecurityKeys { get; set; }
+
     /// <summary>
     /// Creates a new instance of CodeGenQuery.
     /// </summary>
@@ -110,8 +114,9 @@ public class CodeGenQueryModel : ICodeGenCqrsModel
         in CodeGenQueryHandler handler,
         in CodeGenQueryParams param,
         in CodeGenQueryResult result,
+        IEnumerable<string> securityKeys,
         params CodeGenDto[] dtos) =>
-        new(name.ArgumentNotNull(), cqrsNameSpace, dtoNameSpace, handler, param, result, dtos);
+        new(name.ArgumentNotNull(), cqrsNameSpace, dtoNameSpace, handler, param, result, securityKeys, dtos);
 
     public bool Equals(CodeGenQueryModel other) =>
         this.Name == other.Name && this.CqrsNameSpace == other.CqrsNameSpace;

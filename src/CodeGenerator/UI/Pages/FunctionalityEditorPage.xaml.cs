@@ -1,11 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
+using System.Windows.Forms;
 
 using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
+using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -19,6 +21,8 @@ using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
+
+using UI;
 
 namespace HanyCo.Infra.UI.Pages;
 
@@ -122,7 +126,6 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
         this.PrepareViewModel();
-        using var scope = this.ActionScopeBegin("Creating view models...");
         (_, var viewModel) = await this.ActionScopeRunAsync(() => this._service.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
         this.ViewModel = viewModel;
     }
@@ -177,20 +180,21 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         //The form is now ready to call services.
     }
 
-    private async Task<Result> SaveCodes()
+    private async Task<Result<string?>> SaveCodes()
     {
         if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
         {
-            return validationResult;
+            return validationResult.WithValue<string?>(null);
         };
         try
         {
             var codes = this.ViewModel!.Codes.SelectAll().Compact();
             if (!codes.Any())
             {
-                return Result.CreateFailure("No code found. Please generate sources.");
+                return Result<string>.CreateFailure("No code found. Please generate sources.", string.Empty);
             }
             var settings = SettingsService.Get();
+            var isYesToAll = false;
             foreach (var code in codes)
             {
                 var relativePath = code.props().Category switch
@@ -207,13 +211,55 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                 {
                     _ = Directory.CreateDirectory(path);
                 }
-                File.WriteAllText(Path.Combine(path, code.FileName), code.Statement);
+                var file = Path.Combine(path, code.FileName);
+                if (File.Exists(file))
+                {
+                    if (!isYesToAll)
+                    {
+                        var resp = DialogResult.No;
+                        void setResp(object? o, EventArgs e, DialogResult res)
+                        {
+                            resp = res;
+                            MsgBox2.GetOnButtonClick(o, e).Parent.Close();
+                        }
+                        var noButton = ButtonInfo.New("No", (o, e) => setResp(o, e, DialogResult.No)).ToButton();
+                        var yesButton = ButtonInfo.New("Yes", (o, e) => setResp(o, e, DialogResult.Yes)).ToButton();
+                        var yesToAllButton = ButtonInfo.New("Yes to all", (o, e) => setResp(o, e, DialogResult.OK), useElevationIcon: true).ToButton();
+                        var cancelButton = ButtonInfo.New("Cancel", (o, e) => setResp(o, e, DialogResult.Cancel)).ToButton();
+                        _ = MsgBox2.AskWithWarn($"{code.FileName} already exists.", "Do you want to replace it?", controls: new[] { noButton, yesButton, yesToAllButton, cancelButton });
+                        switch (resp)
+                        {
+                            case DialogResult.OK:
+                                isYesToAll = true;
+                                break;
+
+                            case DialogResult.Cancel:
+                                await Task.Delay(500);
+                                _ = App.Current.DoEvents();
+                                return Result<string>.CreateFailure(message: "Operation cancelled.");
+
+                            case DialogResult.Yes:
+                                break;
+
+                            case DialogResult.No:
+                                continue;
+                            default:
+                                await Task.Delay(500);
+                                _ = App.Current.DoEvents();
+                                return Result<string>.CreateFailure(message: "Invalid response.");
+                        }
+                    }
+                    File.Delete(file);
+                }
+                File.WriteAllText(file, code.Statement);
             }
-            return Result.Success;
+            await Task.Delay(500);
+            _ = App.Current.DoEvents();
+            return Result<string?>.CreateSuccess(settings.projectSourceRoot, message: "Codes are saved successfully.");
         }
         catch (Exception ex)
         {
-            return Result.CreateFailure(ex);
+            return Result<string>.CreateFailure(ex);
         }
     }
 
@@ -226,7 +272,8 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
     {
         _ = ControlHelper.MoveToNextUIElement();
-        _ = await this.SaveCodes().ShowOrThrowAsync(this.Title);
+        var saveResult = await this.SaveCodes().ThrowOnFailAsync(this.Title);
+        SourceCodeHelper.ShowDiskOperationResult(saveResult);
     }
 
     private async void SelectRootDtoByDtoButton_Click(object sender, RoutedEventArgs e)

@@ -11,11 +11,13 @@ namespace Test.Hr.Queries
 {
     using Library.Cqrs.Models.Queries;
     using Library.Cqrs.Models.Commands;
+    using HanyCo.Infra.Security.Markers;
     
     
     /// <summary>
     /// The handler of GetByIdPersonQuery
     /// </summary>
+    [SecurityDescriptorAttribute(Key="GetByIdPersonQuery")]
     public sealed partial class GetByIdPersonQueryHandler : IQueryHandler<GetByIdPersonQueryParameter, GetByIdPersonQueryResult>
     {
         

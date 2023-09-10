@@ -28,8 +28,11 @@ public partial class DtoEditUserControl : UserControl,
     private int _maxPropId;
     private IModuleService _moduleService = null!;
 
-    public DtoEditUserControl() =>
+    public DtoEditUserControl()
+    {
         this.InitializeComponent();
+        this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);
+    }
 
     public bool IsReadOnly
     {

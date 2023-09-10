@@ -1,7 +1,7 @@
 #region Created by HanyCo Infrastructure Code Generator with ♥
 
 
-namespace Test.Hr.Commands
+namespace Test.Hr.Commands.Person
 {
     using System.Threading.Tasks;
     

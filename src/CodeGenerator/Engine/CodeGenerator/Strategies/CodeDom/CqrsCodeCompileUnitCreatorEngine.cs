@@ -7,6 +7,7 @@ using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Markers;
+using HanyCo.Infra.Security.Markers;
 
 using Library.CodeGeneration.Models;
 using Library.Helpers.CodeGen;
@@ -228,6 +229,12 @@ internal static class CqrsCodeCompileUnitCreatorEngine
         else
         {
             _ = segClass.AddConstructor(ctorParams, comment: $@"Initializes a new instance of the <see cref=""{className}""/> class.");
+        }
+        if (segClass.IsPartial && (segregate.SecurityKeys?.Any() ?? false))
+        {
+            var securityAttribute = typeof(SecurityDescriptorAttribute);
+            nameSpace.UseNameSpace(securityAttribute.Namespace!);
+            segClass.AddAttribute(securityAttribute.Name, (nameof(SecurityDescriptorAttribute.Key), segregate.SecurityKeys.First()));
         }
 
         return segClass;

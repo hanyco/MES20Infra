@@ -12,11 +12,13 @@ namespace Test.Hr.Queries
     using HanyCo.Infra.Cqrs;
     using Test.Hr.Dtos;
     using System.Collections.Generic;
+    using HanyCo.Infra.Security.Markers;
     
     
     /// <summary>
     /// The result of GetAllPeopleQuery
     /// </summary>
+    [SecurityDescriptorAttribute(Key="GetAllPeopleQuery")]
     public sealed partial class GetAllPeopleQueryResult : IQueryResult<List<GetAllPeopleResult>>
     {
         

@@ -11,11 +11,13 @@ namespace Test.Hr.Commands
 {
     using Library.Cqrs.Models.Commands;
     using Library.Cqrs.Models.Queries;
+    using HanyCo.Infra.Security.Markers;
     
     
     /// <summary>
     /// The handler of UpdatePersonCommand
     /// </summary>
+    [SecurityDescriptorAttribute(Key="UpdatePersonCommand")]
     public sealed partial class UpdatePersonCommandHandler : ICommandHandler<UpdatePersonCommandParameter, UpdatePersonCommandResult>
     {
         

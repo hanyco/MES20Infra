@@ -7,15 +7,15 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Queries;
 [Fluent]
 public sealed record CodeGenQueryResult : CodeGenCqrsSegregateType
 {
-    private CodeGenQueryResult(IEnumerable<CodeGenProp>? props = null)
-        : base("Result", null, props)
+    private CodeGenQueryResult(IEnumerable<string>? securityKeys,IEnumerable<CodeGenProp>? props = null)
+        : base("Result", securityKeys, null, props)
     {
     }
 
     public override SegregationRole Role { get; } = SegregationRole.QueryResult;
 
-    public static CodeGenQueryResult New(IEnumerable<CodeGenProp>? props = null)
-        => new(props);
+    public static CodeGenQueryResult New(IEnumerable<string>? securityKeys, IEnumerable<CodeGenProp>? props = null)
+        => new(securityKeys, props);
 
     protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
     {

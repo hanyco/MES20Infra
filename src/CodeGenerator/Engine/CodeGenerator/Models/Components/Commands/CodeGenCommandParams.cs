@@ -7,15 +7,15 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Commands
     [Fluent]
     public sealed record CodeGenCommandParams : CodeGenCqrsSegregateType
     {
-        private CodeGenCommandParams(IEnumerable<CodeGenProp>? props = null)
-            : base("Parameter", null, props)
+        private CodeGenCommandParams(IEnumerable<string>? securityKeys,IEnumerable<CodeGenProp>? props = null)
+            : base("Parameter", securityKeys, null, props)
         {
         }
 
         public override SegregationRole Role { get; } = SegregationRole.CommandParameter;
 
-        public static CodeGenCommandParams New(IEnumerable<CodeGenProp>? props = null)
-            => new(props);
+        public static CodeGenCommandParams New(IEnumerable<string>? securityKeys, IEnumerable<CodeGenProp>? props = null)
+            => new(securityKeys, props);
 
         protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
         {

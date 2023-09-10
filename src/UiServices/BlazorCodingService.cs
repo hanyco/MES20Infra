@@ -92,8 +92,8 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             .NotNull(x => x.NameSpace)
             .ThrowOnFail();
 
-        var name = CommonHelper.Purify(dto.Name)!;
-        var parsedNameSpace = CommonHelper.Purify(dto.NameSpace);
+        var name = CommonHelpers.Purify(dto.Name)!;
+        var parsedNameSpace = CommonHelpers.Purify(dto.NameSpace);
         var result = new UiComponentViewModel
         {
             Name = name,

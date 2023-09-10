@@ -11,11 +11,13 @@ namespace Test.Hr.Commands
 {
     using Library.Cqrs.Models.Commands;
     using Test.Hr.Dtos;
+    using HanyCo.Infra.Security.Markers;
     
     
     /// <summary>
     /// The result of DeletePersonCommand
     /// </summary>
+    [SecurityDescriptorAttribute(Key="DeletePersonCommand")]
     public sealed partial class DeletePersonCommandResult : ICommandResult
     {
         

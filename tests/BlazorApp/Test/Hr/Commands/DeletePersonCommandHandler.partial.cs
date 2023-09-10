@@ -11,11 +11,13 @@ namespace Test.Hr.Commands
 {
     using Library.Cqrs.Models.Commands;
     using Library.Cqrs.Models.Queries;
+    using HanyCo.Infra.Security.Markers;
     
     
     /// <summary>
     /// The handler of DeletePersonCommand
     /// </summary>
+    [SecurityDescriptorAttribute(Key="DeletePersonCommand")]
     public sealed partial class DeletePersonCommandHandler : ICommandHandler<DeletePersonCommandParameter, DeletePersonCommandResult>
     {
         

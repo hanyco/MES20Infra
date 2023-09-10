@@ -1,5 +1,6 @@
 ﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
+
 using Library.CodeGeneration.Models;
 using Library.Cqrs.Models.Commands;
 
@@ -9,8 +10,8 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components.Commands;
 [Immutable]
 public sealed record CodeGenCommandHandler : CodeGenCqrsSegregateType
 {
-    private CodeGenCommandHandler(in CodeGenCommandParams CommandParam, in CodeGenCommandResult CommandResult, in IEnumerable<CodeGenProp> props)
-        : base("Handler", null, props) => (this.CommandParam, this.CommandResult) = (CommandParam, CommandResult);
+    private CodeGenCommandHandler(in CodeGenCommandParams CommandParam, in CodeGenCommandResult CommandResult, in IEnumerable<CodeGenProp> props, IEnumerable<string> securityKeys)
+        : base("Handler", securityKeys, null, props) => (this.CommandParam, this.CommandResult) = (CommandParam, CommandResult);
 
     public CodeGenCommandParams CommandParam { get; }
     public CodeGenCommandResult CommandResult { get; }
@@ -31,17 +32,8 @@ public sealed record CodeGenCommandHandler : CodeGenCqrsSegregateType
 
     public override SegregationRole Role { get; } = SegregationRole.CommandHandler;
 
-    public static CodeGenCommandHandler New(CodeGenCommandParams CommandParam, CodeGenCommandResult CommandResult)
-        => new(CommandParam, CommandResult, Enumerable.Empty<CodeGenProp>());
-
-    public static CodeGenCommandHandler New(CodeGenCommandParams CommandParam, CodeGenCommandResult CommandResult, params (string Type, string Name)[] props)
-        => new(CommandParam, CommandResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)));
-
-    public static CodeGenCommandHandler New(CodeGenCommandParams CommandParam, CodeGenCommandResult CommandResult, params (Type Type, string Name)[] props)
-        => new(CommandParam, CommandResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)));
-
-    public static CodeGenCommandHandler New(CodeGenCommandParams CommandParam, CodeGenCommandResult CommandResult, params (Type Type, string Name, bool HasSetter)[] props)
-        => new(CommandParam, CommandResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false, hasSetter: p.HasSetter)));
+    public static CodeGenCommandHandler New(CodeGenCommandParams CommandParam, CodeGenCommandResult CommandResult, IEnumerable<string> securityKeys, params (Type Type, string Name)[] props)
+        => new(CommandParam, CommandResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)), securityKeys);
 
     protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
     {

@@ -19,6 +19,8 @@ using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
 
+using Services.Helpers;
+
 namespace Services;
 
 [Service]
@@ -34,42 +36,44 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         });
         return Task.FromResult(result);
 
-        static Codes generateCommand(CqrsCommandViewModel commandViewModel)
+        static Codes generateCommand(CqrsCommandViewModel model)
         {
-            Check.MustBeArgumentNotNull(commandViewModel?.Name);
+            Check.MustBeArgumentNotNull(model?.Name);
 
-            var paramsDto = ConvertViewModelToCodeGen(commandViewModel.ParamsDto)
+            var securityKeys = model.SecurityClaims.ToSecurityKeys();
+            var paramsDto = ConvertViewModelToCodeGen(model.ParamsDto)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var resultDto = ConvertViewModelToCodeGen(commandViewModel.ResultDto)
+            var resultDto = ConvertViewModelToCodeGen(model.ResultDto)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var cmdParams = CodeGenCommandParams.New().AddProp(paramsDto, "Params", isList: paramsDto.IsList)
+            var cmdParams = CodeGenCommandParams.New(securityKeys).AddProp(paramsDto, "Params", isList: paramsDto.IsList)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var cmdResult = CodeGenCommandResult.New().AddProp(resultDto, "Result", isList: resultDto.IsList)
+            var cmdResult = CodeGenCommandResult.New(securityKeys).AddProp(resultDto, "Result", isList: resultDto.IsList)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var cmdHandler = CodeGenCommandHandler.New(cmdParams, cmdResult, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
+            var cmdHandler = CodeGenCommandHandler.New(cmdParams, cmdResult, securityKeys, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
                 .With(x => x.props().Category = CodeCategory.Command);
 
-            var cmd = CodeGenCommandModel.New(commandViewModel.Name, commandViewModel.CqrsNameSpace, commandViewModel.DtoNameSpace, cmdHandler, cmdParams, cmdResult)
+            var cmd = CodeGenCommandModel.New(model.Name, model.CqrsNameSpace, model.DtoNameSpace, cmdHandler, cmdParams, cmdResult, GetSecurityKeys(model))
                 .With(x => x.props().Category = CodeCategory.Command);
             return CodeGenerator.GenerateCode(cmd);
         }
 
-        static Codes generateQuery(CqrsQueryViewModel queryViewModel)
+        static Codes generateQuery(CqrsQueryViewModel model)
         {
-            Check.MustBeArgumentNotNull(queryViewModel?.Name);
+            Check.MustBeArgumentNotNull(model?.Name);
 
-            var paramsDto = ConvertViewModelToCodeGen(queryViewModel.ParamsDto)
+            var securityKeys = model.SecurityClaims.ToSecurityKeys();
+            var paramsDto = ConvertViewModelToCodeGen(model.ParamsDto)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var resultDto = ConvertViewModelToCodeGen(queryViewModel.ResultDto)
+            var resultDto = ConvertViewModelToCodeGen(model.ResultDto)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var qryParams = CodeGenQueryParams.New().AddProp(paramsDto, "Params", isList: paramsDto.IsList)
+            var qryParams = CodeGenQueryParams.New(securityKeys).AddProp(paramsDto, "Params", isList: paramsDto.IsList)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var qryResult = CodeGenQueryResult.New().AddProp(resultDto, "Result", isList: resultDto.IsList)
+            var qryResult = CodeGenQueryResult.New(securityKeys).AddProp(resultDto, "Result", isList: resultDto.IsList)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var qryHandler = CodeGenQueryHandler.New(qryParams, qryResult, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
+            var qryHandler = CodeGenQueryHandler.New(qryParams, qryResult, securityKeys, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
                 .With(x => x.props().Category = CodeCategory.Query);
 
-            var qry = CodeGenQueryModel.New(queryViewModel.Name, queryViewModel.CqrsNameSpace, queryViewModel.DtoNameSpace, qryHandler, qryParams, qryResult)
+            var qry = CodeGenQueryModel.New(model.Name, model.CqrsNameSpace, model.DtoNameSpace, qryHandler, qryParams, qryResult, GetSecurityKeys(model))
                 .With(x => x.props().Category = CodeCategory.Query);
             return CodeGenerator.GenerateCode(qry);
         }
@@ -85,4 +89,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
         }
         return result;
     }
+
+    private static IEnumerable<string> GetSecurityKeys(CqrsViewModelBase viewModel) =>
+            viewModel.SecurityClaims.Select(x => x.Key).Compact() ?? Enumerable.Empty<string>();
 }

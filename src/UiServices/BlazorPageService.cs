@@ -43,7 +43,7 @@ internal sealed class BlazorPageService(
         {
             return null;
         }
-        var pureName = CommonHelper.Purify(name ?? dto.Name);
+        var pureName = CommonHelpers.Purify(name ?? dto.Name);
         var result = new UiPageViewModel
         {
             Name = pureName?.AddEnd("Page"),
@@ -53,7 +53,7 @@ internal sealed class BlazorPageService(
             GeneratePartialCode = true,
             GenerateUiCode = true,
             Module = module ?? dto.Module,
-            NameSpace = nameSpace ?? $"{CommonHelper.Purify(dto.NameSpace)}.Pages",
+            NameSpace = nameSpace ?? $"{CommonHelpers.Purify(dto.NameSpace)}.Pages",
             Route = route ?? $"/{pureName?.ToLower()}"
         };
         if (dto.IsViewModel)

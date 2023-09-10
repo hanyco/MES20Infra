@@ -6,8 +6,16 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases
     public abstract record CodeGenCqrsSegregateType : CodeGenType, ICodeGenCqrsSegregate
     {
 
-        protected CodeGenCqrsSegregateType(in string suffix, in CodeGenType? baseClass = null, in IEnumerable<CodeGenProp>? props = null)
-            : base(in suffix, in baseClass, props: props) => this.Suffix = suffix;
+        protected CodeGenCqrsSegregateType(
+            in string suffix,
+            in IEnumerable<string>? securityKeys,
+            in CodeGenType? baseClass = null,
+            in IEnumerable<CodeGenProp>? props = null)
+            : base(in suffix, in baseClass, props: props)
+        {
+            this.Suffix = suffix;
+            this.SecurityKeys = securityKeys;
+        }
 
         protected readonly string Suffix;
         string ICodeGenCqrsSegregate.Suffix => this.Suffix;
@@ -30,6 +38,8 @@ namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases
             set => this.HasPartialClass = value;
         }
         public abstract SegregationRole Role { get; }
+        
+        public IEnumerable<string>? SecurityKeys { get; }
 
         public IEnumerable<string> GetInterfaces(string cqrsName)
         {

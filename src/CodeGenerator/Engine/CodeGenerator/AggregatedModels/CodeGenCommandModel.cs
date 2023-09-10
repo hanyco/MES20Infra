@@ -26,6 +26,7 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
         in CodeGenCommandHandler handler,
         in CodeGenCommandParams param,
         in CodeGenCommandResult result,
+        in IEnumerable<string> securityKeys,
         params CodeGenDto[] dtos)
     {
         this.Name = name;
@@ -34,6 +35,7 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
         this.Handler = handler;
         this.Param = param;
         this.Result = result;
+        this.SecurityKeys = securityKeys;
         this.Dtos = dtos;
     }
 
@@ -79,6 +81,8 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
     /// <value>The result.</value>
     public CodeGenCommandResult Result { get; }
 
+    public IEnumerable<string> SecurityKeys { get; }
+
     /// <summary>
     /// Gets the CQRS segregates.
     /// </summary>
@@ -109,6 +113,7 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
         CodeGenCommandHandler handler,
         CodeGenCommandParams param,
         CodeGenCommandResult result,
+        IEnumerable<string> securityKeys,
         params CodeGenDto[] dtos)
     {
         _ = name.ArgumentNotNull(nameof(name));
@@ -118,7 +123,7 @@ public readonly struct CodeGenCommandModel : ICodeGenCqrsModel
             name = $"{name}Command";
         }
 
-        return new CodeGenCommandModel(name, cqrsNameSpace, dtoNameSpace, handler, param, result, dtos);
+        return new CodeGenCommandModel(name, cqrsNameSpace, dtoNameSpace, handler, param, result, securityKeys, dtos);
     }
 
     public bool Equals(CodeGenCommandModel other)
