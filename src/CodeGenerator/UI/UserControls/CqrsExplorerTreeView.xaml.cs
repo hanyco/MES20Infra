@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Immutable;
+using System.Windows;
 using System.Windows.Controls;
 
 using Contracts.Services;
@@ -17,19 +18,7 @@ public partial class CqrsExplorerTreeView : UserControl
     private readonly IDtoService _dtoService;
     private readonly ICqrsQueryService _queryService;
 
-    public CqrsExplorerTreeView()
-    {
-         this.InitializeComponent();
-       if (ControlHelper.IsDesignTime())
-        {
-            return;
-        }
-
-        this.BeginInitializing();
-        this._dtoService = DI.GetService<IDtoService>()!;
-        this._queryService = DI.GetService<ICqrsQueryService>()!;
-        this._commandService = DI.GetService<ICqrsCommandService>()!;
-    }
+    private ImmutableList<TreeViewItem> _result;
 
     public event EventHandler<ItemActingEventArgs<Task<IReadOnlyList<CqrsCommandViewModel>>>>? GettingCommands;
 
@@ -40,6 +29,20 @@ public partial class CqrsExplorerTreeView : UserControl
     public event EventHandler<ItemActedEventArgs<InfraViewModelBase>>? ItemDoubleClicked;
 
     public event EventHandler<ItemActedEventArgs<InfraViewModelBase?>>? SelectedItemChanged;
+
+    public CqrsExplorerTreeView()
+    {
+        this.InitializeComponent();
+        if (ControlHelper.IsDesignTime())
+        {
+            return;
+        }
+
+        this.BeginInitializing();
+        this._dtoService = DI.GetService<IDtoService>()!;
+        this._queryService = DI.GetService<ICqrsQueryService>()!;
+        this._commandService = DI.GetService<ICqrsCommandService>()!;
+    }
 
     public static DependencyProperty FilterDtoParamsProperty { get; } = ControlHelper.GetDependencyProperty<bool?, CqrsExplorerTreeView>(nameof(FilterDtoParams), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: null);
     public static DependencyProperty FilterResultDtoProperty { get; } = ControlHelper.GetDependencyProperty<bool?, CqrsExplorerTreeView>(nameof(FilterDtoResult), onPropertyChanged: async (me, _) => await me.BindAsync(), defaultValue: null);
@@ -59,9 +62,6 @@ public partial class CqrsExplorerTreeView : UserControl
     public bool LoadDtos { get => (bool)this.GetValue(LoadDtosProperty); set => this.SetValue(LoadDtosProperty, value); }
     public bool LoadQueries { get => (bool)this.GetValue(LoadQueriesProperty); set => this.SetValue(LoadQueriesProperty, value); }
     public InfraViewModelBase? SelectedItem { get => (InfraViewModelBase)this.GetValue(SelectedItemProperty); set => this.SetValue(SelectedItemProperty, value); }
-
-    private void BeginInitializing()
-        => this.IsInitializing = true;
 
     public async Task BindAsync()
     {
@@ -102,17 +102,20 @@ public partial class CqrsExplorerTreeView : UserControl
             commandsViewItemRoot.IsExpanded = true;
         }
 
-        this.TreeView.Items.Clear();
-        var selectedHeaders = this.TreeView.Items.Cast<TreeViewItem>().Where(x => x.IsSelected).Select(x => x.Header);
-        foreach (var item in result)
-        {
-            _ = this.TreeView.Items.Add(item);
-        }
-        _ = this.TreeView.Items.Cast<TreeViewItem>().ForEach(x => selectedHeaders.Contains(x.Header).IfTrue(() => x.IsSelected = true));
+        //this.TreeView.BindItemsSource(result.ToEnumerable());
+
+        //var selectedHeaders = this.TreeView.Items.Cast<TreeViewItem>().Where(x => x.IsSelected).Select(x => x.Header);
+        //this.TreeView.Items.Clear();
+        //foreach (var item in this._result)
+        //{
+        //    _ = this.TreeView.Items.Add(item);
+        //}
+        //_ = this.TreeView.Items.Cast<TreeViewItem>().ForEach(x => selectedHeaders.Contains(x.Header).IfTrue(() => x.IsSelected = true));
+        this.TreeView.ItemsSource = this._result = result.ToImmutableList();
     }
 
-    public void EndInitializing()
-            => this.IsInitializing = false;
+    public void EndInitializing() =>
+        this.IsInitializing = false;
 
     public async Task ReloadCqrsExplorerAsync(bool loadDtos, bool loadQueries, bool loadCommands)
     {
@@ -122,6 +125,21 @@ public partial class CqrsExplorerTreeView : UserControl
         this.LoadCommands = loadCommands;
         this.EndInitializing();
         await this.RebindAsync();
+    }
+
+    private void BeginInitializing() =>
+        this.IsInitializing = true;
+
+    private void ClearFilterButton_Click(object sender, RoutedEventArgs e) =>
+        this.FilterTextBox.Text = string.Empty;
+
+    private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var cases = this.FilterTextBox.Text.IsNullOrEmpty()
+                    ? this._result
+                    : this._result.SelectAll(tvi => tvi.Items.Cast<TreeViewItem>())
+                        .Where(x => x.GetModel<InfraViewModelBase>()?.Name?.Contains(this.FilterTextBox.Text, StringComparison.OrdinalIgnoreCase) ?? false);
+        this.TreeView.BindItemsSource(cases);
     }
 
     private async Task<IEnumerable<CqrsCommandViewModel>> OnGetCommandsAsync()
@@ -163,23 +181,23 @@ public partial class CqrsExplorerTreeView : UserControl
     private void OnItemDoubleClicked(ItemActedEventArgs<InfraViewModelBase> e) =>
         this.ItemDoubleClicked?.Invoke(this, e);
 
-    private void OnSelectedItemChanged()
-            => SelectedItemChanged?.Invoke(this, new ItemActedEventArgs<InfraViewModelBase?>(this.SelectedItem));
+    private void OnSelectedItemChanged() =>
+        SelectedItemChanged?.Invoke(this, new ItemActedEventArgs<InfraViewModelBase?>(this.SelectedItem));
 
-    private async Task RebindAsync()
-        => await this.BindAsync();
+    private async Task RebindAsync() =>
+        await this.BindAsync();
 
     private void TreeView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (ControlHelper.GetSelectedValue<InfraViewModelBase>(this.TreeView) is { } selectedItem)
+        if (ControlHelper.GetSelectedModel<InfraViewModelBase>(this.TreeView) is { } selectedItem)
         {
             this.SelectedItem = selectedItem;
             this.OnItemDoubleClicked(new(selectedItem));
         }
     }
 
-    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-            => this.SelectedItem = ControlHelper.GetSelectedValue<InfraViewModelBase>(this.TreeView);
+    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) =>
+        this.SelectedItem = ControlHelper.GetSelectedModel<InfraViewModelBase>(this.TreeView);
 
     private async void UserControl_Loaded(object sender, RoutedEventArgs e)
     {

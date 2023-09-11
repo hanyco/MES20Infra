@@ -140,7 +140,7 @@ public partial class BlazorPageGeneratorPage
 
     private async Task DeletePage()
     {
-        var page = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView);
+        var page = ControlHelper.GetSelectedModel<UiPageViewModel>(this.PageTreeView);
         Check.MustBeNotNull(page, () => new ValidationException("Please select a page to edit."));
         if (MsgBox2.AskWithWarn("Are you sure you want to delete selected component?") != TaskDialogResult.Yes)
         {
@@ -164,7 +164,7 @@ public partial class BlazorPageGeneratorPage
         }
 
         var scope = this.ActionScopeBegin("Loading...");
-        var id = ControlHelper.GetSelectedValue<UiPageViewModel>(this.PageTreeView)?.Id;
+        var id = ControlHelper.GetSelectedModel<UiPageViewModel>(this.PageTreeView)?.Id;
         Check.MustBeNotNull(id, () => "Please select a page to edit.");
         this.ViewModel = await this._service.GetByIdAsync(id.Value);
         await this.BindAllComponentsView();
@@ -216,7 +216,7 @@ public partial class BlazorPageGeneratorPage
             return;
         }
 
-        _ = this.PageComponentLisView.RebindItemsSource(this.ViewModel.Components);
+        _ = this.PageComponentLisView.BindItemsSource(this.ViewModel.Components);
     }
 
     private void RefreshPageComponentsButton_Click(object sender, RoutedEventArgs e)

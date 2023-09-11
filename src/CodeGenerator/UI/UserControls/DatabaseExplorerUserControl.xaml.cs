@@ -93,7 +93,7 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
     private void ServerExplorerTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        this.SelectedDbObjectNode = this.ServerExplorerTreeView.GetSelectedValue<Node<DbObjectViewModel>>();
+        this.SelectedDbObjectNode = this.ServerExplorerTreeView.GetSelectedModel<Node<DbObjectViewModel>>();
 
         (this.SelectedTable, this.SelectedColumns) = this.SelectedDbObjectNode?.Value switch
         {
