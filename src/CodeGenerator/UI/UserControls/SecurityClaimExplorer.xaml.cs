@@ -20,7 +20,7 @@ public partial class SecurityClaimExplorer : UserControl, IAsyncInitialzable
         this.InitializeComponent();
     }
 
-    public ClaimViewModel? SelectedClaim => this.ClaimTreeView.GetSelectedValue<ClaimViewModel>();
+    public ClaimViewModel? SelectedClaim => this.ClaimTreeView.GetSelectedModel<ClaimViewModel>();
 
     public async Task InitializeAsync()
     {
