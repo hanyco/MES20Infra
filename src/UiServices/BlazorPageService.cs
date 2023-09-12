@@ -54,7 +54,7 @@ internal sealed class BlazorPageService(
             GenerateUiCode = true,
             Module = module ?? dto.Module,
             NameSpace = nameSpace ?? $"{CommonHelpers.Purify(dto.NameSpace)}.Pages",
-            Route = route ?? $"/{pureName?.ToLower()}"
+            Route = route
         };
         if (dto.IsViewModel)
         {
@@ -100,13 +100,17 @@ internal sealed class BlazorPageService(
 
     public Result<Codes> GenerateCodes(in UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
-        _ = this.CheckValidator(viewModel);
+        if (!this.Validate(viewModel).TryParse(out var vr))
+        {
+            return vr.WithValue(Codes.Empty);
+        }
         this.Logger.Debug($"Generating code is started.");
         var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
-        var page = new BlazorPage(viewModel.Name!)
-            .SetPageRoute(viewModel.Route)
-            .SetNameSpace(viewModel.NameSpace)
-            .SetDataContext(dataContextType);
+        var page = (viewModel.Route.IsNullOrEmpty()
+            ? BlazorPage.NewByModuleName(viewModel.Name!, viewModel.Module.Name!)
+            : BlazorPage.NewByPageRoute(viewModel.Name!, viewModel.Route))
+                .SetNameSpace(viewModel.NameSpace)
+                .SetDataContext(dataContextType);
         _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
 
         var result = page.GenerateCodes(CodeCategory.Page, arguments);
@@ -179,5 +183,6 @@ internal sealed class BlazorPageService(
              .NotNull(x => x.ClassName)
              .NotNull(x => x.DataContext)
              .NotNull(x => x.Module)
-             .NotNull(x => x.Route).Build();
+             //.NotNull(x => x.Route)
+             .Build();
 }

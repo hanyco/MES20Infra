@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.Blazor;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using HanyCo.Infra.Blazor;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Security.Model;
@@ -17,16 +19,32 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 [Fluent]
 public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 {
-    public BlazorPage(in string name, in string? pageRoute = null) : base(name)
-        => this.SetPageRoute(pageRoute);
+    private readonly string? _moduleName;
+
+    private BlazorPage(in string name, in string? moduleName = null, in string? pageRoute = null) : base(name)
+    {
+        _ = this.SetPageRoute(pageRoute);
+        this._moduleName = moduleName;
+    }
 
     public string? PageRoute { get; private set; }
 
-    public static BlazorPage New(in string name, in string? pageRoute = null)
-        => new(name, pageRoute);
+    [return: NotNull]
+    public static string GetPageRoute(string name, string? moduleName, string? pageRoute) =>
+        pageRoute.IsNullOrEmpty()
+            ? $"@page \"/{moduleName.NotNull().Remove(" ")}/{name.NotNull().TrimEnd("Page", StringComparison.OrdinalIgnoreCase).TrimStart('/')}\""
+            : $"@page \"/{pageRoute.TrimStart('/')}\"";
 
-    public BlazorPage SetPageRoute(string? value)
-        => this.Fluent(() => this.PageRoute = value);
+    [return: NotNull]
+    public static BlazorPage NewByModuleName([DisallowNull] in string name, [DisallowNull] in string moduleName) =>
+        new(name.NotNull(), moduleName: moduleName.NotNull());
+
+    [return: NotNull]
+    public static BlazorPage NewByPageRoute([DisallowNull] in string name, [DisallowNull] in string pageRoute) =>
+        new(name.NotNull(), pageRoute: pageRoute.NotNull());
+
+    public BlazorPage SetPageRoute(string? value) =>
+        this.Fluent(() => this.PageRoute = value);
 
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {
@@ -40,7 +58,10 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             var memoryCacheType = TypePath.New<IMemoryCache>();
             var userContextType = TypePath.New<IUserContext>();
 
-            var route = this.PageRoute.IsNullOrEmpty() ? $"@page \"/{this.Name.TrimStart('/')}\"" : $"@page \"/{this.PageRoute.TrimStart('/')}\"";
+            var pageRoute = this.PageRoute;
+            var moduleName = this._moduleName;
+            var name = this.Name;
+            var route = GetPageRoute(name, moduleName, pageRoute);
 
             var result = codeStringBuilder
                 .AppendLine(route)
