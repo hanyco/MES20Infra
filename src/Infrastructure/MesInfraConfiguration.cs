@@ -15,13 +15,13 @@ public static class MesInfraConfiguration
     public static IServiceCollection AddMesInfraServices<TStartup>(this IServiceCollection services, string connectionString, ILogger logger)
         => services.AddMemoryCache()
             .AddHttpContextAccessor()
-            //.AddMesInfraSecurityServices<TStartup>(ISecutityConfigOptions.New(connectionString).With(x => x.Logger = logger))
+            //.AddMesInfraSecurityServices<TStartup>(ISecurityConfigOptions.New(connectionString).With(x => x.Logger = logger))
             ;
 
-    public static IApplicationBuilder UseMesInfraMiddlewares(this IApplicationBuilder app)
+    public static IApplicationBuilder UseMesInfraMiddleware(this IApplicationBuilder app)
         => app.UseMiddleware<ExceptionHandlerMiddleware>()
               .UseMiddleware<LicenseManagerMiddleware>()
               .UseMiddleware<InterceptorMiddleware>()
-              //.UseMesSecutityInfraMiddlewares()
+              //.UseMesSecurityInfraMiddleware()
         ;
 }
