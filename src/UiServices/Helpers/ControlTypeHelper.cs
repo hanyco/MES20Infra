@@ -29,14 +29,6 @@ public static class ControlTypeHelper
 
 public static class TriggerTypeHelper
 {
-    public static TriggerKind GetKind(this TriggerType triggerType) =>
-        triggerType switch
-        {
-            TriggerType.FormButton => TriggerKind.Button,
-            TriggerType.RowButton => TriggerKind.Button,
-            _ => throw new NotImplementedException()
-        };
-
     public static ButtonType ToButtonType(this TriggerType triggerType) =>
         triggerType switch
         {
