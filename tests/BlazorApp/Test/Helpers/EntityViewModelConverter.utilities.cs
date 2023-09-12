@@ -2,4 +2,13 @@
 
 public partial class EntityViewModelConverter
 {
+    public EntityViewModelConverter()
+    {
+        
+    }
+
+    public void Test()
+    {
+
+    }
 }
