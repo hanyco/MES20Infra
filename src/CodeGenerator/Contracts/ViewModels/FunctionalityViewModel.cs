@@ -39,7 +39,7 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public CqrsCommandViewModel InsertCommandViewModel { get; set; }
 
     // Property to get or set the namespace of the functionality.
-    public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
+    //public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
 
     // Property to get or set the source DTO associated with the functionality.
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }

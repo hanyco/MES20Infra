@@ -103,7 +103,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
         this.ViewModel = null;
-        this.ViewModel = await this._service.CreateAsync();
+        this.ViewModel = await GetNewViewModelAsync();
     }
 
     private void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
@@ -130,9 +130,10 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this.ViewModel = viewModel;
     }
 
-    private void Me_Loaded(object sender, RoutedEventArgs e) =>
-        this.ViewModel = new();
-
+    private async void Me_Loaded(object sender, RoutedEventArgs e) =>
+        this.ViewModel = await GetNewViewModelAsync();
+    private async Task<FunctionalityViewModel> GetNewViewModelAsync() => 
+        (await this._service.CreateAsync()).With(x => x.SourceDto.NameSpace = SettingsService.Get().productName);
     private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e) =>
         e.Item = this._moduleService;
 
@@ -150,7 +151,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private void PrepareViewModel()
     {
         this.ViewModel!.Name = this.ViewModel.SourceDto.Name;
-        this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace;
+        //this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace;
     }
 
     private void PrepareViewModelByDto(DtoViewModel? details)
@@ -168,9 +169,13 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this.ViewModel.SourceDto = details;
         //Maybe the user filled these data. We shouldn't overwrite user's preferences. If user
         // presses <Reset> button, user's preferences will be cleaned.
-        if (this.ViewModel.NameSpace.IsNullOrEmpty())
+        //if (this.ViewModel.NameSpace.IsNullOrEmpty())
+        //{
+        //    this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace = details.NameSpace ?? SettingsService.Get().productName;
+        //}
+        if (this.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
         {
-            this.ViewModel.NameSpace = details.NameSpace;
+            this.ViewModel.SourceDto.NameSpace = details.NameSpace ?? SettingsService.Get().productName ?? string.Empty;
         }
 
         if (this.ViewModel.Name.IsNullOrEmpty())
@@ -317,11 +322,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                 this._databaseExplorerUserControl = new DatabaseExplorerUserControl();
                 _ = await this._databaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter);
             }
-            _ = HostDialog
-                    .ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality."
-                        , _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null
-                            , () => "Please select a table."))
-                    .BreakOnFail();
+            _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a table.")).BreakOnFail();
 
             // Did user select a DTO?
             var table = this._databaseExplorerUserControl.SelectedTable!;

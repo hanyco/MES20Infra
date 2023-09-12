@@ -232,6 +232,8 @@ internal sealed partial class FunctionalityService
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
             // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
             var result = new CreationData(viewModel, (viewModel.Name ?? viewModel.SourceDto.Name).NotNull(), tokenSource);
+            result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "));
+
             // Return a success result with the result and cancellationTokenSource
             return Result<(CreationData, CancellationTokenSource)>.CreateSuccess((result, tokenSource));
         }
@@ -269,12 +271,12 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model)
-    {
-        return data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
+    private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) => data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
             ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
             : Enumerable.Empty<ClaimViewModel>();
-    }
+
+    private static string GetNameSpace(CreationData data)
+        => data.ViewModel.SourceDto.NameSpace;
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
@@ -282,7 +284,7 @@ internal sealed partial class FunctionalityService
         var dto = new DtoViewModel(data.ViewModel.SourceDto.Id, data.ViewModel.Name!)
         {
             Comment = data.COMMENT, // Set DTO comment
-            NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos"), // Set DTO namespace
+            NameSpace = TypePath.Combine(GetNameSpace(data), "Dtos"), // Set DTO namespace
             Functionality = data.ViewModel // Set DTO functionality
         }
         .With(x => x.Module.Id = data.ViewModel.SourceDto.Module.Id); // Set DTO module ID
@@ -432,7 +434,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.DeleteCommandViewModel.Name = $"{name}Command";
             data.ViewModel.DeleteCommandViewModel.Category = CqrsSegregateCategory.Delete;
-            data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
+            data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Commands");
             data.ViewModel.DeleteCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.DeleteCommandViewModel.FriendlyName = data.ViewModel.DeleteCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.DeleteCommandViewModel.Comment = data.COMMENT;
@@ -443,7 +445,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.DeleteCommandViewModel.ParamsDto = RawDto(data, false);
             data.ViewModel.DeleteCommandViewModel.ParamsDto.Name = $"{name}Params";
-            data.ViewModel.DeleteCommandViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.DeleteCommandViewModel.ParamsDto.IsParamsDto = true;
             data.ViewModel.DeleteCommandViewModel.ParamsDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
@@ -452,7 +453,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.DeleteCommandViewModel.ResultDto = RawDto(data, false);
             data.ViewModel.DeleteCommandViewModel.ResultDto.Name = $"{name}Result";
-            data.ViewModel.DeleteCommandViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.DeleteCommandViewModel.ResultDto.IsResultDto = true;
         }
 
@@ -478,7 +478,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token);
             data.ViewModel.GetAllQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetAllQueryViewModel.Category = CqrsSegregateCategory.Read;
-            data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
+            data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Queries");
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
@@ -489,7 +489,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetAllQueryViewModel.ParamsDto = RawDto(data, false);
             data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{name}Params";
-            data.ViewModel.GetAllQueryViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetAllQueryViewModel.ParamsDto.IsParamsDto = true;
         }
 
@@ -497,7 +496,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, true);
             data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{name}Result";
-            data.ViewModel.GetAllQueryViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }
@@ -521,7 +519,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token);
             data.ViewModel.GetByIdQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetByIdQueryViewModel.Category = CqrsSegregateCategory.Read;
-            data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Queries");
+            data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Queries");
             data.ViewModel.GetByIdQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.ViewModel.GetByIdQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
@@ -532,7 +530,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetByIdQueryViewModel.ParamsDto = RawDto(data, false);
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.Name = $"{name}Params";
-            data.ViewModel.GetByIdQueryViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
         }
@@ -541,7 +538,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetByIdQueryViewModel.ResultDto = RawDto(data, true);
             data.ViewModel.GetByIdQueryViewModel.ResultDto.Name = $"{name}Result";
-            data.ViewModel.GetByIdQueryViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.GetByIdQueryViewModel.ResultDto.IsResultDto = true;
         }
 
@@ -567,7 +563,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.InsertCommandViewModel.Name = $"{name}Command";
             data.ViewModel.InsertCommandViewModel.Category = CqrsSegregateCategory.Create;
-            data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
+            data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Commands");
             data.ViewModel.InsertCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.InsertCommandViewModel.FriendlyName = data.ViewModel.InsertCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.InsertCommandViewModel.Comment = data.COMMENT;
@@ -578,7 +574,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.InsertCommandViewModel.ParamsDto = RawDto(data, true);
             data.ViewModel.InsertCommandViewModel.ParamsDto.Name = $"{name}Params";
-            data.ViewModel.InsertCommandViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.InsertCommandViewModel.ParamsDto.IsParamsDto = true;
             var idProp = data.ViewModel.InsertCommandViewModel.ParamsDto.Properties.FirstOrDefault(y => y.Name?.EqualsTo("id") is true);
             if (idProp != null)
@@ -591,7 +586,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.InsertCommandViewModel.ResultDto = RawDto(data, false);
             data.ViewModel.InsertCommandViewModel.ResultDto.Name = $"{name}Result";
-            data.ViewModel.InsertCommandViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.InsertCommandViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.InsertCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
@@ -619,7 +613,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.UpdateCommandViewModel.Name = $"{name}Command";
             data.ViewModel.UpdateCommandViewModel.Category = CqrsSegregateCategory.Update;
-            data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Commands");
+            data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Commands");
             data.ViewModel.UpdateCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.UpdateCommandViewModel.FriendlyName = data.ViewModel.UpdateCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.UpdateCommandViewModel.Comment = data.COMMENT;
@@ -630,7 +624,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.UpdateCommandViewModel.ParamsDto = RawDto(data, true);
             data.ViewModel.UpdateCommandViewModel.ParamsDto.Name = $"{name}Params";
-            data.ViewModel.UpdateCommandViewModel.ParamsDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.UpdateCommandViewModel.ParamsDto.IsParamsDto = true;
         }
 
@@ -638,7 +631,6 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.UpdateCommandViewModel.ResultDto = RawDto(data, false);
             data.ViewModel.UpdateCommandViewModel.ResultDto.Name = $"{name}Result";
-            data.ViewModel.UpdateCommandViewModel.ResultDto.NameSpace = TypePath.Combine(data.ViewModel.NameSpace, "Dtos");
             data.ViewModel.UpdateCommandViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.UpdateCommandViewModel.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }

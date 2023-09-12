@@ -2,6 +2,7 @@
 using Contracts.ViewModels;
 
 using Library.BusinessServices;
+using Library.Coding;
 
 namespace InfraTestProject.Tests;
 
@@ -70,8 +71,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         {
             SourceDto = new(-1, "PersonDTO") { Module = new(1, "Module") },
             Name = "TestFunctionality",
-            NameSpace = "CodeGen.UnitTests",
-        };
+        }.With(x => x.SourceDto.NameSpace = "CodeGen.UnitTests");
         _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
                 new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),

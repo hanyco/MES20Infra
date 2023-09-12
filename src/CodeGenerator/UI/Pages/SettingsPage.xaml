@@ -38,6 +38,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
                 <TextBlock Style="{StaticResource LongLabelBlock}" Text="Connection string:" />
@@ -108,6 +109,10 @@
                 <StackPanel Grid.Row="7" Style="{StaticResource FieldPanel}">
                     <TextBlock Style="{StaticResource LongLabelBlock}" Text="Blazor components path:" />
                     <TextBox Width="500" Text="{Binding blazorComponentsPath}" />
+                </StackPanel>
+                <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Default code namespace:" />
+                    <TextBox Width="500" Text="{Binding productName}" />
                 </StackPanel>
             </Grid>
         </Grid>
