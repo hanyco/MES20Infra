@@ -17,7 +17,6 @@ namespace Contracts.ViewModels;
 /// </summary>
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
-    private string _nameSpace; // Private field to store the namespace of the functionality.
     private DtoViewModel _sourceDto; // Private field to store the source DTO associated with the functionality.
 
     // Components and view models associated with the BlazorDetailsComponent functionality.

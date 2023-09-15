@@ -29,9 +29,10 @@ internal partial class FunctionalityService(
     IProgressReport reporter,
     ILogger logger,
     IBlazorComponentService blazorComponentService,
-    IBlazorComponentCodingService blazorCodingService,
+    IBlazorComponentCodingService blazorComponentCodeService,
     IBlazorPageService blazorPageService,
-    IBlazorPageCodingService blazorPageCodingService)
+    IBlazorPageCodingService blazorPageCodeService,
+    IConverterCodeGeneratorService converterCodeService)
     : IFunctionalityService
     , IFunctionalityCodeService
     , IBusinessService
@@ -41,12 +42,13 @@ internal partial class FunctionalityService(
 {
     #region Fields & Properties
 
-    private readonly IBlazorComponentCodingService _blazorComponentCodingService = blazorCodingService;
+    private readonly IBlazorComponentCodingService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
-    private readonly IBlazorPageCodingService _blazorPageCodingService = blazorPageCodingService;
+    private readonly IBlazorPageCodingService _blazorPageCodeService = blazorPageCodeService;
     private readonly IBlazorPageService _blazorPageService = blazorPageService;
     private readonly ICqrsCommandService _commandService = commandService;
     private readonly IEntityViewModelConverter _converter = converter;
+    private readonly IConverterCodeGeneratorService _converterCodeService = converterCodeService;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService = cqrsCodeService;
     private readonly IDtoCodeService _dtoCodeService = dtoCodeService;
     private readonly IDtoService _dtoService = dtoService;

@@ -123,7 +123,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for BlazorPageViewModel if available.
             if (viewModel.BlazorPageViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorPageCodingService.GenerateCodes(viewModel.BlazorPageViewModel));
+                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorPageViewModel));
                 if (!codeGenRes)
                 {
                     return result;
@@ -146,7 +146,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorComponentCodingService.GenerateCodes(viewModel.BlazorListComponentViewModel));
+                var codeGenRes = addToList(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel));
                 if (!codeGenRes)
                 {
                     return result;
@@ -158,7 +158,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for BlazorDetailsComponentViewModel if available.
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorComponentCodingService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+                var codeGenRes = addToList(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
                 if (!codeGenRes)
                 {
                     return result;
@@ -271,12 +271,13 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) => data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
+    private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) =>
+        data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
             ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
             : Enumerable.Empty<ClaimViewModel>();
 
-    private static string GetNameSpace(CreationData data)
-        => data.ViewModel.SourceDto.NameSpace;
+    private static string GetNameSpace(CreationData data) =>
+        data.ViewModel.SourceDto.NameSpace;
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
@@ -302,7 +303,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
-        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name);
+        var name = CommonHelpers.Purify(data.SourceDtoName);
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(addActions)
@@ -310,7 +311,7 @@ internal sealed partial class FunctionalityService
 
         void createViewModel(CreationData data)
         {
-            data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodingService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodeService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = false;
@@ -324,7 +325,7 @@ internal sealed partial class FunctionalityService
             HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel saveButton = new()
             {
                 Caption = "Save",
-                //CqrsSegregate = data.ViewModel.InsertCommandViewModel,
+                CqrsSegregate = data.ViewModel.InsertCommandViewModel,
                 EventHandlerName = "SaveButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
@@ -359,7 +360,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
     {
-        var name = StringHelper.Pluralize(CommonHelpers.Purify(data.ViewModel.SourceDto.Name));
+        var name = StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName));
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(addActions)
@@ -367,7 +368,7 @@ internal sealed partial class FunctionalityService
 
         void createViewModel(CreationData data)
         {
-            data.ViewModel.BlazorListComponentViewModel = this._blazorComponentCodingService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorListComponentViewModel = this._blazorComponentCodeService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorListComponentViewModel.Name = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.ClassName = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.IsGrid = true;
@@ -645,7 +646,7 @@ internal sealed partial class FunctionalityService
         private Result<FunctionalityViewModel>? _result;
 
         [NotNull]
-        internal CancellationTokenSource CancellationTokenSource { get; } = tokenSource;
+        internal CancellationTokenSource CancellationTokenSource { get; } = tokenSource.ArgumentNotNull();
 
         [NotNull]
         internal Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);

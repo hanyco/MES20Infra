@@ -47,7 +47,7 @@ public partial class PartialDetailsForQueryHandlerUserControl : UserControl
 
     #region string CodeSnippetBodyText
 
-    public static readonly DependencyProperty CodeSnippetBodyTextProperty = ControlHelper.GetDependencyProperty<string, MyType>(nameof(CodeSnippetBodyText), defaultValue: "throw new System.NotImplementedException();");
+    public static readonly DependencyProperty CodeSnippetBodyTextProperty = ControlHelper.GetDependencyProperty<string, MyType>(nameof(CodeSnippetBodyText), defaultValue: "throw new System.NotImplementedException();3");
 
     public string CodeSnippetBodyText
     {
