@@ -17,18 +17,6 @@ namespace Services;
 
 internal sealed partial class FunctionalityService
 {
-    /// <summary>
-    /// Generates codes asynchronously based on the provided FunctionalityViewModel and optional
-    /// arguments. It is closely related to the FunctionalityViewModel and its associated codes.
-    /// </summary>
-    /// <param name="viewModel">
-    /// The FunctionalityViewModel instance containing components and view models.
-    /// </param>
-    /// <param name="args">Optional arguments for code generation.</param>
-    /// <param name="token">Cancellation token to cancel the code generation process.</param>
-    /// <returns>
-    /// A Result containing the generated codes or a failure message if no codes were generated.
-    /// </returns>
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(viewModel);
@@ -381,6 +369,7 @@ internal sealed partial class FunctionalityService
         {
             var newButton = new UiComponentCustomButtonViewModel()
             {
+                CodeStatement = $@"this.DataContext = new();",
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -390,6 +379,7 @@ internal sealed partial class FunctionalityService
             };
             var editButton = new UiComponentCqrsButtonViewModel()
             {
+                CqrsSegregate = data.ViewModel.GetAllQueryViewModel,
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
@@ -399,6 +389,7 @@ internal sealed partial class FunctionalityService
             };
             var deleteButton = new UiComponentCqrsButtonViewModel()
             {
+                CqrsSegregate = data.ViewModel.DeleteCommandViewModel,
                 Caption = "Delete",
                 EventHandlerName = "Delete",
                 Guid = Guid.NewGuid(),
@@ -449,10 +440,9 @@ internal sealed partial class FunctionalityService
 
         void createParams(CreationData data)
         {
-            data.ViewModel.DeleteCommandViewModel.ParamsDto = RawDto(data, false);
+            data.ViewModel.DeleteCommandViewModel.ParamsDto = RawDto(data, true);
             data.ViewModel.DeleteCommandViewModel.ParamsDto.Name = $"{name}Params";
             data.ViewModel.DeleteCommandViewModel.ParamsDto.IsParamsDto = true;
-            data.ViewModel.DeleteCommandViewModel.ParamsDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
         }
 
         void createResult(CreationData data)

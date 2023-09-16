@@ -15,14 +15,10 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 
 [Immutable]
 [Fluent]
-public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBlazorComponent
+public sealed class BlazorComponent(in string name) : BlazorComponentBase<BlazorComponent>(name), IBlazorComponent
 {
-    public BlazorComponent(in string name) : base(name)
-    {
-    }
-
     public Dictionary<string, string?> BlazorAttributes { get; } = new Dictionary<string, string?>();
-    public (TypePath Type, string Name)? DataContextProprty { get; private set; }
+    public (TypePath Type, string Name)? DataContextProperty { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether [should generate full UI code].
@@ -38,12 +34,6 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
     public static BlazorComponent New(in string name)
         => new(name);
 
-    public BlazorComponent SetDataContextProperty((TypePath Type, string Name)? value)
-        => this.This(() => this.DataContextProprty = value);
-
-    public BlazorComponent SetDataContextProperty(TypePath type, string name)
-        => this.SetDataContextProperty((type, name));
-
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {
         var queryProcessorType = TypePath.New<IQueryProcessor>();
@@ -51,7 +41,7 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
         var memoryCacheType = TypePath.New<IMemoryCache>();
         var userContextType = TypePath.New<IUserContext>();
         var baseTypeName = typeof(ComponentBase<,>).Name[..^2];
-        var dataContextType = (this.DataContextType, this.DataContextProprty) switch
+        var dataContextType = (this.DataContextType, this.DataContextProperty) switch
         {
             (_, { } dc) => dc.Type,
             ({ } dc, null) => dc,
@@ -97,7 +87,7 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
             {
                 element.Attributes.Add($"col-{this.Position.Col}", null);
             }
-            if (this.DataContextProprty is { } prop)
+            if (this.DataContextProperty is { } prop)
             {
                 element.Attributes.Add("DataContext", $"@this.DataContext?.{prop.Name}");
             }

@@ -45,16 +45,21 @@ public abstract class UiComponentContentViewModelBase : InfraViewModelBase, IUiC
 public sealed class UiComponentCqrsButtonViewModel : UiComponentButtonViewModelBase, IUiComponentCqrsContent, FrontElement
 {
     private CqrsViewModelBase? _cqrsSegregate;
+
     public CqrsViewModelBase? CqrsSegregate { get => this._cqrsSegregate; set => this.SetProperty(ref this._cqrsSegregate, value); }
 }
 
 public sealed class UiComponentCustomButtonViewModel : UiComponentButtonViewModelBase, FrontElement
 {
+    private FormattableString? _codeStatement;
+
+    public FormattableString? CodeStatement { get => this._codeStatement; set => this.SetProperty(ref this._codeStatement, value); }
 }
 
 public sealed class UiComponentLoadViewModel : InfraViewModelBase, IUiComponentCqrsContent, BackElement
 {
     private CqrsViewModelBase? _cqrsSegregate;
+
     public CqrsViewModelBase? CqrsSegregate { get => this._cqrsSegregate; set => this.SetProperty(ref this._cqrsSegregate, value); }
 }
 

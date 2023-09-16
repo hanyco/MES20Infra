@@ -98,7 +98,7 @@ internal sealed class BlazorPageService(
     public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
         ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
 
-    public Result<Codes> GenerateCodes(in UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         if (!this.Validate(viewModel).TryParse(out var vr))
         {
@@ -109,8 +109,8 @@ internal sealed class BlazorPageService(
         var page = (viewModel.Route.IsNullOrEmpty()
             ? BlazorPage.NewByModuleName(viewModel.Name!, viewModel.Module.Name!)
             : BlazorPage.NewByPageRoute(viewModel.Name!, viewModel.Route))
-                .SetNameSpace(viewModel.NameSpace)
-                .SetDataContext(dataContextType);
+                .With(x => x.NameSpace = viewModel.NameSpace)
+                .With(x => x.DataContextType = dataContextType);
         _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
 
         var result = page.GenerateCodes(CodeCategory.Page, arguments);
@@ -120,10 +120,10 @@ internal sealed class BlazorPageService(
 
         static IHtmlElement toHtmlElement(UiComponentViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
             BlazorComponent.New(component.Name!)
-                .SetNameSpace(component.NameSpace)
-                .SetDataContext(dataContextType)
-                .SetDataContextProperty(dataContextTypeProperty)
-                .SetPosition(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan, component.Position.Offset);
+                .With(x => x.NameSpace = component.NameSpace)
+                .With(x => x.DataContextType = dataContextType)
+                .With(x => x.DataContextProperty = dataContextTypeProperty)
+                .With(x => x.Position = new(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan, component.Position.Offset));
     }
 
     public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync(CancellationToken cancellationToken = default)

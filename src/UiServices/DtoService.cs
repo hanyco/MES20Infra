@@ -100,7 +100,7 @@ internal sealed class DtoService(
                     .Build()!;
     }
 
-    public Result<Codes> GenerateCodes(in DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
         Check.MustBeArgumentNotNull(viewModel);
         var result = new Codes().With(x => x.props().Category = CodeCategory.Dto);

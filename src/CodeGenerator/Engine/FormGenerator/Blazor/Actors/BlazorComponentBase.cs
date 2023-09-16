@@ -15,19 +15,19 @@ using Library.Validations;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 
-[Immutable]
 [Fluent]
 public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>//, ICodeGenerator,  IComponentCodeUnit
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
     private static readonly string[] _parametersAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
+    private BootstrapPosition? _position;
 
     protected BlazorComponentBase(in string name) => this.Name = name;
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
     public Dictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
-    public TypePath? DataContextType { get; private set; }
+    public TypePath? DataContextType { get; set; }
     public IList<FieldActor> Fields { get; } = new List<FieldActor>();
     public virtual string HtmlFileExtension { get; } = "razor";
     public string Indent { get; } = StringHelper.Space(4);
@@ -36,15 +36,14 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public IList<string> MainCodeUsingNameSpaces { get; } = new List<string>();
     public string Name { get; init; }
 
-    public string? NameSpace { get; private set; }
+    public string? NameSpace { get; set; }
 
     public IList<MethodArgument> Parameters { get; } = new List<MethodArgument>();
     public virtual string PartialCodeFileExtension { get; } = "partial.cs";
 
     public IList<string> PartialCodeUsingNameSpaces { get; } = new List<string>();
 
-    public BootstrapPosition Position { get; private set; } = new();
-
+    public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
 
     public GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
@@ -321,18 +320,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
     public Code GenerateUiCode(in GenerateCodesParameters? arguments = null) =>
         this.GenerateUiCode(CodeCategory.Component, arguments);
-
-    public TBlazorComponent SetDataContext(TypePath value)
-        => this.This(() => this.DataContextType = value);
-
-    public TBlazorComponent SetIsGrid(bool isGrid)
-        => this.This(() => this.IsGrid = isGrid);
-
-    public TBlazorComponent SetNameSpace(string? value)
-        => this.This(() => this.NameSpace = value);
-
-    public TBlazorComponent SetPosition(int? order = null, int? row = null, int? col = null, int? colSpan = null, int? offset = null)
-        => this.This(() => this.Position = new(order, row, col, colSpan, offset));
 
     protected virtual string? GetBaseTypes()
         => null;

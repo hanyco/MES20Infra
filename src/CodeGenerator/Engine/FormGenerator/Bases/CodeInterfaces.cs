@@ -36,7 +36,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases
         /// <param name="viewModel">The view model to generate codes from.</param>
         /// <param name="arguments">Optional parameters for generating codes.</param>
         /// <returns>A result containing the generated codes.</returns>
-        Result<Codes> GenerateCodes(in TViewModel viewModel, GenerateCodesParameters? arguments = null);
+        Result<Codes> GenerateCodes(TViewModel viewModel, GenerateCodesParameters? arguments = null);
     }
 
     /// <summary>

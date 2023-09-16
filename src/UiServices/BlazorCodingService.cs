@@ -182,11 +182,11 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             return (dataContextType, dataContextPropType);
         }
 
-        static BlazorComponent initializeComponent(UiComponentViewModel model, TypePath dataContextType)
-            => BlazorComponent.New(model.Name!)
-                              .SetNameSpace(model.NameSpace)
-                              .SetDataContext(dataContextType)
-                              .SetIsGrid(model.IsGrid);
+        static BlazorComponent initializeComponent(UiComponentViewModel model, TypePath dataContextType) =>
+            BlazorComponent.New(model.Name.NotNull())
+                .With(x => x.NameSpace = model.NameSpace)
+                .With(x => x.DataContextType = dataContextType)
+                .With(x => x.IsGrid = model.IsGrid);
 
         static void setDataContext(UiComponentViewModel model, TypePath? dataContextPropType, BlazorComponent result, CancellationToken cancellationToken = default)
         {
@@ -194,7 +194,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             {
                 return;
             }
-            _ = result.SetDataContextProperty(prop, model?.Name);
+            _ = result.With(x => x.DataContextProperty = (prop, model?.Name ?? string.Empty));
         }
 
         static void createChildren<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponentBase<TBlazorComponent> engine, CancellationToken cancellationToken = default)
