@@ -78,7 +78,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             }
             else
             {
-                _ = this.Children.OfType<IBlazorComponent>()
+                this.Children.OfType<IBlazorComponent>()
                     .Select(x => x.NameSpace).Compact().Distinct()
                     .ForEach(nameSpace => codeStringBuilder.AppendLine($"@using {nameSpace}"));
             }
@@ -110,11 +110,10 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 
     protected override void OnInitializingUiCode(GenerateCodesParameters? arguments)
     {
-        _ = CommonExtensions.GetAllChildren(this);
-        _ = this.GetAllChildren().OfType<BlazorComponent>().CreateIterator(x =>
+        this.GetAllChildren().OfType<BlazorComponent>().ForEach(x =>
         {
             x.ShouldGenerateFullUiCode = false;
-        }).Build();
+        });
         base.OnInitializingUiCode(arguments);
     }
 }

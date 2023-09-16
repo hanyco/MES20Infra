@@ -59,7 +59,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         var (partNameSpace, partClassType) = createPartClassType(partUnit);
 
         var initializedAsyncMethodBody = new StringBuilder();
-        initializeDataContext(initializedAsyncMethodBody);
+        //initializeDataContext(initializedAsyncMethodBody);
 
         if (initializedAsyncMethodBody.Length > 0)
         {
@@ -115,8 +115,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             return (partNameSpace, partClassType);
         }
 
-        void initializeDataContext(in StringBuilder onInitializedAsyncBody)
-            => this.OnInitializeDataContext(onInitializedAsyncBody);
+        //void initializeDataContext(in StringBuilder onInitializedAsyncBody)
+        //    => this.OnInitializeDataContext(onInitializedAsyncBody);
 
         void addPropertiesToPartClass(in CodeTypeDeclaration partClassType)
         {
@@ -383,9 +383,9 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
     }
 
-    protected virtual void OnInitializeDataContext(in StringBuilder onInitializedAsyncBody)
-    {
-    }
+    //protected virtual void OnInitializeDataContext(in StringBuilder onInitializedAsyncBody)
+    //{
+    //}
 
     protected virtual void OnInitializingBehindCode(GenerateCodesParameters? arguments)
     {
