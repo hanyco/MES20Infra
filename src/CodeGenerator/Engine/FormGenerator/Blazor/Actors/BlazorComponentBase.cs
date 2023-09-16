@@ -170,7 +170,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
             foreach (var child in this.Children)
             {
-                //! 𝒯𝒽𝒾𝓈 𝓂𝓊𝓈𝓉 𝒷𝑒 𝒸𝒽𝒶𝓃𝑔𝑒𝒹 𝓁𝒶𝓉𝑒𝓇 (Fixed)
+                //!DONE  (✔Fixed) 𝒯𝒽𝒾𝓈 𝓂𝓊𝓈𝓉 𝒷𝑒 𝒸𝒽𝒶𝓃𝑔𝑒𝒹 𝓁𝒶𝓉𝑒𝓇
                 if (child is BlazorComponent)
                 {
                     continue;
@@ -346,7 +346,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         StringBuilder generateGridCode(StringBuilder sb)
         {
             var buttonsCode = this.Actions.Where(x => !x.showOnGrid)
-                .Select(x => new BlazorButton(name: x.Name, body: x.Caption, onClick: x.EventHandlerName)
+                .Select(x => new BlazorCqrsButton(name: x.Name, body: x.Caption, onClick: x.EventHandlerName)
                 .With(x => x.Position.SetCol(1)))
                 .Select(x => x.GenerateUiCode().Statement).Merge(Environment.NewLine);
 
@@ -390,7 +390,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
     private IEnumerable<GenerateCodeTypeMemberResult> GetActionCodes(IHtmlElement element)
     {
-        if (element is IHasHtmlAction hha)
+        if (element is IHasSegregationAction hha)
         {
             var actionCodes = hha.GenerateActionCodes();
             if (actionCodes is not null)

@@ -1,19 +1,23 @@
-﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
+﻿using System.CodeDom;
+
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
+using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.CodeGeneration.Helpers;
+
 using Library.CodeGeneration.Models;
-using Library.Coding;
 using Library.Helpers.CodeGen;
 using Library.Validations;
-using System.CodeDom;
 
-namespace HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
+namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 
-public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAction
+public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>, IHtmlElement, IBlazorComponent, ISupportsBehindCodeMember
+    where TSelf : BlazorButtonBase<TSelf, TAction>
 {
-    private bool _isCancellButton;
+    private bool _isCancelButton;
     private bool _isDefaultButton;
-    public HtmlButton(
+
+    protected BlazorButtonBase(
         string? id = null,
         string? name = null,
         string? onClick = null,
@@ -23,25 +27,24 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         : base("button", id, name, body, prefix)
     {
         this.Type = type;
-        this.OnClick = this.ParseOnClickEvent(onClick);// !onClick.IsNullOrEmpty() ? onClick : $"{this.Name ?? this.Id}_Click";
+        this.OnClick = this.ParseOnClickEvent(onClick);
         this.SetCssClasses();
     }
 
-    private string? ParseOnClickEvent(string? onClick) => (onClick, this.Name, this.Id) switch
+    public TAction? Action { get; set; }
+    private string? ParseOnClickEvent(string? onClick) => 
+        (onClick, this.Name, this.Id) switch
     {
         (not null, _, _) => onClick,
         (_, not null, _) => this.Name,
         (_, _, not null) => this.Id,
         _ => null
     };
-    public IHtmlAction? Action { get; private set; }
 
     /// <summary>
     /// Gets the bootstrap button type class.
     /// </summary>
-    /// <value>
-    /// The bootstrap button type class.
-    /// </value>
+    /// <value>The bootstrap button type class.</value>
     public string BootstrapButtonTypeClass
     {
         get
@@ -51,7 +54,7 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
             {
                 result = "btn-primary";
             }
-            else if (this.IsCancellButton)
+            else if (this.IsCancelButton)
             {
                 result = "btn-secondary";
             }
@@ -64,12 +67,12 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         }
     }
 
-    public bool IsCancellButton
+    public bool IsCancelButton
     {
-        get => this._isCancellButton;
+        get => this._isCancelButton;
         set
         {
-            this._isCancellButton = value;
+            this._isCancelButton = value;
             this.SetCssClasses();
         }
     }
@@ -84,17 +87,45 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         }
     }
 
+    public string? NameSpace { get; }
     public virtual string? OnClick { get => this.GetAttribute("onClick"); set => this.SetAttribute("onClick", this.ParseOnClickEvent(value)); }
 
-    public ButtonType Type
+    public ButtonType Type { get; set; }
+
+    public IEnumerable<GenerateCodeTypeMemberResult> GenerateTypeMembers(GenerateCodesParameters arguments)
     {
-        get => this.GetAttribute("type") switch
+        if (this.OnClick.IsNullOrEmpty() || this.Action is not null)
         {
-            "button" => ButtonType.FormButton,
-            "sumbit" => ButtonType.RowButton,
-            "reset" => ButtonType.Reset,
-            _ => throw new NotSupportedException(),
-        }; set => _ = this.SetAttribute("type", value.ToString().ToLowerInvariant());
+            return Enumerable.Empty<GenerateCodeTypeMemberResult>();
+        }
+
+        var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: MemberAttributes.Private);
+        return EnumerableHelper.ToEnumerable(new GenerateCodeTypeMemberResult(main, null));
+    }
+
+    private void SetCssClasses()
+    {
+        _ = this.CssClasses.Remove("btn");
+        _ = this.CssClasses.Remove("btn-primary");
+        _ = this.CssClasses.Remove("btn-secondary");
+        _ = this.CssClasses.Remove("btn-success");
+        this.CssClasses.Add("btn");
+        this.CssClasses.Add(this.BootstrapButtonTypeClass);
+    }
+}
+
+public sealed class BlazorCqrsButton(
+    string? id = null,
+    string? name = null,
+    string? onClick = null,
+    string? body = null,
+    ButtonType type = ButtonType.FormButton,
+    string? prefix = null) : BlazorButtonBase<BlazorCqrsButton, ISegregationAction>(id, name, onClick, body, type, prefix), IHasSegregationAction
+{
+    public override string? OnClick
+    {
+        get => this.GetAttribute("onclick", isBlazorAttribute: true);
+        set => this.SetAttribute("onclick", value, isBlazorAttribute: true);
     }
 
     public IEnumerable<GenerateCodeTypeMemberResult> GenerateActionCodes()
@@ -145,33 +176,28 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
                 var commandCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling"
                     , arguments: new MethodArgument[] {
-                            new (command.Parameter?.Type ?? "System.Object", "parameter")
+                        new (command.Parameter?.Type ?? "System.Object", "parameter")
                         }
                     , accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
                 var commandCalled = CodeDomHelper.NewMethod(
                     $"On{calleeName}Called"
                     , arguments: new MethodArgument[] {
-                            new (command.Parameter?.Type ?? "System.Object", "parameter"),
-                            new (command.Result?.Type ?? "System.Object", "result")
+                        new (command.Parameter?.Type ?? "System.Object", "parameter"),
+                        new (command.Result?.Type ?? "System.Object", "result")
                         }
                     , accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
                 yield return new(commandCalling, null);
                 yield return new(null, commandBody);
                 yield return new(commandCalled, null);
                 break;
+
             default:
                 throw new NotSupportedException();
         }
     }
 
-    public HtmlButton SetAction(IHtmlAction action)
-        => this.Fluent(() => this.Action = action);
-
-    public HtmlButton SetAction(string name, ICommandCqrsSegregation segregation)
-        => this.Fluent(() => this.Action = new HtmlCommandAction(name, segregation));
-
-    public HtmlButton SetAction(string name, IQueryCqrsSegregation segregation)
-        => this.Fluent(() => this.Action = new HtmlQueryAction(name, segregation));
+    public BlazorCqrsButton SetAction(string name, ICqrsSegregation segregation) =>
+        this.Fluent(() => this.Action = new CqrsAction(name, segregation));
 
     private void SetCssClasses()
     {
@@ -189,4 +215,39 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         FormButton,
         Reset
     }
+}
+
+public sealed class BlazorCustomButton
+    (
+    string? id = null,
+    string? name = null,
+    string? onClick = null,
+    string? body = null,
+    ButtonType type = ButtonType.FormButton,
+    string? prefix = null) : BlazorButtonBase<BlazorCustomButton, ICustomAction>(id, name, onClick, body, type, prefix), IHasCustomAction
+{
+    public IEnumerable<GenerateCodeTypeMemberResult>? GenerateActionCodes()
+    {
+        if (this.Action is null)
+        {
+            yield break;
+        }
+        Check.MutBeNotNull(this.Action.CodeStatement);
+
+        var dataContextValidatorMethod = CodeDomHelper.NewMethod("ValidateForm", accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
+        yield return new(dataContextValidatorMethod, null);
+
+        var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), this.Action.CodeStatement, returnType: "void");
+        yield return new(null, queryBody);
+    }
+
+    public BlazorCustomButton SetAction(string name, string? codeStatement) =>
+        this.Fluent(() => this.Action = new CustomAction(name, codeStatement));
+}
+
+public enum ButtonType
+{
+    RowButton,
+    FormButton,
+    Reset
 }

@@ -22,6 +22,8 @@ using Microsoft.EntityFrameworkCore;
 
 using Services.Helpers;
 
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
 namespace Services;
 
 internal sealed class BlazorCodingService(IDtoService dtoService,
@@ -269,28 +271,16 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             {
                 if (elementAction is UiComponentButtonViewModelBase buttonBase)
                 {
-                    HtmlButton button = new BlazorButton(name: buttonBase.Name, body: buttonBase.Caption, onClick: buttonBase.EventHandlerName)
+                    if (buttonBase is UiComponentCqrsButtonViewModel cqrsButtonViewModel)
                     {
-                        Position = buttonBase.Position.ToBootstrapPosition()
-                    };
-                    if (buttonBase is UiComponentCqrsButtonViewModel cqrsButton)
-                    {
-                        if (cqrsButton.CqrsSegregate?.Name is not null)
-                        {
-                            button = cqrsButton.CqrsSegregate switch
-                            {
-                                CqrsQueryViewModel query => button.SetAction(
-                                    query.Name!,
-                                    new QueryCqrsSegregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
-                                CqrsCommandViewModel command => button.SetAction(
-                                    command.Name!,
-                                    new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
-                                _ => throw new NotImplementedException()
-                            };
-                        }
+                        var button = createCqrsButton(model, cqrsButtonViewModel);
+                        engine.Children.Add(button);
                     }
-
-                    engine.Children.Add(button);
+                    if (buttonBase is UiComponentCustomButtonViewModel customButtonViewModel)
+                    {
+                        var button = createCustomButton(model, customButtonViewModel);
+                        engine.Children.Add(button);
+                    }
                 }
             }
             static IHtmlElement createLabel([DisallowNull] UiComponentPropertyViewModel prop) =>
@@ -299,6 +289,39 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                     Position = prop.Position.ToBootstrapPosition().SetRow(1).SetCol(2),
                     IsEnabled = prop.IsEnabled
                 };
+
+            static BlazorCqrsButton createCqrsButton(UiComponentViewModel model, UiComponentCqrsButtonViewModel cqrsButtonViewModel)
+            {
+                BlazorCqrsButton button = new BlazorCqrsButton(name: cqrsButtonViewModel.Name, body: cqrsButtonViewModel.Caption, onClick: cqrsButtonViewModel.EventHandlerName)
+                {
+                    Position = cqrsButtonViewModel.Position.ToBootstrapPosition()
+                };
+                if (cqrsButtonViewModel.CqrsSegregate?.Name is not null)
+                {
+                    button = cqrsButtonViewModel.CqrsSegregate switch
+                    {
+                        CqrsQueryViewModel query => button.SetAction(
+                            query.Name!,
+                            new QueryCqrsSegregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
+                        CqrsCommandViewModel command => button.SetAction(
+                            command.Name!,
+                            new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
+                        _ => throw new NotImplementedException()
+                    };
+                }
+
+                return button;
+            }
+
+            static BlazorCustomButton createCustomButton(UiComponentViewModel model, UiComponentCustomButtonViewModel customButtonViewModel)
+            {
+                BlazorCustomButton button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.Caption, onClick: customButtonViewModel.EventHandlerName)
+                {
+                    Position = customButtonViewModel.Position.ToBootstrapPosition()
+                };
+                button.SetAction(model.Name!, "");
+                return button;
+            }
         }
 
         static void createGrid(UiComponentViewModel model, BlazorComponent result)

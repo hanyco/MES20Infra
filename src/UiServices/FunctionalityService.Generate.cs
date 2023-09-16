@@ -367,7 +367,7 @@ internal sealed partial class FunctionalityService
 
         void addActions(CreationData data)
         {
-            var newButton = new UiComponentCustomButtonViewModel()
+            var newButton = new UiComponentCustomButtonViewModel
             {
                 CodeStatement = $@"this.DataContext = new();",
                 Caption = "New",
@@ -377,7 +377,7 @@ internal sealed partial class FunctionalityService
                 Placement = Placement.FormButton,
                 Description = $"Creates new {name}"
             };
-            var editButton = new UiComponentCqrsButtonViewModel()
+            var editButton = new UiComponentCqrsButtonViewModel
             {
                 CqrsSegregate = data.ViewModel.GetAllQueryViewModel,
                 Caption = "Edit",
@@ -387,7 +387,7 @@ internal sealed partial class FunctionalityService
                 Placement = Placement.RowButton,
                 Description = $"Edits selected {name}"
             };
-            var deleteButton = new UiComponentCqrsButtonViewModel()
+            var deleteButton = new UiComponentCqrsButtonViewModel
             {
                 CqrsSegregate = data.ViewModel.DeleteCommandViewModel,
                 Caption = "Delete",
@@ -397,7 +397,7 @@ internal sealed partial class FunctionalityService
                 Placement = Placement.RowButton,
                 Description = $"Deletes selected {name}"
             };
-            var onLoad = new UiComponentLoadViewModel()
+            var onLoad = new UiComponentLoadViewModel
             {
                 CqrsSegregate = data.ViewModel.GetAllQueryViewModel
             };
