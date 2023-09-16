@@ -9,11 +9,11 @@ using System.CodeDom;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
-public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAction
+public class HtmlCqrsButton : HtmlElementBase<HtmlCqrsButton>, IHtmlElement, IHasSegregationAction
 {
-    private bool _isCancellButton;
+    private bool _isCancelButton;
     private bool _isDefaultButton;
-    public HtmlButton(
+    public HtmlCqrsButton(
         string? id = null,
         string? name = null,
         string? onClick = null,
@@ -34,7 +34,7 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         (_, _, not null) => this.Id,
         _ => null
     };
-    public IHtmlAction? Action { get; private set; }
+    public ISegregationAction? Action { get; private set; }
 
     /// <summary>
     /// Gets the bootstrap button type class.
@@ -51,7 +51,7 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
             {
                 result = "btn-primary";
             }
-            else if (this.IsCancellButton)
+            else if (this.IsCancelButton)
             {
                 result = "btn-secondary";
             }
@@ -64,12 +64,12 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         }
     }
 
-    public bool IsCancellButton
+    public bool IsCancelButton
     {
-        get => this._isCancellButton;
+        get => this._isCancelButton;
         set
         {
-            this._isCancellButton = value;
+            this._isCancelButton = value;
             this.SetCssClasses();
         }
     }
@@ -164,14 +164,8 @@ public class HtmlButton : HtmlElementBase<HtmlButton>, IHtmlElement, IHasHtmlAct
         }
     }
 
-    public HtmlButton SetAction(IHtmlAction action)
-        => this.Fluent(() => this.Action = action);
-
-    public HtmlButton SetAction(string name, ICommandCqrsSegregation segregation)
-        => this.Fluent(() => this.Action = new HtmlCommandAction(name, segregation));
-
-    public HtmlButton SetAction(string name, IQueryCqrsSegregation segregation)
-        => this.Fluent(() => this.Action = new HtmlQueryAction(name, segregation));
+    public HtmlCqrsButton SetAction(string name, ICqrsSegregation segregation)
+        => this.Fluent(() => this.Action = new HtmlCqrsAction(name, segregation));
 
     private void SetCssClasses()
     {

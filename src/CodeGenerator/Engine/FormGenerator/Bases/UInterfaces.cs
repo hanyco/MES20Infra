@@ -4,18 +4,16 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
+public interface IActionCodesGenerate
+{
+    IEnumerable<GenerateCodeTypeMemberResult>? GenerateActionCodes();
+}
+
 public interface IBlazorComponent : IHtmlElement
 {
     Dictionary<string, string?> BlazorAttributes { get; }
 
     string? NameSpace { get; }
-}
-
-public interface IHasHtmlAction
-{
-    IHtmlAction Action { get; }
-
-    IEnumerable<GenerateCodeTypeMemberResult>? GenerateActionCodes();
 }
 
 public interface IHasInnerText
@@ -28,7 +26,12 @@ public interface IHasPosition
     public BootstrapPosition Position { get; }
 }
 
-public interface IHtmlAction
+public interface IHasSegregationAction : IActionCodesGenerate
+{
+    ISegregationAction? Action { get; }
+}
+
+public interface ISegregationAction
 {
     string Name { get; }
 

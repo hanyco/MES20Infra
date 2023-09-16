@@ -269,7 +269,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             {
                 if (elementAction is UiComponentButtonViewModelBase buttonBase)
                 {
-                    HtmlButton button = new BlazorButton(name: buttonBase.Name, body: buttonBase.Caption, onClick: buttonBase.EventHandlerName)
+                    HtmlCqrsButton button = new BlazorButton(name: buttonBase.Name, body: buttonBase.Caption, onClick: buttonBase.EventHandlerName)
                     {
                         Position = buttonBase.Position.ToBootstrapPosition()
                     };
@@ -281,10 +281,10 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                             {
                                 CqrsQueryViewModel query => button.SetAction(
                                     query.Name!,
-                                    new QueryCqrsSegregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
+                                    new QueryCqrsSegregation(query.Name!,new(model.PageDataContextType, null!),query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
                                 CqrsCommandViewModel command => button.SetAction(
-                                    command.Name!,
-                                    new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
+                                    command.Name!, 
+                                    new CommandCqrsSegregation(command.Name!,command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!),command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
                                 _ => throw new NotImplementedException()
                             };
                         }

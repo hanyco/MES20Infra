@@ -6,7 +6,7 @@ using Library.Helpers.CodeGen;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components
 {
-    public sealed class BlazorButton : HtmlButton, IBlazorComponent, ISupportsBehindCodeMember
+    public sealed class BlazorButton : HtmlCqrsButton, IBlazorComponent, ISupportsBehindCodeMember
     {
         public BlazorButton(
             string? id = null,

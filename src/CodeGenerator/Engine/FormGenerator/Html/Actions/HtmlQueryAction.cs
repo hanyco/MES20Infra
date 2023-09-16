@@ -4,33 +4,17 @@ using Library.CodeGeneration.Models;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
 
-public record HtmlQueryAction : IHtmlAction
+public record HtmlCqrsAction : ISegregationAction
 {
-    public HtmlQueryAction(string name, IQueryCqrsSegregation segregation)
-    {
-        this.Name = name;
-        this.Segregation = segregation;
-    }
-
-    public string Name { get; }
-    public IQueryCqrsSegregation Segregation { get; }
-    ICqrsSegregation IHtmlAction.Segregation => this.Segregation;
-}
-
-public record HtmlCommandAction : IHtmlAction
-{
-    public HtmlCommandAction(string name, ICommandCqrsSegregation segregation)
+    public HtmlCqrsAction(string name, ICqrsSegregation segregation)
     {
         this.Segregation = segregation;
         this.Name = name;
     }
 
     public string Name { get; }
-    public ICommandCqrsSegregation Segregation { get; }
-    ICqrsSegregation IHtmlAction.Segregation => this.Segregation;
+    public ICqrsSegregation Segregation { get; }
 }
 
-public record CommandCqrsSegregation(string Name, MethodArgument? Parameter = null, MethodArgument? Result = null)
-    : ICommandCqrsSegregation;
-public record QueryCqrsSegregation(string Name, MethodArgument? Parameter, MethodArgument? Result)
-    : IQueryCqrsSegregation;
+public record CommandCqrsSegregation(string Name, MethodArgument? Parameter = null, MethodArgument? Result = null) : ICommandCqrsSegregation;
+public record QueryCqrsSegregation(string Name, MethodArgument? Parameter, MethodArgument? Result) : IQueryCqrsSegregation;
