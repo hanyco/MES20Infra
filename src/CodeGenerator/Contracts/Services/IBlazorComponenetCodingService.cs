@@ -35,7 +35,7 @@ public interface IBlazorComponentCodingService : IBusinessService
     /// Creates a unbound action.
     /// </summary>
     /// <returns></returns>
-    UiComponentActionViewModel CreateUnboundAction();
+    UiComponentCustomButtonViewModel CreateUnboundAction();
 
     /// <summary>
     /// Creates a unbound property.

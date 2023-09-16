@@ -58,7 +58,7 @@ public enum PropertyType
     Custom = 30,
 }
 
-public enum TriggerType
+public enum Placement
 {
     FormButton,
     RowButton,

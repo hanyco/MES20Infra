@@ -78,8 +78,8 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
         return this.CreateViewModel(dto);
     }
 
-    public UiComponentActionViewModel CreateUnboundAction() =>
-        new() { Caption = "New Action", IsEnabled = true, TriggerType = TriggerType.FormButton, Name = "NewAction", };
+    public UiComponentCustomButtonViewModel CreateUnboundAction() =>
+        new() { Caption = "New Action", IsEnabled = true, Placement = Placement.FormButton, Name = "NewAction", };
 
     public UiComponentPropertyViewModel CreateUnboundProperty() =>
         new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
@@ -265,26 +265,33 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                         break;
                 }
             }
-            foreach (var action in model.UiActions)
+            foreach (var elementAction in model.UiActions.OfType<FrontElement>())
             {
-                HtmlButton button = new BlazorButton(name: action.Name, body: action.Caption, type: action.TriggerType.ToButtonType(), onClick: action.EventHandlerName)
+                if (elementAction is UiComponentButtonViewModelBase buttonBase)
                 {
-                    Position = action.Position.ToBootstrapPosition()
-                };
-                if (action.CqrsSegregate?.Name is not null)
-                {
-                    button = action.CqrsSegregate switch
+                    HtmlButton button = new BlazorButton(name: buttonBase.Name, body: buttonBase.Caption, onClick: buttonBase.EventHandlerName)
                     {
-                        CqrsQueryViewModel query => button.SetAction(
-                            query.Name!,
-                            new QueryCqrsSegregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
-                        CqrsCommandViewModel command => button.SetAction(
-                            command.Name!,
-                            new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
-                        _ => throw new NotImplementedException()
+                        Position = buttonBase.Position.ToBootstrapPosition()
                     };
+                    if (buttonBase is UiComponentCqrsButtonViewModel cqrsButton)
+                    {
+                        if (cqrsButton.CqrsSegregate?.Name is not null)
+                        {
+                            button = cqrsButton.CqrsSegregate switch
+                            {
+                                CqrsQueryViewModel query => button.SetAction(
+                                    query.Name!,
+                                    new QueryCqrsSegregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
+                                CqrsCommandViewModel command => button.SetAction(
+                                    command.Name!,
+                                    new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
+                                _ => throw new NotImplementedException()
+                            };
+                        }
+                    }
+
+                    engine.Children.Add(button);
                 }
-                engine.Children.Add(button);
             }
             static IHtmlElement createLabel([DisallowNull] UiComponentPropertyViewModel prop) =>
                 new BlazorLabel($"{prop.ArgumentNotNull().Name}Label", body: prop.Caption.NotNull(New<NotFoundValidationException>))
@@ -302,10 +309,10 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             {
                 result.Properties.Add(new PropertyActor(uiProp.Property.TypeFullName, uiProp.Name, uiProp.Caption));
             }
-            foreach (var uiAction in model.UiActions)
+            foreach (var uiAction in model.UiActions.OfType<UiComponentButtonViewModelBase>())
             {
-                var args = model.IsGrid && uiAction.TriggerType == TriggerType.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
-                result.Actions.Add(new(uiAction.Name, uiAction.TriggerType == TriggerType.RowButton, uiAction.Caption, Arguments: args, EventHandlerName: uiAction.EventHandlerName));
+                var args = model.IsGrid && uiAction.Placement == Placement.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
+                result.Actions.Add(new(uiAction.Name, uiAction.Placement == Placement.RowButton, uiAction.Caption, Arguments: args, EventHandlerName: uiAction.EventHandlerName));
             }
         }
     }

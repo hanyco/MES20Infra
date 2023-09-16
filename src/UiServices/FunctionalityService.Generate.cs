@@ -322,7 +322,7 @@ internal sealed partial class FunctionalityService
 
         static void addActions(CreationData data)
         {
-            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel saveButton = new()
+            var saveButton = new UiComponentCqrsButtonViewModel()
             {
                 Caption = "Save",
                 CqrsSegregate = data.ViewModel.InsertCommandViewModel,
@@ -330,7 +330,7 @@ internal sealed partial class FunctionalityService
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
                 Name = "SaveButton",
-                TriggerType = TriggerType.FormButton,
+                Placement = Placement.FormButton,
                 Description = "Save the data to database",
                 Position = new()
                 {
@@ -339,14 +339,14 @@ internal sealed partial class FunctionalityService
                     Row = 1,
                 }
             };
-            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel cancelButton = new()
+            var cancelButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Cancel",
                 EventHandlerName = "CancelButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
                 Name = "CancelButton",
-                TriggerType = TriggerType.FormButton,
+                Placement = Placement.FormButton,
                 Position = new()
                 {
                     Col = 2,
@@ -379,34 +379,39 @@ internal sealed partial class FunctionalityService
 
         void addActions(CreationData data)
         {
-            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel newButton = new()
+            var newButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
                 Name = "NewButton",
-                TriggerType = TriggerType.FormButton,
+                Placement = Placement.FormButton,
                 Description = $"Creates new {name}"
             };
-            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel editButton = new()
+            var editButton = new UiComponentCqrsButtonViewModel()
             {
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
                 Name = "EditButton",
-                TriggerType = TriggerType.RowButton,
+                Placement = Placement.RowButton,
                 Description = $"Edits selected {name}"
             };
-            HanyCo.Infra.UI.ViewModels.UiComponentActionViewModel deleteButton = new()
+            var deleteButton = new UiComponentCqrsButtonViewModel()
             {
                 Caption = "Delete",
                 EventHandlerName = "Delete",
                 Guid = Guid.NewGuid(),
                 Name = "DeleteButton",
-                TriggerType = TriggerType.RowButton,
+                Placement = Placement.RowButton,
                 Description = $"Deletes selected {name}"
             };
-            _ = data.ViewModel.BlazorListComponentViewModel.UiActions.AddRange(new[] { newButton, editButton, deleteButton });
+            var onLoad = new UiComponentLoadViewModel()
+            {
+                CqrsSegregate = data.ViewModel.GetAllQueryViewModel
+            };
+            data.ViewModel.BlazorListComponentViewModel.UiActions.AddRange(new UiComponentContentViewModelBase[] { newButton, editButton, deleteButton })
+                .Add(onLoad);
         }
     }
 

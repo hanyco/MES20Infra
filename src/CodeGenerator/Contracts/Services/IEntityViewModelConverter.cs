@@ -20,8 +20,8 @@ public interface IEntityViewModelConverter :
     IDbEntityToViewModelConverter<UiComponentPropertyViewModel, UiComponentProperty>,
     IViewModelToDbEntityConverter<UiComponentPropertyViewModel, UiComponentProperty>,
 
-    IDbEntityToViewModelConverter<UiComponentActionViewModel, UiComponentAction>,
-    IViewModelToDbEntityConverter<UiComponentActionViewModel, UiComponentAction>,
+    IDbEntityToViewModelConverter<UiComponentButtonViewModelBase, UiComponentAction>,
+    IViewModelToDbEntityConverter<UiComponentButtonViewModelBase, UiComponentAction>,
 
     IDbEntityToViewModelConverter<ModuleViewModel, Module>,
     IViewModelToDbEntityConverter<ModuleViewModel, Module>,

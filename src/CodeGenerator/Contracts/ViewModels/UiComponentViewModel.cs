@@ -37,7 +37,8 @@ public class UiComponentViewModel : UiComponentViewModelBase
 
     public UiBootstrapPositionViewModel Position { get; private set; } = new();
 
-    public ObservableCollection<UiComponentActionViewModel> UiActions { get; } = new();
+    //public ObservableCollection<UiComponentButtonViewModel> UiActions { get; } = new();
+    public ObservableCollection<IUiComponentContent> UiActions { get; } = new();
 
     public long? UiPageComponentId { get; set; }
 

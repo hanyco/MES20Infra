@@ -3,10 +3,8 @@ using System.Windows.Controls;
 
 using Contracts.ViewModels;
 
-using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Exceptions;
 using Library.Exceptions.Validations;
@@ -25,7 +23,7 @@ public partial class BlazorComponentActionsUserControl
     #region BlazorComponentActionViewModel SelectedAction
 
     public static readonly DependencyProperty SelectedActionProperty
-        = ControlHelper.GetDependencyProperty<UiComponentActionViewModel?, BlazorComponentActionsUserControl>(nameof(SelectedAction),
+        = ControlHelper.GetDependencyProperty<UiComponentButtonViewModelBase?, BlazorComponentActionsUserControl>(nameof(SelectedAction),
             onPropertyChanged: (me, e) =>
             {
                 me.SelectedActionGrid.IsEnabled = me.SelectedAction is not null;
@@ -36,15 +34,15 @@ public partial class BlazorComponentActionsUserControl
                 }
             });
 
-    public UiComponentActionViewModel? SelectedAction
+    public UiComponentButtonViewModelBase? SelectedAction
     {
-        get => (UiComponentActionViewModel)this.GetValue(SelectedActionProperty);
+        get => (UiComponentButtonViewModelBase)this.GetValue(SelectedActionProperty);
         set => this.SetValue(SelectedActionProperty, value);
     }
 
     private void SelectedAction_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(UiComponentActionViewModel.TriggerType))
+        if (e.PropertyName == nameof(UiComponentButtonViewModelBase.Placement))
         {
             if (this.SelectedAction is not null)
             {
@@ -74,7 +72,7 @@ public partial class BlazorComponentActionsUserControl
 
     private void ActionsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var selectedAction = this.ActionsListView.GetSelection<UiComponentActionViewModel?>(e);
+        var selectedAction = this.ActionsListView.GetSelection<UiComponentButtonViewModelBase?>(e);
         this.SelectedAction = selectedAction;
         this.SelectedActionGrid.DataContext = this.SelectedAction;
         this.SelectedActionGrid.RebindDataContext();
@@ -97,7 +95,10 @@ public partial class BlazorComponentActionsUserControl
         {
             return;
         }
-        this.SelectedAction.CqrsSegregate = null;
+        if (this.SelectedAction is UiComponentCqrsButtonViewModel cqrsButton)
+        {
+            cqrsButton.CqrsSegregate = null;
+        }
     }
 
     private void DeleteActionButton_Click(object sender, RoutedEventArgs e)
@@ -146,6 +147,9 @@ public partial class BlazorComponentActionsUserControl
         {
             return;
         }
-        this.SelectedAction.CqrsSegregate = await selectedItem.FillAsync();
+        if (this.SelectedAction is UiComponentCqrsButtonViewModel cqrsButton)
+        {
+            cqrsButton.CqrsSegregate = await selectedItem.FillAsync();
+        }
     }
 }
