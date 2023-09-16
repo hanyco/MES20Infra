@@ -32,14 +32,14 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
     }
 
     public TAction? Action { get; set; }
-    private string? ParseOnClickEvent(string? onClick) => 
+    private string? ParseOnClickEvent(string? onClick) =>
         (onClick, this.Name, this.Id) switch
-    {
-        (not null, _, _) => onClick,
-        (_, not null, _) => this.Name,
-        (_, _, not null) => this.Id,
-        _ => null
-    };
+        {
+            (not null, _, _) => onClick,
+            (_, not null, _) => this.Name,
+            (_, _, not null) => this.Id,
+            _ => null
+        };
 
     /// <summary>
     /// Gets the bootstrap button type class.
