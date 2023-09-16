@@ -11,6 +11,7 @@ using Library.Validations;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 
+<<<<<<<< HEAD:src/CodeGenerator/Engine/FormGenerator/Blazor/Components/BlazorCqrsButton.cs
 public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>, IHtmlElement, IBlazorComponent, ISupportsBehindCodeMember
     where TSelf : BlazorButtonBase<TSelf, TAction>
 {
@@ -18,6 +19,13 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
     private bool _isDefaultButton;
 
     protected BlazorButtonBase(
+========
+public class HtmlCqrsButton : HtmlElementBase<HtmlCqrsButton>, IHtmlElement, IHasSegregationAction
+{
+    private bool _isCancelButton;
+    private bool _isDefaultButton;
+    public HtmlCqrsButton(
+>>>>>>>> c9fa57b27ba3eddd19d3b771c25c3e1d6b88f3f3:src/CodeGenerator/Engine/FormGenerator/Html/Elements/HtmlCqrsButton.cs
         string? id = null,
         string? name = null,
         string? onClick = null,
@@ -40,6 +48,10 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         (_, _, not null) => this.Id,
         _ => null
     };
+<<<<<<<< HEAD:src/CodeGenerator/Engine/FormGenerator/Blazor/Components/BlazorCqrsButton.cs
+========
+    public ISegregationAction? Action { get; private set; }
+>>>>>>>> c9fa57b27ba3eddd19d3b771c25c3e1d6b88f3f3:src/CodeGenerator/Engine/FormGenerator/Html/Elements/HtmlCqrsButton.cs
 
     /// <summary>
     /// Gets the bootstrap button type class.
@@ -196,8 +208,13 @@ public sealed class BlazorCqrsButton(
         }
     }
 
+<<<<<<<< HEAD:src/CodeGenerator/Engine/FormGenerator/Blazor/Components/BlazorCqrsButton.cs
     public BlazorCqrsButton SetAction(string name, ICqrsSegregation segregation) =>
         this.Fluent(() => this.Action = new CqrsAction(name, segregation));
+========
+    public HtmlCqrsButton SetAction(string name, ICqrsSegregation segregation)
+        => this.Fluent(() => this.Action = new HtmlCqrsAction(name, segregation));
+>>>>>>>> c9fa57b27ba3eddd19d3b771c25c3e1d6b88f3f3:src/CodeGenerator/Engine/FormGenerator/Html/Elements/HtmlCqrsButton.cs
 
     private void SetCssClasses()
     {
