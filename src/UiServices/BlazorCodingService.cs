@@ -114,7 +114,20 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
     }
 
     public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
-        => new(CreateComponent(model).GenerateCodes(CodeCategory.Component, arguments ?? new GenerateCodesParameters(true, true, true)));
+    {
+        Result<Codes> result;
+        try
+        {
+            var component = CreateComponent(model);
+            var codes = component.GenerateCodes(CodeCategory.Component, arguments ?? new(true, true, true));
+            result = Result<Codes>.CreateSuccess(codes);
+        }
+        catch (Exception ex)
+        {
+            result = Result<Codes>.CreateFailure(ex, Codes.Empty);
+        }
+        return result;
+    }
 
     public async Task<UiComponentPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
     {
@@ -254,27 +267,24 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             }
             foreach (var action in model.UiActions)
             {
-                if (action.TriggerType.GetKind() == TriggerKind.Button)
+                HtmlButton button = new BlazorButton(name: action.Name, body: action.Caption, type: action.TriggerType.ToButtonType(), onClick: action.EventHandlerName)
                 {
-                    HtmlButton button = new BlazorButton(name: action.Name, body: action.Caption, type: action.TriggerType.ToButtonType(), onClick: action.EventHandlerName)
+                    Position = action.Position.ToBootstrapPosition()
+                };
+                if (action.CqrsSegregate?.Name is not null)
+                {
+                    button = action.CqrsSegregate switch
                     {
-                        Position = action.Position.ToBootstrapPosition()
+                        CqrsQueryViewModel query => button.SetAction(
+                            query.Name!,
+                            new QueryCqrsSegregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
+                        CqrsCommandViewModel command => button.SetAction(
+                            command.Name!,
+                            new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
+                        _ => throw new NotImplementedException()
                     };
-                    if (action.CqrsSegregate?.Name is not null)
-                    {
-                        button = action.CqrsSegregate switch
-                        {
-                            CqrsQueryViewModel query => button.SetAction(
-                                query.Name!,
-                                new QueryCqrsSergregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
-                            CqrsCommandViewModel command => button.SetAction(
-                                command.Name!,
-                                new CommandCqrsSergregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
-                            _ => throw new NotImplementedException()
-                        };
-                    }
-                    engine.Children.Add(button);
                 }
+                engine.Children.Add(button);
             }
             static IHtmlElement createLabel([DisallowNull] UiComponentPropertyViewModel prop) =>
                 new BlazorLabel($"{prop.ArgumentNotNull().Name}Label", body: prop.Caption.NotNull(New<NotFoundValidationException>))

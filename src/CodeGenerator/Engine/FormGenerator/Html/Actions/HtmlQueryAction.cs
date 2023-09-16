@@ -30,7 +30,7 @@ public record HtmlCommandAction : IHtmlAction
     ICqrsSegregation IHtmlAction.Segregation => this.Segregation;
 }
 
-public record CommandCqrsSergregation(string Name, MethodArgument? Parameter = null, MethodArgument? Result = null)
+public record CommandCqrsSegregation(string Name, MethodArgument? Parameter = null, MethodArgument? Result = null)
     : ICommandCqrsSegregation;
-public record QueryCqrsSergregation(string Name, MethodArgument? Parameter, MethodArgument? Result)
+public record QueryCqrsSegregation(string Name, MethodArgument? Parameter, MethodArgument? Result)
     : IQueryCqrsSegregation;

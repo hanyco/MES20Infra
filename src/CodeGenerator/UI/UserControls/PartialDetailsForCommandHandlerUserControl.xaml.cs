@@ -47,7 +47,7 @@ public partial class PartialDetailsForCommandHandlerUserControl : UserControl
 
     #region string CodeSnippetBodyText
 
-    public static readonly DependencyProperty CodeSnippetBodyTextProperty = ControlHelper.GetDependencyProperty<string, MyType>(nameof(CodeSnippetBodyText), defaultValue: "throw new System.NotImplementedException();");
+    public static readonly DependencyProperty CodeSnippetBodyTextProperty = ControlHelper.GetDependencyProperty<string, MyType>(nameof(CodeSnippetBodyText), defaultValue: "throw new System.NotImplementedException();5");
 
     public string CodeSnippetBodyText
     {
@@ -59,7 +59,7 @@ public partial class PartialDetailsForCommandHandlerUserControl : UserControl
 
     #region string DataContextFullName
 
-    public static readonly DependencyProperty DataContextFullNameProperty = ControlHelper.GetDependencyProperty<string, MyType>(nameof(DataContextFullName), defaultValue: "throw new System.NotImplementedException();");
+    public static readonly DependencyProperty DataContextFullNameProperty = ControlHelper.GetDependencyProperty<string, MyType>(nameof(DataContextFullName), defaultValue: "throw new System.NotImplementedException();6");
 
     public string DataContextFullName
     {
@@ -74,6 +74,6 @@ public partial class PartialDetailsForCommandHandlerUserControl : UserControl
     private void Me_Loaded(object sender, RoutedEventArgs e)
     {
         this.IsDefaultBody = true;
-        this.CodeSnippetBodyText = "throw new System.NotImplementedException();";
+        this.CodeSnippetBodyText = "throw new System.NotImplementedException();2";
     }
 }

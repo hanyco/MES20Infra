@@ -8,9 +8,10 @@ public sealed class SettingsModel : NotifyPropertyChanged
     private string? _blazorPagesPath;
     private string? _commandsPath;
     private string? _connectionString;
+    private string? _dtosPath;
+    private string? _productName;
     private string? _projectSourceRootPath;
     private string? _queriesPath;
-    private string? _dtosPath;
     private bool _showToast;
 
     public string? blazorComponentsPath
@@ -37,6 +38,18 @@ public sealed class SettingsModel : NotifyPropertyChanged
         set => this.SetProperty(ref this._connectionString, value);
     }
 
+    public string? dtosPath
+    {
+        get => this._dtosPath;
+        set => this.SetProperty(ref this._dtosPath, value);
+    }
+
+    public string? productName
+    {
+        get => this._productName;
+        set => this.SetProperty(ref this._productName, value);
+    }
+
     public string? projectSourceRoot
     {
         get => this._projectSourceRootPath;
@@ -47,11 +60,6 @@ public sealed class SettingsModel : NotifyPropertyChanged
     {
         get => this._queriesPath;
         set => this.SetProperty(ref this._queriesPath, value);
-    }
-    public string? dtosPath
-    {
-        get => this._dtosPath;
-        set => this.SetProperty(ref this._dtosPath, value);
     }
 
     public bool showToast

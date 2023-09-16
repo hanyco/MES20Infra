@@ -4,6 +4,7 @@ using System.Globalization;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Markers;
@@ -190,7 +191,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
             _ = codeTypeDeclaration.AddMethod(
                     accessModifiers: MemberAttributes.Final | MemberAttributes.Public,
                     returnType: $"async Task<{cqrsName}Result>", name: "HandleAsync",
-                    body: "            throw new System.NotImplementedException();",
+                    body: $"            {CodeTemplates.DEFAULT_CODE}",
                     arguments: new MethodArgument($"{cqrsName}Parameter", "parameter"));
         }
 
