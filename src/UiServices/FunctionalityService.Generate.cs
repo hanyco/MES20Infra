@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration.Models;
@@ -258,8 +259,8 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
                 .AddStep(this.CreateBlazorListPage, getTitle($"Creating {data.ViewModel.Name} Blazor List Page…"))
-                .AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
                 .AddStep(this.CreateBlazorDetailsPage, getTitle($"Creating {data.ViewModel.Name} Blazor Details Page…"))
+                .AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
                 .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"));
 
         // Finalize the process
@@ -402,6 +403,9 @@ internal sealed partial class FunctionalityService
 
         void addActions(CreationData data)
         {
+            data.ViewModel.BlazorDetailsPageViewModel.Route = BlazorPage.GetPageRoute(
+                data.ViewModel.BlazorDetailsPageViewModel.Name!,
+                data.ViewModel.SourceDto.Module.Name, null);
             var newButton = new UiComponentCustomButtonViewModel
             {
                 CodeStatement = $@"NavigationManager.NavigateTo(""/{data.ViewModel.BlazorDetailsPageViewModel.Route}"");",

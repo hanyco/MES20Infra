@@ -113,11 +113,11 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public Code GenerateUiCode(in GenerateCodesParameters? arguments = null) =>
         this.GenerateUiCode(CodeCategory.Component, arguments);
 
-    protected virtual string? GetBaseTypes()
-        => null;
+    protected virtual string? GetBaseTypes() =>
+        null;
 
-    protected virtual StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
-        => codeStringBuilder;
+    protected virtual StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder) =>
+        codeStringBuilder;
 
     protected virtual Code OnGeneratingUiCode(in GenerateCodesParameters? arguments = null)
     {
@@ -138,8 +138,15 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         StringBuilder generateGridCode(StringBuilder sb)
         {
             var buttonsCode = this.Actions.Where(x => !x.showOnGrid)
-                .Select(x => new BlazorCqrsButton(name: x.Name, body: x.Caption, onClick: x.EventHandlerName)
-                .With(x => x.Position.SetCol(1)))
+                .Select(methodActor =>
+                {
+                    IUiCodeGenerator result = methodActor.CodeStatement == null
+                        ? new BlazorCqrsButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName)
+                                .With(x => x.Position.SetCol(1))
+                        : new BlazorCustomButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName)
+                                .With(x => x.Position.SetCol(1));
+                    return result;
+                })
                 .Select(x => x.GenerateUiCode().Statement).Merge(Environment.NewLine);
 
             var table = new BlazorTable

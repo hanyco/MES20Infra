@@ -29,6 +29,8 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 
     public string? PageRoute { get; private set; }
 
+    public string? ModuleName => this._moduleName;
+
     [return: NotNull]
     public static string GetPageRoute(string name, string? moduleName, string? pageRoute) =>
         pageRoute.IsNullOrEmpty()
@@ -59,7 +61,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             var userContextType = TypePath.New<IUserContext>();
 
             var pageRoute = this.PageRoute;
-            var moduleName = this._moduleName;
+            var moduleName = this.ModuleName;
             var name = this.Name;
             var route = GetPageRoute(name, moduleName, pageRoute);
 
