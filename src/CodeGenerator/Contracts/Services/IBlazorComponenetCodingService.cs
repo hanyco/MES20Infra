@@ -14,7 +14,7 @@ public interface IBlazorComponentCodingService : IBusinessService
 {
     bool ControlTypeHasPropertiesPage(ControlType controlType);
 
-    UiComponentPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel);
+    UiPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel);
 
     /// <summary>
     /// Creates a new component asynchronously.
@@ -41,9 +41,9 @@ public interface IBlazorComponentCodingService : IBusinessService
     /// Creates a unbound property.
     /// </summary>
     /// <returns></returns>
-    UiComponentPropertyViewModel CreateUnboundProperty();
+    UiPropertyViewModel CreateUnboundProperty();
 
-    Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop, CancellationToken token = default);
+    Task<UiPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiPropertyViewModel? prop, CancellationToken token = default);
 
     ///// <summary>
     ///// Generates the blazor code behind.

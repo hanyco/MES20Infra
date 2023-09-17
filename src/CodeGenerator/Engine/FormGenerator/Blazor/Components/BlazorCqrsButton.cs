@@ -26,7 +26,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         string? prefix = null)
         : base("button", id, name, body, prefix)
     {
-        this.Type = type;
+        //this.Type = type;
         this.OnClick = this.ParseOnClickEvent(onClick);
         this.SetCssClasses();
     }
@@ -63,17 +63,17 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
 
     public virtual string? OnClick { get => this.GetAttribute("onClick"); set => this.SetAttribute("onClick", this.ParseOnClickEvent(value)); }
 
-    public ButtonType Type { get; set; }
+    //public ButtonType Type { get; set; }
 
-    public IEnumerable<GenerateCodeTypeMemberResult> GenerateTypeMembers(GenerateCodesParameters arguments)
+    public IEnumerable<CodeTypeMembers> GenerateTypeMembers(GenerateCodesParameters arguments)
     {
         if (this.OnClick.IsNullOrEmpty() || this.Action is not null)
         {
-            return Enumerable.Empty<GenerateCodeTypeMemberResult>();
+            return Enumerable.Empty<CodeTypeMembers>();
         }
 
         var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: MemberAttributes.Private);
-        return EnumerableHelper.ToEnumerable(new GenerateCodeTypeMemberResult(main, null));
+        return EnumerableHelper.ToEnumerable(new CodeTypeMembers(main, null));
     }
 
     private string? ParseOnClickEvent(string? onClick) =>
@@ -110,7 +110,7 @@ public sealed class BlazorCqrsButton(
         set => this.SetAttribute("onclick", value, isBlazorAttribute: true);
     }
 
-    public IEnumerable<GenerateCodeTypeMemberResult> GenerateActionCodes()
+    public IEnumerable<CodeTypeMembers> GenerateCodeTypeMembers()
     {
         if (this.Action is null)
         {
@@ -189,7 +189,7 @@ public sealed class BlazorCustomButton(
     ButtonType type = ButtonType.FormButton,
     string? prefix = null) : BlazorButtonBase<BlazorCustomButton, ICustomAction>(id, name, onClick, body, type, prefix), IHasCustomAction
 {
-    public IEnumerable<GenerateCodeTypeMemberResult>? GenerateActionCodes()
+    public IEnumerable<CodeTypeMembers>? GenerateCodeTypeMembers()
     {
         if (this.Action is null)
         {
@@ -200,8 +200,10 @@ public sealed class BlazorCustomButton(
         var dataContextValidatorMethod = CodeDomHelper.NewMethod("ValidateForm", accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
         yield return new(dataContextValidatorMethod, null);
 
-        var body = this.Action.CodeStatement?.ToString();
-        var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body, returnType: "void");
+        var body = this.Action.CodeStatement?.ToString()
+            .Split(Environment.NewLine).Merge(HtmlDoc.INDENT.Repeat(3), false);
+
+        var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body);
         yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
     }
 

@@ -25,7 +25,8 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     // Components and view models associated with the BlazorList functionality.
     public UiComponentViewModel BlazorListComponentViewModel { get; set; }
 
-    public UiPageViewModel BlazorPageViewModel { get; set; }
+    public UiPageViewModel BlazorListPageViewModel { get; set; }
+    public UiPageViewModel BlazorDetailsPageViewModel { get; set; }
 
     // An instance of FunctionalityViewModelCodes to store functionality-specific codes.
     public FunctionalityViewModelCodes Codes { get; } = new();

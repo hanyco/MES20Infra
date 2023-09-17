@@ -17,8 +17,8 @@ public interface IEntityViewModelConverter :
     IDbEntityToViewModelConverter<UiComponentViewModel, UiComponent>,
     IViewModelToDbEntityConverter<UiComponentViewModel, UiComponent>,
 
-    IDbEntityToViewModelConverter<UiComponentPropertyViewModel, UiComponentProperty>,
-    IViewModelToDbEntityConverter<UiComponentPropertyViewModel, UiComponentProperty>,
+    IDbEntityToViewModelConverter<UiPropertyViewModel, UiComponentProperty>,
+    IViewModelToDbEntityConverter<UiPropertyViewModel, UiComponentProperty>,
 
     IDbEntityToViewModelConverter<UiComponentButtonViewModelBase, UiComponentAction>,
     IViewModelToDbEntityConverter<UiComponentButtonViewModelBase, UiComponentAction>,
@@ -65,5 +65,5 @@ public interface IEntityViewModelConverter :
     PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? viewModel);
 
     [return: NotNullIfNotNull(nameof(propertyViewModel))]
-    UiComponentPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel);
+    UiPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel);
 }

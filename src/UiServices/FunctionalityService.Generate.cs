@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Xml.Linq;
 
 using Contracts.Services;
 using Contracts.ViewModels;
@@ -109,9 +110,9 @@ internal sealed partial class FunctionalityService
             }
 
             // Generate codes for BlazorPageViewModel if available.
-            if (viewModel.BlazorPageViewModel != null)
+            if (viewModel.BlazorListPageViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorPageViewModel));
+                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel));
                 if (!codeGenRes)
                 {
                     return result;
@@ -119,10 +120,30 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorPageCodes = codeGenRes;
             }
-
-            if (viewModel.BlazorPageViewModel?.DataContext != null)
+            if (viewModel.BlazorListPageViewModel?.DataContext != null)
             {
-                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorPageViewModel.DataContext));
+                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+
+                codes.BlazorPageDataContextCodes = codeGenRes;
+            }
+
+            if (viewModel.BlazorDetailsPageViewModel != null)
+            {
+                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+
+                codes.BlazorPageCodes = codeGenRes;
+            }
+            if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
+            {
+                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
                 if (!codeGenRes)
                 {
                     return result;
@@ -236,8 +257,9 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
 
-                .AddStep(this.CreateBlazorPage, getTitle($"Creating {data.ViewModel.Name} Blazor Page…"))
+                .AddStep(this.CreateBlazorListPage, getTitle($"Creating {data.ViewModel.Name} Blazor List Page…"))
                 .AddStep(this.CreateBlazorListComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}ListComponent`…"))
+                .AddStep(this.CreateBlazorDetailsPage, getTitle($"Creating {data.ViewModel.Name} Blazor Details Page…"))
                 .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"));
 
         // Finalize the process
@@ -303,9 +325,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = false;
-            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorPageViewModel.DataContext;
-            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList != true);
-            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
+            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorDetailsPageViewModel.DataContext;
+            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
+            data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
         }
 
         static void addActions(CreationData data)
@@ -347,6 +369,18 @@ internal sealed partial class FunctionalityService
         }
     }
 
+    private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
+    {
+        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("DetailsPage");
+        createPageViewModel(data);
+        return Task.CompletedTask;
+
+        void createPageViewModel(CreationData data) =>
+            data.ViewModel.BlazorDetailsPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
+                .With(x => x.Name = name)
+                .With(x => x.ClassName = name);
+    }
+
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
     {
         var name = StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName));
@@ -361,16 +395,16 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponentViewModel.Name = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.ClassName = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.IsGrid = true;
-            data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.BlazorPageViewModel.DataContext;
-            data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorPageViewModel.DataContext.Properties.First(x => x.IsList == true);
-            data.ViewModel.BlazorPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
+            data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.BlazorListPageViewModel.DataContext;
+            data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorListPageViewModel.DataContext.Properties.First(x => x.IsList == true);
+            data.ViewModel.BlazorListPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
         }
 
         void addActions(CreationData data)
         {
             var newButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $@"this.DataContext = new();",
+                CodeStatement = $@"NavigationManager.NavigateTo(""/{data.ViewModel.BlazorDetailsPageViewModel.Route}"");",
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -378,9 +412,9 @@ internal sealed partial class FunctionalityService
                 Placement = Placement.FormButton,
                 Description = $"Creates new {name}"
             };
-            var editButton = new UiComponentCqrsButtonViewModel
+            var editButton = new UiComponentCustomButtonViewModel
             {
-                CqrsSegregate = data.ViewModel.GetAllQueryViewModel,
+                CodeStatement = $@"NavigationManager.NavigateTo(""/{data.ViewModel.BlazorDetailsPageViewModel.Route}/$${{id}}"");",
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
@@ -407,13 +441,16 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private Task CreateBlazorPage(CreationData data, CancellationToken token)
+    private Task CreateBlazorListPage(CreationData data, CancellationToken token)
     {
+        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("ListPage");
         createPageViewModel(data);
         return Task.CompletedTask;
 
         void createPageViewModel(CreationData data) =>
-            data.ViewModel.BlazorPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorListPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
+                .With(x => x.Name = name)
+                .With(x => x.ClassName = name);
     }
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)

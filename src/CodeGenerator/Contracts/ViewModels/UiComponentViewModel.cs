@@ -42,5 +42,5 @@ public class UiComponentViewModel : UiComponentViewModelBase
 
     public long? UiPageComponentId { get; set; }
 
-    public ObservableCollection<UiComponentPropertyViewModel> UiProperties { get; } = new();
+    public ObservableCollection<UiPropertyViewModel> UiProperties { get; } = new();
 }

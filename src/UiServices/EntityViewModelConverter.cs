@@ -70,7 +70,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             //?.ForMember(x => x.CqrsSegregateId = model.CqrsSegregate?.Id)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!);
 
-    public UiComponentProperty? ToDbEntity(UiComponentPropertyViewModel? model) =>
+    public UiComponentProperty? ToDbEntity(UiPropertyViewModel? model) =>
         model is null ? null : this._mapper.Map<UiComponentProperty>(model)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!)
             .ForMember(x => x.PropertyId = model.Property?.Id)
@@ -184,7 +184,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                 Id = columnViewModel.ObjectId * -1
             };
 
-    public UiComponentPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel) =>
+    public UiPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel) =>
         propertyViewModel == null ? null : new()
         {
             Name = propertyViewModel.Name.NotNull(),
@@ -250,8 +250,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.Placement = EnumHelper.ToEnum<Placement>(entity.TriggerTypeId));
     }
 
-    public UiComponentPropertyViewModel? ToViewModel(UiComponentProperty? entity) =>
-        entity is null ? null : this._mapper.Map<UiComponentPropertyViewModel>(entity)
+    public UiPropertyViewModel? ToViewModel(UiComponentProperty? entity) =>
+        entity is null ? null : this._mapper.Map<UiPropertyViewModel>(entity)
              .ForMember(x => x.Property = this.ToViewModel(entity.Property))
              .ForMember(x => x.ControlType = ControlTypeHelper.FromControlTypeId(entity.ControlTypeId));
 

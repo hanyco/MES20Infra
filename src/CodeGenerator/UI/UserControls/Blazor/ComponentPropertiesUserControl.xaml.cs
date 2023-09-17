@@ -26,7 +26,7 @@ public partial class ComponentPropertiesUserControl
     #region BlazorComponentPropertyViewModel SelectedProperty
 
     public static readonly DependencyProperty SelectedPropertyProperty
-        = ControlHelper.GetDependencyProperty<UiComponentPropertyViewModel?, ComponentPropertiesUserControl>(nameof(SelectedProperty),
+        = ControlHelper.GetDependencyProperty<UiPropertyViewModel?, ComponentPropertiesUserControl>(nameof(SelectedProperty),
             onPropertyChanged: (me, e) =>
             {
                 me.SelectedPropertyGrid.IsEnabled = me.SelectedProperty is not null;
@@ -34,9 +34,9 @@ public partial class ComponentPropertiesUserControl
                 //await me.BindDataAsync();
             });
 
-    public UiComponentPropertyViewModel? SelectedProperty
+    public UiPropertyViewModel? SelectedProperty
     {
-        get => (UiComponentPropertyViewModel)this.GetValue(SelectedPropertyProperty);
+        get => (UiPropertyViewModel)this.GetValue(SelectedPropertyProperty);
         set => this.SetValue(SelectedPropertyProperty, value);
     }
 
@@ -48,7 +48,7 @@ public partial class ComponentPropertiesUserControl
     public ComponentPropertiesUserControl() => this.InitializeComponent();
 
     public ControlType? SelectedControlType { get; set; }
-    public IEnumerable<UiComponentPropertyViewModel?>? SelectedProperties { get; set; }
+    public IEnumerable<UiPropertyViewModel?>? SelectedProperties { get; set; }
 
     protected override async Task OnBindDataAsync(bool isFirstBinding)
     {
@@ -178,7 +178,7 @@ public partial class ComponentPropertiesUserControl
 
     private void PropertiesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var prop = this.PropertiesListView.GetSelection<UiComponentPropertyViewModel>(e);
+        var prop = this.PropertiesListView.GetSelection<UiPropertyViewModel>(e);
         this.SelectedProperty = prop;
         this.SelectedPropertyGrid.RebindDataContext(this.SelectedProperty);
         //await this.BindDataAsync();

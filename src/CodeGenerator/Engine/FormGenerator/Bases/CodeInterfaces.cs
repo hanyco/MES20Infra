@@ -85,7 +85,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases
     /// </summary>
     public interface ISupportsBehindCodeMember
     {
-        IEnumerable<GenerateCodeTypeMemberResult> GenerateTypeMembers(GenerateCodesParameters arguments);
+        IEnumerable<CodeTypeMembers> GenerateTypeMembers(GenerateCodesParameters arguments);
     }
 
     /// <summary>

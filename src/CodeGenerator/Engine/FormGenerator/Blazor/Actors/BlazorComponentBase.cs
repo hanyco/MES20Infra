@@ -45,7 +45,135 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
 
-    public GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
+    public Codes GenerateCodes(CodeCategory category, in GenerateCodesParameters? arguments = null)
+    {
+        var args = arguments ?? new GenerateCodesParameters(true, true, true);
+        _ = validate(args);
+        var codes = new List<Code>();
+        if (args.GenerateUiCode)
+        {
+            var htmlCode = this.GenerateUiCode(category, args);
+            if (htmlCode is { } c)
+            {
+                codes.Add(c.With(x => x.props().Category = category));
+            }
+        }
+        if (args.GenerateMainCode || args.GeneratePartialCode)
+        {
+            var (mainCs, partialCs) = this.GenerateBehindCode(args);
+
+            if (mainCs is { } c2)
+            {
+                codes.Add(c2.With(x => x.props().Category = category));
+            }
+
+            if (partialCs is { } c3)
+            {
+                codes.Add(c3.With(x => x.props().Category = category));
+            }
+        }
+
+        return codes.ToCodes();
+
+        TBlazorComponent validate(GenerateCodesParameters arguments)
+        {
+            _ = this.Check(CheckBehavior.ThrowOnFail)
+                    .NotNull(() => new ValidationException("Please initialize a new component."))
+                    .NotNull(x => x.Name)
+                    .NotNull(x => x.NameSpace);
+            if (!arguments.GenerateMainCode && !arguments.GeneratePartialCode && !arguments.GenerateUiCode)
+            {
+                throw new ValidationException("Please select a code generation option at least.", "No code generation option is selected.", owner: this);
+            }
+            if (this.Children.Count != 0)
+            {
+                if (EnumerableHelper.FindDuplicates(this.Children).Any())
+                {
+                    throw new ObjectDuplicateValidationException(nameof(this.Children));
+                }
+            }
+            if (this.Actions.Count != 0)
+            {
+                if (EnumerableHelper.FindDuplicates(this.Actions).Any())
+                {
+                    throw new ObjectDuplicateValidationException(nameof(this.Actions));
+                }
+            }
+            if (this.Properties.Count != 0)
+            {
+                if (EnumerableHelper.FindDuplicates(this.Properties).Any())
+                {
+                    throw new ObjectDuplicateValidationException(nameof(this.Properties));
+                }
+            }
+            return this.This();
+        }
+    }
+
+    public Code GenerateUiCode(in GenerateCodesParameters? arguments = null) =>
+        this.GenerateUiCode(CodeCategory.Component, arguments);
+
+    protected virtual string? GetBaseTypes()
+        => null;
+
+    protected virtual StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
+        => codeStringBuilder;
+
+    protected virtual Code OnGeneratingUiCode(in GenerateCodesParameters? arguments = null)
+    {
+        Func<StringBuilder, StringBuilder> generate = this.IsGrid ? generateGridCode : generateDetailsCode;
+        var statement = this.OnGeneratingHtmlCode(new()).With(x => generate(x)).ToString();
+
+        if (statement.IsNullOrEmpty())
+        {
+            return Code.Empty;
+        }
+
+        var htmlFileName = Path.ChangeExtension($"{this.Name}.tmp", this.HtmlFileExtension);
+        return Code.ToCode(this.Name, Languages.BlazorFront, statement, false, htmlFileName);
+
+        StringBuilder generateDetailsCode(StringBuilder sb) =>
+            this.Children.GenerateChildrenCode(sb);
+
+        StringBuilder generateGridCode(StringBuilder sb)
+        {
+            var buttonsCode = this.Actions.Where(x => !x.showOnGrid)
+                .Select(x => new BlazorCqrsButton(name: x.Name, body: x.Caption, onClick: x.EventHandlerName)
+                .With(x => x.Position.SetCol(1)))
+                .Select(x => x.GenerateUiCode().Statement).Merge(Environment.NewLine);
+
+            var table = new BlazorTable
+            {
+                DataContextName = "this.DataContext"
+            };
+            _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
+            _ = table.Actions.AddRange(this.Actions.Where(x => x.showOnGrid)
+                .Select(x => new BlazorTableRowAction(x.Name!, x.Caption!) { OnClick = x.EventHandlerName }));
+            var tableCode = table.GenerateUiCode().Statement;
+
+            var result = sb.AppendLine()
+                .AppendLine("<div class=\"row\">")
+                .AppendLine(buttonsCode)
+                .AppendLine("</div>")
+                .AppendLine("<div class=\"row\">")
+                .AppendLine(tableCode)
+                .AppendLine("</div>");
+            return result;
+        }
+    }
+
+    protected virtual void OnInitializingBehindCode(GenerateCodesParameters? arguments)
+    {
+    }
+
+    protected virtual void OnInitializingUiCode(GenerateCodesParameters? arguments)
+    {
+    }
+
+    protected TBlazorComponent This()
+        => (this as TBlazorComponent)!;
+
+    private GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
     {
         var args = arguments ?? new();
         this.OnInitializingBehindCode(args);
@@ -246,145 +374,22 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                         .AddNewClass(this.Name, isPartial: true);
     }
 
-    public Codes GenerateCodes(CodeCategory category, in GenerateCodesParameters? arguments = null)
-    {
-        var args = arguments ?? new GenerateCodesParameters(true, true, true);
-        _ = validate(args);
-        var codes = new List<Code>();
-        if (args.GenerateUiCode)
-        {
-            var htmlCode = this.GenerateUiCode(category, args);
-            if (htmlCode is { } c)
-            {
-                codes.Add(c.With(x => x.props().Category = category));
-            }
-        }
-        if (args.GenerateMainCode || args.GeneratePartialCode)
-        {
-            var (mainCs, partialCs) = this.GenerateBehindCode(args);
-
-            if (mainCs is { } c2)
-            {
-                codes.Add(c2.With(x => x.props().Category = category));
-            }
-
-            if (partialCs is { } c3)
-            {
-                codes.Add(c3.With(x => x.props().Category = category));
-            }
-        }
-
-        return codes.ToCodes();
-
-        TBlazorComponent validate(GenerateCodesParameters arguments)
-        {
-            _ = this.Check(CheckBehavior.ThrowOnFail)
-                    .NotNull(() => new ValidationException("Please initialize a new component."))
-                    .NotNull(x => x.Name)
-                    .NotNull(x => x.NameSpace);
-            if (!arguments.GenerateMainCode && !arguments.GeneratePartialCode && !arguments.GenerateUiCode)
-            {
-                throw new ValidationException("Please select a code generation option at least.", "No code generation option is selected.", owner: this);
-            }
-            if (this.Children.Count != 0)
-            {
-                if (EnumerableHelper.FindDuplicates(this.Children).Any())
-                {
-                    throw new ObjectDuplicateValidationException(nameof(this.Children));
-                }
-            }
-            if (this.Actions.Count != 0)
-            {
-                if (EnumerableHelper.FindDuplicates(this.Actions).Any())
-                {
-                    throw new ObjectDuplicateValidationException(nameof(this.Actions));
-                }
-            }
-            if (this.Properties.Count != 0)
-            {
-                if (EnumerableHelper.FindDuplicates(this.Properties).Any())
-                {
-                    throw new ObjectDuplicateValidationException(nameof(this.Properties));
-                }
-            }
-            return this.This();
-        }
-    }
-
-    public Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
+    private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {
         this.OnInitializingUiCode(arguments);
         return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = category);
     }
 
-    public Code GenerateUiCode(in GenerateCodesParameters? arguments = null) =>
-        this.GenerateUiCode(CodeCategory.Component, arguments);
-
-    protected virtual string? GetBaseTypes()
-        => null;
-
-    protected virtual StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
-        => codeStringBuilder;
-
-    protected virtual Code OnGeneratingUiCode(in GenerateCodesParameters? arguments = null)
+    private IEnumerable<CodeTypeMembers> GetActionCodes(IHtmlElement element)
     {
-        Func<StringBuilder, StringBuilder> generate = this.IsGrid ? generateGridCode : generateDetailsCode;
-        var statement = this.OnGeneratingHtmlCode(new()).With(x => generate(x)).ToString();
-
-        if (statement.IsNullOrEmpty())
+        if (element is null)
         {
-            return Code.Empty;
+            yield break;
         }
 
-        var htmlFileName = Path.ChangeExtension($"{this.Name}.tmp", this.HtmlFileExtension);
-        return Code.ToCode(this.Name, Languages.BlazorFront, statement, false, htmlFileName);
-
-        StringBuilder generateDetailsCode(StringBuilder sb) =>
-            this.Children.GenerateChildrenCode(sb);
-
-        StringBuilder generateGridCode(StringBuilder sb)
+        if (element is IHasSegregationAction segElement)
         {
-            var buttonsCode = this.Actions.Where(x => !x.showOnGrid)
-                .Select(x => new BlazorCqrsButton(name: x.Name, body: x.Caption, onClick: x.EventHandlerName)
-                .With(x => x.Position.SetCol(1)))
-                .Select(x => x.GenerateUiCode().Statement).Merge(Environment.NewLine);
-
-            var table = new BlazorTable
-            {
-                DataContextName = "this.DataContext"
-            };
-            _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
-            _ = table.Actions.AddRange(this.Actions.Where(x => x.showOnGrid)
-                .Select(x => new BlazorTableRowAction(x.Name!, x.Caption!) { OnClick = x.EventHandlerName }));
-            var tableCode = table.GenerateUiCode().Statement;
-
-            var result = sb.AppendLine()
-                .AppendLine("<div class=\"row\">")
-                .AppendLine(buttonsCode)
-                .AppendLine("</div>")
-                .AppendLine("<div class=\"row\">")
-                .AppendLine(tableCode)
-                .AppendLine("</div>");
-            return result;
-        }
-    }
-
-    protected virtual void OnInitializingBehindCode(GenerateCodesParameters? arguments)
-    {
-    }
-
-    protected virtual void OnInitializingUiCode(GenerateCodesParameters? arguments)
-    {
-    }
-
-    protected TBlazorComponent This()
-        => (this as TBlazorComponent)!;
-
-    private IEnumerable<GenerateCodeTypeMemberResult> GetActionCodes(IHtmlElement element)
-    {
-        if (element is IHasSegregationAction segAction)
-        {
-            var actionCodes = segAction.GenerateActionCodes();
+            var actionCodes = segElement.GenerateCodeTypeMembers();
             if (actionCodes is not null)
             {
                 foreach (var actionCode in actionCodes)
@@ -393,10 +398,9 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 }
             }
         }
-        else
-        if (element is IHasCustomAction cusAction)
+        else if (element is IHasCustomAction cusElement)
         {
-            var actionCodes = cusAction.GenerateActionCodes();
+            var actionCodes = cusElement.GenerateCodeTypeMembers();
             if (actionCodes is not null)
             {
                 foreach (var actionCode in actionCodes)
@@ -405,7 +409,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 }
             }
         }
-        if (element.Children.Count != 0)
+
+        if (element.Children?.Any() == true)
         {
             foreach (var child in element.Children)
             {
@@ -417,7 +422,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
     }
 
-    private IEnumerable<GenerateCodeTypeMemberResult> GetCodeTypeMembers(IHtmlElement element, GenerateCodesParameters arguments)
+    private IEnumerable<CodeTypeMembers> GetCodeTypeMembers(IHtmlElement element, GenerateCodesParameters arguments)
     {
         if (element is ISupportsBehindCodeMember b)
         {
