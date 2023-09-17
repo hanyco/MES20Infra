@@ -37,23 +37,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
     /// Gets the bootstrap button type class.
     /// </summary>
     /// <value>The bootstrap button type class.</value>
-    public string BootstrapButtonTypeClass
-    {
-        get
-        {
-            string result;
-            if (this.IsDefaultButton)
-            {
-                result = "btn-primary";
-            }
-            else
-            {
-                result = this.IsCancelButton ? "btn-secondary" : "btn-success";
-            }
-
-            return result;
-        }
-    }
+    public string BootstrapButtonTypeClass => this.IsDefaultButton ? "btn-primary" : this.IsCancelButton ? "btn-secondary" : "btn-success";
 
     public bool IsCancelButton
     {
@@ -140,16 +124,15 @@ public sealed class BlazorCqrsButton(
         var dataContextValidatorMethod = CodeDomHelper.NewMethod($"{dataContextValidatorName}", accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
 
         yield return new(dataContextValidatorMethod, null);
-        const string INDENT = "    ";
         switch (this.Action.Segregation)
         {
             case IQueryCqrsSegregation query:
                 var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
-                    $@"{INDENT.Repeat(3)}this.{dataContextValidatorName}();
-{INDENT.Repeat(3)}var dto = this.DataContext;
-{INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
-{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);
-{INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
+                    $@"{HtmlDoc.INDENT.Repeat(3)}this.{dataContextValidatorName}();
+{HtmlDoc.INDENT.Repeat(3)}var dto = this.DataContext;
+{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
+{HtmlDoc.INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);
+{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
                 var queryCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling({query.Parameter?.Type ?? "System.Object"} parameter)"
                     , accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
@@ -163,14 +146,14 @@ public sealed class BlazorCqrsButton(
 
             case ICommandCqrsSegregation command:
                 var commandBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
-                    $@"{INDENT.Repeat(3)}this.{dataContextValidatorName}();
-{INDENT.Repeat(3)}var dto = this.DataContext;
-{INDENT.Repeat(3)}var cqrs = new {cqrsCommandType}(dto);
-{INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
+                    $@"{HtmlDoc.INDENT.Repeat(3)}this.{dataContextValidatorName}();
+{HtmlDoc.INDENT.Repeat(3)}var dto = this.DataContext;
+{HtmlDoc.INDENT.Repeat(3)}var cqrs = new {cqrsCommandType}(dto);
+{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
 
-{INDENT.Repeat(3)}var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsCommandType},{cqrsResultType}>(cqrs);
+{HtmlDoc.INDENT.Repeat(3)}var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsCommandType},{cqrsResultType}>(cqrs);
 
-{INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
+{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
                 var commandCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling"
                     , arguments: new MethodArgument[] {
@@ -206,7 +189,6 @@ public sealed class BlazorCustomButton(
     ButtonType type = ButtonType.FormButton,
     string? prefix = null) : BlazorButtonBase<BlazorCustomButton, ICustomAction>(id, name, onClick, body, type, prefix), IHasCustomAction
 {
-
     public IEnumerable<GenerateCodeTypeMemberResult>? GenerateActionCodes()
     {
         if (this.Action is null)

@@ -30,7 +30,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public TypePath? DataContextType { get; set; }
     public IList<FieldActor> Fields { get; } = new List<FieldActor>();
     public virtual string HtmlFileExtension { get; } = "razor";
-    public string Indent { get; } = StringHelper.Space(4);
     public bool IsGrid { get; set; }
     public virtual string MainCodeFileExtension { get; } = "razor.cs";
     public IList<string> MainCodeUsingNameSpaces { get; } = new List<string>();
@@ -221,7 +220,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addPageInitializedMethod(in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType, in StringBuilder initializedAsyncMethodBody)
         {
-            _ = initializedAsyncMethodBody.AppendLine($"{this.Indent}await this.OnPageInitializedAsync();");
+            _ = initializedAsyncMethodBody.AppendLine($"{HtmlDoc.INDENT}await this.OnPageInitializedAsync();");
             _ = mainClassType.AddMethod("OnPageInitializedAsync", returnType: "async Task", accessModifiers: MemberAttributes.Private);
             var initializedAsyncBodyLines = initializedAsyncMethodBody.ToString().Split(Environment.NewLine);
             _ = initializedAsyncMethodBody.Clear();
@@ -370,10 +369,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
     }
 
-    //protected virtual void OnInitializeDataContext(in StringBuilder onInitializedAsyncBody)
-    //{
-    //}
-
     protected virtual void OnInitializingBehindCode(GenerateCodesParameters? arguments)
     {
     }
@@ -385,14 +380,23 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     protected TBlazorComponent This()
         => (this as TBlazorComponent)!;
 
-    protected TBlazorComponent This(Action action)
-        => this.This().Fluent(action);
-
     private IEnumerable<GenerateCodeTypeMemberResult> GetActionCodes(IHtmlElement element)
     {
-        if (element is IHasSegregationAction hha)
+        if (element is IHasSegregationAction segAction)
         {
-            var actionCodes = hha.GenerateActionCodes();
+            var actionCodes = segAction.GenerateActionCodes();
+            if (actionCodes is not null)
+            {
+                foreach (var actionCode in actionCodes)
+                {
+                    yield return actionCode;
+                }
+            }
+        }
+        else
+        if (element is IHasCustomAction cusAction)
+        {
+            var actionCodes = cusAction.GenerateActionCodes();
             if (actionCodes is not null)
             {
                 foreach (var actionCode in actionCodes)
