@@ -32,14 +32,6 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
     }
 
     public TAction? Action { get; set; }
-    private string? ParseOnClickEvent(string? onClick) =>
-        (onClick, this.Name, this.Id) switch
-        {
-            (not null, _, _) => onClick,
-            (_, not null, _) => this.Name,
-            (_, _, not null) => this.Id,
-            _ => null
-        };
 
     /// <summary>
     /// Gets the bootstrap button type class.
@@ -54,13 +46,9 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
             {
                 result = "btn-primary";
             }
-            else if (this.IsCancelButton)
-            {
-                result = "btn-secondary";
-            }
             else
             {
-                result = "btn-success";
+                result = this.IsCancelButton ? "btn-secondary" : "btn-success";
             }
 
             return result;
@@ -88,6 +76,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
     }
 
     public string? NameSpace { get; }
+
     public virtual string? OnClick { get => this.GetAttribute("onClick"); set => this.SetAttribute("onClick", this.ParseOnClickEvent(value)); }
 
     public ButtonType Type { get; set; }
@@ -102,6 +91,15 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: MemberAttributes.Private);
         return EnumerableHelper.ToEnumerable(new GenerateCodeTypeMemberResult(main, null));
     }
+
+    private string? ParseOnClickEvent(string? onClick) =>
+        (onClick, this.Name, this.Id) switch
+        {
+            (not null, _, _) => onClick,
+            (_, not null, _) => this.Name,
+            (_, _, not null) => this.Id,
+            _ => null
+        };
 
     private void SetCssClasses()
     {
@@ -198,27 +196,9 @@ public sealed class BlazorCqrsButton(
 
     public BlazorCqrsButton SetAction(string name, ICqrsSegregation segregation) =>
         this.Fluent(() => this.Action = new CqrsAction(name, segregation));
-
-    private void SetCssClasses()
-    {
-        _ = this.CssClasses.Remove("btn");
-        _ = this.CssClasses.Remove("btn-primary");
-        _ = this.CssClasses.Remove("btn-secondary");
-        _ = this.CssClasses.Remove("btn-success");
-        this.CssClasses.Add("btn");
-        this.CssClasses.Add(this.BootstrapButtonTypeClass);
-    }
-
-    public enum ButtonType
-    {
-        RowButton,
-        FormButton,
-        Reset
-    }
 }
 
-public sealed class BlazorCustomButton
-    (
+public sealed class BlazorCustomButton(
     string? id = null,
     string? name = null,
     string? onClick = null,
@@ -226,6 +206,7 @@ public sealed class BlazorCustomButton
     ButtonType type = ButtonType.FormButton,
     string? prefix = null) : BlazorButtonBase<BlazorCustomButton, ICustomAction>(id, name, onClick, body, type, prefix), IHasCustomAction
 {
+
     public IEnumerable<GenerateCodeTypeMemberResult>? GenerateActionCodes()
     {
         if (this.Action is null)
@@ -237,11 +218,12 @@ public sealed class BlazorCustomButton
         var dataContextValidatorMethod = CodeDomHelper.NewMethod("ValidateForm", accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
         yield return new(dataContextValidatorMethod, null);
 
-        var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), this.Action.CodeStatement, returnType: "void");
-        yield return new(null, queryBody);
+        var body = this.Action.CodeStatement?.ToString();
+        var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body, returnType: "void");
+        yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
     }
 
-    public BlazorCustomButton SetAction(string name, string? codeStatement) =>
+    public BlazorCustomButton SetAction(string name, FormattableString? codeStatement) =>
         this.Fluent(() => this.Action = new CustomAction(name, codeStatement));
 }
 

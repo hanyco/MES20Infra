@@ -330,6 +330,7 @@ internal sealed partial class FunctionalityService
             var cancelButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Cancel",
+                CodeStatement = $"// This is {nameof(UiComponentCustomButtonViewModel.Name)}",
                 EventHandlerName = "CancelButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,

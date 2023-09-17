@@ -21,12 +21,12 @@ public record QueryCqrsSegregation(string Name, MethodArgument? Parameter, Metho
 
 public sealed class CustomAction : ICustomAction
 {
-    public CustomAction(string name, string? codeStatement)
+    public CustomAction(string name, FormattableString? codeStatement)
     {
         this.Name = name;
         this.CodeStatement = codeStatement;
     }
 
-    public string? CodeStatement { get; }
+    public FormattableString? CodeStatement { get; }
     public string Name { get; }
 }

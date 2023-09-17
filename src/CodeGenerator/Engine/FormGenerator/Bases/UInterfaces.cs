@@ -38,7 +38,7 @@ public interface ICustomAction
 {
     string Name { get; }
 
-    string? CodeStatement { get; }
+    FormattableString? CodeStatement { get; }
 }
 public interface ISegregationAction
 {

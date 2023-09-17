@@ -8,7 +8,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
-using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
@@ -21,8 +20,6 @@ using Library.Validations;
 using Microsoft.EntityFrameworkCore;
 
 using Services.Helpers;
-
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Services;
 
@@ -196,7 +193,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             {
                 return;
             }
-            _ = result.With(x => x.DataContextProperty = (prop, model?.Name ?? string.Empty));
+            _ = result.With(x => x.DataContextProperty = (prop, model.Name!));
         }
 
         static void createChildren<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponentBase<TBlazorComponent> engine, CancellationToken cancellationToken = default)
@@ -276,7 +273,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                         var button = createCqrsButton(model, cqrsButtonViewModel);
                         engine.Children.Add(button);
                     }
-                    if (buttonBase is UiComponentCustomButtonViewModel customButtonViewModel)
+                    else if (buttonBase is UiComponentCustomButtonViewModel customButtonViewModel)
                     {
                         var button = createCustomButton(model, customButtonViewModel);
                         engine.Children.Add(button);
@@ -292,7 +289,7 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
 
             static BlazorCqrsButton createCqrsButton(UiComponentViewModel model, UiComponentCqrsButtonViewModel cqrsButtonViewModel)
             {
-                BlazorCqrsButton button = new BlazorCqrsButton(name: cqrsButtonViewModel.Name, body: cqrsButtonViewModel.Caption, onClick: cqrsButtonViewModel.EventHandlerName)
+                var button = new BlazorCqrsButton(name: cqrsButtonViewModel.Name, body: cqrsButtonViewModel.Caption, onClick: cqrsButtonViewModel.EventHandlerName)
                 {
                     Position = cqrsButtonViewModel.Position.ToBootstrapPosition()
                 };
@@ -315,11 +312,11 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
 
             static BlazorCustomButton createCustomButton(UiComponentViewModel model, UiComponentCustomButtonViewModel customButtonViewModel)
             {
-                BlazorCustomButton button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.Caption, onClick: customButtonViewModel.EventHandlerName)
+                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.Caption, onClick: customButtonViewModel.EventHandlerName)
                 {
                     Position = customButtonViewModel.Position.ToBootstrapPosition()
                 };
-                button.SetAction(model.Name!, "");
+                _ = button.SetAction(model.Name!, customButtonViewModel.CodeStatement);
                 return button;
             }
         }
@@ -335,7 +332,13 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             foreach (var uiAction in model.UiActions.OfType<UiComponentButtonViewModelBase>())
             {
                 var args = model.IsGrid && uiAction.Placement == Placement.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
-                result.Actions.Add(new(uiAction.Name, uiAction.Placement == Placement.RowButton, uiAction.Caption, Arguments: args, EventHandlerName: uiAction.EventHandlerName));
+                result.Actions.Add(new(
+                    uiAction.Name,
+                    uiAction.Placement == Placement.RowButton,
+                    uiAction.Caption,
+                    Arguments: args,
+                    EventHandlerName: uiAction.EventHandlerName,
+                    codeStatement: uiAction.Cast().As<UiComponentCustomButtonViewModel>()?.CodeStatement));
             }
         }
     }
