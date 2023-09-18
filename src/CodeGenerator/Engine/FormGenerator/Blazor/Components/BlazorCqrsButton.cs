@@ -118,7 +118,8 @@ public sealed class BlazorCqrsButton(
         }
         Check.MutBeNotNull(this.Action.Segregation);
         var calleeName = this.Action.Name;
-        var cqrsCommandType = TypePath.New(this.Action.Segregation.Name);
+        var cqrsType = TypePath.New(this.Action.Segregation.Name);
+        var cqrsParamsType = this.Action.Segregation.Parameter?.Type ?? TypePath.New<object>();
         var cqrsResultType = this.Action.Segregation.Result?.Type ?? TypePath.New<object>();
         var dataContextValidatorName = $"ValidateForm";
         var dataContextValidatorMethod = CodeDomHelper.NewMethod($"{dataContextValidatorName}", accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
@@ -130,6 +131,7 @@ public sealed class BlazorCqrsButton(
                 var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
                     $@"{HtmlDoc.INDENT.Repeat(3)}this.{dataContextValidatorName}();
 {HtmlDoc.INDENT.Repeat(3)}var dto = this.DataContext;
+{HtmlDoc.INDENT.Repeat(3)}var cqrs = new {cqrsParamsType}(dto);
 {HtmlDoc.INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
 {HtmlDoc.INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);
 {HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
@@ -148,12 +150,12 @@ public sealed class BlazorCqrsButton(
                 var commandBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
                     $@"{HtmlDoc.INDENT.Repeat(3)}this.{dataContextValidatorName}();
 {HtmlDoc.INDENT.Repeat(3)}var dto = this.DataContext;
-{HtmlDoc.INDENT.Repeat(3)}var cqrs = new {cqrsCommandType}(dto);
-{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
+{HtmlDoc.INDENT.Repeat(3)}var cqParams = new {cqrsParamsType}(dto);
+{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Calling(cqParams);
 
-{HtmlDoc.INDENT.Repeat(3)}var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsCommandType},{cqrsResultType}>(cqrs);
+{HtmlDoc.INDENT.Repeat(3)}var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType},{cqrsResultType}>(cqParams);
 
-{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
+{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqParams, cqResult);", returnType: "async void");
                 var commandCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling"
                     , arguments: new MethodArgument[] {

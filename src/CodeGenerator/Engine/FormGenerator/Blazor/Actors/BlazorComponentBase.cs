@@ -19,7 +19,6 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>//, ICodeGenerator,  IComponentCodeUnit
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
-    private static readonly string[] _parametersAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
     private BootstrapPosition? _position;
 
     protected BlazorComponentBase(in string name) => this.Name = name;
@@ -34,17 +33,14 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public virtual string MainCodeFileExtension { get; } = "razor.cs";
     public IList<string> MainCodeUsingNameSpaces { get; } = new List<string>();
     public string Name { get; init; }
-
     public string? NameSpace { get; set; }
-
     public IList<MethodArgument> Parameters { get; } = new List<MethodArgument>();
     public virtual string PartialCodeFileExtension { get; } = "partial.cs";
-
     public IList<string> PartialCodeUsingNameSpaces { get; } = new List<string>();
-
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
-
+    private static readonly string[] _parameterAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
+    
     public Codes GenerateCodes(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {
         var args = arguments ?? new GenerateCodesParameters(true, true, true);
@@ -349,7 +345,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                                               getter: new(true, false),
                                               setter: new(true, false),
                                               isNullable: true,
-                                              attributes: _parametersAttributes);
+                                              attributes: _parameterAttributes);
             }
         }
 

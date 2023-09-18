@@ -225,9 +225,10 @@ internal sealed partial class FunctionalityService
 
         var message = getResultMessage(processResult, tokenSource.Token);
         this._reporter.Report(description: getTitle(message));
-        tokenSource.Dispose();
         // Get the result from the processResult
         var result = processResult.Value.Result;
+
+        tokenSource.Dispose();
 
         return result!;
 
@@ -250,6 +251,7 @@ internal sealed partial class FunctionalityService
 
         // Initialize the steps for the process
         MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
+        //?! Don't change the sequence of steps !
             MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
@@ -264,13 +266,13 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"));
 
         // Finalize the process
-        static string getResultMessage(in CreationData result, CancellationToken token)
+        static string getResultMessage(in Result result, CancellationToken token)
         {
-            if (!result.Result.Message.IsNullOrEmpty())
+            if (!result.Message.IsNullOrEmpty())
             {
-                return result.Result.Message;
+                return result.Message;
             }
-            if (result.Result.IsFailure)
+            if (result.IsFailure)
             {
                 return "An error occurred while creating functionality view model";
             }
@@ -333,6 +335,9 @@ internal sealed partial class FunctionalityService
 
         static void addActions(CreationData data)
         {
+            data.ViewModel.BlazorListPageViewModel.Route = BlazorPage.GetPageRoute(
+                data.ViewModel.BlazorListPageViewModel.Name!,
+                data.ViewModel.SourceDto.Module.Name, null);
             var saveButton = new UiComponentCqrsButtonViewModel()
             {
                 Caption = "Save",
@@ -352,12 +357,12 @@ internal sealed partial class FunctionalityService
             };
             var cancelButton = new UiComponentCustomButtonViewModel()
             {
-                Caption = "Cancel",
-                CodeStatement = $"// This is {nameof(UiComponentCustomButtonViewModel.Name)}",
-                EventHandlerName = "CancelButton_OnClick",
+                Caption = "Back",
+                CodeStatement = $@"NavigationManager.NavigateTo({data.ViewModel.BlazorListPageViewModel.Route.TrimStart("@page").Trim()});",
+                EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
-                Name = "CancelButton",
+                Name = "BackButton",
                 Placement = Placement.FormButton,
                 Position = new()
                 {
@@ -408,7 +413,7 @@ internal sealed partial class FunctionalityService
                 data.ViewModel.SourceDto.Module.Name, null);
             var newButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $@"NavigationManager.NavigateTo(""/{data.ViewModel.BlazorDetailsPageViewModel.Route}"");",
+                CodeStatement = $@"NavigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()});",
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -418,7 +423,7 @@ internal sealed partial class FunctionalityService
             };
             var editButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $@"NavigationManager.NavigateTo(""/{data.ViewModel.BlazorDetailsPageViewModel.Route}/$${{id}}"");",
+                CodeStatement = $@"NavigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()}/$${{id}});",
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
