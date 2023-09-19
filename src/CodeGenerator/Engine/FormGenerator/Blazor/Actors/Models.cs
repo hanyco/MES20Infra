@@ -27,8 +27,7 @@ public record MethodActor(string? Name,
                           string? ReturnType = null,
                           MemberAttributes? AccessModifier = null,
                           MethodArgument[]? Arguments = null,
-                          string? EventHandlerName = null,
-                          FormattableString? CodeStatement = null)
+                          string? EventHandlerName = null)
 {
     public MethodInfo ToMethodInfo() => new();
 }

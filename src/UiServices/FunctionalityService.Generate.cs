@@ -208,8 +208,7 @@ internal sealed partial class FunctionalityService
 
         this._reporter.Report(description: getTitle("Initializing..."));
         // Initialize the result with the viewModel
-        var initResult = initialize(viewModel, token);
-        // If the initialization fails, return the result
+        var initResult = initialize(viewModel, to  // If the initialization fails, return the result
         if (!initResult.IsSucceed)
         {
             return Result<FunctionalityViewModel>.From(initResult, viewModel)!;

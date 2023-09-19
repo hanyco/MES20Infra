@@ -340,8 +340,7 @@ internal sealed class BlazorCodingService(
                     uiAction.Caption,
                     Arguments: args,
                     EventHandlerName: uiAction.EventHandlerName,
-                    //CqrsSegregate: uiAction.Cast().As<CqrsButtonViewModel>()?.CqrsSegregate),
-                    CodeStatement: uiAction.Cast().As<CustomButtonViewModel>()?.CodeStatement));
+                    Body: uiAction.Cast().As<CustomButtonViewModel>()?.CodeStatement?.ToString()));
             }
         }
     }

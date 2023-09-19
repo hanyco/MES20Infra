@@ -19,6 +19,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>//, ICodeGenerator,  IComponentCodeUnit
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
+    private static readonly string[] _parameterAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
     private BootstrapPosition? _position;
 
     protected BlazorComponentBase(in string name) => this.Name = name;
@@ -39,8 +40,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public IList<string> PartialCodeUsingNameSpaces { get; } = new List<string>();
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
-    private static readonly string[] _parameterAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
-    
+
     public Codes GenerateCodes(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {
         var args = arguments ?? new GenerateCodesParameters(true, true, true);
@@ -136,7 +136,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             var buttonsCode = this.Actions.Where(x => !x.showOnGrid)
                 .Select(methodActor =>
                 {
-                    IUiCodeGenerator result = methodActor.CodeStatement == null
+                    IUiCodeGenerator result = methodActor.Body.IsNullOrEmpty()
                         ? new BlazorCqrsButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName)
                                 .With(x => x.Position.SetCol(1))
                         : new BlazorCustomButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName)
@@ -276,17 +276,18 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addMethodsToPartClass(in CodeTypeDeclaration partClassType)
         {
-            foreach (var method in this.Actions.Where(m => m.IsPartial))
+            foreach (var method in this.Actions.Where(m => m.IsPartial || !m.Body.IsNullOrEmpty()))
             {
-                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name, method.Body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
+                var body = method.Body?.Split(Environment.NewLine).Merge(HtmlDoc.INDENT.Repeat(3), false);
+                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
         }
 
         void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
         {
-            foreach (var method in this.Actions.Where(m => !m.IsPartial))
+            foreach (var method in this.Actions.Where(m => !m.IsPartial && m.Body.IsNullOrEmpty()))
             {
-                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name, method.Body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
+                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
             _ = mainClassType.AddMethod("OnInitializedAsync", accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
         }
@@ -300,7 +301,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
             foreach (var child in this.Children)
             {
-                //!DONE  (✔Fixed) 𝒯𝒽𝒾𝓈 𝓂𝓊𝓈𝓉 𝒷𝑒 𝒸𝒽𝒶𝓃𝑔𝑒𝒹 𝓁𝒶𝓉𝑒𝓇
+                //Note  (✔Fixed) 𝒯𝒽𝒾𝓈 𝓂𝓊𝓈𝓉 𝒷𝑒 𝒸𝒽𝒶𝓃𝑔𝑒𝒹 𝓁𝒶𝓉𝑒𝓇
                 if (child is BlazorComponent)
                 {
                     continue;
