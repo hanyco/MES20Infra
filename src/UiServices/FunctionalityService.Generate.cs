@@ -119,7 +119,7 @@ internal sealed partial class FunctionalityService
                     return result;
                 }
 
-                codes.BlazorPageCodes = codeGenRes;
+                codes.BlazorListPageCodes = codeGenRes;
             }
             if (viewModel.BlazorListPageViewModel?.DataContext != null)
             {
@@ -129,9 +129,9 @@ internal sealed partial class FunctionalityService
                     return result;
                 }
 
-                codes.BlazorPageDataContextCodes = codeGenRes;
+                codes.BlazorListPageDataContextCodes = codeGenRes;
             }
-
+            // Generate codes for BlazorPageViewModel if available.
             if (viewModel.BlazorDetailsPageViewModel != null)
             {
                 var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel));
@@ -140,7 +140,7 @@ internal sealed partial class FunctionalityService
                     return result;
                 }
 
-                codes.BlazorPageCodes = codeGenRes;
+                codes.BlazorDetailsPageCodes = codeGenRes;
             }
             if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
             {
@@ -150,7 +150,28 @@ internal sealed partial class FunctionalityService
                     return result;
                 }
 
-                codes.BlazorPageDataContextCodes = codeGenRes;
+                codes.BlazorListPageDataContextCodes = codeGenRes;
+            }
+
+            if (viewModel.BlazorDetailsPageViewModel != null)
+            {
+                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel, new(true, true, true)));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+
+                codes.BlazorListPageCodes = codeGenRes;
+            }
+            if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
+            {
+                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+
+                codes.BlazorListPageDataContextCodes = codeGenRes;
             }
 
             // Generate codes for BlazorListComponentViewModel if available.
@@ -173,8 +194,10 @@ internal sealed partial class FunctionalityService
                 {
                     return result;
                 }
-
                 codes.BlazorDetailsComponentCodes = codeGenRes;
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "InsertPersonParams", "ToInsertPersonParams"));
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "UpdatePersonParams", "ToUpdatePersonParams"));
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "DeletePersonParams", "ToDeletePersonParams"));
             }
 
             return result;
@@ -347,9 +370,7 @@ internal sealed partial class FunctionalityService
 
         static void addActions(CreationData data)
         {
-            data.ViewModel.BlazorListPageViewModel.Route = BlazorPage.GetPageRoute(
-                data.ViewModel.BlazorListPageViewModel.Name!,
-                data.ViewModel.SourceDto.Module.Name, null);
+            data.ViewModel.BlazorListPageViewModel.Route = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
             var saveButton = new UiComponentCqrsButtonViewModel()
             {
                 Caption = "Save",
@@ -420,9 +441,9 @@ internal sealed partial class FunctionalityService
 
         void addActions(CreationData data)
         {
-            data.ViewModel.BlazorDetailsPageViewModel.Route = BlazorPage.GetPageRoute(
-                data.ViewModel.BlazorDetailsPageViewModel.Name!,
-                data.ViewModel.SourceDto.Module.Name, null);
+            var route = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
+            data.ViewModel.BlazorDetailsPageViewModel.Route = route.Insert(route.Length - 1, "/details");
+
             var newButton = new UiComponentCustomButtonViewModel
             {
                 CodeStatement = $"this._navigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()});",

@@ -191,7 +191,8 @@ public partial class BlazorPageGeneratorPage
         return Task.CompletedTask;
     }
 
-    private async void GenerateCodeButton_Click(object sender, RoutedEventArgs e) => await this.GenerateCodeAsync();
+    private async void GenerateCodeButton_Click(object sender, RoutedEventArgs e) => 
+        await this.GenerateCodeAsync();
 
     private async void Page_BindingData(object sender, EventArgs e)
     {

@@ -1,8 +1,8 @@
 ﻿using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
 using Library.Interfaces;
@@ -10,7 +10,7 @@ using Library.Results;
 
 namespace Contracts.Services;
 
-public interface IBlazorComponentCodingService : IBusinessService
+public interface IBlazorComponentCodingService : IBusinessService, ICodeGenerator<UiComponentViewModel, GenerateCodesArgs>
 {
     bool ControlTypeHasPropertiesPage(ControlType controlType);
 
@@ -59,12 +59,7 @@ public interface IBlazorComponentCodingService : IBusinessService
     ///// <returns></returns>
     //Code? GenerateBlazorHtmlCode(in UiComponentViewModel model);
 
-    /// <summary>
-    /// Generates the code behind and html codes.
-    /// </summary>
-    /// <param name="model">The model.</param>
-    /// <returns></returns>
-    Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null);
+    //Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null);
     
     bool HasPropertiesPage(ControlType? ct);
 
@@ -84,8 +79,4 @@ public interface IBlazorComponentCodingService : IBusinessService
     ///// <param name="arguments">The arguments.</param>
     ///// <returns></returns>
     //Task SaveToPathAsync(UiPageViewModel viewModel, string path, GenerateCodesParameters? arguments = null, CancellationToken token = default);
-}
-
-public interface IBlazorPageCodingService : IBusinessService, ICodeGenerator<UiPageViewModel>
-{
 }

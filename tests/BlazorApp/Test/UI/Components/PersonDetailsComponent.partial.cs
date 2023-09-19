@@ -33,7 +33,7 @@ namespace Test.HumanResources
 
             this.ValidateForm();
             var viewModel = this.DataContext;
-            var @params = new Test.HumanResources.Dtos.InsertPersonParams(); // viewModel.ToInsertPersonParams();
+            var @params = new Test.HumanResources.Dtos.InsertPersonParams();
             //var @params = viewModel.ToInsertPersonParams();
             var cqParameters = new Test.HumanResources.Commands.InsertPersonCommandParameter(@params);
             //OnInsertPersonCommandCalling(cqParameters);

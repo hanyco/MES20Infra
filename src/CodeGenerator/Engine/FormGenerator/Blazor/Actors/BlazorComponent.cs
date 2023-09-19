@@ -1,7 +1,6 @@
 ﻿using HanyCo.Infra.Blazor;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
-using HanyCo.Infra.Security.Model;
 
 using Library.CodeGeneration.Models;
 using Library.Cqrs.Models.Commands;
@@ -32,8 +31,8 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
     /// </remarks>
     public bool ShouldGenerateFullUiCode { get; internal set; } = true;
 
-    public static BlazorComponent New(in string name)
-        => new(name);
+    public static BlazorComponent New(in string name) =>
+        new(name);
 
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {
@@ -42,8 +41,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
             TypePath.New<IQueryProcessor>(),
             TypePath.New<ICommandProcessor>(),
             TypePath.New<IMemoryCache>(),
-            TypePath.New<IUserContext>(),
-            TypePath.New<IUserContext>(),
+            //TypePath.New<IUserContext>(),
             TypePath.New<NavigationManager>(),
         };
         _ = codeStringBuilder

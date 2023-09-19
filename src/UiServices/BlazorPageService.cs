@@ -98,7 +98,7 @@ internal sealed class BlazorPageService(
     public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
         ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
 
-    public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesArgs? arguments)
     {
         if (!this.Validate(viewModel).TryParse(out var vr))
         {
@@ -107,8 +107,8 @@ internal sealed class BlazorPageService(
         this.Logger.Debug($"Generating code is started.");
         var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
         var page = (viewModel.Route.IsNullOrEmpty()
-            ? BlazorPage.NewByModuleName(viewModel.Name!, viewModel.Module.Name!)
-            : BlazorPage.NewByPageRoute(viewModel.Name!, viewModel.Route))
+            ? BlazorPage.NewByModuleName(arguments?.FileName ?? viewModel.Name!, viewModel.Module.Name!)
+            : BlazorPage.NewByPageRoute(arguments?.FileName ?? viewModel.Name!, viewModel.Route))
                 .With(x => x.NameSpace = viewModel.NameSpace)
                 .With(x => x.DataContextType = dataContextType);
         _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
@@ -116,7 +116,7 @@ internal sealed class BlazorPageService(
         var result = page.GenerateCodes(CodeCategory.Page, arguments);
         this.Logger.Debug($"Generating code is done.");
 
-        return Result<Codes>.New(result);
+        return Result<Codes>.CreateSuccess(result);
 
         static IHtmlElement toHtmlElement(UiComponentViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
             BlazorComponent.New(component.Name!)

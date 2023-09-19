@@ -61,7 +61,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
 
     public string? NameSpace { get; }
 
-    public virtual string? OnClick { get => this.GetAttribute("onClick"); set => this.SetAttribute("onClick", this.ParseOnClickEvent(value)); }
+    public virtual string? OnClick { get => this.GetAttribute("@onclick"); set => this.SetAttribute("@onclick", this.ParseOnClickEvent(value)); }
 
     //public ButtonType Type { get; set; }
 

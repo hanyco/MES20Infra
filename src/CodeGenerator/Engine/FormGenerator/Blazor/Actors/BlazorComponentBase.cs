@@ -41,9 +41,9 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
 
-    public Codes GenerateCodes(CodeCategory category, in GenerateCodesParameters? arguments = null)
+    public Codes GenerateCodes(CodeCategory category, GenerateCodesArgs? arguments = null)
     {
-        var args = arguments ?? new GenerateCodesParameters(true, true, true);
+        var args = arguments ?? new GenerateCodesArgs(true, true, true);
         _ = validate(args);
         var codes = new List<Code>();
         if (args.GenerateUiCode)
@@ -106,8 +106,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
     }
 
-    public Code GenerateUiCode(in GenerateCodesParameters? arguments = null) =>
-        this.GenerateUiCode(CodeCategory.Component, arguments);
+    public Code GenerateUiCode(GenerateCodesParameters? args = null) =>
+        this.GenerateUiCode(CodeCategory.Component, args == null ? null : new(args.GenerateMainCode, args.GeneratePartialCode, args.GenerateUiCode));
 
     protected virtual string? GetBaseTypes() =>
         null;
@@ -176,7 +176,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     protected TBlazorComponent This()
         => (this as TBlazorComponent)!;
 
-    private GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
+    private GenerateCodeResult GenerateBehindCode(in GenerateCodesArgs? arguments)
     {
         var args = arguments ?? new();
         this.OnInitializingBehindCode(args);
@@ -362,20 +362,20 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
 
         CodeTypeDeclaration createPartialClass(in CodeNamespace partNameSpace)
-            => partNameSpace.UseNameSpace("System")
-                        .UseNameSpace("System.Linq")
+            => partNameSpace.UseNameSpace(typeof(string).Namespace!)
+                        .UseNameSpace(typeof(Enumerable).Namespace!)
                         .UseNameSpace(typeof(Task).Namespace!)
                         .UseNameSpace(typeof(ObservationRepository).Namespace!)
                         .AddNewClass(this.Name, isPartial: true, baseTypes: this.GetBaseTypes().IsNullOrEmpty() ? null : new[] { this.GetBaseTypes()! });
 
         CodeTypeDeclaration createMainClass(in CodeNamespace mainNameSpace)
-            => mainNameSpace.UseNameSpace("System")
-                        .UseNameSpace("System.Linq")
+            => mainNameSpace.UseNameSpace(typeof(string).Namespace!)
+                        .UseNameSpace(typeof(Enumerable).Namespace!)
                         .UseNameSpace(typeof(Task).Namespace!)
                         .AddNewClass(this.Name, isPartial: true);
     }
 
-    private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
+    private Code GenerateUiCode(CodeCategory category, in GenerateCodesArgs? arguments = null)
     {
         this.OnInitializingUiCode(arguments);
         return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = category);

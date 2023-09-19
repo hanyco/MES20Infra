@@ -117,7 +117,7 @@ internal sealed class BlazorCodingService(
         return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
     }
 
-    public Result<Codes> GenerateCodes(in UiViewModel model, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(UiViewModel model, GenerateCodesArgs? arguments = null)
     {
         Result<Codes> result;
         try

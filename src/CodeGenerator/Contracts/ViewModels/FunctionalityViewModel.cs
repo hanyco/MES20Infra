@@ -60,10 +60,14 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     /// </summary>
     public Codes BlazorListComponentCodes { get => this.Get(); set => this.Set(value); }
 
-    public Codes BlazorPageCodes { get => this.Get(); set => this.Set(value); }
+    public Codes BlazorListPageCodes { get => this.Get(); set => this.Set(value); }
 
-    public Codes BlazorPageDataContextCodes { get => this.Get(); set => this.Set(value); }
+    public Codes BlazorListPageDataContextCodes { get => this.Get(); set => this.Set(value); }
 
+    public Codes BlazorDetailsPageCodes { get => this.Get(); set => this.Set(value); }
+
+    public Codes BlazorDetailsPageDataContextCodes { get => this.Get(); set => this.Set(value); }
+    
     /// <summary>
     /// Gets or sets the codes for the DeleteCommandCodes functionality.
     /// </summary>

@@ -32,7 +32,7 @@ internal partial class FunctionalityService(
     IBlazorComponentCodingService blazorComponentCodeService,
     IBlazorPageService blazorPageService,
     IBlazorPageCodingService blazorPageCodeService,
-    IConverterCodeGeneratorService converterCodeService)
+    IModelConverterCodeService converterCodeService)
     : IFunctionalityService
     , IFunctionalityCodeService
     , IBusinessService
@@ -48,7 +48,7 @@ internal partial class FunctionalityService(
     private readonly IBlazorPageService _blazorPageService = blazorPageService;
     private readonly ICqrsCommandService _commandService = commandService;
     private readonly IEntityViewModelConverter _converter = converter;
-    private readonly IConverterCodeGeneratorService _converterCodeService = converterCodeService;
+    private readonly IModelConverterCodeService _converterCodeService = converterCodeService;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService = cqrsCodeService;
     private readonly IDtoCodeService _dtoCodeService = dtoCodeService;
     private readonly IDtoService _dtoService = dtoService;

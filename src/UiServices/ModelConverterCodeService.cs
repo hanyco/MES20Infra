@@ -3,16 +3,18 @@
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
 using Library.CodeGeneration.Models;
 using Library.Interfaces;
+using Library.Results;
 
 namespace Services;
 
-public sealed class ModelConverterCodeService : IBusinessService, IModelConverterCodeService
+internal sealed class ModelConverterCodeService : IBusinessService, IModelConverterCodeService
 {
-    public Code GenerateCode(DtoViewModel src, string dstClassName, string methodName)
+    public Result<Codes> GenerateCode(DtoViewModel src, string dstClassName, string methodName)
     {
         var argName = "viewModel";
         var sourceBuffer = new StringBuilder();
@@ -31,7 +33,9 @@ public sealed class ModelConverterCodeService : IBusinessService, IModelConverte
         _ = sourceBuffer.AppendLine($"{HtmlDoc.INDENT.Repeat(1)}}}");
         _ = sourceBuffer.AppendLine($"{HtmlDoc.INDENT.Repeat(0)}}}");
 
-        return Code.ToCode(methodName, Languages.CSharp, sourceBuffer.ToString(), true, $"ModelConverter.{methodName}");
+        var code = new Code(methodName, Languages.CSharp, sourceBuffer.ToString(), true, $"ModelConverter.{methodName}.cs");
+        var codes = new Codes(code.With(x => x.props().Category = CodeCategory.Converter));
+        return Result<Codes>.CreateSuccess(codes);
     }
 }
 

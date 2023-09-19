@@ -2,10 +2,11 @@
 
 using Library.CodeGeneration.Models;
 using Library.Interfaces;
+using Library.Results;
 
 namespace Contracts.Services;
 
 public interface IModelConverterCodeService : IBusinessService
 {
-    Code GenerateCode(DtoViewModel src, string dstClassName, string methodName);
+    Result<Codes> GenerateCode(DtoViewModel src, string dstClassName, string methodName);
 }
