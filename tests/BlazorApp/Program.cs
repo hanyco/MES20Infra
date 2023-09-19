@@ -1,7 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
-using BlazorApp.Test.Helpers;
 
 using HanyCo.Infra;
 
@@ -28,7 +27,8 @@ public class Program
         _ = builder.Services
                 .AddSingleton<IMapper, Mapper>()
                 .AddMesInfraServices<Program>("connection string", Library.Logging.ILogger.Empty)
-                .AddScoped<EntityViewModelConverter>();
+                //.AddScoped<EntityViewModelConverter>()
+                ;
 
         _ = builder.Services.AddControllersWithViews(options =>
         {

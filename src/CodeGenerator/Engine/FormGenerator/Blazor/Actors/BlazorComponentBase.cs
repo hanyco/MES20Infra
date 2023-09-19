@@ -244,22 +244,19 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             return (partNameSpace, partClassType);
         }
 
-        //void initializeDataContext(in StringBuilder onInitializedAsyncBody)
-        //    => this.OnInitializeDataContext(onInitializedAsyncBody);
+        void addFieldsToPartClass(in CodeTypeDeclaration partClassType)
+        {
+            foreach (var field in this.Fields.Where(m => m.IsPartial))
+            {
+                _ = partClassType.AddField(field.ToFieldInfo());
+            }
+        }
 
         void addPropertiesToPartClass(in CodeTypeDeclaration partClassType)
         {
             foreach (var property in this.Properties)
             {
                 _ = partClassType.AddProperty(property.ToPropertyInfo());
-            }
-        }
-
-        void addFieldsToPartClass(in CodeTypeDeclaration partClassType)
-        {
-            foreach (var field in this.Fields.Where(m => m.IsPartial))
-            {
-                _ = partClassType.AddField(field.ToFieldInfo());
             }
         }
 

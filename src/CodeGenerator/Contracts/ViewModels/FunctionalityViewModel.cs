@@ -17,31 +17,24 @@ namespace Contracts.ViewModels;
 /// </summary>
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
-    private DtoViewModel _sourceDto; // Private field to store the source DTO associated with the functionality.
+    private DtoViewModel _sourceDto;
 
-    // Components and view models associated with the BlazorDetailsComponent functionality.
     public UiComponentViewModel BlazorDetailsComponentViewModel { get; set; }
 
-    // Components and view models associated with the BlazorList functionality.
+    public UiPageViewModel BlazorDetailsPageViewModel { get; set; }
+
     public UiComponentViewModel BlazorListComponentViewModel { get; set; }
 
     public UiPageViewModel BlazorListPageViewModel { get; set; }
-    public UiPageViewModel BlazorDetailsPageViewModel { get; set; }
 
-    // An instance of FunctionalityViewModelCodes to store functionality-specific codes.
     public FunctionalityViewModelCodes Codes { get; } = new();
 
-    // Components and view models associated with various CQRS commands and queries.
     public CqrsCommandViewModel DeleteCommandViewModel { get; set; }
 
     public CqrsQueryViewModel GetAllQueryViewModel { get; set; }
     public CqrsQueryViewModel GetByIdQueryViewModel { get; set; }
     public CqrsCommandViewModel InsertCommandViewModel { get; set; }
 
-    // Property to get or set the namespace of the functionality.
-    //public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
-
-    // Property to get or set the source DTO associated with the functionality.
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
     public CqrsCommandViewModel UpdateCommandViewModel { get; set; }
@@ -98,15 +91,21 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     /// </summary>
     public Codes UpdateCommandCodes { get => this.Get(); set => this.Set(value); }
 
+    public IEnumerable<Codes> GetAllCodes() =>
+        this._allCodes.Select(x => x.Value).Compact();
+
     /// <summary>
     /// Returns an enumerator that iterates through the collection of codes.
     /// </summary>
     /// <returns>An enumerator that can be used to iterate through the collection.</returns>
     public IEnumerator<Codes> GetEnumerator() =>
-        this._allCodes.Select(x => x.Value).Compact().GetEnumerator();
+        this.GetAllCodes().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() =>
         this.GetEnumerator();
+
+    public Codes ToCodes() =>
+        new(this.GetAllCodes());
 
     // Private method to get the codes associated with a functionality.
     private Codes Get([CallerMemberName] string propName = null) =>

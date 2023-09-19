@@ -201,34 +201,47 @@ internal sealed partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
+        // Validate the input viewModel
         if (!this.Validate(viewModel).TryParse(out var validationResult))
         {
             return validationResult!;
         }
 
+        // Report the initialization progress
         this._reporter.Report(description: getTitle("Initializing..."));
-        // Initialize the result with the viewModel
-        var initResult = initialize(viewModel, token);  // If the initialization fails, return the result
+
+        // Initialize the viewModel and check if it fails
+        var initResult = initialize(viewModel, token);
         if (!initResult.IsSucceed)
         {
             return Result<FunctionalityViewModel>.From(initResult, viewModel)!;
         }
-        // Get the data and tokenSource from the initialization result
+
+        // Get the initialized data and token source
         var (data, tokenSource) = initResult.GetValue();
-        // Initialize the steps for the process
+
+        // Perform the initialization steps
         var process = initSteps(data);
 
+        // Report the running progress
         this._reporter.Report(description: getTitle("Running..."));
-        // Run the process with the tokenSource
+
+        // Run the process asynchronously
         var processResult = await process.RunAsync(tokenSource.Token);
 
+        // Get the result message based on the process result and cancellation token
         var message = getResultMessage(processResult, tokenSource.Token);
+
+        // Report the result message
         this._reporter.Report(description: getTitle(message));
-        // Get the result from the processResult
+
+        // Get the final result
         var result = processResult.Value.Result;
 
+        // Dispose the token source
         tokenSource.Dispose();
 
+        // Return the final result
         return result!;
 
         // Get the title for the description
@@ -357,7 +370,7 @@ internal sealed partial class FunctionalityService
             var cancelButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Back",
-                CodeStatement = $@"NavigationManager.NavigateTo({data.ViewModel.BlazorListPageViewModel.Route.TrimStart("@page").Trim()});",
+                CodeStatement = $"this._navigationManager.NavigateTo({data.ViewModel.BlazorListPageViewModel.Route.TrimStart("@page").Trim()});",
                 EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
@@ -412,7 +425,7 @@ internal sealed partial class FunctionalityService
                 data.ViewModel.SourceDto.Module.Name, null);
             var newButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $@"NavigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()});",
+                CodeStatement = $"this._navigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()});",
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -422,7 +435,7 @@ internal sealed partial class FunctionalityService
             };
             var editButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $@"NavigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()}/$${{id}});",
+                CodeStatement = $"this._navigationManager.NavigateTo(\"{data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()}/\" + id.ToString());",
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
@@ -647,8 +660,7 @@ internal sealed partial class FunctionalityService
             .Then(setupSecurity)
             .RunAsync(token);
 
-        static Task createValidator(CreationData data, CancellationToken token) =>
-            Task.CompletedTask;
+        static Task createValidator(CreationData data, CancellationToken token) => Task.CompletedTask;
 
         async Task createHandler(CreationData data, CancellationToken token)
         {

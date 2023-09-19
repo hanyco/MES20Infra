@@ -9,6 +9,7 @@ using Library.Cqrs.Models.Queries;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
@@ -36,10 +37,25 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
 
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {
-        var queryProcessorType = TypePath.New<IQueryProcessor>();
-        var commandProcessorType = TypePath.New<ICommandProcessor>();
-        var memoryCacheType = TypePath.New<IMemoryCache>();
-        var userContextType = TypePath.New<IUserContext>();
+        var injections = new[]
+        {
+            TypePath.New<IQueryProcessor>(),
+            TypePath.New<ICommandProcessor>(),
+            TypePath.New<IMemoryCache>(),
+            TypePath.New<IUserContext>(),
+            TypePath.New<IUserContext>(),
+            TypePath.New<NavigationManager>(),
+        };
+        _ = codeStringBuilder
+            .AppendLine($"@namespace {this.NameSpace}")
+            .AppendLine()
+            .AppendAllLines(injections, x => $"@using {x.NameSpace}")
+            .AppendLine($"@using {typeof(ComponentBase<,>).Namespace}")
+            .AppendLine($"@using {this.DataContextType?.NameSpace}")
+            .AppendLine()
+            .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
+            .AppendLine();
+
         var baseTypeName = typeof(ComponentBase<,>).Name[..^2];
         var dataContextType = (this.DataContextType, this.DataContextProperty) switch
         {
@@ -47,29 +63,9 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
             ({ } dc, null) => dc,
             _ => null
         };
-        _ = codeStringBuilder
-                .AppendLine($"@namespace {this.NameSpace}")
-                .AppendLine()
-                .AppendLine($"@using {memoryCacheType.NameSpace}")
-                .AppendLine($"@using {queryProcessorType.NameSpace}")
-                .AppendLine($"@using {commandProcessorType.NameSpace}")
-                .AppendLine($"@using {userContextType.NameSpace}")
-                .AppendLine($"@using {typeof(ComponentBase<,>).Namespace}")
-                .AppendLine($"@using {this.DataContextType?.NameSpace}")
-                .AppendLine()
-                .AppendLine($"@inject {queryProcessorType.Name} {TypeMemberNameHelper.ToFieldName(queryProcessorType.Name!)}")
-                .AppendLine($"@inject {commandProcessorType.Name} {TypeMemberNameHelper.ToFieldName(commandProcessorType.Name!)}")
-                .AppendLine($"@inject {memoryCacheType.Name} {TypeMemberNameHelper.ToFieldName(memoryCacheType.Name!)}")
-                .AppendLine($"@inject {userContextType.Name} {TypeMemberNameHelper.ToFieldName(userContextType.Name!)}")
-                .AppendLine();
-        if (this.IsGrid)
-        {
-            _ = codeStringBuilder.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>");
-        }
-        else
-        {
-            _ = codeStringBuilder.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>");
-        }
+        _ = this.IsGrid
+            ? codeStringBuilder.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>")
+            : codeStringBuilder.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>");
         _ = codeStringBuilder.AppendLine();
         return codeStringBuilder;
     }
