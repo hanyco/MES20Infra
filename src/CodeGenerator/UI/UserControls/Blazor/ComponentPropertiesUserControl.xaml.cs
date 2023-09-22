@@ -141,7 +141,7 @@ public partial class ComponentPropertiesUserControl
     private void ControlTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         this.SelectedControlType = e.GetSelection<ControlType?>();
-        this.ControlPropertiesButton.IsEnabled = this.Service.HasPropertiesPage(this.SelectedControlType);
+        this.ControlPropertiesButton.IsEnabled = this.CodeService.HasPropertiesPage(this.SelectedControlType);
     }
 
     private void DeletePropertyButton_Click(object sender, RoutedEventArgs e)

@@ -17,25 +17,22 @@ using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
 
-using Microsoft.EntityFrameworkCore;
-
-using Services.Helpers;
-
 using ButtonViewModel = Contracts.ViewModels.UiComponentButtonViewModelBase;
 using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
 using CustomButtonViewModel = Contracts.ViewModels.UiComponentCustomButtonViewModel;
 using UiPropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
-using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
+using UiViewModel = Contracts.ViewModels.UiViewModel;
 
 namespace Services;
 
 internal sealed class BlazorCodingService(
     IDtoService dtoService,
-    IEntityViewModelConverter converter,
-    InfraReadDbContext readDbContext) : IBlazorComponentCodingService
+    IEntityViewModelConverter converter, ILogger logger,
+    InfraReadDbContext readDbContext) : IBlazorComponentCodingService, IBlazorPageCodingService
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly IDtoService _dtoService = dtoService;
+    private readonly ILogger _logger = logger;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
 
     public bool ControlTypeHasPropertiesPage(ControlType controlType) =>
@@ -58,65 +55,6 @@ internal sealed class BlazorCodingService(
             _ => throw new NotImplementedException(),
         };
 
-    public UiPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel)
-    {
-        Check.MustBeArgumentNotNull(viewModel?.Name);
-
-        return new UiPropertyViewModel
-        {
-            Caption = viewModel.Name,
-            ControlType = ControlTypeHelper.ByDtoViewModel(viewModel),
-        };
-    }
-
-    public Task<UiViewModel> CreateNewComponentAsync(CancellationToken cancellationToken = default)
-    {
-        var result = new UiViewModel();
-        return Task.FromResult(result);
-    }
-
-    public async Task<UiViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken cancellationToken = default)
-    {
-        Check.MustBeArgumentNotNull(dto?.Id);
-        var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value, cancellationToken)).NotNull(() => new NotFoundValidationException());
-        return this.CreateViewModel(dto);
-    }
-
-    public CustomButtonViewModel CreateUnboundAction() =>
-        new() { Caption = "New Action", IsEnabled = true, Placement = Placement.FormButton, Name = "NewAction", };
-
-    public UiPropertyViewModel CreateUnboundProperty() =>
-        new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
-
-    public UiViewModel CreateViewModel(DtoViewModel dto)
-    {
-        _ = dto.Check()
-            .ArgumentNotNull().ThrowOnFail()
-            .NotNull(x => x.Name)
-            .NotNull(x => x.NameSpace)
-            .ThrowOnFail();
-
-        var name = CommonHelpers.Purify(dto.Name)!;
-        var parsedNameSpace = CommonHelpers.Purify(dto.NameSpace);
-        var result = new UiViewModel
-        {
-            Name = name,
-            PageDataContext = dto,
-            ClassName = name,
-            NameSpace = parsedNameSpace,
-            Guid = Guid.NewGuid(),
-        };
-        _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
-        return result;
-    }
-
-    public Task<UiPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiPropertyViewModel? prop, CancellationToken cancellationToken = default)
-    {
-        Check.MustBeArgumentNotNull(prop);
-        var id = prop.Id.ArgumentNotNull(nameof(UiPropertyViewModel.Id)).Value;
-        return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
-    }
-
     public Result<Codes> GenerateCodes(UiViewModel model, GenerateCodesArgs? arguments = null)
     {
         Result<Codes> result;
@@ -131,15 +69,6 @@ internal sealed class BlazorCodingService(
             result = Result<Codes>.CreateFailure(ex, Codes.Empty);
         }
         return result;
-    }
-
-    public async Task<UiPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
-    {
-        var query = from cp in this._readDbContext.UiComponentProperties
-                    where cp.Id == id
-                    select cp;
-        var result = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        return this._converter.ToViewModel(result);
     }
 
     public bool HasPropertiesPage(ControlType? ct)
@@ -271,7 +200,6 @@ internal sealed class BlazorCodingService(
             }
             foreach (var backAction in model.UiActions.OfType<BackElement>())
             {
-
             }
             foreach (var elementAction in model.UiActions.OfType<FrontElement>())
             {
@@ -344,4 +272,46 @@ internal sealed class BlazorCodingService(
             }
         }
     }
+
+    #region Page Coding
+
+    public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesArgs? arguments)
+    {
+        if (!this.Validate(viewModel).TryParse(out var vr))
+        {
+            return vr.WithValue(Codes.Empty);
+        }
+        this._logger.Debug($"Generating code is started.");
+        var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
+        var page = (viewModel.Route.IsNullOrEmpty()
+            ? BlazorPage.NewByModuleName(arguments?.FileName ?? viewModel.Name!, viewModel.Module.Name!)
+            : BlazorPage.NewByPageRoute(arguments?.FileName ?? viewModel.Name!, viewModel.Route))
+                .With(x => x.NameSpace = viewModel.NameSpace)
+                .With(x => x.DataContextType = dataContextType);
+        _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
+
+        var result = page.GenerateCodes(CodeCategory.Page, arguments);
+        this._logger.Debug($"Generating code is done.");
+
+        return Result<Codes>.CreateSuccess(result);
+
+        static IHtmlElement toHtmlElement(UiViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
+            BlazorComponent.New(component.Name!)
+                .With(x => x.NameSpace = component.NameSpace)
+                .With(x => x.DataContextType = dataContextType)
+                .With(x => x.DataContextProperty = dataContextTypeProperty)
+                .With(x => x.Position = new(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan, component.Position.Offset));
+    }
+
+    public Result<UiPageViewModel> Validate(in UiPageViewModel? model) =>
+    model.ArgumentNotNull().Check()
+         .NotNull(x => x.Name)
+         .NotNull(x => x.NameSpace)
+         .NotNull(x => x.ClassName)
+         .NotNull(x => x.DataContext)
+         .NotNull(x => x.Module)
+         //.NotNull(x => x.Route)
+         .Build();
+
+    #endregion Page Coding
 }

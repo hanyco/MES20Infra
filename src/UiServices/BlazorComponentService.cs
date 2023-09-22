@@ -15,29 +15,89 @@ using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
 
+using Services.Helpers;
+
+using CustomButtonViewModel = Contracts.ViewModels.UiComponentCustomButtonViewModel;
+using UiPropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
+using UiViewModel = Contracts.ViewModels.UiViewModel;
+
 namespace Services;
 
 [Service]
 public sealed class BlazorComponentService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
+    IDtoService dtoService,
     IEntityViewModelConverter entityViewModelConverter) :
     IBlazorComponentService,
     IAsyncSaveChanges,
     IResetChanges,
     IService,
-    IAsyncValidator<UiComponentViewModel>
+    IAsyncValidator<UiViewModel>
 {
     private readonly IEntityViewModelConverter _converter = entityViewModelConverter;
+    private readonly IDtoService _dtoService = dtoService;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
+
+    public UiPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel)
+    {
+        Check.MustBeArgumentNotNull(viewModel?.Name);
+
+        return new UiPropertyViewModel
+        {
+            Caption = viewModel.Name,
+            ControlType = ControlTypeHelper.ByDtoViewModel(viewModel),
+        };
+    }
+
+    public Task<UiViewModel> CreateNewComponentAsync(CancellationToken cancellationToken = default)
+    {
+        var result = new UiViewModel();
+        return Task.FromResult(result);
+    }
+
+    public async Task<UiViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken cancellationToken = default)
+    {
+        Check.MustBeArgumentNotNull(dto?.Id);
+        var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value, cancellationToken)).NotNull(() => new NotFoundValidationException());
+        return this.CreateViewModel(dto);
+    }
+
+    public CustomButtonViewModel CreateUnboundAction() =>
+            new() { Caption = "New Action", IsEnabled = true, Placement = Placement.FormButton, Name = "NewAction", };
+
+    public UiPropertyViewModel CreateUnboundProperty() =>
+            new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
+
+    public UiViewModel CreateViewModel(DtoViewModel dto)
+    {
+        _ = dto.Check()
+            .ArgumentNotNull().ThrowOnFail()
+            .NotNull(x => x.Name)
+            .NotNull(x => x.NameSpace)
+            .ThrowOnFail();
+
+        var name = CommonHelpers.Purify(dto.Name)!;
+        var parsedNameSpace = CommonHelpers.Purify(dto.NameSpace);
+        var result = new UiViewModel
+        {
+            Name = name,
+            PageDataContext = dto,
+            ClassName = name,
+            NameSpace = parsedNameSpace,
+            Guid = Guid.NewGuid(),
+        };
+        _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
+        return result;
+    }
 
     /// <summary>
     /// Deletes the asynchronous.
     /// </summary>
     /// <param name="model">The identifier.</param>
     /// <returns></returns>
-    public async Task<Result> DeleteAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(UiViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         var cmpQuery = from c in this._writeDbContext.UiComponents
                        where c.Id == model.Id
@@ -68,7 +128,14 @@ public sealed class BlazorComponentService(
         }
     }
 
-    public async Task<UiComponentViewModel?> FillViewModelAsync(UiComponentViewModel? model, CancellationToken cancellationToken = default)
+    public Task<UiPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiPropertyViewModel? prop, CancellationToken cancellationToken = default)
+    {
+        Check.MustBeArgumentNotNull(prop);
+        var id = prop.Id.ArgumentNotNull(nameof(UiPropertyViewModel.Id)).Value;
+        return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<UiViewModel?> FillViewModelAsync(UiViewModel? model, CancellationToken cancellationToken = default)
     {
         if (model is null)
         {
@@ -95,10 +162,10 @@ public sealed class BlazorComponentService(
         return model;
     }
 
-    public Task<IReadOnlyList<UiComponentViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => ServiceHelper.GetAllAsync<UiComponentViewModel, UiComponent>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+    public Task<IReadOnlyList<UiViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
+        => ServiceHelper.GetAllAsync<UiViewModel, UiComponent>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<UiComponentViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public Task<UiViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         => ServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiComponents
             .Include(x => x.UiComponentActions)
             .Include(x => x.UiComponentProperties)
@@ -106,7 +173,7 @@ public sealed class BlazorComponentService(
             .Include(x => x.PageDataContext)
             .Include(x => x.PageDataContextProperty), this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public async Task<IEnumerable<UiComponentViewModel>> GetByPageDataContextIdAsync(long dataDataContextId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<UiViewModel>> GetByPageDataContextIdAsync(long dataDataContextId, CancellationToken cancellationToken = default)
     {
         var query = from c in this._readDbContext.UiComponents
                     where c.PageDataContextId == dataDataContextId
@@ -116,8 +183,17 @@ public sealed class BlazorComponentService(
         return result!;
     }
 
-    public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-        => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
+    public async Task<UiPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
+    {
+        var query = from cp in this._readDbContext.UiComponentProperties
+                    where cp.Id == id
+                    select cp;
+        var result = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        return this._converter.ToViewModel(result);
+    }
+
+    public Task<Result<UiViewModel>> InsertAsync(UiViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+            => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
@@ -125,7 +201,7 @@ public sealed class BlazorComponentService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
         => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<UiComponentViewModel>> UpdateAsync(long id, UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<UiViewModel>> UpdateAsync(long id, UiViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(model);
         model.Id = id;
@@ -150,7 +226,7 @@ public sealed class BlazorComponentService(
             entry.SetModified(x => x.Caption)
                  .SetModified(x => x.IsEnabled)
                  .SetModified(x => x.Name)
-                 .SetModified(x=>x.IsGrid);
+                 .SetModified(x => x.IsGrid);
 
         void updateProperties()
         {
@@ -193,15 +269,15 @@ public sealed class BlazorComponentService(
         void updateDataContextInfo()
             => entry.SetModified(x => x.PageDataContextId).SetModified(x => x.PageDataContextPropertyId);
 
-        async Task<Result<UiComponentViewModel>> saveChanges()
+        async Task<Result<UiViewModel>> saveChanges()
         {
             var result = await this.SubmitChangesAsync(persist, token: cancellationToken);
             model.Id = entity.Id;
-            return Result<UiComponentViewModel>.From(result, model);
+            return Result<UiViewModel>.From(result, model);
         }
     }
 
-    public async Task<Result<UiComponentViewModel>> ValidateAsync(UiComponentViewModel model, CancellationToken cancellationToken = default)
+    public async Task<Result<UiViewModel>> ValidateAsync(UiViewModel model, CancellationToken cancellationToken = default)
     {
         Check.MutBeNotNull(model?.Name);
 
@@ -210,6 +286,6 @@ public sealed class BlazorComponentService(
                         select c.Id;
         var duplicate = await nameQuery.AnyAsync(cancellationToken: cancellationToken);
         var isDuplicated = Check.If(duplicate, () => new ObjectDuplicateValidationException(model.Name));
-        return isDuplicated ? isDuplicated.WithValue(model) : Result<UiComponentViewModel>.CreateSuccess(model);
+        return isDuplicated ? isDuplicated.WithValue(model) : Result<UiViewModel>.CreateSuccess(model);
     }
 }

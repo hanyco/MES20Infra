@@ -79,7 +79,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public SecurityClaim? ToDbEntity(ClaimViewModel? model) =>
         model is null ? null : this._mapper.Map<SecurityClaim>(model);
 
-    public UiComponent? ToDbEntity(UiComponentViewModel? model) =>
+    public UiComponent? ToDbEntity(UiViewModel? model) =>
         model is null ? null : this._mapper.Map<UiComponent>(model)
             .ForMember(x => x.PageDataContextId = model.PageDataContext?.Id)
             .ForMember(x => x.PageDataContextPropertyId = model.PageDataContextProperty?.Id)
@@ -222,8 +222,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public UiBootstrapPositionViewModel? ToViewModel(UiBootstrapPosition? entity) =>
         entity is null ? null : this._mapper.Map<UiBootstrapPositionViewModel>(entity);
 
-    public UiComponentViewModel? ToViewModel(UiComponent? entity) =>
-        entity is null ? null : this._mapper.Map<UiComponentViewModel>(entity)
+    public UiViewModel? ToViewModel(UiComponent? entity) =>
+        entity is null ? null : this._mapper.Map<UiViewModel>(entity)
             .ForMember(x => x.IsGrid = entity.IsGrid ?? false)
             .ForMember(x => x.UiProperties!.AddRange(entity.UiComponentProperties.Select(this.ToViewModel)))
             .ForMember(x => x.UiActions!.AddRange(entity.UiComponentActions.Select(this.ToViewModel).Compact()))
@@ -281,8 +281,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             _ => null,
         };
 
-    public UiComponentViewModel? ToViewModel(UiPageComponent? entity) =>
-        entity is null ? null : this._mapper.Map<UiComponentViewModel>(entity)
+    public UiViewModel? ToViewModel(UiPageComponent? entity) =>
+        entity is null ? null : this._mapper.Map<UiViewModel>(entity)
             .ForMember(x => x.Id = entity.UiComponentId)
             .ForMember(x => x.Name = entity.UiComponent.Name)
             .ForMember(x => x.NameSpace = entity.UiComponent.NameSpace)

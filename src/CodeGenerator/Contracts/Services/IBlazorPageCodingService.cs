@@ -3,9 +3,10 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Interfaces;
+using Library.Validations;
 
 namespace Contracts.Services;
 
-public interface IBlazorPageCodingService : IBusinessService, ICodeGenerator<UiPageViewModel, GenerateCodesArgs>
+public interface IBlazorPageCodingService : IBusinessService, ICodeGenerator<UiPageViewModel, GenerateCodesArgs>, IValidator<UiPageViewModel>
 {
 }

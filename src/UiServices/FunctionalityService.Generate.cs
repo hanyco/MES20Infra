@@ -372,7 +372,7 @@ internal sealed partial class FunctionalityService
 
         void createViewModel(CreationData data)
         {
-            data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentCodeService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{name}DetailsComponent";
             data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = false;
@@ -445,7 +445,7 @@ internal sealed partial class FunctionalityService
 
         void createViewModel(CreationData data)
         {
-            data.ViewModel.BlazorListComponentViewModel = this._blazorComponentCodeService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorListComponentViewModel = this._blazorComponentService.CreateViewModel(data.ViewModel.SourceDto);
             data.ViewModel.BlazorListComponentViewModel.Name = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.ClassName = $"{name}ListComponent";
             data.ViewModel.BlazorListComponentViewModel.IsGrid = true;
@@ -491,7 +491,7 @@ internal sealed partial class FunctionalityService
             };
             var onLoad = new UiComponentLoadViewModel
             {
-                CqrsSegregate = data.ViewModel.GetAllQueryViewModel
+                CqrsSegregate = data.ViewModel.GetAllQueryViewModel,
             };
             data.ViewModel.BlazorListComponentViewModel.UiActions.AddRange(new UiComponentContentViewModelBase[] { newButton, editButton, deleteButton })
                 .Add(onLoad);

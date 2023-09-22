@@ -65,11 +65,11 @@ public sealed class UiComponentLoadViewModel : InfraViewModelBase, IUiComponentC
 
 public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, BackElement
 {
-    private UiComponentViewModel? _component;
+    private UiViewModel? _component;
     private ControlType? _controlType;
     private PropertyViewModel? _property;
 
-    public UiComponentViewModel Component { get => this._component ??= new(); set => this.SetProperty(ref this._component, value); }
+    public UiViewModel Component { get => this._component ??= new(); set => this.SetProperty(ref this._component, value); }
 
     public ControlType? ControlType { get => this._controlType; set => this.SetProperty(ref this._controlType, value); }
 
