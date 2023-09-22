@@ -68,17 +68,9 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
             Check.MustBeArgumentNotNull(model?.Name);
 
             var (dataContextType, dataContextPropType) = createDataContext(model);
-            BlazorComponent result = initializeComponent(model, dataContextType);
+            var result = initializeComponent(model, dataContextType);
             setDataContext(model, dataContextPropType, result);
-            if (!model.IsGrid)
-            {
-                createForm(model, result);
-            }
-            else
-            {
-                createGrid(model, result);
-            }
-            return result;
+            return !model.IsGrid ? createForm(model, result) : createGrid(model, result);
 
             static (TypePath DataContextType, TypePath? DataContextPropType) createDataContext(UiComponentViewModel model, CancellationToken cancellationToken = default)
             {
@@ -104,7 +96,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                 _ = result.With(x => x.DataContextProperty = (prop, model.Name!));
             }
 
-            static BlazorComponent createForm<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponent result, CancellationToken cancellationToken = default)
+            static BlazorComponent createForm(in UiComponentViewModel model, in BlazorComponent result, CancellationToken cancellationToken = default)
             {
                 for (var propertyIndex = 0; propertyIndex < model.UiProperties.Count; propertyIndex++)
                 {

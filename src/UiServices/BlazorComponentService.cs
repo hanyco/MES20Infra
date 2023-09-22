@@ -80,7 +80,7 @@ public sealed class BlazorComponentService(
 
         var name = CommonHelpers.Purify(dto.Name)!;
         var parsedNameSpace = CommonHelpers.Purify(dto.NameSpace);
-        var result = new UiViewModel
+        var result = new UiComponentViewModel
         {
             Name = name,
             PageDataContext = dto,
