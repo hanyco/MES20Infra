@@ -21,6 +21,7 @@ internal sealed partial class FunctionalityService
 {
     public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
     {
+        // Check if viewModel is not null.
         Check.MustBeArgumentNotNull(viewModel);
 
         // Determine whether to update existing codes or generate new ones.
@@ -39,6 +40,7 @@ internal sealed partial class FunctionalityService
         {
             var result = new List<Result<Codes>>();
 
+            // Generate codes for SourceDto if available.
             if (viewModel.SourceDto != null)
             {
                 var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.SourceDto));
@@ -110,7 +112,7 @@ internal sealed partial class FunctionalityService
                 codes.DeleteCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
-            // Generate codes for BlazorPageViewModel if available.
+            // Generate codes for BlazorListPageViewModel if available.
             if (viewModel.BlazorListPageViewModel != null)
             {
                 var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel));
@@ -121,6 +123,8 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorListPageCodes = codeGenRes;
             }
+
+            // Generate codes for BlazorListPageDataContext if available.
             if (viewModel.BlazorListPageViewModel?.DataContext != null)
             {
                 var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext));
@@ -131,7 +135,8 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorListPageDataContextCodes = codeGenRes;
             }
-            // Generate codes for BlazorPageViewModel if available.
+
+            // Generate codes for BlazorDetailsPageViewModel if available.
             if (viewModel.BlazorDetailsPageViewModel != null)
             {
                 var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel));
@@ -142,6 +147,8 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorDetailsPageCodes = codeGenRes;
             }
+
+            // Generate codes for BlazorDetailsPageDataContext if available.
             if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
             {
                 var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
@@ -153,6 +160,7 @@ internal sealed partial class FunctionalityService
                 codes.BlazorListPageDataContextCodes = codeGenRes;
             }
 
+            // Generate codes for BlazorDetailsPageViewModel if available.
             if (viewModel.BlazorDetailsPageViewModel != null)
             {
                 var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel, new(true, true, true)));
@@ -163,6 +171,8 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorListPageCodes = codeGenRes;
             }
+
+            // Generate codes for BlazorDetailsPageDataContext if available.
             if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
             {
                 var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
@@ -213,8 +223,11 @@ internal sealed partial class FunctionalityService
             {
                 var getAllCodes = new List<Result<Codes>>
                 {
+                    // Generate the codes of CQRS parameters.
                     addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ParamsDto)),
+                    // Generate the codes of CQRS result.
                     addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto)),
+                    // Generate the codes of CQRS handler.
                     addToList(await this._cqrsCodeService.GenerateCodeAsync(cqrsViewModel, token: token))
                 };
                 return getAllCodes;
@@ -371,6 +384,7 @@ internal sealed partial class FunctionalityService
         static void addActions(CreationData data)
         {
             data.ViewModel.BlazorListPageViewModel.Route = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
+            // The save button
             var saveButton = new UiComponentCqrsButtonViewModel()
             {
                 Caption = "Save",
@@ -388,6 +402,7 @@ internal sealed partial class FunctionalityService
                     Row = 1,
                 }
             };
+            // The back button. Same as the cancel button.
             var cancelButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Back",
