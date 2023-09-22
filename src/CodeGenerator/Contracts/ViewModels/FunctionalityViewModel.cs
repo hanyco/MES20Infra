@@ -19,11 +19,11 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 {
     private DtoViewModel _sourceDto;
 
-    public UiViewModel BlazorDetailsComponentViewModel { get; set; }
+    public UiComponentViewModel BlazorDetailsComponentViewModel { get; set; }
 
     public UiPageViewModel BlazorDetailsPageViewModel { get; set; }
 
-    public UiViewModel BlazorListComponentViewModel { get; set; }
+    public UiComponentViewModel BlazorListComponentViewModel { get; set; }
 
     public UiPageViewModel BlazorListPageViewModel { get; set; }
 

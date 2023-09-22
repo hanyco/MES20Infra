@@ -27,7 +27,7 @@ public sealed class UiPageViewModel : UiComponentViewModelBase
 
     public string ClassName { get => this._ClassName; set => this.SetProperty(ref this._ClassName, value); }
 
-    public ObservableCollection<UiViewModel> Components { get; } = new();
+    public ObservableCollection<UiComponentViewModel> Components { get; } = new();
 
     public DtoViewModel DataContext { get => this._dataContext; set => this.SetProperty(ref this._dataContext, value); }
 

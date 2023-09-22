@@ -6,17 +6,17 @@ namespace Contracts.Services;
 
 public interface IBlazorComponentService
     : IBusinessService
-    , IAsyncCrud<UiViewModel>
+    , IAsyncCrud<UiComponentViewModel>
 {
-    Task<IEnumerable<UiViewModel>> GetByPageDataContextIdAsync(long dtoId, CancellationToken token = default);
+    Task<IEnumerable<UiComponentViewModel>> GetByPageDataContextIdAsync(long dtoId, CancellationToken token = default);
 
     UiPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel);
 
-    Task<UiViewModel> CreateNewComponentAsync(CancellationToken token = default);
+    Task<UiComponentViewModel> CreateNewComponentAsync(CancellationToken token = default);
 
-    Task<UiViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken token = default);
+    Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken token = default);
 
-    UiViewModel CreateViewModel(DtoViewModel dto);
+    UiComponentViewModel CreateViewModel(DtoViewModel dto);
 
     UiComponentCustomButtonViewModel CreateUnboundAction();
 

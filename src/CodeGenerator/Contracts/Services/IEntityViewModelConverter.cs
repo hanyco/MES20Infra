@@ -14,8 +14,8 @@ public interface IEntityViewModelConverter :
     IService,
     ILoggerContainer,
 
-    IDbEntityToViewModelConverter<UiViewModel, UiComponent>,
-    IViewModelToDbEntityConverter<UiViewModel, UiComponent>,
+    IDbEntityToViewModelConverter<UiComponentViewModel, UiComponent>,
+    IViewModelToDbEntityConverter<UiComponentViewModel, UiComponent>,
 
     IDbEntityToViewModelConverter<UiPropertyViewModel, UiComponentProperty>,
     IViewModelToDbEntityConverter<UiPropertyViewModel, UiComponentProperty>,
@@ -35,7 +35,7 @@ public interface IEntityViewModelConverter :
     IDbEntityToViewModelConverter<UiPageViewModel, UiPage>,
     IViewModelToDbEntityConverter<UiPageViewModel, UiPage>,
 
-    IDbEntityToViewModelConverter<UiViewModel, UiPageComponent>,
+    IDbEntityToViewModelConverter<UiComponentViewModel, UiPageComponent>,
 
     IDbEntityToViewModelConverter<FunctionalityViewModel, Functionality>,
     IViewModelToDbEntityConverter<FunctionalityViewModel, Functionality>,

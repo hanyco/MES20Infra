@@ -41,9 +41,9 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
 
-    public Codes GenerateCodes(CodeCategory category, GenerateCodesArgs? arguments = null)
+    public Codes GenerateCodes(CodeCategory category, GenerateCodesParameters? arguments = null)
     {
-        var args = arguments ?? new GenerateCodesArgs(true, true, true);
+        var args = arguments ?? new GenerateCodesParameters(true, true, true);
         _ = validate(args);
         var codes = new List<Code>();
         if (args.GenerateUiCode)
@@ -176,7 +176,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     protected TBlazorComponent This()
         => (this as TBlazorComponent)!;
 
-    private GenerateCodeResult GenerateBehindCode(in GenerateCodesArgs? arguments)
+    private GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
     {
         var args = arguments ?? new();
         this.OnInitializingBehindCode(args);
@@ -375,7 +375,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                         .AddNewClass(this.Name, isPartial: true);
     }
 
-    private Code GenerateUiCode(CodeCategory category, in GenerateCodesArgs? arguments = null)
+    private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {
         this.OnInitializingUiCode(arguments);
         return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = category);

@@ -35,7 +35,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         new PropertyMetadata(false));
 
     public static readonly DependencyProperty SelectedComponentProperty =
-        DependencyProperty.Register("SelectedComponent", typeof(UiViewModel), typeof(BlazorComponentGenertorPage), new PropertyMetadata(null));
+        DependencyProperty.Register("SelectedComponent", typeof(UiComponentViewModel), typeof(BlazorComponentGenertorPage), new PropertyMetadata(null));
 
     private readonly IBlazorComponentCodingService _codeService;
     private readonly ICqrsCommandService _commandService;
@@ -69,11 +69,11 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     bool IStatefulPage.IsViewModelChanged { get; set; }
 
-    public UiViewModel? SelectedComponent { get => (UiViewModel?)this.GetValue(SelectedComponentProperty); set => this.SetValue(SelectedComponentProperty, value); }
+    public UiComponentViewModel? SelectedComponent { get => (UiComponentViewModel?)this.GetValue(SelectedComponentProperty); set => this.SetValue(SelectedComponentProperty, value); }
 
-    public UiViewModel? ViewModel
+    public UiComponentViewModel? ViewModel
     {
-        get => this.DataContext.Cast().As<UiViewModel>();
+        get => this.DataContext.Cast().As<UiComponentViewModel>();
         set
         {
             if (this.ViewModel is not null)
@@ -132,7 +132,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         => await this.LoadBlazorComponent();
 
     private void ComponentTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        => this.SelectedComponent = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<UiViewModel>();
+        => this.SelectedComponent = e.NewValue.Cast().As<TreeViewItem>()?.DataContext.Cast().As<UiComponentViewModel>();
 
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
@@ -169,7 +169,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
         this.Debug("Code generated.");
 
-        async Task fillActionCqrsInfo(UiViewModel model)
+        async Task fillActionCqrsInfo(UiComponentViewModel model)
         {
             foreach (var action in model.UiActions.OfType<UiComponentCqrsButtonViewModel>().Where(x => x.CqrsSegregate is not null))
             {
@@ -190,7 +190,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         this.IsEditMode = true;
         scope.End();
 
-        async Task<UiViewModel?> getViewModel()
+        async Task<UiComponentViewModel?> getViewModel()
         {
             var result = await this._service.GetByIdAsync(this.SelectedComponent.Id!.Value);
             Check.MustBeNotNull(result, () => new NotFoundValidationException("Component not found"));

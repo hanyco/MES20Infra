@@ -26,7 +26,7 @@ public partial class BlazorPageGeneratorPage
     #region Fields
 
     public static readonly DependencyProperty AllComponentsProperty
-        = ControlHelper.GetDependencyProperty<IEnumerable<UiViewModel>, BlazorPageGeneratorPage>(nameof(AllComponents));
+        = ControlHelper.GetDependencyProperty<IEnumerable<UiComponentViewModel>, BlazorPageGeneratorPage>(nameof(AllComponents));
 
     public static readonly DependencyProperty IsEditModeProperty
         = ControlHelper.GetDependencyProperty<bool, BlazorPageGeneratorPage>(nameof(IsEditMode), onPropertyChanged: (me, _) =>
@@ -43,7 +43,7 @@ public partial class BlazorPageGeneratorPage
         });
 
     public static readonly DependencyProperty SelectedComponentInAllProperty =
-        ControlHelper.GetDependencyProperty<UiViewModel, BlazorPageGeneratorPage>(nameof(SelectedComponentInAll));
+        ControlHelper.GetDependencyProperty<UiComponentViewModel, BlazorPageGeneratorPage>(nameof(SelectedComponentInAll));
 
     private readonly IBlazorPageCodingService _codingService;
     private readonly IBlazorComponentService _componentService;
@@ -63,11 +63,11 @@ public partial class BlazorPageGeneratorPage
         this._codingService = codingService;
     }
 
-    public IEnumerable<UiViewModel> AllComponents { get => (IEnumerable<UiViewModel>)this.GetValue(AllComponentsProperty); set => this.SetValue(AllComponentsProperty, value); }
+    public IEnumerable<UiComponentViewModel> AllComponents { get => (IEnumerable<UiComponentViewModel>)this.GetValue(AllComponentsProperty); set => this.SetValue(AllComponentsProperty, value); }
 
     public bool IsEditMode { get => (bool)this.GetValue(IsEditModeProperty); set => this.SetValue(IsEditModeProperty, value); }
 
-    public UiViewModel SelectedComponentInAll { get => (UiViewModel)this.GetValue(SelectedComponentInAllProperty); set => this.SetValue(SelectedComponentInAllProperty, value); }
+    public UiComponentViewModel SelectedComponentInAll { get => (UiComponentViewModel)this.GetValue(SelectedComponentInAllProperty); set => this.SetValue(SelectedComponentInAllProperty, value); }
 
     public UiPageViewModel? ViewModel
     {
@@ -105,7 +105,7 @@ public partial class BlazorPageGeneratorPage
 
     private async Task BindAllComponentsView()
     {
-        this.AllComponents = Enumerable.Empty<UiViewModel>();
+        this.AllComponents = Enumerable.Empty<UiComponentViewModel>();
         if (this.ViewModel?.DataContext?.Id is not { } dtoId)
         {
             return;
@@ -229,7 +229,7 @@ public partial class BlazorPageGeneratorPage
         {
             return;
         }
-        var selectedComponent = this.PageComponentLisView.SelectedItem.Cast().As<UiViewModel>();
+        var selectedComponent = this.PageComponentLisView.SelectedItem.Cast().As<UiComponentViewModel>();
         if (selectedComponent is null)
         {
             return;

@@ -4,7 +4,7 @@ using HanyCo.Infra.UI.ViewModels;
 
 namespace Contracts.ViewModels;
 
-public class UiViewModel : UiComponentViewModelBase
+public class UiComponentViewModel : UiComponentViewModelBase
 {
     private string _className = null!;
     private bool _generateMainCode = true;

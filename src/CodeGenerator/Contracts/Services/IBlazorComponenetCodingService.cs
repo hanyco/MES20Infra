@@ -10,7 +10,7 @@ using Library.Results;
 
 namespace Contracts.Services;
 
-public interface IBlazorComponentCodingService : IBusinessService, ICodeGenerator<UiViewModel, GenerateCodesArgs>
+public interface IBlazorComponentCodingService : IBusinessService, ICodeGenerator<UiComponentViewModel>
 {
     bool ControlTypeHasPropertiesPage(ControlType controlType);
 
