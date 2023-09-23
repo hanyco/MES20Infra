@@ -183,9 +183,9 @@ internal sealed partial class FunctionalityService
                     return result;
                 }
                 codes.BlazorDetailsComponentCodes = codeGenRes;
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "InsertPersonParams", "ToInsertPersonParams", this._converterCodeService.GetProperty()));
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "UpdatePersonParams", "ToUpdatePersonParams", this._converterCodeService.GetProperty()));
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "DeletePersonParams", "ToDeletePersonParams", this._converterCodeService.GetProperty()));
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "InsertPersonParams", "ToInsertPersonParams"));
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "UpdatePersonParams", "ToUpdatePersonParams"));
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "DeletePersonParams", "ToDeletePersonParams"));
             }
 
             return result;

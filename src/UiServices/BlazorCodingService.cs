@@ -258,8 +258,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                             load.Name,
                             true,
                             EventHandlerName: "OnLoad",
-                            //INVALID: Must be caring later.
-                            Body: CodeConstants.CallGetAllMethodBody(load.CqrsSegregate.Name, load.CqrsSegregate.ResultDto.Name)));
+                            Body: CodeConstants.CallGetAllAndSetDataContextMethodBody(load.CqrsSegregate.DbObject.Name)));
                         break;
                 }
             }
