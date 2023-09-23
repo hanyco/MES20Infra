@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-using Contracts.Services;
+﻿using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
@@ -15,25 +13,11 @@ internal sealed class ModelConverterCodeService : IBusinessService, IModelConver
 {
     public Result<Codes> GenerateCode(DtoViewModel src, string dstClassName, string methodName)
     {
-        var argName = "viewModel";
-        var sourceBuffer = new StringBuilder();
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(0)}public partial class ModelConverter");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(0)}{{");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(1)}public static {dstClassName} To{dstClassName}(this {src.Name} {argName})");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(1)}{{");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(2)}var result = new {dstClassName}");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(2)}{{");
-        foreach (var property in src.Properties)
-        {
-            _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(3)}{property.Name} = {argName}.{property.Name}");
-        }
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(2)}}};");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(2)}return result;");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(1)}}}");
-        _ = sourceBuffer.AppendLine($"{CodeConstants.INDENT.Repeat(0)}}}");
+        var codeStatement = CodeConstants.ConverterToModelClassSource(src.Name, dstClassName, "viewModel", src.Properties.Select(x => x.Name));
 
-        var code = new Code(methodName, Languages.CSharp, sourceBuffer.ToString(), true, $"ModelConverter.{methodName}.cs");
-        var codes = new Codes(code.With(x => x.props().Category = CodeCategory.Converter));
+        var codes = Code.New(methodName, Languages.CSharp, codeStatement, true, $"ModelConverter.{methodName}.cs")
+            .With(x => x.props().Category = CodeCategory.Converter)
+            .ToCodes();
         return Result<Codes>.CreateSuccess(codes);
     }
 }

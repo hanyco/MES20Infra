@@ -106,7 +106,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
         {
             foreach (var prop in model.Properties)
             {
-                var bindPropName = $"this.DataContext.{prop.Name}";
+                var bindPropName = CodeConstants.InstanceDataContextProperty(prop.Name);
                 var position = prop.Position.ToBootstrapPosition();
 
                 if (position.IsDefault())
@@ -258,7 +258,8 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                             load.Name,
                             true,
                             EventHandlerName: "OnLoad",
-                            Body: "OnLoad is not written yet."));
+                            //INVALID: Must be caring later.
+                            Body: CodeConstants.CallGetAllMethodBody(load.CqrsSegregate.Name, load.CqrsSegregate.ResultDto.Name)));
                         break;
                 }
             }
