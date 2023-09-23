@@ -17,8 +17,6 @@ using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
 
-using Services.Helpers;
-
 using ButtonViewModelBase = Contracts.ViewModels.UiComponentButtonViewModelBase;
 using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
 using CstmButtonViewModel = Contracts.ViewModels.UiComponentCustomButtonViewModel;
@@ -260,7 +258,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                             load.Name,
                             true,
                             EventHandlerName: "OnLoad",
-                            Body: CodeGeneratorsHelper.ComponentLoad(load.CqrsSegregate, model, result)));
+                            Body: "OnLoad is not written yet."));
                         break;
                 }
             }

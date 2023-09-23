@@ -1,5 +1,6 @@
 ﻿using System.CodeDom;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
@@ -130,12 +131,12 @@ public sealed class BlazorCqrsButton(
         {
             case IQueryCqrsSegregation query:
                 var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
-                    $@"{HtmlDoc.INDENT.Repeat(3)}this.{dataContextValidatorName}();
-{HtmlDoc.INDENT.Repeat(3)}var dto = this.DataContext;
-{HtmlDoc.INDENT.Repeat(3)}var cqrs = new {cqrsParamsType}(dto);
-{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
-{HtmlDoc.INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);
-{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
+                    $@"{CodeConstants.INDENT.Repeat(3)}this.{dataContextValidatorName}();
+{CodeConstants.INDENT.Repeat(3)}var dto = this.DataContext;
+{CodeConstants.INDENT.Repeat(3)}var cqrs = new {cqrsParamsType}(dto);
+{CodeConstants.INDENT.Repeat(3)}On{calleeName}Calling(cqrs);
+{CodeConstants.INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);
+{CodeConstants.INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
                 var queryCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling({query.Parameter?.Type ?? "System.Object"} parameter)"
                     , accessModifiers: DEFAULT_ACCESS_MODIFIER);
@@ -149,14 +150,14 @@ public sealed class BlazorCqrsButton(
 
             case ICommandCqrsSegregation command:
                 var commandBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
-                    $@"{HtmlDoc.INDENT.Repeat(3)}this.{dataContextValidatorName}();
-{HtmlDoc.INDENT.Repeat(3)}var dto = this.DataContext;
-{HtmlDoc.INDENT.Repeat(3)}var cqParams = new {cqrsParamsType}(dto);
-{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Calling(cqParams);
+                    $@"{CodeConstants.INDENT.Repeat(3)}this.{dataContextValidatorName}();
+{CodeConstants.INDENT.Repeat(3)}var dto = this.DataContext;
+{CodeConstants.INDENT.Repeat(3)}var cqParams = new {cqrsParamsType}(dto);
+{CodeConstants.INDENT.Repeat(3)}On{calleeName}Calling(cqParams);
 
-{HtmlDoc.INDENT.Repeat(3)}var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType},{cqrsResultType}>(cqParams);
+{CodeConstants.INDENT.Repeat(3)}var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType},{cqrsResultType}>(cqParams);
 
-{HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqParams, cqResult);", returnType: "async void");
+{CodeConstants.INDENT.Repeat(3)}On{calleeName}Called(cqParams, cqResult);", returnType: "async void");
                 var commandCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling"
                     , arguments: new MethodArgument[] {
@@ -204,7 +205,7 @@ public sealed class BlazorCustomButton(
         yield return new(dataContextValidatorMethod, null);
 
         var body = this.Action.CodeStatement?.ToString()
-            .Split(Environment.NewLine).Merge(HtmlDoc.INDENT.Repeat(3), false);
+            .Split(Environment.NewLine).Merge(CodeConstants.INDENT.Repeat(3), false);
 
         var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body);
         yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);

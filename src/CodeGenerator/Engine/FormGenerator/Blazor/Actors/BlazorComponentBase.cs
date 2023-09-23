@@ -276,7 +276,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var method in this.Actions.Where(m => m.IsPartial || !m.Body.IsNullOrEmpty()))
             {
-                var body = method.Body?.Split(Environment.NewLine).Merge(HtmlDoc.INDENT.Repeat(3), false);
+                var body = method.Body?.Split(Environment.NewLine).Merge(CodeConstants.INDENT.Repeat(3), false);
                 _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
         }
@@ -350,7 +350,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addPageInitializedMethod(in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType, in StringBuilder initializedAsyncMethodBody)
         {
-            _ = initializedAsyncMethodBody.AppendLine($"{HtmlDoc.INDENT}await this.OnPageInitializedAsync();");
+            _ = initializedAsyncMethodBody.AppendLine($"{CodeConstants.INDENT}await this.OnPageInitializedAsync();");
             _ = mainClassType.AddMethod("OnPageInitializedAsync", returnType: "async Task", accessModifiers: MemberAttributes.Private);
             var initializedAsyncBodyLines = initializedAsyncMethodBody.ToString().Split(Environment.NewLine);
             _ = initializedAsyncMethodBody.Clear();
