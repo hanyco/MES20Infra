@@ -14,6 +14,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>, IHtmlElement, IBlazorComponent, ISupportsBehindCodeMember
     where TSelf : BlazorButtonBase<TSelf, TAction>
 {
+    protected const MemberAttributes DEFAULT_ACCESS_MODIFIER = MemberAttributes.Private | MemberAttributes.Final;
     private bool _isCancelButton;
     private bool _isDefaultButton;
 
@@ -72,7 +73,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
             return Enumerable.Empty<CodeTypeMembers>();
         }
 
-        var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: MemberAttributes.Private);
+        var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: DEFAULT_ACCESS_MODIFIER);
         return EnumerableHelper.ToEnumerable(new CodeTypeMembers(main, null));
     }
 
@@ -118,11 +119,11 @@ public sealed class BlazorCqrsButton(
         }
         Check.MutBeNotNull(this.Action.Segregation);
         var calleeName = this.Action.Name;
-        var cqrsType = TypePath.New(this.Action.Segregation.Name);
+        _ = TypePath.New(this.Action.Segregation.Name);
         var cqrsParamsType = this.Action.Segregation.Parameter?.Type ?? TypePath.New<object>();
         var cqrsResultType = this.Action.Segregation.Result?.Type ?? TypePath.New<object>();
         var dataContextValidatorName = $"ValidateForm";
-        var dataContextValidatorMethod = CodeDomHelper.NewMethod($"{dataContextValidatorName}", accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
+        var dataContextValidatorMethod = CodeDomHelper.NewMethod($"{dataContextValidatorName}", accessModifiers: DEFAULT_ACCESS_MODIFIER);
 
         yield return new(dataContextValidatorMethod, null);
         switch (this.Action.Segregation)
@@ -137,10 +138,10 @@ public sealed class BlazorCqrsButton(
 {HtmlDoc.INDENT.Repeat(3)}On{calleeName}Called(cqrs, cqResult);", returnType: "async void");
                 var queryCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling({query.Parameter?.Type ?? "System.Object"} parameter)"
-                    , accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
+                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
                 var queryCalled = CodeDomHelper.NewMethod(
                     $"On{calleeName}Called({query.Parameter?.Type} parameter, {query.Result?.Type} result)"
-                    , accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
+                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
                 yield return new(queryCalling, null);
                 yield return new(null, queryBody);
                 yield return new(queryCalled, null);
@@ -161,14 +162,14 @@ public sealed class BlazorCqrsButton(
                     , arguments: new MethodArgument[] {
                         new (command.Parameter?.Type ?? "System.Object", "parameter")
                         }
-                    , accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
+                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
                 var commandCalled = CodeDomHelper.NewMethod(
                     $"On{calleeName}Called"
                     , arguments: new MethodArgument[] {
                         new (command.Parameter?.Type ?? "System.Object", "parameter"),
                         new (command.Result?.Type ?? "System.Object", "result")
                         }
-                    , accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
+                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
                 yield return new(commandCalling, null);
                 yield return new(null, commandBody);
                 yield return new(commandCalled, null);
@@ -199,7 +200,7 @@ public sealed class BlazorCustomButton(
         }
         Check.MutBeNotNull(this.Action.CodeStatement);
 
-        var dataContextValidatorMethod = CodeDomHelper.NewMethod("ValidateForm", accessModifiers: MemberAttributes.Private | MemberAttributes.Final);
+        var dataContextValidatorMethod = CodeDomHelper.NewMethod("ValidateForm", accessModifiers: DEFAULT_ACCESS_MODIFIER);
         yield return new(dataContextValidatorMethod, null);
 
         var body = this.Action.CodeStatement?.ToString()

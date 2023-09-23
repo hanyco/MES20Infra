@@ -1,4 +1,8 @@
-﻿using HanyCo.Infra.Internals.Data.DataSources;
+﻿using System.CodeDom;
+
+using HanyCo.Infra.Internals.Data.DataSources;
+
+using Library.CodeGeneration.Models;
 
 namespace Contracts.ViewModels;
 
@@ -19,6 +23,16 @@ public interface IUiComponentCqrsContent : IUiComponentContent
     CqrsViewModelBase? CqrsSegregate { get; set; }
 }
 
+public abstract class UiComponentButtonViewModelBase : UiComponentContentViewModelBase
+{
+    private string? _eventHandlerName;
+    private Placement _placement;
+
+    public string? EventHandlerName { get => this._eventHandlerName; set => this.SetProperty(ref this._eventHandlerName, value); }
+
+    public Placement Placement { get => this._placement; set => this.SetProperty(ref this._placement, value); }
+}
+
 public abstract class UiComponentContentViewModelBase : InfraViewModelBase, IUiComponentContent
 {
     private string? _caption;
@@ -32,19 +46,21 @@ public abstract class UiComponentContentViewModelBase : InfraViewModelBase, IUiC
     public UiBootstrapPositionViewModel Position { get => this._position ??= new(); set => this._position = value; }
 }
 
-public abstract class UiComponentButtonViewModelBase : UiComponentContentViewModelBase
-{
-    private string? _eventHandlerName;
-    private Placement _placement;
-
-    public string? EventHandlerName { get => this._eventHandlerName; set => this.SetProperty(ref this._eventHandlerName, value); }
-
-    public Placement Placement { get => this._placement; set => this.SetProperty(ref this._placement, value); }
-}
-
 public sealed class UiComponentCqrsButtonViewModel : UiComponentButtonViewModelBase, IUiComponentCqrsContent, FrontElement
 {
     private CqrsViewModelBase? _cqrsSegregate;
+
+    public CqrsViewModelBase? CqrsSegregate { get => this._cqrsSegregate; set => this.SetProperty(ref this._cqrsSegregate, value); }
+}
+
+public sealed class UiComponentCqrsLoadViewModel : InfraViewModelBase, IUiComponentCqrsContent, BackElement
+{
+    private CqrsViewModelBase? _cqrsSegregate;
+
+    public UiComponentCqrsLoadViewModel()
+        : base(null, name: "OnCqrsLoad")
+    {
+    }
 
     public CqrsViewModelBase? CqrsSegregate { get => this._cqrsSegregate; set => this.SetProperty(ref this._cqrsSegregate, value); }
 }
@@ -56,14 +72,7 @@ public sealed class UiComponentCustomButtonViewModel : UiComponentButtonViewMode
     public FormattableString? CodeStatement { get => this._codeStatement; set => this.SetProperty(ref this._codeStatement, value); }
 }
 
-public sealed class UiComponentLoadViewModel : InfraViewModelBase, IUiComponentCqrsContent, BackElement
-{
-    private CqrsViewModelBase? _cqrsSegregate;
-
-    public CqrsViewModelBase? CqrsSegregate { get => this._cqrsSegregate; set => this.SetProperty(ref this._cqrsSegregate, value); }
-}
-
-public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, BackElement
+public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, FrontElement
 {
     private UiComponentViewModel? _component;
     private ControlType? _controlType;

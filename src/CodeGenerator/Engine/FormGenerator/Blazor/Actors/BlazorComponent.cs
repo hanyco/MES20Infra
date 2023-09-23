@@ -20,15 +20,6 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
     public Dictionary<string, string?> BlazorAttributes { get; } = new Dictionary<string, string?>();
     public (TypePath Type, string Name)? DataContextProperty { get; set; }
 
-    /// <summary>
-    /// Gets a value indicating whether [should generate full UI code].
-    /// </summary>
-    /// <value><c>true</c> if [should generate full UI code]; otherwise, <c>false</c>.</value>
-    /// <remarks>
-    /// When we want to generated component code lonely, the code must be fully generated. But if
-    /// the component must be inserted in a page, the code mustn't be fully generated. Instead, we
-    /// need a simple tag
-    /// </remarks>
     public bool ShouldGenerateFullUiCode { get; internal set; } = true;
 
     public static BlazorComponent New(in string name) =>

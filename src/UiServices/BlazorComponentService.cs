@@ -88,7 +88,7 @@ public sealed class BlazorComponentService(
             NameSpace = parsedNameSpace,
             Guid = Guid.NewGuid(),
         };
-        _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
+        _ = result.Properties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
         return result;
     }
 
@@ -157,8 +157,8 @@ public sealed class BlazorComponentService(
         }
 
         model = this._converter.ToViewModel(cmp);
-        _ = model.UiProperties!.AddRange(this._converter.ToViewModel(cmp.UiComponentProperties));
-        _ = model.UiActions!.AddRange(this._converter.ToViewModel(cmp.UiComponentActions));
+        _ = model.Properties!.AddRange(this._converter.ToViewModel(cmp.UiComponentProperties));
+        _ = model.Actions!.AddRange(this._converter.ToViewModel(cmp.UiComponentActions));
         return model;
     }
 

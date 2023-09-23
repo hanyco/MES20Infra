@@ -171,7 +171,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
         async Task fillActionCqrsInfo(UiComponentViewModel model)
         {
-            foreach (var action in model.UiActions.OfType<UiComponentCqrsButtonViewModel>().Where(x => x.CqrsSegregate is not null))
+            foreach (var action in model.Actions.OfType<UiComponentCqrsButtonViewModel>().Where(x => x.CqrsSegregate is not null))
             {
                 action.CqrsSegregate = await action.CqrsSegregate.FillAsync(this._cqrsQueryService, this._commandService);
             }

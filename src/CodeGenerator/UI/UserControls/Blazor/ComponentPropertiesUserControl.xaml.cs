@@ -63,7 +63,7 @@ public partial class ComponentPropertiesUserControl
         }
         if (this.SelectedPropertyComboBox.ItemsSource is null)
         {
-            _ = this.SelectedPropertyComboBox.BindItemsSource(this.ViewModel.UiProperties.Select(x => x.Property));
+            _ = this.SelectedPropertyComboBox.BindItemsSource(this.ViewModel.Properties.Select(x => x.Property));
         }
         this.BindPropertiesListView();
 
@@ -76,14 +76,14 @@ public partial class ComponentPropertiesUserControl
         {
             return;
         }
-        this.ViewModel.UiProperties.Clear();
+        this.ViewModel.Properties.Clear();
         var propertyService = DI.GetService<IPropertyService>();
         var codingService = DI.GetService<IBlazorComponentCodingService>();
         var properties = this.ViewModel.PageDataContextProperty is null
             ? await propertyService.GetByParentIdAsync(this.ViewModel.PageDataContext.Id!.Value)
             : await propertyService.GetByDtoIdAsync(this.ViewModel.PageDataContextProperty.Id!.Value);
-        _ = this.ViewModel.UiProperties.AddRange(properties.Select(x => this._converter.ToUiComponentProperty(x)));
-        _ = this.PropertiesListView.BindItemsSource(this.ViewModel.UiProperties);
+        _ = this.ViewModel.Properties.AddRange(properties.Select(x => this._converter.ToUiComponentProperty(x)));
+        _ = this.PropertiesListView.BindItemsSource(this.ViewModel.Properties);
     }
 
     private async void BrowserForDtoButton_Click(object sender, RoutedEventArgs e)
@@ -157,12 +157,12 @@ public partial class ComponentPropertiesUserControl
 
         foreach (var property in this.SelectedProperties.Compact().ToList())
         {
-            var index = this.ViewModel!.UiProperties.IndexOf(property);
+            var index = this.ViewModel!.Properties.IndexOf(property);
             if (index is -1)
             {
                 throw new ValidationException("Property not found.");
             }
-            this.ViewModel!.UiProperties.RemoveAt(index);
+            this.ViewModel!.Properties.RemoveAt(index);
             //this.SelectedPropertyGrid.DataContext = this.ViewModel!.UiProperties.Count > index
             //    ? this.ViewModel!.UiProperties[index]
             //    : this.ViewModel!.UiProperties.LastOrDefault();
@@ -172,7 +172,7 @@ public partial class ComponentPropertiesUserControl
 
     private async void NewPropertyButton_Click(object sender, RoutedEventArgs e)
     {
-        this.ViewModel!.UiProperties.Add(this.Service.CreateUnboundProperty());
+        this.ViewModel!.Properties.Add(this.Service.CreateUnboundProperty());
         await this.BindDataAsync();
     }
 

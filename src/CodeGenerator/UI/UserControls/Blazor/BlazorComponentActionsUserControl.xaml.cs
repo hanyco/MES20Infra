@@ -65,7 +65,7 @@ public partial class BlazorComponentActionsUserControl
         }
 
         this.SelectedActionGrid.RebindDataContext();
-        _ = this.ActionsListView.BindItemsSource(this.ViewModel.UiActions);
+        _ = this.ActionsListView.BindItemsSource(this.ViewModel.Actions);
 
         return Task.CompletedTask;
     }
@@ -107,7 +107,7 @@ public partial class BlazorComponentActionsUserControl
         {
             throw new ValidationException("No property selected.");
         }
-        var index = this.ViewModel!.UiActions.IndexOf(this.SelectedAction);
+        var index = this.ViewModel!.Actions.IndexOf(this.SelectedAction);
         if (index is -1)
         {
             throw new ValidationException("Property not found.");
@@ -116,10 +116,10 @@ public partial class BlazorComponentActionsUserControl
         {
             return;
         }
-        this.ViewModel!.UiActions.RemoveAt(index);
-        this.SelectedActionGrid.DataContext = this.ViewModel!.UiActions.Count > index
-            ? this.ViewModel!.UiActions[index]
-            : this.ViewModel!.UiActions.LastOrDefault();
+        this.ViewModel!.Actions.RemoveAt(index);
+        this.SelectedActionGrid.DataContext = this.ViewModel!.Actions.Count > index
+            ? this.ViewModel!.Actions[index]
+            : this.ViewModel!.Actions.LastOrDefault();
         this.SelectedActionGrid.RebindDataContext();
     }
 
@@ -136,7 +136,7 @@ public partial class BlazorComponentActionsUserControl
 
     private async void NewActionButton_Click(object sender, RoutedEventArgs e)
     {
-        this.ViewModel!.UiActions.Add(this.Service.CreateUnboundAction());
+        this.ViewModel!.Actions.Add(this.Service.CreateUnboundAction());
         await this.BindDataAsync();
     }
 

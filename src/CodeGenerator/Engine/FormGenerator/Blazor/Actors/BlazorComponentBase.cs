@@ -25,7 +25,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     protected BlazorComponentBase(in string name) => this.Name = name;
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
-    public Dictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
+    public IDictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
     public TypePath? DataContextType { get; set; }
     public IList<FieldActor> Fields { get; } = new List<FieldActor>();
@@ -40,10 +40,11 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public IList<string> PartialCodeUsingNameSpaces { get; } = new List<string>();
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
+    Dictionary<string, string?> IHtmlElement.Attributes { get; }
 
     public Codes GenerateCodes(CodeCategory category, GenerateCodesParameters? arguments = null)
     {
-        var args = arguments ?? new GenerateCodesParameters(true, true, true);
+        var args = arguments ?? GenerateCodesParameters.FullCode();
         _ = validate(args);
         var codes = new List<Code>();
         if (args.GenerateUiCode)
@@ -107,7 +108,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     }
 
     public Code GenerateUiCode(GenerateCodesParameters? args = null) =>
-        this.GenerateUiCode(CodeCategory.Component, args == null ? null : new(args.GenerateMainCode, args.GeneratePartialCode, args.GenerateUiCode));
+        this.GenerateUiCode(CodeCategory.Component, args);
 
     protected virtual string? GetBaseTypes() =>
         null;
@@ -178,7 +179,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
     private GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
     {
-        var args = arguments ?? new();
+        var args = arguments ?? GenerateCodesParameters.FullCode();
         this.OnInitializingBehindCode(args);
 
         var mainUnit = new CodeCompileUnit();
@@ -188,8 +189,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         var (partNameSpace, partClassType) = createPartClassType(partUnit);
 
         var initializedAsyncMethodBody = new StringBuilder();
-        //initializeDataContext(initializedAsyncMethodBody);
 
+        //initializeDataContext(initializedAsyncMethodBody);
         if (initializedAsyncMethodBody.Length > 0)
         {
             addPageInitializedMethod(mainClassType, partClassType, initializedAsyncMethodBody);

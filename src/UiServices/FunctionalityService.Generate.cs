@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
 
 using Contracts.Services;
@@ -8,6 +9,7 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration.Models;
+using Library.Helpers;
 using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
@@ -160,30 +162,6 @@ internal sealed partial class FunctionalityService
                 codes.BlazorListPageDataContextCodes = codeGenRes;
             }
 
-            // Generate codes for BlazorDetailsPageViewModel if available.
-            if (viewModel.BlazorDetailsPageViewModel != null)
-            {
-                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel, new(true, true, true)));
-                if (!codeGenRes)
-                {
-                    return result;
-                }
-
-                codes.BlazorListPageCodes = codeGenRes;
-            }
-
-            // Generate codes for BlazorDetailsPageDataContext if available.
-            if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
-            {
-                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
-                if (!codeGenRes)
-                {
-                    return result;
-                }
-
-                codes.BlazorListPageDataContextCodes = codeGenRes;
-            }
-
             // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
@@ -213,6 +191,7 @@ internal sealed partial class FunctionalityService
             return result;
 
             // Internal method to add a code result to the result list.
+            [DebuggerStepThrough]
             Result<Codes> addToList(Result<Codes> codeResult)
             {
                 result.Add(codeResult);
@@ -418,8 +397,8 @@ internal sealed partial class FunctionalityService
                     Offset = 1
                 }
             };
-            data.ViewModel.BlazorDetailsComponentViewModel.UiActions.Add(saveButton);
-            data.ViewModel.BlazorDetailsComponentViewModel.UiActions.Add(cancelButton);
+            data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
+            data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
         }
     }
 
@@ -489,12 +468,11 @@ internal sealed partial class FunctionalityService
                 Placement = Placement.RowButton,
                 Description = $"Deletes selected {name}"
             };
-            var onLoad = new UiComponentLoadViewModel
+            var onLoad = new UiComponentCqrsLoadViewModel
             {
-                CqrsSegregate = data.ViewModel.GetAllQueryViewModel,
+                CqrsSegregate = data.ViewModel.GetAllQueryViewModel
             };
-            data.ViewModel.BlazorListComponentViewModel.UiActions.AddRange(new UiComponentContentViewModelBase[] { newButton, editButton, deleteButton })
-                .Add(onLoad);
+            data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
         }
     }
 

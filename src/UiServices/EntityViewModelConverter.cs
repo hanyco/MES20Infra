@@ -85,7 +85,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.PageDataContextPropertyId = model.PageDataContextProperty?.Id)
             .ForMember(x => x.IsGrid = model.IsGrid)
             .Fluent()
-            .IfTrue(model.UiProperties.Any() is true, x => x.UiComponentProperties = model.UiProperties.Select(this.ToDbEntity).Compact().ToList());
+            .IfTrue(model.Properties.Any() is true, x => x.UiComponentProperties = model.Properties.Select(this.ToDbEntity).Compact().ToList());
 
     // TODO: Think about how to load component complexity from database
     //?.IfTrue(model.UiActions.Any() is true, x => x.UiComponentActions = model.UiActions.Select(this.ToDbEntity).ToList()!);
@@ -225,8 +225,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public UiComponentViewModel? ToViewModel(UiComponent? entity) =>
         entity is null ? null : this._mapper.Map<UiComponentViewModel>(entity)
             .ForMember(x => x.IsGrid = entity.IsGrid ?? false)
-            .ForMember(x => x.UiProperties!.AddRange(entity.UiComponentProperties.Select(this.ToViewModel)))
-            .ForMember(x => x.UiActions!.AddRange(entity.UiComponentActions.Select(this.ToViewModel).Compact()))
+            .ForMember(x => x.Properties!.AddRange(entity.UiComponentProperties.Select(this.ToViewModel)))
+            .ForMember(x => x.Actions!.AddRange(entity.UiComponentActions.Select(this.ToViewModel).Compact()))
             .ForMember(x => x.PageDataContext = this.ToViewModel(entity.PageDataContext))
             .ForMember(x => x.PageDataContextProperty = this.ToViewModel(entity.PageDataContextProperty));
 
