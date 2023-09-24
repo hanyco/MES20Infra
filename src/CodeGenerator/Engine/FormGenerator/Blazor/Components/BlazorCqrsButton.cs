@@ -1,5 +1,4 @@
-﻿using HanyCo.Infra.CodeGeneration.Definitions;
-using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
+﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.CodeGeneration.Helpers;
@@ -150,10 +149,10 @@ public sealed class BlazorCqrsButton(
                     , CommandButton_CallCommandMethodBody(dataContextValidatorName, cqrsParamsType, cqrsResultType, calleeName)
                     , returnType: "async void");
                 var commandCalling = CodeDomHelper.NewMethod(
-                    CommandButton_CallingCommandMethodName(calleeName, cqrsParamsType)
+                    OnCallingCqrsMethodName(calleeName, cqrsParamsType)
                     , accessModifiers: DEFAULT_ACCESS_MODIFIER);
                 var commandCalled = CodeDomHelper.NewMethod(
-                    CommandButton_CalledCommandMethodName(calleeName, cqrsParamsType, cqrsResultType)
+                    OnCalledCqrsMethodName(calleeName, cqrsParamsType, cqrsResultType)
                     , accessModifiers: DEFAULT_ACCESS_MODIFIER);
                 yield return new(commandCalling, null);
                 yield return new(null, commandBody);
@@ -194,7 +193,7 @@ public sealed class BlazorCustomButton(
         yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
     }
 
-    public BlazorCustomButton SetAction(string name, FormattableString? codeStatement) =>
+    public BlazorCustomButton SetAction(string name, string? codeStatement) =>
         this.Fluent(() => this.Action = new CustomAction(name, codeStatement));
 }
 

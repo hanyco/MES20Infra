@@ -136,7 +136,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         StringBuilder generateGridCode(StringBuilder sb)
         {
-            var buttonsCode = this.Actions.Where(x => !x.showOnGrid)
+            var buttonsCode = this.Actions.OfType<ButtonActor>().Where(x => !x.ShowOnGrid)
                 .Select(methodActor =>
                 {
                     IUiCodeGenerator result = methodActor.Body.IsNullOrEmpty()
@@ -153,7 +153,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 DataContextName = "this.DataContext"
             };
             _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
-            _ = table.Actions.AddRange(this.Actions.Where(x => x.showOnGrid)
+            _ = table.Actions.AddRange(this.Actions.OfType<ButtonActor>().Where(x => x.ShowOnGrid)
                 .Select(x => new BlazorTableRowAction(x.Name!, x.Caption!) { OnClick = x.EventHandlerName }));
             var tableCode = table.GenerateUiCode().Statement;
 
@@ -276,7 +276,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addMethodsToPartClass(in CodeTypeDeclaration partClassType)
         {
-            foreach (var method in this.Actions.Where(m => m.IsPartial || !m.Body.IsNullOrEmpty()))
+            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial || !m.Body.IsNullOrEmpty()))
             {
                 var body = method.Body?.Split(Environment.NewLine).Merge(INDENT.Repeat(3), false);
                 _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
@@ -285,11 +285,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
         {
-            foreach (var method in this.Actions.Where(m => !m.IsPartial && m.Body.IsNullOrEmpty()))
+            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => !m.IsPartial && m.Body.IsNullOrEmpty()))
             {
                 _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
-            _ = mainClassType.AddMethod("OnInitializedAsync", accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
+            var onInitializedAsyncBody = this.Actions.Any(m => m.Name == "OnLoad") ? CallOnLoadMethodBody() : null;
+            _ = mainClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
         }
 
         void addChildren(in GenerateCodesParameters arguments, in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType)

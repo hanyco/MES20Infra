@@ -1,8 +1,4 @@
-﻿using System.CodeDom;
-
-using HanyCo.Infra.Internals.Data.DataSources;
-
-using Library.CodeGeneration.Models;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
 namespace Contracts.ViewModels;
 
@@ -21,6 +17,11 @@ public interface IUiComponentContent
 public interface IUiComponentCqrsContent : IUiComponentContent
 {
     CqrsViewModelBase? CqrsSegregate { get; set; }
+}
+
+public interface IUiComponentCustomContent : IUiComponentContent
+{
+    string? CodeStatement { get; set; }
 }
 
 public abstract class UiComponentButtonViewModelBase : UiComponentContentViewModelBase
@@ -65,11 +66,23 @@ public sealed class UiComponentCqrsLoadViewModel : InfraViewModelBase, IUiCompon
     public CqrsViewModelBase? CqrsSegregate { get => this._cqrsSegregate; set => this.SetProperty(ref this._cqrsSegregate, value); }
 }
 
-public sealed class UiComponentCustomButtonViewModel : UiComponentButtonViewModelBase, FrontElement
+public sealed class UiComponentCustomButtonViewModel : UiComponentButtonViewModelBase, IUiComponentCustomContent, FrontElement
 {
-    private FormattableString? _codeStatement;
+    private string? _codeStatement;
 
-    public FormattableString? CodeStatement { get => this._codeStatement; set => this.SetProperty(ref this._codeStatement, value); }
+    public string? CodeStatement { get => this._codeStatement; set => this.SetProperty(ref this._codeStatement, value); }
+}
+
+public sealed class UiComponentCustomLoadViewModel : InfraViewModelBase, IUiComponentCustomContent, BackElement
+{
+    private string? _codeStatement;
+
+    public UiComponentCustomLoadViewModel()
+        : base(null, name: "OnCustomLoad")
+    {
+    }
+
+    public string? CodeStatement { get => this._codeStatement; set => this.SetProperty(ref this._codeStatement, value); }
 }
 
 public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, FrontElement

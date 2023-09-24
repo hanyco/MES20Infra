@@ -17,10 +17,13 @@ using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
 
+using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
+
 using ButtonViewModelBase = Contracts.ViewModels.UiComponentButtonViewModelBase;
 using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
+using CqrsLoadViewModel = Contracts.ViewModels.UiComponentCqrsLoadViewModel;
 using CstmButtonViewModel = Contracts.ViewModels.UiComponentCustomButtonViewModel;
-using LoadViewModel = Contracts.ViewModels.UiComponentCqrsLoadViewModel;
+using CstmLoadViewModel = Contracts.ViewModels.UiComponentCustomLoadViewModel;
 using PropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
 using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 
@@ -61,7 +64,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
         {
             var component = createComponent(model);
             _ = processBackendActions(model, component);
-            _ = model.IsGrid ? createGrid(model, component) : createForm(model, component);
+            _ = processFrontActions(model, component);
             var codes = component.GenerateCodes(CodeCategory.Component, arguments);
             return Result<Codes>.CreateSuccess(codes);
         }
@@ -106,7 +109,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
         {
             foreach (var prop in model.Properties)
             {
-                var bindPropName = CodeConstants.InstanceDataContextProperty(prop.Name);
+                var bindPropName = InstanceDataContextProperty(prop.Name);
                 var position = prop.Position.ToBootstrapPosition();
 
                 if (position.IsDefault())
@@ -212,7 +215,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
 
             static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel customButtonViewModel)
             {
-                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.Caption, onClick: customButtonViewModel.EventHandlerName)
+                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.CodeStatement, onClick: customButtonViewModel.EventHandlerName)
                 {
                     Position = customButtonViewModel.Position.ToBootstrapPosition()
                 };
@@ -234,13 +237,13 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                 {
                     case ButtonViewModelBase button:
                         var args = model.IsGrid && button.Placement == Placement.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
-                        result.Actions.Add(new(
+                        result.Actions.Add(new ButtonActor(
                             button.Name,
                             button.Placement == Placement.RowButton,
                             button.Caption,
-                            Arguments: args,
-                            EventHandlerName: button.EventHandlerName,
-                            Body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement?.ToString()));
+                            arguments: args,
+                            eventHandlerName: button.EventHandlerName,
+                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement));
                         break;
                 }
             }
@@ -253,17 +256,31 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
             {
                 switch (action)
                 {
-                    case LoadViewModel load:
-                        result.Actions.Add(new(
-                            load.Name,
-                            true,
-                            EventHandlerName: "OnLoad",
-                            Body: CodeConstants.CallGetAllAndSetDataContextMethodBody(load.CqrsSegregate.DbObject.Name)));
+                    case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject.Name != null:
+                        var entityName = load.CqrsSegregate.DbObject.Name;
+                        result.Actions.Add(new(OnCallingCqrsMethodName($"GetAll{entityName}", $"GetAllQueryParams<{entityName}>"), false));
+                        result.Actions.Add(new("OnLoad", true, CallGetAllAndSetDataContextMethodBody(entityName)));
+                        result.Actions.Add(new(OnCalledCqrsMethodName($"GetAll{entityName}", $"GetAllQueryParams<{entityName}>", $"GetAllQueryParams<{entityName}Result>"), false));
                         break;
+
+                    case CqrsLoadViewModel load:
+                        throw new InvalidOperationValidationException("`OnCqrsLoad` method has not required fields.");
+
+                    case CstmLoadViewModel load when load.CodeStatement != null:
+                        result.Actions.Add(new("OnLoad", true, load.CodeStatement));
+                        break;
+
+                    case CstmLoadViewModel load:
+                        throw new InvalidOperationValidationException("`OnCustomLoad` method has not required fields.");
                 }
             }
             return result;
         }
+
+        static BlazorComponent processFrontActions(UiViewModel model, BlazorComponent component) =>
+            model.IsGrid ? createGrid(model, component) : createForm(model, component);
+
+
     }
 
     public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments)

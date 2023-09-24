@@ -11,19 +11,19 @@ public static class CodeConstants
 
     public static string CallGetAllAndSetDataContextMethodBody(string entityType) =>
         new StringBuilder()
-            .AppendLine($@"{INDENT.Repeat(3)}// Create an instance of the GetAllQuery")
-            .AppendLine($@"{INDENT.Repeat(3)}var cqParams = new GetAllQuery<{entityType}>();")
-            .AppendLine($@"{INDENT.Repeat(3)}")
-            .AppendLine($@"{INDENT.Repeat(3)}// Let the developer to know what's going on.")
-            .AppendLine($@"{INDENT.Repeat(3)}cqParams = OnCallingGetAllQuery<{entityType}>(cqParams);")
-            .AppendLine($@"{INDENT.Repeat(3)}")
-            .AppendLine($@"{INDENT.Repeat(3)}// Invoke the query handler to retrieve all entities")
-            .AppendLine($@"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqParams);")
-            .AppendLine($@"{INDENT.Repeat(3)}")
-            .AppendLine($@"{INDENT.Repeat(3)}// Let's inform the developer about the result.")
-            .AppendLine($@"{INDENT.Repeat(3)}cqResult = OnCalledGetAllQuery<{entityType}>(cqParams, cqResult);")
-            .AppendLine($@"{INDENT.Repeat(3)}")
-            .AppendLine($@"{INDENT.Repeat(3)}this.DataContext = cqResult;")
+            .AppendLine($"{INDENT.Repeat(3)}// Create an instance of the GetAllQuery")
+            .AppendLine($"{INDENT.Repeat(3)}var cqParams = new GetAllQueryParams<{entityType}>();")
+            .AppendLine($"{INDENT.Repeat(3)}")
+            .AppendLine($"{INDENT.Repeat(3)}// Let the developer to know what's going on.")
+            .AppendLine($"{INDENT.Repeat(3)}cqParams = OnCallingGetAllQuery<{entityType}>(cqParams);")
+            .AppendLine($"{INDENT.Repeat(3)}")
+            .AppendLine($"{INDENT.Repeat(3)}// Invoke the query handler to retrieve all entities")
+            .AppendLine($"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqParams);")
+            .AppendLine($"{INDENT.Repeat(3)}")
+            .AppendLine($"{INDENT.Repeat(3)}// Let's inform the developer about the result.")
+            .AppendLine($"{INDENT.Repeat(3)}cqResult = OnCalledGetAllQuery<{entityType}>(cqParams, cqResult);")
+            .AppendLine($"{INDENT.Repeat(3)}")
+            .AppendLine($"{INDENT.Repeat(3)}this.DataContext = cqResult;")
             .ToString();
 
     public static string CommandButton_CallCommandMethodBody(string dataContextValidatorName, string cqrsParamsType, string cqrsResultType, string segregation) =>
@@ -36,10 +36,10 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqParams, cqResult);")
             .ToString();
 
-    public static string CommandButton_CalledCommandMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
+    public static string OnCalledCqrsMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
             $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";
 
-    public static string CommandButton_CallingCommandMethodName(string segregation, string? cqrsParameterType) =>
+    public static string OnCallingCqrsMethodName(string segregation, string? cqrsParameterType = null) =>
             $"On{segregation}Calling({cqrsParameterType ?? "System.Object"} parameter)";
 
     public static string ConverterToModelClassSource(string dtoName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
@@ -71,11 +71,14 @@ public static class CodeConstants
 
     public static string QueryButton_CallQueryMethodBody(string dataContextValidatorName, string cqrsParamsType, string segregation) =>
         new StringBuilder()
-            .AppendLine($@"{INDENT.Repeat(3)}this.{dataContextValidatorName}()")
-            .AppendLine($@"{INDENT.Repeat(3)}var dto = this.DataContext;")
-            .AppendLine($@"{INDENT.Repeat(3)}var cqrs = new {cqrsParamsType}(dto);")
-            .AppendLine($@"{INDENT.Repeat(3)}On{segregation}Calling(cqrs);")
-            .AppendLine($@"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);")
-            .AppendLine($@"{INDENT.Repeat(3)}On{segregation}Called(cqrs, cqResult);")
+            .AppendLine($"{INDENT.Repeat(3)}this.{dataContextValidatorName}()")
+            .AppendLine($"{INDENT.Repeat(3)}var dto = this.DataContext;")
+            .AppendLine($"{INDENT.Repeat(3)}var cqrs = new {cqrsParamsType}(dto);")
+            .AppendLine($"{INDENT.Repeat(3)}On{segregation}Calling(cqrs);")
+            .AppendLine($"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);")
+            .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqrs, cqResult);")
             .ToString();
+
+    public static string CallOnLoadMethodBody() => 
+        $"{INDENT.Repeat(3)}this.OnLoad()";
 }

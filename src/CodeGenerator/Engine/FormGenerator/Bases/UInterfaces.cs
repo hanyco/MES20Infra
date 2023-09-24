@@ -16,6 +16,17 @@ public interface IBlazorComponent : IHtmlElement
     string? NameSpace { get; }
 }
 
+public interface ICustomAction
+{
+    string? CodeStatement { get; }
+    string Name { get; }
+}
+
+public interface IHasCustomAction : IActionCodesGenerate
+{
+    ICustomAction? Action { get; }
+}
+
 public interface IHasInnerText
 {
     string? InnerText { get; set; }
@@ -30,16 +41,7 @@ public interface IHasSegregationAction : IActionCodesGenerate
 {
     ISegregationAction? Action { get; }
 }
-public interface IHasCustomAction : IActionCodesGenerate
-{
-    ICustomAction? Action { get; }
-}
-public interface ICustomAction
-{
-    string Name { get; }
 
-    FormattableString? CodeStatement { get; }
-}
 public interface ISegregationAction
 {
     string Name { get; }
