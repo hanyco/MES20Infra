@@ -1,7 +1,4 @@
 ﻿using System.CodeDom;
-using System.Runtime.CompilerServices;
-
-using Library.CodeGeneration.Models;
 
 namespace HanyCo.Infra.CodeGeneration.Definitions;
 
@@ -11,23 +8,6 @@ public static class CodeConstants
 {
     public const MemberAttributes DEFAULT_ACCESS_MODIFIER = MemberAttributes.Private | MemberAttributes.Final;
     public const string INDENT = "    ";
-
-    public static string CallGetAllAndSetDataContextMethodBody(string entityType) =>
-        new StringBuilder()
-            .AppendLine($"{INDENT.Repeat(3)}// Create an instance of the GetAllQuery")
-            .AppendLine($"{INDENT.Repeat(3)}var cqParams = new GetAllQueryParams<{entityType}>();")
-            .AppendLine($"{INDENT.Repeat(3)}")
-            .AppendLine($"{INDENT.Repeat(3)}// Let the developer to know what's going on.")
-            .AppendLine($"{INDENT.Repeat(3)}cqParams = OnCallingGetAllQuery<{entityType}>(cqParams);")
-            .AppendLine($"{INDENT.Repeat(3)}")
-            .AppendLine($"{INDENT.Repeat(3)}// Invoke the query handler to retrieve all entities")
-            .AppendLine($"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqParams);")
-            .AppendLine($"{INDENT.Repeat(3)}")
-            .AppendLine($"{INDENT.Repeat(3)}// Let's inform the developer about the result.")
-            .AppendLine($"{INDENT.Repeat(3)}cqResult = OnCalledGetAllQuery<{entityType}>(cqParams, cqResult);")
-            .AppendLine($"{INDENT.Repeat(3)}")
-            .AppendLine($"{INDENT.Repeat(3)}this.DataContext = cqResult;")
-            .ToString();
 
     public static string CommandButton_CallCommandMethodBody(string dataContextValidatorName, string cqrsParamsType, string cqrsResultType, string segregation) =>
         new StringBuilder()
@@ -39,16 +19,24 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqParams, cqResult);")
             .ToString();
 
-    public static string Component_OnInitializedAsync_MethodBody(string? onInitializedAsyncAdditionalBody) => 
-        onInitializedAsyncAdditionalBody.SplitMerge(mergeSeparator: INDENT.Repeat(3), addSeparatorToEnd: false)
+    public static string Component_OnInitializedAsync_MethodBody(string? onInitializedAsyncAdditionalBody)
+    {
+        var result = onInitializedAsyncAdditionalBody
+            .Remove(INDENT.Repeat(3))
+            .SplitMerge(mergeSeparator: $"{Environment.NewLine}{INDENT.Repeat(3)}")
             .Add(Environment.NewLine)
-            .Add($"{INDENT.Repeat(3)}this.OnLoad();");
+            .Add($"{INDENT.Repeat(3)}// Call developer's method.")
+            .Add(Environment.NewLine)
+            .Add($"{INDENT.Repeat(3)}await this.OnLoadAsync();")
+            .AddStart(INDENT.Repeat(3));
+        return result;
+    }
 
-    public static string ConverterToModelClassSource(string dtoName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
+    public static string ConverterToModelClassSource(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
         new StringBuilder()
             .AppendLine($"{INDENT.Repeat(0)}public partial class ModelConverter")
             .AppendLine($"{INDENT.Repeat(0)}{{")
-            .AppendLine($"{INDENT.Repeat(1)}public static {dstClassName} To{dstClassName}(this {dtoName} {argName})")
+            .AppendLine($"{INDENT.Repeat(1)}public static {dstClassName} To{dstClassName}(this {srcClassName} {argName})")
             .AppendLine($"{INDENT.Repeat(1)}{{")
             .AppendLine($"{INDENT.Repeat(2)}var result = new {dstClassName}")
             .AppendLine($"{INDENT.Repeat(2)}{{")
@@ -59,11 +47,43 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(0)}}}")
             .ToString();
 
+    public static string DefaultTaskMethodBody() =>
+        $"{INDENT.Repeat(3)}return Task.CompletedTask;";
+
+    public static string GetAll_CallMethodBody(string entityName) =>
+        new StringBuilder()
+            .AppendLine($"// Setup segregation parameters")
+            .AppendLine($"var paramsParams = new Dtos.GetAll{entityName}Params();")
+            .AppendLine($"var cqParams = new Queries.GetAll{entityName}QueryParameter(paramsParams);")
+            .AppendLine($"")
+            .AppendLine($"// Let the developer know what's going on.")
+            .AppendLine($"cqParams = OnCallingGetAll{entityName}Query(cqParams);")
+            .AppendLine($"")
+            .AppendLine($"// Invoke the query handler to retrieve all entities")
+            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync(cqParams);")
+            .AppendLine($"")
+            .AppendLine($"// Let's inform the developer about the result.")
+            .AppendLine($"cqResult = OnCalledGetAll{entityName}Query(cqParams, cqResult);")
+            .AppendLine($"")
+            .AppendLine($"// Now, set the data context.")
+        //TODO: `ToDo()` method must be written.
+            .AppendLine($"this.DataContext = cqResult.Result.ToDto();")
+            .ToString();
+
+    public static string GetAll_OnCalledMethodName(string entityName) =>
+        $"OnCalledGetAll{entityName}Query(Queries.GetAll{entityName}QueryParameter cqParams, Queries.GetAll{entityName}QueryResult cqResult)";
+
+    public static string GetAll_OnCallingMethodName(string entityName) =>
+            $"OnCallingGetAll{entityName}Query(Queries.GetAll{entityName}QueryParameter cqParams)";
+
     public static string InitializedAsyncMethodBody() =>
         $"{INDENT}await this.OnPageInitializedAsync();";
 
     public static string InstanceDataContextProperty(string? name) =>
         $"this.DataContext.{name}";
+
+    public static string Keyword_AddToOnInitializedAsync() =>
+        "OnLoad";
 
     public static string OnCalledCqrsMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
         $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";

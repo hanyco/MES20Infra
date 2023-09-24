@@ -22,7 +22,7 @@ public record FieldActor()
 
 public class MethodActor(
     string? name,
-    bool isPartial = false,
+    bool? isPartial = null,
     string? body = null,
     string? returnType = null,
     MemberAttributes? accessModifier = null,
@@ -31,7 +31,7 @@ public class MethodActor(
     public MemberAttributes? AccessModifier { get; } = accessModifier;
     public MethodArgument[]? Arguments { get; } = arguments;
     public string? Body { get; } = body;
-    public bool IsPartial { get; } = isPartial;
+    public bool? IsPartial { get; } = isPartial;
     public string? Name { get; } = name;
     public string? ReturnType { get; } = returnType;
 }

@@ -15,35 +15,32 @@ namespace Test.HumanResources
     using Library.DesignPatterns.Behavioral.Observation;
     using Microsoft.Extensions.Caching.Memory;
     using Library.Interfaces;
-    using Test.HumanResources.Dtos;
-
+    
+    
     public sealed partial class PersonDetailsComponent
     {
         
+        protected override async Task OnInitializedAsync()
+        {
+            
+            // Call developer's method.
+            await this.OnLoadAsync();
+        }
+        
         public async void SaveButton_OnClick()
         {
-            //this.ValidateForm();
-            //var dto = this.DataContext;
-            //var cqParams = new Test.HumanResources.Dtos.InsertPersonParams(dto);
-            //OnInsertPersonCommandCalling(cqParams);
-
-            //var cqResult = await this._commandProcessor.ExecuteAsync<Test.HumanResources.Dtos.InsertPersonParams,Test.HumanResources.Dtos.InsertPersonResult>(cqParams);
-
-            //OnInsertPersonCommandCalled(cqParams, cqResult);
-
             this.ValidateForm();
-            var viewModel = this.DataContext;
-            var @params = new Test.HumanResources.Dtos.InsertPersonParams();
-            //var @params = viewModel.ToInsertPersonParams();
-            var cqParameters = new Test.HumanResources.Commands.InsertPersonCommandParameter(@params);
-            //OnInsertPersonCommandCalling(cqParameters);
-            var cqResult = await this._commandProcessor.ExecuteAsync<Test.HumanResources.Commands.InsertPersonCommandParameter, Test.HumanResources.Commands.InsertPersonCommandResult>(cqParameters);
-            //OnInsertPersonCommandCalled(cqParameters, cqResult);
+            var dto = this.DataContext;
+            var cqParams = new Test.HumanResources.Dtos.InsertPersonParams(dto);
+            OnInsertPersonCommandCalling(cqParams);
+            var cqResult = await this._commandProcessor.ExecuteAsync<Test.HumanResources.Dtos.InsertPersonParams,Test.HumanResources.Dtos.InsertPersonResult>(cqParams);
+            OnInsertPersonCommandCalled(cqParams, cqResult);
+
         }
         
         public void BackButton_OnClick()
         {
-            this._navigationManager.NavigateTo("/HumanResources/PersonList");
+            this._navigationManager.NavigateTo("/HumanResources/Person");
         }
         
         public PersonDetailsComponent()

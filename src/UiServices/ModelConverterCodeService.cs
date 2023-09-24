@@ -6,34 +6,25 @@ using HanyCo.Infra.CodeGeneration.Definitions;
 using Library.CodeGeneration.Models;
 using Library.Interfaces;
 using Library.Results;
+using Library.Validations;
 
 namespace Services;
 
 internal sealed class ModelConverterCodeService : IBusinessService, IModelConverterCodeService
 {
-    public Result<Codes> GenerateCode(DtoViewModel src, string dstClassName, string methodName)
+    public Result<Codes> GenerateCode(DtoViewModel src, string srcClassName, string dstClassName, string methodName)
     {
-        var codeStatement = CodeConstants.ConverterToModelClassSource(src.Name, dstClassName, "viewModel", src.Properties.Select(x => x.Name));
+        if (!src.Check().ArgumentNotNull().NotNull(x => x.Name).TryParse(out var vr))
+        {
+            return vr.WithValue(Codes.Empty);
+        }
 
-        var codes = Code.New(methodName, Languages.CSharp, codeStatement, true, $"ModelConverter.{methodName}.cs")
+        var codeStatement = CodeConstants.ConverterToModelClassSource(srcClassName, dstClassName, "o", src.Properties.Select(x => x.Name));
+
+        var result = Code.New(methodName, Languages.CSharp, codeStatement, true, $"ModelConverter.{src.Name}.{methodName}.cs")
             .With(x => x.props().Category = CodeCategory.Converter)
             .ToCodes();
-        return Result<Codes>.CreateSuccess(codes);
+
+        return Result<Codes>.CreateSuccess(result);
     }
 }
-
-//public static partial class ModelConverter
-//{
-//    public static B ToInsertPersonParams(this A viewModel)
-//    {
-//        var result = new B
-//        {
-//            Name = viewModel.Name,
-//            Age = viewModel.Age
-//        };
-//        return result;
-//    }
-//}
-
-//public record A(string Name, int Age);
-//public record B(string Name, int Age);

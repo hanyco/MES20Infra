@@ -3,8 +3,6 @@
 @using Library.Cqrs.Models.Queries
 @using Library.Cqrs.Models.Commands
 @using Microsoft.Extensions.Caching.Memory
-@using HanyCo.Infra.Security.Model
-@using HanyCo.Infra.Security.Model
 @using Microsoft.AspNetCore.Components
 @using HanyCo.Infra.Blazor
 @using Test.HumanResources
@@ -40,5 +38,5 @@
 </div>
 <div class='row'>
     <button name='SaveButton' class='col-2 offset-2 btn btn-success' @onclick='SaveButton_OnClick'>Save</button>
-    <button name='BackButton' class='col-2 offset-1 btn btn-success' onClick='BackButton_OnClick'>Back</button>
+    <button name='BackButton' class='col-2 offset-1 btn btn-success' @onclick='BackButton_OnClick'>this._navigationManager.NavigateTo("/HumanResources/Person");</button>
 </div>

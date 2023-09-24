@@ -28,6 +28,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
     public IDictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
+    Dictionary<string, string?> IHtmlElement.Attributes { get; }
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
     public TypePath? DataContextType { get; set; }
     public IList<FieldActor> Fields { get; } = new List<FieldActor>();
@@ -42,7 +43,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public IList<string> PartialCodeUsingNameSpaces { get; } = new List<string>();
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
-    Dictionary<string, string?> IHtmlElement.Attributes { get; }
 
     public Codes GenerateCodes(CodeCategory category, GenerateCodesParameters? arguments = null)
     {
@@ -276,21 +276,22 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addMethodsToPartClass(in CodeTypeDeclaration partClassType)
         {
-            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial || !m.Body.IsNullOrEmpty()))
+            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
             {
                 var body = method.Body.SplitMerge(mergeSeparator: INDENT.Repeat(3), addSeparatorToEnd: false);
-                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
+                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial == true, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
-            var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == "OnLoad")?.Body);
+            var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync())?.Body);
             _ = partClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
         }
 
         void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
         {
-            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => !m.IsPartial && m.Body.IsNullOrEmpty()))
+            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
             {
-                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
+                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
+            _ = mainClassType.AddMethod("OnLoadAsync", body: DefaultTaskMethodBody(), accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "Task");
         }
 
         void addChildren(in GenerateCodesParameters arguments, in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType)

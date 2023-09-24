@@ -3,8 +3,6 @@
 @using Library.Cqrs.Models.Queries
 @using Library.Cqrs.Models.Commands
 @using Microsoft.Extensions.Caching.Memory
-@using HanyCo.Infra.Security.Model
-@using HanyCo.Infra.Security.Model
 @using Microsoft.AspNetCore.Components
 @using HanyCo.Infra.Blazor
 @using Test.HumanResources
@@ -18,7 +16,7 @@
 
 
 <div class="row">
-<button name='NewButton' class='col-1 btn btn-success' onClick='NewButton_OnClick'>New</button>
+<button name='NewButton' class='col-1 btn btn-success' @onclick='NewButton_OnClick'>New</button>
 
 </div>
 <div class="row">

@@ -9,13 +9,15 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration.Models;
-using Library.Helpers;
 using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
+using Library.Wpf.Bases;
 
 using Services.Helpers;
+
+using Windows.Data.Xml.Dom;
 
 namespace Services;
 
@@ -182,10 +184,10 @@ internal sealed partial class FunctionalityService
                 {
                     return result;
                 }
+                
                 codes.BlazorDetailsComponentCodes = codeGenRes;
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "InsertPersonParams", "ToInsertPersonParams"));
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "UpdatePersonParams", "ToUpdatePersonParams"));
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, "DeletePersonParams", "ToDeletePersonParams"));
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", "ToDto"));
+                //IEnumerable<TDbEntity?> ToDbEntity(IEnumerable<TViewModel?> models) => models.Select(ToDbEntity);
             }
 
             return result;
@@ -450,7 +452,7 @@ internal sealed partial class FunctionalityService
             };
             var editButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $"this._navigationManager.NavigateTo(\"{data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()}/\" + id.ToString());",
+                CodeStatement = $"this._navigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()} + \"/\" + id.ToString());",
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
@@ -472,7 +474,7 @@ internal sealed partial class FunctionalityService
             {
                 CqrsSegregate = data.ViewModel.GetAllQueryViewModel
             };
-            data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
+            _ = data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
         }
     }
 

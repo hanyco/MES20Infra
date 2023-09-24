@@ -257,17 +257,17 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                 switch (action)
                 {
                     case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject.Name != null:
-                        var entityName = load.CqrsSegregate.DbObject.Name;
-                        result.Actions.Add(new(OnCallingCqrsMethodName($"GetAll{entityName}", $"GetAllQueryParams<{entityName}>"), false));
-                        result.Actions.Add(new("OnLoad", true, CallGetAllAndSetDataContextMethodBody(entityName)));
-                        result.Actions.Add(new(OnCalledCqrsMethodName($"GetAll{entityName}", $"GetAllQueryParams<{entityName}>", $"GetAllQueryParams<{entityName}Result>"), false));
+                        var entityName = StringHelper.Pluralize(load.CqrsSegregate.DbObject.Name);
+                        result.Actions.Add(new(GetAll_OnCallingMethodName(entityName), false));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), body: GetAll_CallMethodBody(entityName)));
+                        result.Actions.Add(new(GetAll_OnCalledMethodName(entityName), false));
                         break;
 
                     case CqrsLoadViewModel load:
                         throw new InvalidOperationValidationException("`OnCqrsLoad` method has not required fields.");
 
                     case CstmLoadViewModel load when load.CodeStatement != null:
-                        result.Actions.Add(new("OnLoad", true, load.CodeStatement));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), true, load.CodeStatement));
                         break;
 
                     case CstmLoadViewModel load:
@@ -279,8 +279,6 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
 
         static BlazorComponent processFrontActions(UiViewModel model, BlazorComponent component) =>
             model.IsGrid ? createGrid(model, component) : createForm(model, component);
-
-
     }
 
     public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments)

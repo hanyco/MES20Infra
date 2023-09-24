@@ -15,53 +15,75 @@ namespace Test.HumanResources
     using Library.DesignPatterns.Behavioral.Observation;
     using Microsoft.Extensions.Caching.Memory;
     using Library.Interfaces;
-    
-    
+
+
     public sealed partial class PeopleListComponent
     {
-        
-        public void NewButton_OnClick()
-        {
-            this._navigationManager.NavigateTo("/HumanResources/PersonDetails");
-        }
-        
-        public void Edit(long id)
-        {
-            this._navigationManager.NavigateTo("/HumanResources/PersonDetails/" + id.ToString());
-        }
-        
-    public System.Int64 Id
-    {
-        get;
-        set;
-    }
-        
-    public System.String FirstName
-    {
-        get;
-        set;
-    }
-        
-    public System.String LastName
-    {
-        get;
-        set;
-    }
-        
-    public System.DateTime DateOfBirth
-    {
-        get;
-        set;
-    }
-        
-    public System.Int32 Height
-    {
-        get;
-        set;
-    }
-        
+
         public PeopleListComponent()
         {
+        }
+
+        public System.DateTime DateOfBirth
+        {
+            get;
+            set;
+        }
+
+        public System.String FirstName
+        {
+            get;
+            set;
+        }
+
+        public System.Int32 Height
+        {
+            get;
+            set;
+        }
+
+        public System.Int64 Id
+        {
+            get;
+            set;
+        }
+
+        public System.String LastName
+        {
+            get;
+            set;
+        }
+
+        public void Edit(long id)
+        {
+            this._navigationManager.NavigateTo("/HumanResources/Person/details" + "/" + id.ToString());
+        }
+
+        public void NewButton_OnClick()
+        {
+            this._navigationManager.NavigateTo("/HumanResources/Person/details");
+        }
+        protected override async Task OnInitializedAsync()
+        {
+            // Setup segregation parameters
+            var paramsParams = new Dtos.GetAllPeopleParams();
+            var cqParams = new Queries.GetAllPeopleQueryParameter(paramsParams);
+
+            // Let the developer know what's going on.
+            cqParams = OnCallingGetAllPeopleQuery(cqParams);
+
+            // Invoke the query handler to retrieve all entities
+            var cqResult = await this._queryProcessor.ExecuteAsync(cqParams);
+
+            // Let's inform the developer about the result.
+            cqResult = OnCalledGetAllPeopleQuery(cqParams, cqResult);
+
+            // Now, set the data context.
+            this.DataContext = cqResult.Result.ToDto();
+
+
+            // Call developer's method.
+            await this.OnLoadAsync();
         }
     }
 }

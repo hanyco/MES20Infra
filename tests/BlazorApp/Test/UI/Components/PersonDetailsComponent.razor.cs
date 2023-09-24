@@ -9,19 +9,20 @@ namespace Test.HumanResources
     public sealed partial class PersonDetailsComponent
     {
         
-        protected override async Task OnInitializedAsync()
+        protected override Task OnLoadAsync()
         {
+            return Task.CompletedTask;
         }
         
         private void ValidateForm()
         {
         }
         
-        private void OnInsertPersonCommandCalling(Test.HumanResources.Dtos.InsertPersonParams parameter)
+        private void OnInsertPersonCommandCalling(Test.HumanResources.Dtos.InsertPersonParams parameter)()
         {
         }
         
-        private void OnInsertPersonCommandCalled(Test.HumanResources.Dtos.InsertPersonParams parameter, Test.HumanResources.Dtos.InsertPersonResult result)
+        private void OnInsertPersonCommandCalled(Test.HumanResources.Dtos.InsertPersonParams parameter, Test.HumanResources.Dtos.InsertPersonResult result)()
         {
         }
     }

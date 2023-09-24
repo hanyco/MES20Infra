@@ -16,7 +16,7 @@ namespace Test.HumanResources.Pages
     using Microsoft.Extensions.Caching.Memory;
     
     
-    public sealed partial class PersonDetailsPage
+    public sealed partial class PersonListPage
     {
         
         protected override async Task OnInitializedAsync()
@@ -26,7 +26,7 @@ namespace Test.HumanResources.Pages
             await this.OnLoadAsync();
         }
         
-        public PersonDetailsPage()
+        public PersonListPage()
         {
         }
     }
