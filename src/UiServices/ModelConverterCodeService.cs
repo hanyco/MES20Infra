@@ -1,4 +1,6 @@
-﻿using Contracts.Services;
+﻿using System.CodeDom;
+
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
@@ -19,9 +21,11 @@ internal sealed class ModelConverterCodeService : IBusinessService, IModelConver
             return vr.WithValue(Codes.Empty);
         }
 
-        var codeStatement = CodeConstants.ConverterToModelClassSource(srcClassName, dstClassName, "o", src.Properties.Select(x => x.Name));
+        var singleConverter = CodeConstants.Converter_ConvertSingleSource(srcClassName, dstClassName, "o", src.Properties.Select(x => x.Name));
+        var enumerableConverter = CodeConstants.Converter_ConvertEnumerableSource(srcClassName, dstClassName, "o");
+        var statement = CodeConstants.WrapInClass("ModelConverter", true, accessModifier: MemberAttributes.Public, singleConverter, enumerableConverter);
 
-        var result = Code.New(methodName, Languages.CSharp, codeStatement, true, $"ModelConverter.{src.Name}.{methodName}.cs")
+        var result = Code.New(methodName, Languages.CSharp, statement, true, $"ModelConverter.{srcClassName}.{methodName}.cs")
             .With(x => x.props().Category = CodeCategory.Converter)
             .ToCodes();
 

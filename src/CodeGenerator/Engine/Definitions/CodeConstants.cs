@@ -32,10 +32,14 @@ public static class CodeConstants
         return result;
     }
 
-    public static string ConverterToModelClassSource(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
+    // IEnumerable<TDbEntity?> ToDbEntity(IEnumerable<TViewModel?> models) => models.Select(ToDbEntity);
+    public static string Converter_ConvertEnumerableSource(string srcClassName, string dstClassName, string argName) =>
+        $"{INDENT.Repeat(1)}public static IEnumerable<{dstClassName}?> ToDbEntity(IEnumerable<{srcClassName}?> {argName}) =>{Environment.NewLine}{INDENT.Repeat(2)}models.Select(ToDbEntity);";
+
+    public static string Converter_ConvertSingleSource(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
         new StringBuilder()
-            .AppendLine($"{INDENT.Repeat(0)}public partial class ModelConverter")
-            .AppendLine($"{INDENT.Repeat(0)}{{")
+            //.AppendLine($"{INDENT.Repeat(0)}public partial class ModelConverter")
+            //.AppendLine($"{INDENT.Repeat(0)}{{")
             .AppendLine($"{INDENT.Repeat(1)}public static {dstClassName} To{dstClassName}(this {srcClassName} {argName})")
             .AppendLine($"{INDENT.Repeat(1)}{{")
             .AppendLine($"{INDENT.Repeat(2)}var result = new {dstClassName}")
@@ -44,7 +48,7 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(2)}}};")
             .AppendLine($"{INDENT.Repeat(2)}return result;")
             .AppendLine($"{INDENT.Repeat(1)}}}")
-            .AppendLine($"{INDENT.Repeat(0)}}}")
+            //.AppendLine($"{INDENT.Repeat(0)}}}")
             .ToString();
 
     public static string DefaultTaskMethodBody() =>
@@ -66,7 +70,7 @@ public static class CodeConstants
             .AppendLine($"cqResult = OnCalledGetAll{entityName}Query(cqParams, cqResult);")
             .AppendLine($"")
             .AppendLine($"// Now, set the data context.")
-        //TODO: `ToDo()` method must be written.
+            //TODO: `ToDo()` method must be written.
             .AppendLine($"this.DataContext = cqResult.Result.ToDto();")
             .ToString();
 
@@ -105,5 +109,14 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(3)}On{segregation}Calling(cqrs);")
             .AppendLine($"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);")
             .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqrs, cqResult);")
+            .ToString();
+
+    public static string WrapInClass(string className, bool isPartial, MemberAttributes accessModifier, params string[] members) =>
+        new StringBuilder()
+            .AppendLine($"{INDENT.Repeat(0)}public {(isPartial ? "partial " : "")} class {className}")
+            .AppendLine($"{INDENT.Repeat(0)}{{")
+            .AppendAllLines(members.Merge(Environment.NewLine).Split(Environment.NewLine)
+                , line => line.StartsWith(INDENT) ? line : $"{INDENT.Repeat(1)}{line}")
+            .AppendLine($"{INDENT.Repeat(0)}}}")
             .ToString();
 }
