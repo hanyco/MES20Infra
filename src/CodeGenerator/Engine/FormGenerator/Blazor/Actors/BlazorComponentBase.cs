@@ -278,9 +278,11 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial || !m.Body.IsNullOrEmpty()))
             {
-                var body = method.Body?.Split(Environment.NewLine).Merge(INDENT.Repeat(3), false);
+                var body = method.Body.SplitMerge(mergeSeparator: INDENT.Repeat(3), addSeparatorToEnd: false);
                 _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
+            var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == "OnLoad")?.Body);
+            _ = partClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
         }
 
         void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
@@ -289,8 +291,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             {
                 _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
             }
-            var onInitializedAsyncBody = this.Actions.Any(m => m.Name == "OnLoad") ? CallOnLoadMethodBody() : null;
-            _ = mainClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
         }
 
         void addChildren(in GenerateCodesParameters arguments, in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType)

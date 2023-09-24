@@ -1,4 +1,7 @@
 ﻿using System.CodeDom;
+using System.Runtime.CompilerServices;
+
+using Library.CodeGeneration.Models;
 
 namespace HanyCo.Infra.CodeGeneration.Definitions;
 
@@ -36,11 +39,10 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqParams, cqResult);")
             .ToString();
 
-    public static string OnCalledCqrsMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
-            $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";
-
-    public static string OnCallingCqrsMethodName(string segregation, string? cqrsParameterType = null) =>
-            $"On{segregation}Calling({cqrsParameterType ?? "System.Object"} parameter)";
+    public static string Component_OnInitializedAsync_MethodBody(string? onInitializedAsyncAdditionalBody) => 
+        onInitializedAsyncAdditionalBody.SplitMerge(mergeSeparator: INDENT.Repeat(3), addSeparatorToEnd: false)
+            .Add(Environment.NewLine)
+            .Add($"{INDENT.Repeat(3)}this.OnLoad();");
 
     public static string ConverterToModelClassSource(string dtoName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
         new StringBuilder()
@@ -58,10 +60,16 @@ public static class CodeConstants
             .ToString();
 
     public static string InitializedAsyncMethodBody() =>
-            $"{INDENT}await this.OnPageInitializedAsync();";
+        $"{INDENT}await this.OnPageInitializedAsync();";
 
     public static string InstanceDataContextProperty(string? name) =>
-            $"this.DataContext.{name}";
+        $"this.DataContext.{name}";
+
+    public static string OnCalledCqrsMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
+        $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";
+
+    public static string OnCallingCqrsMethodName(string segregation, string? cqrsParameterType = null) =>
+        $"On{segregation}Calling({cqrsParameterType ?? "System.Object"} parameter)";
 
     public static string QueryButton_CalledQueryMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
         $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";
@@ -78,7 +86,4 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);")
             .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqrs, cqResult);")
             .ToString();
-
-    public static string CallOnLoadMethodBody() => 
-        $"{INDENT.Repeat(3)}this.OnLoad()";
 }
