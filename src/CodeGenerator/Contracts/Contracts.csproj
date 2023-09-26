@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\.globalSuppressions.cs" Link=".globalSuppressions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
     <ProjectReference Include="..\..\Bcl\src\WpfLib\WpfLib.csproj" />
     <ProjectReference Include="..\Data\Data.csproj" />

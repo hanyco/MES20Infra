@@ -208,7 +208,7 @@ internal sealed partial class FunctionalityService
                     // Generate the codes of CQRS result.
                     addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto)),
                     // Generate the codes of CQRS handler.
-                    addToList(await this._cqrsCodeService.GenerateCodeAsync(cqrsViewModel, token: token))
+                    addToList(await this._cqrsCodeService.GenerateCodesAsync(cqrsViewModel, token: token))
                 };
                 return getAllCodes;
             }

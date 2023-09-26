@@ -9,7 +9,6 @@ using Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
 using Library.CodeGeneration.Models;

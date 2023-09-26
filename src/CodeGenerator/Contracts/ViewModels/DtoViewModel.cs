@@ -64,13 +64,14 @@ public sealed class DtoViewModel : InfraViewModelBase
         get => base.Name;
         set => this.SetProperty(ref this._name, value, orderPropertyNames: new[] { nameof(this.FullName) });
     }
+
+    public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
+
+    public ObservableCollection<PropertyViewModel> Properties { get; } = new();
+
     public IEnumerable<ClaimViewModel> SecurityClaims
     {
         get => this._securityClaims;
         set => this.SetProperty(ref this._securityClaims, value);
     }
-
-    public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
-
-    public ObservableCollection<PropertyViewModel> Properties { get; } = new();
 }

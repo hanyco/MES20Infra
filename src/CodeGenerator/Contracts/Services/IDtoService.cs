@@ -23,7 +23,7 @@ public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyn
     /// <summary>
     /// Creates a new DTO by db table.
     /// </summary>
-    /// <param name="table">  The table.</param>
+    /// <param name="table">The table.</param>
     /// <param name="columns">The columns.</param>
     /// <returns>A DtoViewModel.</returns>
     [return: NotNull]

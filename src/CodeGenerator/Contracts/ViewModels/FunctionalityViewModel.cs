@@ -98,10 +98,6 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     public IEnumerable<Codes> GetAllCodes() =>
         this._allCodes.Select(x => x.Value).Compact();
 
-    /// <summary>
-    /// Returns an enumerator that iterates through the collection of codes.
-    /// </summary>
-    /// <returns>An enumerator that can be used to iterate through the collection.</returns>
     public IEnumerator<Codes> GetEnumerator() =>
         this.GetAllCodes().GetEnumerator();
 

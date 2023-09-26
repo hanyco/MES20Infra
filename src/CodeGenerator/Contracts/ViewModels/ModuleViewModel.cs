@@ -1,12 +1,8 @@
-﻿using System.Collections.ObjectModel;
-
-using Contracts.ViewModels;
-
-namespace HanyCo.Infra.UI.ViewModels;
+﻿namespace Contracts.ViewModels;
 
 public sealed class ModuleViewModel : InfraViewModelBase
 {
-    private ModuleViewModel _parent;
+    private ModuleViewModel? _parent;
 
     public ModuleViewModel()
     {
@@ -17,10 +13,9 @@ public sealed class ModuleViewModel : InfraViewModelBase
     {
     }
 
-    public ModuleViewModel Parent
+    public ModuleViewModel? Parent
     {
         get => this._parent;
         set => this.SetProperty(ref this._parent, value);
     }
-
 }

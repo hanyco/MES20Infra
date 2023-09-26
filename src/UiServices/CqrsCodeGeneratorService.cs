@@ -26,7 +26,7 @@ namespace Services;
 [Service]
 internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
 {
-    public Task<Result<Codes>> GenerateCodeAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
+    public Task<Result<Codes>> GenerateCodesAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
         {
