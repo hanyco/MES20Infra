@@ -35,13 +35,10 @@ internal partial class FunctionalityService(
     IModelConverterCodeService converterCodeService)
     : IFunctionalityService
     , IFunctionalityCodeService
-    , IBusinessService
     , IValidator<FunctionalityViewModel>
     , IAsyncTransactionSave
     , ILoggerContainer
 {
-    #region Fields & Properties
-
     private readonly IBlazorComponentCodingService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
     private readonly IBlazorPageCodingService _blazorPageCodeService = blazorPageCodeService;
@@ -58,8 +55,6 @@ internal partial class FunctionalityService(
     private readonly IProgressReport _reporter = reporter;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
     public ILogger Logger { get; } = logger;
-
-    #endregion Fields & Properties
 
     Task<IDbContextTransaction> IAsyncTransactional.BeginTransactionAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.BeginTransactionAsync(cancellationToken);
@@ -86,11 +81,10 @@ internal partial class FunctionalityService(
         BasicChecks(item);
 
     private static ValidationResultSet<FunctionalityViewModel> BasicChecks(FunctionalityViewModel? model) =>
-            model.Check()
-             //x.RuleFor(_ => !cancellationToken.IsCancellationRequested, () => new OperationCancelException("Cancelled by parent"))
-             .ArgumentNotNull()
-             .NotNull(x => x!.Name)
-             .NotNull(x => x!.SourceDto)
-             .NotNull(x => x!.SourceDto.NameSpace, paramName: "namespace")
-             .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)))!;
+        model.Check()
+            .ArgumentNotNull()
+            .NotNull(x => x!.Name)
+            .NotNull(x => x!.SourceDto)
+            .NotNull(x => x!.SourceDto.NameSpace, paramName: "namespace")
+            .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)))!;
 }

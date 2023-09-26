@@ -364,7 +364,7 @@ internal sealed partial class FunctionalityService
         static void addActions(CreationData data)
         {
             data.ViewModel.BlazorListPageViewModel.Route = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
-            // The save button
+            // The Save button
             var saveButton = new UiComponentCqrsButtonViewModel()
             {
                 Caption = "Save",
@@ -382,7 +382,7 @@ internal sealed partial class FunctionalityService
                     Row = 1,
                 }
             };
-            // The back button. Same as the cancel button.
+            // The Back button. Same as the cancel button.
             var cancelButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Back",

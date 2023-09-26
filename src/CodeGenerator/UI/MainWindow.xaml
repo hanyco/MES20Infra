@@ -81,8 +81,11 @@
                         Click="SettingMenuItem_Click"
                         Header="_Settings…" />
                 </MenuItem>
-                <MenuItem Header="Security">
+                <MenuItem Header="_Security">
                     <MenuItem Click="EditSecurityDescriptor_Click" Header="_Edit Security Descriptor…" />
+                </MenuItem>
+                <MenuItem Header="_Help">
+                    <MenuItem Click="HelpAboutMenuItem_Click" Header="_About" />
                 </MenuItem>
             </Menu>
         </Grid>

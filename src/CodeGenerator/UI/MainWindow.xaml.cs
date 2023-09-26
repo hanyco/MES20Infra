@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -72,6 +71,17 @@ public partial class MainWindow
     {
         var wizardDlg = new SourceGeneratorWizardWindow();
         _ = wizardDlg.ShowDialog();
+    }
+
+    private void HelpAboutMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var title = $"About {ApplicationHelper.Company} {ApplicationHelper.ApplicationTitle}";
+        var productName = ApplicationHelper.ProductTitle;
+        var veriosn = $"Version {ApplicationHelper.Version}";
+        var copr = $"{ApplicationHelper.Copyright}{Environment.NewLine}All rights reserved.";
+        var description = $"{ApplicationHelper.Description}{Environment.NewLine}{Environment.NewLine}{veriosn}{Environment.NewLine}{Environment.NewLine}{copr}";
+        var warning = "Warning: This computer program is protected by copyright law and international treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.";
+        MsgBox2.Inform(productName, description, title, detailsExpandedText: warning);
     }
 
     private void Log(object message)

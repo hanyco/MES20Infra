@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
-using System.Windows.Forms;
 
 using Contracts.Services;
 using Contracts.ViewModels;
@@ -18,6 +17,7 @@ using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
+using Library.Wpf.Windows.UI;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
 
@@ -130,10 +130,10 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     }
 
     private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
-        (await this._service.CreateAsync()).With(x => x.SourceDto.NameSpace = SettingsService.Get().productName);
+        await this._service.CreateAsync().WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
 
     private async void Me_Loaded(object sender, RoutedEventArgs e) =>
-            this.ViewModel = await this.GetNewViewModelAsync();
+        this.ViewModel = await this.GetNewViewModelAsync();
 
     private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e) =>
         e.Item = this._moduleService;
@@ -149,13 +149,14 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     }
 
     [MemberNotNull(nameof(ViewModel))]
-    private void PrepareViewModel() => this.ViewModel!.Name = this.ViewModel.SourceDto.Name;//this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace;
+    private void PrepareViewModel() =>
+        this.ViewModel!.Name = this.ViewModel.SourceDto.Name;
 
     private void PrepareViewModelByDto(DtoViewModel? details)
     {
         this.CheckIfInitiated();
 
-        this.ViewModel.SourceDto = null;
+        this.ViewModel.SourceDto = null!;
 
         //Optional! To make sure that the selected dto exists and has details.
         if (details == null)
@@ -188,81 +189,32 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         {
             return validationResult.WithValue<string?>(null);
         };
-        try
+        var codes = this.ViewModel!.Codes.SelectAll().Compact();
+        if (!codes.Any())
         {
-            var codes = this.ViewModel!.Codes.SelectAll().Compact();
-            if (!codes.Any())
-            {
-                return Result<string>.CreateFailure("No code found. Please generate sources.", string.Empty);
-            }
-            var settings = SettingsService.Get();
-            var isYesToAll = false;
-            foreach (var code in codes)
-            {
-                var relativePath = code.props().Category switch
-                {
-                    CodeCategory.Dto => settings.dtosPath,
-                    CodeCategory.Query => settings.queriesPath,
-                    CodeCategory.Command => settings.commandsPath,
-                    CodeCategory.Page => settings.blazorPagesPath,
-                    CodeCategory.Component => settings.blazorComponentsPath,
-                    CodeCategory.Converter => settings.convertersPath,
-                    _ => throw new NotSupportedException("Code category is null or not supported.")
-                };
-                var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.NotNull());
-                if (!Directory.Exists(path))
-                {
-                    _ = Directory.CreateDirectory(path);
-                }
-                var file = Path.Combine(path, code.FileName);
-                if (File.Exists(file))
-                {
-                    if (!isYesToAll)
-                    {
-                        var resp = DialogResult.No;
-                        void setResp(object? o, EventArgs e, DialogResult res)
-                        {
-                            resp = res;
-                            MsgBox2.GetOnButtonClick(o, e).Parent.Close();
-                        }
-                        var noButton = ButtonInfo.New("&Skip", (o, e) => setResp(o, e, DialogResult.No), isDefault: true).ToButton();
-                        var yesButton = ButtonInfo.New("&Replace", (o, e) => setResp(o, e, DialogResult.Yes)).ToButton();
-                        var yesToAllButton = ButtonInfo.New("Replace &all", (o, e) => setResp(o, e, DialogResult.OK), useElevationIcon: true).ToButton();
-                        var cancelButton = ButtonInfo.New("&Cancel", (o, e) => setResp(o, e, DialogResult.Cancel)).ToButton();
-                        _ = MsgBox2.AskWithWarn($"The destination already has a file named \"{code.FileName}\".", $"Saving sources to {settings.projectSourceRoot}", $"Replace or Skip Files", controls: new[] { noButton, yesButton, yesToAllButton, cancelButton });
-                        switch (resp)
-                        {
-                            case DialogResult.OK:
-                                isYesToAll = true;
-                                break;
-
-                            case DialogResult.Cancel:
-                                await Task.Delay(900);
-                                _ = App.Current.DoEvents();
-                                return Result<string>.CreateFailure(message: "Operation cancelled.");
-
-                            case DialogResult.Yes:
-                                break;
-
-                            case DialogResult.No:
-                                continue;
-                            default:
-                                await Task.Delay(900);
-                                _ = App.Current.DoEvents();
-                                return Result<string>.CreateFailure(message: "Invalid response.");
-                        }
-                    }
-                    File.Delete(file);
-                }
-                File.WriteAllText(file, code.Statement);
-            }
-            await Task.Delay(500);
-            _ = App.Current.DoEvents();
-            return Result<string?>.CreateSuccess(settings.projectSourceRoot, message: "Codes are saved successfully.");
+            return Result<string>.CreateFailure("No code found. Please generate sources.", string.Empty);
         }
-        catch (Exception ex)
+        var settings = SettingsService.Get();
+        var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
+        var saveResult = FileUiTools.SaveToFile(files, $"Saving sources to {settings.projectSourceRoot}");
+        await Task.Delay(500);
+        _ = App.Current.DoEvents();
+        return saveResult.WithValue(settings.projectSourceRoot).IfSucceed(x => x.Message = "Codes are saved succeddully.");
+
+        static string getPath(SettingsModel settings, Code code)
         {
-            return Result<string>.CreateFailure(ex);
+            var relativePath = code.props().Category switch
+            {
+                CodeCategory.Dto => settings.dtosPath,
+                CodeCategory.Query => settings.queriesPath,
+                CodeCategory.Command => settings.commandsPath,
+                CodeCategory.Page => settings.blazorPagesPath,
+                CodeCategory.Component => settings.blazorComponentsPath,
+                CodeCategory.Converter => settings.convertersPath,
+                _ => throw new NotSupportedException("Code category is null or not supported.")
+            };
+            var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.NotNull());
+            return path;
         }
     }
 
