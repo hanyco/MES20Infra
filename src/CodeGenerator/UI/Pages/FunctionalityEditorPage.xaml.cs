@@ -103,7 +103,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
         this.ViewModel = null;
-        this.ViewModel = await GetNewViewModelAsync();
+        this.ViewModel = await this.GetNewViewModelAsync();
     }
 
     private void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
@@ -130,10 +130,12 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this.ViewModel = viewModel;
     }
 
-    private async void Me_Loaded(object sender, RoutedEventArgs e) =>
-        this.ViewModel = await GetNewViewModelAsync();
-    private async Task<FunctionalityViewModel> GetNewViewModelAsync() => 
+    private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
         (await this._service.CreateAsync()).With(x => x.SourceDto.NameSpace = SettingsService.Get().productName);
+
+    private async void Me_Loaded(object sender, RoutedEventArgs e) =>
+            this.ViewModel = await this.GetNewViewModelAsync();
+
     private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e) =>
         e.Item = this._moduleService;
 
@@ -148,11 +150,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     }
 
     [MemberNotNull(nameof(ViewModel))]
-    private void PrepareViewModel()
-    {
-        this.ViewModel!.Name = this.ViewModel.SourceDto.Name;
-        //this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace;
-    }
+    private void PrepareViewModel() => this.ViewModel!.Name = this.ViewModel.SourceDto.Name;//this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace;
 
     private void PrepareViewModelByDto(DtoViewModel? details)
     {
@@ -209,6 +207,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                     CodeCategory.Command => settings.commandsPath,
                     CodeCategory.Page => settings.blazorPagesPath,
                     CodeCategory.Component => settings.blazorComponentsPath,
+                    CodeCategory.Converter => settings.convertersPath,
                     _ => throw new NotSupportedException("Code category is null or not supported.")
                 };
                 var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.NotNull());
@@ -227,11 +226,11 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                             resp = res;
                             MsgBox2.GetOnButtonClick(o, e).Parent.Close();
                         }
-                        var noButton = ButtonInfo.New("No", (o, e) => setResp(o, e, DialogResult.No)).ToButton();
-                        var yesButton = ButtonInfo.New("Yes", (o, e) => setResp(o, e, DialogResult.Yes)).ToButton();
-                        var yesToAllButton = ButtonInfo.New("Yes to all", (o, e) => setResp(o, e, DialogResult.OK), useElevationIcon: true).ToButton();
-                        var cancelButton = ButtonInfo.New("Cancel", (o, e) => setResp(o, e, DialogResult.Cancel)).ToButton();
-                        _ = MsgBox2.AskWithWarn($"{code.FileName} already exists.", "Do you want to replace it?", controls: new[] { noButton, yesButton, yesToAllButton, cancelButton });
+                        var noButton = ButtonInfo.New("&Skip", (o, e) => setResp(o, e, DialogResult.No), isDefault: true).ToButton();
+                        var yesButton = ButtonInfo.New("&Replace", (o, e) => setResp(o, e, DialogResult.Yes)).ToButton();
+                        var yesToAllButton = ButtonInfo.New("Replace &all", (o, e) => setResp(o, e, DialogResult.OK), useElevationIcon: true).ToButton();
+                        var cancelButton = ButtonInfo.New("&Cancel", (o, e) => setResp(o, e, DialogResult.Cancel)).ToButton();
+                        _ = MsgBox2.AskWithWarn($"The destination already has a file named \"{code.FileName}\".", $"Saving sources to {settings.projectSourceRoot}", $"Replace or Skip Files", controls: new[] { noButton, yesButton, yesToAllButton, cancelButton });
                         switch (resp)
                         {
                             case DialogResult.OK:
@@ -239,7 +238,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                                 break;
 
                             case DialogResult.Cancel:
-                                await Task.Delay(500);
+                                await Task.Delay(900);
                                 _ = App.Current.DoEvents();
                                 return Result<string>.CreateFailure(message: "Operation cancelled.");
 
@@ -249,7 +248,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                             case DialogResult.No:
                                 continue;
                             default:
-                                await Task.Delay(500);
+                                await Task.Delay(900);
                                 _ = App.Current.DoEvents();
                                 return Result<string>.CreateFailure(message: "Invalid response.");
                         }

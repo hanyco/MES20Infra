@@ -71,6 +71,9 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock
                     Grid.Row="0"
@@ -113,6 +116,10 @@
                 <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
                     <TextBlock Style="{StaticResource LongLabelBlock}" Text="Default code namespace:" />
                     <TextBox Width="500" Text="{Binding productName}" />
+                </StackPanel>
+                <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Default code onverters path:" />
+                    <TextBox Width="500" Text="{Binding convertersPath}" />
                 </StackPanel>
             </Grid>
         </Grid>

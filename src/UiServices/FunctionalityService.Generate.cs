@@ -186,7 +186,7 @@ internal sealed partial class FunctionalityService
                 }
                 
                 codes.BlazorDetailsComponentCodes = codeGenRes;
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", "ToDto"));
+                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
             }
 
             return result;

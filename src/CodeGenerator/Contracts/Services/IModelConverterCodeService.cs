@@ -8,5 +8,5 @@ namespace Contracts.Services;
 
 public interface IModelConverterCodeService : IBusinessService
 {
-    Result<Codes> GenerateCode(DtoViewModel src, string srcClassName, string dstClassName, string methodName);
+    Result<Codes> GenerateCode(DtoViewModel src, string srcClassName, string dstClassName, string? methodName = null);
 }

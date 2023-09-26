@@ -32,15 +32,15 @@ public static class CodeConstants
         return result;
     }
 
-    // IEnumerable<TDbEntity?> ToDbEntity(IEnumerable<TViewModel?> models) => models.Select(ToDbEntity);
-    public static string Converter_ConvertEnumerableSource(string srcClassName, string dstClassName, string argName) =>
-        $"{INDENT.Repeat(1)}public static IEnumerable<{dstClassName}?> ToDbEntity(IEnumerable<{srcClassName}?> {argName}) =>{Environment.NewLine}{INDENT.Repeat(2)}models.Select(ToDbEntity);";
+    public static string Converter_Convert_MethodName(string dstClassName)
+        => $"To{dstClassName}";
 
-    public static string Converter_ConvertSingleSource(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
+    public static string Converter_ConvertEnumerable_MethodBody(string srcClassName, string dstClassName, string argName) =>
+            $"{INDENT.Repeat(1)}public static IEnumerable<{dstClassName}?> {Converter_Convert_MethodName(dstClassName)}(this IEnumerable<{srcClassName}?> {argName}) =>{Environment.NewLine}{INDENT.Repeat(2)}models.Select(ToDbEntity);";
+
+    public static string Converter_ConvertSingle_MethodBody(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
         new StringBuilder()
-            //.AppendLine($"{INDENT.Repeat(0)}public partial class ModelConverter")
-            //.AppendLine($"{INDENT.Repeat(0)}{{")
-            .AppendLine($"{INDENT.Repeat(1)}public static {dstClassName} To{dstClassName}(this {srcClassName} {argName})")
+            .AppendLine($"{INDENT.Repeat(1)}public static {dstClassName} {Converter_Convert_MethodName(dstClassName)}(this {srcClassName} {argName})")
             .AppendLine($"{INDENT.Repeat(1)}{{")
             .AppendLine($"{INDENT.Repeat(2)}var result = new {dstClassName}")
             .AppendLine($"{INDENT.Repeat(2)}{{")
@@ -48,7 +48,6 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(2)}}};")
             .AppendLine($"{INDENT.Repeat(2)}return result;")
             .AppendLine($"{INDENT.Repeat(1)}}}")
-            //.AppendLine($"{INDENT.Repeat(0)}}}")
             .ToString();
 
     public static string DefaultTaskMethodBody() =>
@@ -71,7 +70,7 @@ public static class CodeConstants
             .AppendLine($"")
             .AppendLine($"// Now, set the data context.")
             //TODO: `ToDo()` method must be written.
-            .AppendLine($"this.DataContext = cqResult.Result.ToDto();")
+            .AppendLine($"this.DataContext = cqResult.Result.To{StringHelper.Singularize(entityName)}Dto();")
             .ToString();
 
     public static string GetAll_OnCalledMethodName(string entityName) =>
