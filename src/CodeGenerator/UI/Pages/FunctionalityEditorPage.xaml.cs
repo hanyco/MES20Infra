@@ -198,7 +198,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
         var saveResult = FileUiTools.SaveToFile(files, $"Saving sources to {settings.projectSourceRoot}");
         await Task.Delay(500);
-        _ = App.Current.DoEvents();
+        App.Current.DoEvents();
         return saveResult.WithValue(settings.projectSourceRoot).IfSucceed(x => x.Message = "Codes are saved succeddully.");
 
         static string getPath(SettingsModel settings, Code code)

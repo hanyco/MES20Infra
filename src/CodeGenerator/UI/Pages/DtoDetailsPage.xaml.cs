@@ -152,7 +152,7 @@ public partial class DtoDetailsPage
         {
             return;
         }
-        _ = Application.Current.DoEvents();
+        Application.Current.DoEvents();
         this.Debug("DTO deleting...");
         var saveResult = await this._service.DeleteAsync(dto);
         if (saveResult.IsFailure && saveResult.Status is DbUpdateException ex)
