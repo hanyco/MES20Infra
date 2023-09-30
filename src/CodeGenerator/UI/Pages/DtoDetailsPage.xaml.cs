@@ -159,7 +159,7 @@ public partial class DtoDetailsPage
         {
             if (ex.InnerException?.Message.Contains("infra.CqrsSegregate") ?? false)
             {
-                MesException.Throw("A CQRS segregation has relation to this DTO and this DTO cannot be deleted.");
+                MesException.Throw("A CQRS segregation has relation to this DTO. Therefore this DTO cannot be deleted.");
             }
         }
         _ = saveResult.ThrowOnFail();

@@ -9,7 +9,7 @@ using Library.Results;
 
 using Xunit.Abstractions;
 
-namespace InfraTestProject.Tests;
+namespace InfraTestProject.Tests.Services;
 
 public sealed class DtoServiceTest
 {

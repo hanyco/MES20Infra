@@ -4,7 +4,7 @@ using Contracts.ViewModels;
 using Library.BusinessServices;
 using Library.Coding;
 
-namespace InfraTestProject.Tests;
+namespace InfraTestProject.Tests.Services;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
