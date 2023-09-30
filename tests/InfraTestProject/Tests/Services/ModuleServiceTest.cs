@@ -2,7 +2,7 @@
 
 using HanyCo.Infra.UI.ViewModels;
 
-namespace InfraTestProject.Tests;
+namespace InfraTestProject.Tests.Services;
 
 public sealed class ModuleServiceTest
 {

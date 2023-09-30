@@ -77,9 +77,9 @@ public partial class MainWindow
     {
         var title = $"About {ApplicationHelper.Company} {ApplicationHelper.ApplicationTitle}";
         var productName = ApplicationHelper.ProductTitle;
-        var veriosn = $"Version {ApplicationHelper.Version}";
+        var version = $"Version {ApplicationHelper.Version}";
         var copr = $"{ApplicationHelper.Copyright}{Environment.NewLine}All rights reserved.";
-        var description = $"{ApplicationHelper.Description}{Environment.NewLine}{Environment.NewLine}{veriosn}{Environment.NewLine}{Environment.NewLine}{copr}";
+        var description = $"{ApplicationHelper.Description}{Environment.NewLine}{Environment.NewLine}{version}{Environment.NewLine}{Environment.NewLine}{copr}";
         var warning = "Warning: This computer program is protected by copyright law and international treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.";
         MsgBox2.Inform(productName, description, title, detailsExpandedText: warning);
     }
@@ -171,7 +171,7 @@ public partial class MainWindow
                 MsgBox2.Warn(
                     "Database created.",
                     "Database not found. But created from schema information.",
-                    footerText: "Please do not forget to initialize database, if required.",
+                    footerText: "Please remember to initialize database, if required.",
                     footerIcon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Warning);
             }
 
@@ -190,7 +190,7 @@ public partial class MainWindow
                 message.Title,
                 detailsExpandedText: message.Details,
                 window: this,
-                controls: new Microsoft.WindowsAPICodePack.Dialogs.TaskDialogControl[] { closeButton, continueButton });
+                controls: [closeButton, continueButton]);
         }
         catch (Exception ex)
         {
