@@ -10,6 +10,7 @@ using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Windows;
 using Library.Wpf.Dialogs;
+using Library.Wpf.Windows.UI;
 
 using Microsoft.Data.SqlClient;
 
@@ -20,21 +21,12 @@ namespace UI;
 /// </summary>
 public partial class MainWindow
 {
-    private readonly IEventualLogger _logger;
-    private readonly InfraWriteDbContext _writeDbContext;
-
-
-
-    private bool IsInitiated
-    {
-        get { return (bool)GetValue(IsInitiatedProperty); }
-        set { SetValue(IsInitiatedProperty, value); }
-    }
-
     public static readonly DependencyProperty IsInitiatedProperty =
         DependencyProperty.Register("IsInitiated", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
 
-
+    private readonly IEventualLogger _logger;
+    private readonly Taskbar _taskbar;
+    private readonly InfraWriteDbContext _writeDbContext;
 
     public MainWindow(InfraWriteDbContext writeDbContext, IEventualLogger logger, IProgressReport reportHost)
     {
@@ -45,11 +37,18 @@ public partial class MainWindow
         reportHost.Ended += this.ReportHost_Ended;
         this._logger.Logging += this.Logger_Logging;
         MsgBox2.DefaultWindow = this;
+        this._taskbar = new(this);
     }
 
     public static DependencyProperty CurrentPageTitleProperty { get; } = ControlHelper.GetDependencyProperty<string?, MainWindow>(propertyName: nameof(CurrentPageTitle), defaultValue: "(No page)");
 
     public string? CurrentPageTitle { get => (string)this.GetValue(CurrentPageTitleProperty); set => this.SetValue(CurrentPageTitleProperty, value); }
+
+    private bool IsInitiated
+    {
+        get => (bool)this.GetValue(IsInitiatedProperty);
+        set => this.SetValue(IsInitiatedProperty, value);
+    }
 
     private void BlazorComponentMenuItem_Click(object sender, RoutedEventArgs e) =>
         this.Navigate<BlazorComponentGenertorPage>();
@@ -151,11 +150,13 @@ public partial class MainWindow
                 this.StatusProgressBar.Maximum = e.Item.Max.Cast().ToInt(0);
                 this.StatusProgressBar.Value = e.Item.Current.Cast().ToInt(0);
                 this.StatusProgressBar.Background = System.Windows.Media.Brushes.Maroon;
+                _ = this._taskbar.SetProgressBarToNormal().SetProgressBarValue(this.StatusProgressBar.Value, this.StatusProgressBar.Maximum);
             }
             else
             {
                 this.StatusProgressBar.Visibility = Visibility.Collapsed;
                 this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
+                _ = this._taskbar.HideProgressBar();
             }
             if (!e.Item.Description.IsNullOrEmpty())
             {

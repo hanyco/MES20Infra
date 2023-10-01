@@ -25,13 +25,16 @@
                         ToolTip="Save">
                         <Path Style="{StaticResource Save}" />
                     </Button>
+                    <Button
+                        x:Name="ReloadButton"
+                        Click="ReloadButton_Click"
+                        ToolTip="Reload">
+                        <Path Style="{StaticResource Refresh}" />
+                    </Button>
                 </ToolBar.Items>
             </ToolBar>
         </ToolBarPanel>
-        <Grid
-            x:Name="ContainerGrid"
-            Grid.Row="1"
-            Margin="20,20,20,20">
+        <Grid Grid.Row="1" Margin="20,20,20,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -39,28 +42,60 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
-                <TextBlock Style="{StaticResource LongLabelBlock}" Text="Connection string:" />
-                <TextBox
-                    Name="ConnectionStringBox"
-                    Width="500"
-                    Text="{Binding connectionString}" />
-            </StackPanel>
-            <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
-                <CheckBox
-                    x:Name="ShowToastCheckBox"
-                    Content="Show _Toast notifications"
-                    IsChecked="{Binding showToast}" />
-                <Button
-                    Name="ToastHelpButton"
-                    Click="ToastHelpButton_Click"
-                    Style="{StaticResource IconButton}">
-                    <Path Style="{StaticResource HelpBook}" />
-                </Button>
-            </StackPanel>
-            <Separator Grid.Row="2" />
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    Style="{StaticResource Heading3}"
+                    Text="General" />
+                <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Connection string:" />
+                    <TextBox
+                        Name="ConnectionStringBox"
+                        Style="{StaticResource LongLongTextBox}"
+                        Text="{Binding connectionString}" />
+                </StackPanel>
+                <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
+                    <CheckBox
+                        x:Name="ShowToastCheckBox"
+                        Content="Show _Toast notifications"
+                        IsChecked="{Binding showToast}" />
+                    <Button
+                        Name="ToastHelpButton"
+                        Click="ToastHelpButton_Click"
+                        Style="{StaticResource IconButton}">
+                        <Path Style="{StaticResource HelpBook}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <Separator Grid.Row="1" />
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    Style="{StaticResource Heading3}"
+                    Text="Source Generator Preferences" />
+                <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
+                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Default code namespace:" />
+                    <TextBox Width="500" Text="{Binding productName}" />
+                </StackPanel>
+            </Grid>
+            <Separator Grid.Row="3" />
+            <Grid Grid.Row="4">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -114,13 +149,10 @@
                     <TextBox Width="500" Text="{Binding blazorComponentsPath}" />
                 </StackPanel>
                 <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
-                    <TextBlock Style="{StaticResource LongLabelBlock}" Text="Default code namespace:" />
-                    <TextBox Width="500" Text="{Binding productName}" />
-                </StackPanel>
-                <StackPanel Grid.Row="8" Style="{StaticResource FieldPanel}">
                     <TextBlock Style="{StaticResource LongLabelBlock}" Text="Default code onverters path:" />
                     <TextBox Width="500" Text="{Binding convertersPath}" />
                 </StackPanel>
+                <Separator Grid.Row="9" />
             </Grid>
         </Grid>
     </Grid>

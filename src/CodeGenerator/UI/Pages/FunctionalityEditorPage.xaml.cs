@@ -17,7 +17,7 @@ using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
 using Library.Wpf.Windows;
-using Library.Wpf.Windows.UI;
+using Library.Wpf.Windows.CommonTools;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
 
