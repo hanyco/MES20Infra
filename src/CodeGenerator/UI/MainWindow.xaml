@@ -49,12 +49,8 @@
                     <MenuItem
                         Name="CreateCommandMenuItem"
                         Click="CreateCommandMenuItem_Click"
-                        Header="Manage CQRS _Commands…" />
+                        Header="Manage CQRS _Commands…"/>
                     <Separator />
-                    <!--<MenuItem
-                        Name="CreateCrudMenuItem"
-                        Click="CreateCrudMenuItem_Click"
-                        Header="Custom _Full CRUD…" />-->
                     <MenuItem
                         Name="FunctionalityEditorManuItem"
                         Click="FunctionalityEditorManuItem_Click"
@@ -69,7 +65,7 @@
                     <MenuItem
                         Name="BlazorComponentMenuItem"
                         Click="BlazorComponentMenuItem_Click"
-                        Header="Blazor _Component" />
+                        Header="Blazor _Component"/>
                     <MenuItem
                         Name="BlazorPageMenuItem"
                         Click="BlazorPageMenuItem_Click"
@@ -82,7 +78,10 @@
                         Header="_Settings…" />
                 </MenuItem>
                 <MenuItem Header="_Security">
-                    <MenuItem Click="EditSecurityDescriptor_Click" Header="_Edit Security Descriptor…" />
+                    <MenuItem
+                        Click="EditSecurityDescriptor_Click"
+                        Header="_Edit Security Descriptor…"
+                        IsEnabled="{Binding ElementName=Me, Path=IsInitialized}" />
                 </MenuItem>
                 <MenuItem Header="_Help">
                     <MenuItem Click="HelpAboutMenuItem_Click" Header="_About" />

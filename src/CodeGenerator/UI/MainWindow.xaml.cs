@@ -20,12 +20,21 @@ namespace UI;
 /// </summary>
 public partial class MainWindow
 {
-    #region Fields
-
     private readonly IEventualLogger _logger;
     private readonly InfraWriteDbContext _writeDbContext;
 
-    #endregion Fields
+
+
+    private bool IsInitiated
+    {
+        get { return (bool)GetValue(IsInitiatedProperty); }
+        set { SetValue(IsInitiatedProperty, value); }
+    }
+
+    public static readonly DependencyProperty IsInitiatedProperty =
+        DependencyProperty.Register("IsInitiated", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+
+
 
     public MainWindow(InfraWriteDbContext writeDbContext, IEventualLogger logger, IProgressReport reportHost)
     {
@@ -176,6 +185,7 @@ public partial class MainWindow
             }
 
             this._logger.Debug("Ready.");
+            this.IsInitiated = true;
         }
         catch (SqlException ex) when (ex.ErrorCode == -2146232060)
         {
