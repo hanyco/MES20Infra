@@ -21,14 +21,14 @@ public partial class SettingsPage
     public SettingsModel ViewModel =>
         this.DataContext.Cast().To<SettingsModel>();
 
-    private void ReloadButton_Click(object sender, RoutedEventArgs e) => 
-        this.Reload();
-
     private void Page_Loaded(object sender, RoutedEventArgs e) =>
         this.Reload();
 
     private void Reload() =>
         this.DataContext = SettingsService.Get();
+
+    private void ReloadButton_Click(object sender, RoutedEventArgs e) =>
+                this.Reload();
 
     private void Save() =>
         this.ViewModel.Save();
@@ -54,11 +54,9 @@ public partial class SettingsPage
         this.ViewModel.projectSourceRoot = dlg.SelectedPath;
     }
 
+    private async void TestButton_Click(object sender, RoutedEventArgs e) =>
+        await Sql.TryConnectAsync(this.ViewModel.connectionString).ShowOrThrowAsync("Test Connection", "ConnectionString is checked.", "ConnectionString is Ok.");
+
     private void ToastHelpButton_Click(object sender, RoutedEventArgs e) =>
         Toast2.Test();
-
-    private async void TestButton_Click(object sender, RoutedEventArgs e)
-    {
-        await Sql.CanConnectAsync(this.ViewModel.connectionString);
-    }
 }
