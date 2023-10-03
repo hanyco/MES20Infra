@@ -25,7 +25,6 @@ public partial class MainWindow
         DependencyProperty.Register("IsInitiated", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
 
     private readonly IEventualLogger _logger;
-    private readonly Taskbar _taskbar;
     private readonly InfraWriteDbContext _writeDbContext;
 
     public MainWindow(InfraWriteDbContext writeDbContext, IEventualLogger logger, IProgressReport reportHost)
@@ -37,7 +36,6 @@ public partial class MainWindow
         reportHost.Ended += this.ReportHost_Ended;
         this._logger.Logging += this.Logger_Logging;
         MsgBox2.DefaultWindow = this;
-        this._taskbar = new(this);
     }
 
     public static DependencyProperty CurrentPageTitleProperty { get; } = ControlHelper.GetDependencyProperty<string?, MainWindow>(propertyName: nameof(CurrentPageTitle), defaultValue: "(No page)");
@@ -137,8 +135,9 @@ public partial class MainWindow
         {
             this.StatusProgressBar.Visibility = Visibility.Collapsed;
             this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
-            this.Log(e.Item ?? "Ready.");
             this.StatusProgressBar.Refresh();
+            _ = Taskbar.MainWindow.ProgressBar.SetState(TaskbarProgressState.None);
+            this.Log(e.Item ?? "Ready.");
         });
 
     private void ReportHost_Reported(object? sender, ItemActedEventArgs<ProgressData> e) =>
@@ -150,13 +149,13 @@ public partial class MainWindow
                 this.StatusProgressBar.Maximum = e.Item.Max.Cast().ToInt(0);
                 this.StatusProgressBar.Value = e.Item.Current.Cast().ToInt(0);
                 this.StatusProgressBar.Background = System.Windows.Media.Brushes.Maroon;
-                _ = this._taskbar.SetProgressBarToNormal().SetProgressBarValue(this.StatusProgressBar.Value, this.StatusProgressBar.Maximum);
+                _ = Taskbar.MainWindow.ProgressBar.SetState(TaskbarProgressState.Normal).SetValue(this.StatusProgressBar.Value, this.StatusProgressBar.Maximum);
             }
             else
             {
                 this.StatusProgressBar.Visibility = Visibility.Collapsed;
                 this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
-                _ = this._taskbar.HideProgressBar();
+                _ = Taskbar.MainWindow.ProgressBar.SetState(TaskbarProgressState.None);
             }
             if (!e.Item.Description.IsNullOrEmpty())
             {

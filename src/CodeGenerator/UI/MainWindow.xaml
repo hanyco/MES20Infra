@@ -55,12 +55,6 @@
                             Click="CreateCommandMenuItem_Click"
                             Header="Manage CQRS _Commands…"
                             IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
-                        <Separator />
-                        <MenuItem
-                            Name="FunctionalityEditorManuItem"
-                            Click="FunctionalityEditorManuItem_Click"
-                            Header="_Functionality…"
-                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
                     </MenuItem>
                     <MenuItem Header="_Front-End">
                         <MenuItem
@@ -86,6 +80,12 @@
                             Header="_Edit Security Descriptor…"
                             IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
                     </MenuItem>
+                    <Separator />
+                    <MenuItem
+                            Name="FunctionalityEditorManuItem"
+                            Click="FunctionalityEditorManuItem_Click"
+                            Header="_Functionality…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
                 </MenuItem>
                 <MenuItem Header="_Tools">
                     <MenuItem
