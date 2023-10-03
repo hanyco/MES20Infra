@@ -3,6 +3,7 @@ using System.Windows.Forms;
 
 using Contracts.ViewModels;
 
+using Library.Data.SqlServer;
 using Library.Wpf.Windows.UI;
 
 using UI;
@@ -55,4 +56,9 @@ public partial class SettingsPage
 
     private void ToastHelpButton_Click(object sender, RoutedEventArgs e) =>
         Toast2.Test();
+
+    private async void TestButton_Click(object sender, RoutedEventArgs e)
+    {
+        await Sql.CanConnectAsync(this.ViewModel.connectionString);
+    }
 }

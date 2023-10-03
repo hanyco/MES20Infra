@@ -64,6 +64,9 @@
                         Name="ConnectionStringBox"
                         Style="{StaticResource LongLongTextBox}"
                         Text="{Binding connectionString}" />
+                    <Button x:Name="TestButton" Style="{StaticResource IconButton}" Click="TestButton_Click">
+                        <Path Style="{StaticResource Check}"></Path>
+                    </Button>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Style="{StaticResource FieldPanel}">
                     <CheckBox
