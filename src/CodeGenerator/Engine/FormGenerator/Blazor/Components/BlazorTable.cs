@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
@@ -20,36 +21,36 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
     {
         var buffer = new StringBuilder();
         _ = buffer.AppendLine("<table class=\"table\">")
-            .AppendLine($"{HtmlDoc.INDENT}<thead>")
-            .AppendLine($"{HtmlDoc.INDENT.Repeat(2)}<tr>");
+            .AppendLine($"{CodeConstants.INDENT}<thead>")
+            .AppendLine($"{CodeConstants.INDENT.Repeat(2)}<tr>");
         foreach (var column in this.Columns)
         {
-            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}<th>{column.Title}</th>");
+            _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(3)}<th>{column.Title}</th>");
         }
         foreach (var action in this.Actions)
         {
-            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}<th>{action.Title}</th>");
+            _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(3)}<th>{action.Title}</th>");
         }
-        _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(2)}</tr>")
-            .AppendLine($"{HtmlDoc.INDENT}</thead>");
+        _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(2)}</tr>")
+            .AppendLine($"{CodeConstants.INDENT}</thead>");
 
-        _ = buffer.AppendLine($"{HtmlDoc.INDENT}<tbody>");
+        _ = buffer.AppendLine($"{CodeConstants.INDENT}<tbody>");
         if (!this.DataContextName.IsNullOrEmpty())
         {
-            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(2)}@if ({this.DataContextName} is not null)");
-            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}@foreach (var item in {this.DataContextName})")
-                .AppendLine($"{HtmlDoc.INDENT.Repeat(3)}{{");
-            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(2)}<tr>");
+            _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(2)}@if ({this.DataContextName} is not null)");
+            _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(3)}@foreach (var item in {this.DataContextName})")
+                .AppendLine($"{CodeConstants.INDENT.Repeat(3)}{{");
+            _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(2)}<tr>");
             foreach (var column in this.Columns)
             {
-                _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}<td>@item.{column.BindingName}</td>");
+                _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(3)}<td>@item.{column.BindingName}</td>");
             }
             foreach (var action in this.Actions)
             {
                 var onClick = !action.OnClick.IsNullOrEmpty()
                     ? $"\"@(() => {action.OnClick}(item.Id))\""
                     : $"\"@(() => this.{action.Name}_OnClick(item.Id))\"";
-                _ = buffer.Append($"{HtmlDoc.INDENT.Repeat(3)}<td>")
+                _ = buffer.Append($"{CodeConstants.INDENT.Repeat(3)}<td>")
                     .Append($"<button id=\"{this.Name}\" name=\"{this.Name}\" ")
                     .Append($"@onclick={onClick}>{action.Title}")
                     .Append("</button>")
@@ -57,10 +58,10 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
                     .AppendLine();
             }
             _ = buffer.AppendLine()
-                .AppendLine($"{HtmlDoc.INDENT.Repeat(2)}</tr>");
-            _ = buffer.AppendLine($"{HtmlDoc.INDENT.Repeat(3)}}}");
+                .AppendLine($"{CodeConstants.INDENT.Repeat(2)}</tr>");
+            _ = buffer.AppendLine($"{CodeConstants.INDENT.Repeat(3)}}}");
         }
-        _ = buffer.AppendLine($"{HtmlDoc.INDENT}</tbody>");
+        _ = buffer.AppendLine($"{CodeConstants.INDENT}</tbody>");
         _ = buffer.AppendLine("</table>");
         return buffer.ToString();
     }

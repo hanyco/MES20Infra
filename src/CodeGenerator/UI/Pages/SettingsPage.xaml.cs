@@ -3,6 +3,7 @@ using System.Windows.Forms;
 
 using Contracts.ViewModels;
 
+using Library.Data.SqlServer;
 using Library.Wpf.Windows.UI;
 
 using UI;
@@ -20,7 +21,13 @@ public partial class SettingsPage
     public SettingsModel ViewModel =>
         this.DataContext.Cast().To<SettingsModel>();
 
+    private void ReloadButton_Click(object sender, RoutedEventArgs e) => 
+        this.Reload();
+
     private void Page_Loaded(object sender, RoutedEventArgs e) =>
+        this.Reload();
+
+    private void Reload() =>
         this.DataContext = SettingsService.Get();
 
     private void Save() =>
@@ -48,5 +55,10 @@ public partial class SettingsPage
     }
 
     private void ToastHelpButton_Click(object sender, RoutedEventArgs e) =>
-        Toast2.New().AddText("This is a sample toast notification.").Show();
+        Toast2.Test();
+
+    private async void TestButton_Click(object sender, RoutedEventArgs e)
+    {
+        await Sql.CanConnectAsync(this.ViewModel.connectionString);
+    }
 }

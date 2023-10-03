@@ -92,21 +92,16 @@ public partial class App : LibApp
         static void registerServices(IServiceCollection services)
             => services
                 .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule))
-                .RegisterServicesWithIService<App>()
-                //.AddScoped<IEntityViewModelConverter, EntityViewModelConverter>()
-                //.AddScoped<IBlazorCodingService, BlazorCodingService>()
-                //.AddScoped<IBlazorComponentService, BlazorComponentService>()
-                //.AddScoped<IBlazorPageService, BlazorPageService>()
-                ;
+                .RegisterServicesWithIService<App>();
 
         static void addPages(IServiceCollection services)
         {
             _ = services
                .AddSingleton<MainWindow>()
+               .AddTransient<SettingsPage>()
                .AddTransient<DtoDetailsPage>()
                .AddTransient<CqrsQueryDetailsPage>()
                .AddTransient<CqrsCommandDetailsPage>()
-               .AddTransient<SettingsPage>()
                .AddTransient<CodeDetailsPage>()
                .AddTransient<CreateTableCrudPage>()
                .AddTransient<BlazorComponentGenertorPage>()

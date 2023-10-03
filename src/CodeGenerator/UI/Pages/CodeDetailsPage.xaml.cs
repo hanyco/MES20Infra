@@ -140,7 +140,7 @@ public partial class CodeDetailsPage
 
     private async Task FillCodeAsync(CqrsViewModelBase viewModel)
     {
-        this.Codes = await this._CodeGeneratorService.GenerateCodeAsync(viewModel);
+        this.Codes = await this._CodeGeneratorService.GenerateCodesAsync(viewModel);
         this.CqrsSegregateTitle = viewModel.Name;
     }
 

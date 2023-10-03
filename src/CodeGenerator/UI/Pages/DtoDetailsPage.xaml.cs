@@ -152,14 +152,14 @@ public partial class DtoDetailsPage
         {
             return;
         }
-        _ = Application.Current.DoEvents();
+        Application.Current.DoEvents();
         this.Debug("DTO deleting...");
         var saveResult = await this._service.DeleteAsync(dto);
         if (saveResult.IsFailure && saveResult.Status is DbUpdateException ex)
         {
             if (ex.InnerException?.Message.Contains("infra.CqrsSegregate") ?? false)
             {
-                MesException.Throw("A CQRS segregation has relation to this DTO and this DTO cannot be deleted.");
+                MesException.Throw("A CQRS segregation has relation to this DTO. Therefore this DTO cannot be deleted.");
             }
         }
         _ = saveResult.ThrowOnFail();

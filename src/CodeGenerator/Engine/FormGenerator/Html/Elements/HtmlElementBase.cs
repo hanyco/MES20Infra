@@ -97,7 +97,7 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
     public bool Equals(TSelf? other)
         => this.Equals(other?.Cast().As<object>());
 
-    public virtual Code GenerateUiCode(in GenerateCodesParameters? arguments = null)
+    public virtual Code GenerateUiCode(GenerateCodesParameters? arguments = null)
     {
         this.OnGeneratingCode();
         var statement = this.OnGenerateCodeStatement();

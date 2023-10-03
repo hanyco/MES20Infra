@@ -19,15 +19,35 @@ public record FieldActor()
 
     public FieldInfo ToFieldInfo() => new();
 }
-public record MethodActor(string? Name,
-    bool showOnGrid = false,
-                          string? Caption = null,
-                          bool IsPartial = false,
-                          string? Body = null,
-                          string? ReturnType = null,
-                          MemberAttributes? AccessModifier = null,
-                          MethodArgument[]? Arguments = null,
-                          string? EventHandlerName = null)
+
+public class MethodActor(
+    string? name,
+    bool? isPartial = null,
+    string? body = null,
+    string? returnType = null,
+    MemberAttributes? accessModifier = null,
+    MethodArgument[]? arguments = null)
 {
-    public MethodInfo ToMethodInfo() => new();
+    public MemberAttributes? AccessModifier { get; } = accessModifier;
+    public MethodArgument[]? Arguments { get; } = arguments;
+    public string? Body { get; } = body;
+    public bool? IsPartial { get; } = isPartial;
+    public string? Name { get; } = name;
+    public string? ReturnType { get; } = returnType;
+}
+
+public class ButtonActor(
+    string? name,
+    bool showOnGrid = false,
+    string? caption = null,
+    bool isPartial = false,
+    string? body = null,
+    string? returnType = null,
+    MemberAttributes? accessModifier = null,
+    MethodArgument[]? arguments = null,
+    string? eventHandlerName = null) : MethodActor(name, isPartial, body, returnType, accessModifier, arguments)
+{
+    public string? Caption { get; } = caption;
+    public string? EventHandlerName { get; } = eventHandlerName;
+    public bool ShowOnGrid { get; } = showOnGrid;
 }

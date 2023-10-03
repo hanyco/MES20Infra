@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Forms;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.ViewModels;
 

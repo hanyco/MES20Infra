@@ -55,7 +55,7 @@ public partial class SecurityClaimCollectorUserControl : UserControl
     {
         var generatedClaims = this._autoGenerateClaimEventHandler?.Invoke();
         var newClaims = generatedClaims?.Compact().Except(this.ClaimViewModels);
-        _ = newClaims?.ForEach(x => this.ClamsListBox.Items.Add(x));
+        newClaims?.ForEach(x => this.ClamsListBox.Items.Add(x));
     }
 
     private void Me_Loaded(object sender, System.Windows.RoutedEventArgs e) =>

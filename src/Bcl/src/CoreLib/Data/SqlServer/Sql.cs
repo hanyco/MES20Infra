@@ -1,12 +1,15 @@
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 
 using Library.Dynamic;
+using Library.Interfaces;
 using Library.Validations;
 
 namespace Library.Data.SqlServer;
 
-public sealed class Sql(string connectionString)
+[DebuggerStepThrough]
+public sealed class Sql(string connectionString) : INew<Sql, string>
 {
     public string ConnectionString { get; } = connectionString.ArgumentNotNull();
 
@@ -214,5 +217,14 @@ public sealed class Sql(string connectionString)
     {
         using var conn = new SqlConnection(connectionString);
         return func(conn);
+    }
+
+    public static Sql New(string connectionString) =>
+        new(connectionString);
+
+    public static Task CanConnectAsync(string? connectionString)
+    {
+        using var conn = new SqlConnection(connectionString);
+        return conn.CanConnectAsync();
     }
 }

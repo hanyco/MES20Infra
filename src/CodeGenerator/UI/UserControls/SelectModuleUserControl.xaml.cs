@@ -3,8 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 using Contracts.Services;
-
-using HanyCo.Infra.UI.ViewModels;
+using Contracts.ViewModels;
 
 using Library.EventsArgs;
 using Library.Validations;

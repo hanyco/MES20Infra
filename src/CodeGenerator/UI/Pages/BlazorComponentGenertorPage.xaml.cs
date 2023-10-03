@@ -171,7 +171,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
         async Task fillActionCqrsInfo(UiComponentViewModel model)
         {
-            foreach (var action in model.UiActions.Where(x => x.CqrsSegregate is not null))
+            foreach (var action in model.Actions.OfType<UiComponentCqrsButtonViewModel>().Where(x => x.CqrsSegregate is not null))
             {
                 action.CqrsSegregate = await action.CqrsSegregate.FillAsync(this._cqrsQueryService, this._commandService);
             }
@@ -230,14 +230,14 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         }
 
         var scope = this.ActionScopeBegin("Creating new component...");
-        this.ViewModel = await this._codeService.CreateNewComponentByDtoAsync(dto);
+        this.ViewModel = await this._service.CreateNewComponentByDtoAsync(dto);
         this.IsEditMode = true;
         scope.End();
     }
 
     private async void NewBlazorComponentUnboundButton_Click(object sender, RoutedEventArgs e)
     {
-        this.ViewModel = await this._codeService.CreateNewComponentAsync();
+        this.ViewModel = await this._service.CreateNewComponentAsync();
         this.IsEditMode = true;
         this.EndActionScope();
     }

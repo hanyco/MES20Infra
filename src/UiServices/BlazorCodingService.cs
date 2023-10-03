@@ -8,7 +8,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
-using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
@@ -18,24 +17,24 @@ using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
 
-using Microsoft.EntityFrameworkCore;
+using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
 
-using Services.Helpers;
+using ButtonViewModelBase = Contracts.ViewModels.UiComponentButtonViewModelBase;
+using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
+using CqrsLoadViewModel = Contracts.ViewModels.UiComponentCqrsLoadViewModel;
+using CstmButtonViewModel = Contracts.ViewModels.UiComponentCustomButtonViewModel;
+using CstmLoadViewModel = Contracts.ViewModels.UiComponentCustomLoadViewModel;
+using PropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
+using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
-internal sealed class BlazorCodingService(IDtoService dtoService,
-                           IPropertyService propertyService,
-                           IEntityViewModelConverter converter,
-                           InfraReadDbContext readDbContext) : IBlazorComponentCodingService
+internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodingService, IBlazorPageCodingService
 {
-    private readonly IEntityViewModelConverter _converter = converter;
-    private readonly IDtoService _dtoService = dtoService;
-    private readonly IPropertyService _propertyService = propertyService;
-    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly ILogger _logger = logger;
 
-    public bool ControlTypeHasPropertiesPage(ControlType controlType)
-        => controlType switch
+    public bool ControlTypeHasPropertiesPage(ControlType controlType) =>
+        controlType switch
         {
             ControlType.None => false,
             ControlType.RadioButton => false,
@@ -54,156 +53,63 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
             _ => throw new NotImplementedException(),
         };
 
-    public UiComponentPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel)
+    public Result<Codes> GenerateCodes(UiViewModel model, GenerateCodesParameters? arguments = null)
     {
-        Check.MustBeArgumentNotNull(viewModel?.Name);
-
-        return new UiComponentPropertyViewModel
+        if (!Check.IfArgumentIsNotNull(model).TryParse(out var vr))
         {
-            Caption = viewModel.Name,
-            ControlType = ControlTypeHelper.ByDtoViewModel(viewModel),
-        };
-    }
+            return vr.WithValue(Codes.Empty);
+        }
 
-    public Task<UiComponentViewModel> CreateNewComponentAsync(CancellationToken cancellationToken = default)
-    {
-        var result = new UiComponentViewModel();
-        return Task.FromResult(result);
-    }
-
-    public async Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken cancellationToken = default)
-    {
-        Check.MustBeArgumentNotNull(dto?.Id);
-        var entity = (await this._dtoService.GetByIdAsync(dto.Id.Value, cancellationToken)).NotNull(() => new NotFoundValidationException());
-        return this.CreateViewModel(dto);
-    }
-
-    public UiComponentActionViewModel CreateUnboundAction() =>
-        new() { Caption = "New Action", IsEnabled = true, TriggerType = TriggerType.FormButton, Name = "NewAction", };
-
-    public UiComponentPropertyViewModel CreateUnboundProperty() =>
-        new() { Caption = "New Property", IsEnabled = true, ControlType = ControlType.None, Name = "UnboundProperty" };
-
-    public UiComponentViewModel CreateViewModel(DtoViewModel dto)
-    {
-        _ = dto.Check()
-            .ArgumentNotNull().ThrowOnFail()
-            .NotNull(x => x.Name)
-            .NotNull(x => x.NameSpace)
-            .ThrowOnFail();
-
-        var name = CommonHelpers.Purify(dto.Name)!;
-        var parsedNameSpace = CommonHelpers.Purify(dto.NameSpace);
-        var result = new UiComponentViewModel
-        {
-            Name = name,
-            PageDataContext = dto,
-            ClassName = name,
-            NameSpace = parsedNameSpace,
-            Guid = Guid.NewGuid(),
-        };
-        _ = result.UiProperties.AddRange(dto.Properties.Compact().Select(x => this._converter.ToUiComponentProperty(x)));
-        return result;
-    }
-
-    public Task<UiComponentPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiComponentPropertyViewModel? prop, CancellationToken cancellationToken = default)
-    {
-        Check.MustBeArgumentNotNull(prop);
-        var id = prop.Id.ArgumentNotNull(nameof(UiComponentPropertyViewModel.Id)).Value;
-        return this.GetUiComponentPropertyByIdAsync(id, cancellationToken);
-    }
-
-    public Result<Codes> GenerateCodes(in UiComponentViewModel model, GenerateCodesParameters? arguments = null)
-    {
-        Result<Codes> result;
         try
         {
-            var component = CreateComponent(model);
-            var codes = component.GenerateCodes(CodeCategory.Component, arguments ?? new(true, true, true));
-            result = Result<Codes>.CreateSuccess(codes);
+            var component = createComponent(model);
+            _ = processBackendActions(model, component);
+            _ = processFrontActions(model, component);
+            var codes = component.GenerateCodes(CodeCategory.Component, arguments);
+            return Result<Codes>.CreateSuccess(codes);
         }
         catch (Exception ex)
         {
-            result = Result<Codes>.CreateFailure(ex, Codes.Empty);
-        }
-        return result;
-    }
-
-    public async Task<UiComponentPropertyViewModel?> GetUiComponentPropertyByIdAsync(long id, CancellationToken cancellationToken = default)
-    {
-        var query = from cp in this._readDbContext.UiComponentProperties
-                    where cp.Id == id
-                    select cp;
-        var result = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        return this._converter.ToViewModel(result);
-    }
-
-    public bool HasPropertiesPage(ControlType? ct)
-        => ct switch
-        {
-            ControlType.RadioButton => false,
-            ControlType.CheckBox => false,
-            ControlType.TextBox => false,
-            ControlType.DropDown => false,
-            ControlType.DateTimePicker => false,
-            ControlType.NumericTextBox => false,
-            ControlType.LookupBox => false,
-            ControlType.ImageUpload => false,
-            ControlType.FileUpload => false,
-            ControlType.DataGrid => true,
-            ControlType.CurrencyBox => false,
-            ControlType.ExternalViewBox => false,
-            _ => false,
-        };
-
-    private static BlazorComponent CreateComponent(in UiComponentViewModel model)
-    {
-        Check.MustBeArgumentNotNull(model?.Name);
-
-        var (dataContextType, dataContextPropType) = createDataContext(model);
-        var result = initializeComponent(model, dataContextType);
-        setDataContext(model, dataContextPropType, result);
-        if (!model.IsGrid)
-        {
-            createChildren(model, result);
-        }
-        else
-        {
-            createGrid(model, result);
-        }
-        return result;
-
-        static (TypePath DataContextType, TypePath? DataContextPropType) createDataContext(UiComponentViewModel model, CancellationToken cancellationToken = default)
-        {
-            var dataContextType = TypePath.New(model.PageDataContext?.Name, model.PageDataContext?.NameSpace);
-            var dataContextPropType = model.PageDataContextProperty is not null and { Name: not null }
-                        ? TypePath.New(model.PageDataContextProperty.TypeFullName)
-                        : null;
-            return (dataContextType, dataContextPropType);
+            return Result<Codes>.CreateFailure(ex, Codes.Empty);
         }
 
-        static BlazorComponent initializeComponent(UiComponentViewModel model, TypePath dataContextType)
-            => BlazorComponent.New(model.Name!)
-                              .SetNameSpace(model.NameSpace)
-                              .SetDataContext(dataContextType)
-                              .SetIsGrid(model.IsGrid);
-
-        static void setDataContext(UiComponentViewModel model, TypePath? dataContextPropType, BlazorComponent result, CancellationToken cancellationToken = default)
+        static BlazorComponent createComponent(in UiViewModel model)
         {
-            if (dataContextPropType is not { } prop)
+            Check.MustBeArgumentNotNull(model.Name);
+
+            var (dataContextType, dataContextPropType) = createDataContext(model);
+            var result = getNewComponent(model, dataContextType);
+            setDataContext(model, dataContextPropType, result);
+            return result;
+
+            static (TypePath DataContextType, TypePath? DataContextPropType) createDataContext(UiViewModel model)
             {
-                return;
+                var dataContextType = TypePath.New(model.PageDataContext?.Name, model.PageDataContext?.NameSpace);
+                var dataContextPropType = model.PageDataContextProperty is not null and { Name: not null }
+                    ? TypePath.New(model.PageDataContextProperty.TypeFullName)
+                    : null;
+                return (dataContextType, dataContextPropType);
             }
-            _ = result.SetDataContextProperty(prop, model?.Name);
-        }
 
-        static void createChildren<TBlazorComponent>(in UiComponentViewModel model, in BlazorComponentBase<TBlazorComponent> engine, CancellationToken cancellationToken = default)
-            where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
-        {
-            for (var propertyIndex = 0; propertyIndex < model.UiProperties.Count; propertyIndex++)
+            static BlazorComponent getNewComponent(UiViewModel model, TypePath dataContextType) =>
+                BlazorComponent.New(model.Name!)
+                    .With(x => x.NameSpace = model.NameSpace)
+                    .With(x => x.IsGrid = model.IsGrid)
+                    .With(x => x.DataContextType = dataContextType);
+
+            static void setDataContext(UiViewModel model, TypePath? dataContextPropType, BlazorComponent result)
             {
-                var prop = model.UiProperties[propertyIndex];
-                var bindPropName = $"this.DataContext.{prop.Name}";
+                if (dataContextPropType is { } prop)
+                {
+                    result.DataContextProperty = (prop, model.Name!);
+                }
+            }
+        }
+        static BlazorComponent createForm(in UiViewModel model, in BlazorComponent result)
+        {
+            foreach (var prop in model.Properties)
+            {
+                var bindPropName = InstanceDataContextProperty(prop.Name);
                 var position = prop.Position.ToBootstrapPosition();
 
                 if (position.IsDefault())
@@ -219,23 +125,23 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                         break;
 
                     case ControlType.CheckBox:
-                        engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorCheckBox($"{prop.Name}CheckBox", bind: bindPropName) { Position = position });
+                        result.Children.Add(createLabel(prop));
+                        result.Children.Add(new BlazorCheckBox($"{prop.Name}CheckBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.TextBox:
-                        engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(createLabel(prop));
+                        result.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.DateTimePicker:
-                        engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(createLabel(prop));
+                        result.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.NumericTextBox:
-                        engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorNumericTextBox($"{prop.Name}NumericTextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(createLabel(prop));
+                        result.Children.Add(new BlazorNumericTextBox($"{prop.Name}NumericTextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.CurrencyBox:
@@ -254,8 +160,8 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                         break;
 
                     case ControlType.DataGrid:
-                        engine.Children.Add(createLabel(prop));
-                        engine.Children.Add(new BlazorTable { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(createLabel(prop));
+                        result.Children.Add(new BlazorTable { Position = position, IsEnabled = prop.IsEnabled });
                         break;
 
                     case ControlType.ExternalViewBox:
@@ -265,15 +171,34 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                         break;
                 }
             }
-            foreach (var action in model.UiActions)
+            foreach (var elementAction in model.Actions.OfType<FrontElement>())
             {
-                HtmlButton button = new BlazorButton(name: action.Name, body: action.Caption, type: action.TriggerType.ToButtonType(), onClick: action.EventHandlerName)
+                IHtmlElement button = elementAction switch
                 {
-                    Position = action.Position.ToBootstrapPosition()
+                    CqrsButtonViewModel cqrsButtonViewModel => createCqrsButton(model, cqrsButtonViewModel),
+                    CstmButtonViewModel cstmButtonViewModel => createCstmButton(model, cstmButtonViewModel),
+                    _ => throw new NotImplementedException()
                 };
-                if (action.CqrsSegregate?.Name is not null)
+                result.Children.Add(button);
+            }
+            return result;
+
+            static IHtmlElement createLabel([DisallowNull] PropertyViewModel prop) =>
+                new BlazorLabel($"{prop.ArgumentNotNull().Name}Label", body: prop.Caption.NotNull(New<NotFoundValidationException>))
                 {
-                    button = action.CqrsSegregate switch
+                    Position = prop.Position.ToBootstrapPosition().SetRow(1).SetCol(2),
+                    IsEnabled = prop.IsEnabled
+                };
+
+            static BlazorCqrsButton createCqrsButton(UiViewModel model, CqrsButtonViewModel cqrsButtonViewModel)
+            {
+                var button = new BlazorCqrsButton(name: cqrsButtonViewModel.Name, body: cqrsButtonViewModel.Caption, onClick: cqrsButtonViewModel.EventHandlerName)
+                {
+                    Position = cqrsButtonViewModel.Position.ToBootstrapPosition()
+                };
+                if (cqrsButtonViewModel.CqrsSegregate?.Name is not null)
+                {
+                    button = cqrsButtonViewModel.CqrsSegregate switch
                     {
                         CqrsQueryViewModel query => button.SetAction(
                             query.Name!,
@@ -284,29 +209,131 @@ internal sealed class BlazorCodingService(IDtoService dtoService,
                         _ => throw new NotImplementedException()
                     };
                 }
-                engine.Children.Add(button);
+
+                return button;
             }
-            static IHtmlElement createLabel([DisallowNull] UiComponentPropertyViewModel prop) =>
-                new BlazorLabel($"{prop.ArgumentNotNull().Name}Label", body: prop.Caption.NotNull(New<NotFoundValidationException>))
+
+            static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel customButtonViewModel)
+            {
+                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.CodeStatement, onClick: customButtonViewModel.EventHandlerName)
                 {
-                    Position = prop.Position.ToBootstrapPosition().SetRow(1).SetCol(2),
-                    IsEnabled = prop.IsEnabled
+                    Position = customButtonViewModel.Position.ToBootstrapPosition()
                 };
+                return button.SetAction(model.Name!, customButtonViewModel.CodeStatement);
+            }
         }
 
-        static void createGrid(UiComponentViewModel model, BlazorComponent result)
+        static BlazorComponent createGrid(UiViewModel model, BlazorComponent result)
         {
-            var id = model.UiProperties.FirstOrDefault(x => x.Name.EqualsTo("id"));
-            var idType = TypePath.New(id?.Property.Type.ToFullTypeName());
-            foreach (var uiProp in model.UiProperties)
+            var id = model.Properties.First(x => x.Name!.EqualsTo("id"));
+            var idType = TypePath.New(id.Property.NotNull().Type.ToFullTypeName());
+            foreach (var prop in model.Properties)
             {
-                result.Properties.Add(new PropertyActor(uiProp.Property.TypeFullName, uiProp.Name, uiProp.Caption));
+                result.Properties.Add(new PropertyActor(prop.Property.NotNull().TypeFullName, prop.Name.NotNull(), prop.Caption));
             }
-            foreach (var uiAction in model.UiActions)
+            foreach (var action in model.Actions.OfType<FrontElement>())
             {
-                var args = model.IsGrid && uiAction.TriggerType == TriggerType.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
-                result.Actions.Add(new(uiAction.Name, uiAction.TriggerType == TriggerType.RowButton, uiAction.Caption, Arguments: args, EventHandlerName: uiAction.EventHandlerName));
+                switch (action)
+                {
+                    case ButtonViewModelBase button:
+                        var args = model.IsGrid && button.Placement == Placement.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
+                        result.Actions.Add(new ButtonActor(
+                            button.Name,
+                            button.Placement == Placement.RowButton,
+                            button.Caption,
+                            arguments: args,
+                            eventHandlerName: button.EventHandlerName,
+                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement));
+                        break;
+                }
             }
+            return result;
         }
+
+        static BlazorComponent processBackendActions(UiViewModel model, BlazorComponent result)
+        {
+            foreach (var action in model.Actions.OfType<BackElement>())
+            {
+                switch (action)
+                {
+                    case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject.Name != null:
+                        var entityName = StringHelper.Pluralize(load.CqrsSegregate.DbObject.Name);
+                        result.Actions.Add(new(GetAll_OnCallingMethodName(entityName), false));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), body: GetAll_CallMethodBody(entityName)));
+                        result.Actions.Add(new(GetAll_OnCalledMethodName(entityName), false));
+                        break;
+
+                    case CqrsLoadViewModel load:
+                        throw new InvalidOperationValidationException("`OnCqrsLoad` method has not required fields.");
+
+                    case CstmLoadViewModel load when load.CodeStatement != null:
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), true, load.CodeStatement));
+                        break;
+
+                    case CstmLoadViewModel load:
+                        throw new InvalidOperationValidationException("`OnCustomLoad` method has not required fields.");
+                }
+            }
+            return result;
+        }
+
+        static BlazorComponent processFrontActions(UiViewModel model, BlazorComponent component) =>
+            model.IsGrid ? createGrid(model, component) : createForm(model, component);
     }
+
+    public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments)
+    {
+        if (!this.Validate(viewModel).TryParse(out var vr))
+        {
+            return vr.WithValue(Codes.Empty);
+        }
+        this._logger.Debug($"Generating code is started.");
+        var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
+        var page = (viewModel.Route.IsNullOrEmpty()
+            ? BlazorPage.NewByModuleName(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Module.Name!)
+            : BlazorPage.NewByPageRoute(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Route))
+                .With(x => x.NameSpace = viewModel.NameSpace)
+                .With(x => x.DataContextType = dataContextType);
+        _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
+
+        var result = page.GenerateCodes(CodeCategory.Page, arguments);
+        this._logger.Debug($"Generating code is done.");
+
+        return Result<Codes>.CreateSuccess(result);
+
+        static IHtmlElement toHtmlElement(UiViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
+            BlazorComponent.New(component.Name!)
+                .With(x => x.NameSpace = component.NameSpace)
+                .With(x => x.DataContextType = dataContextType)
+                .With(x => x.DataContextProperty = dataContextTypeProperty)
+                .With(x => x.Position = new(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan, component.Position.Offset));
+    }
+
+    public bool HasPropertiesPage(ControlType? ct) =>
+        ct switch
+        {
+            ControlType.RadioButton => false,
+            ControlType.CheckBox => false,
+            ControlType.TextBox => false,
+            ControlType.DropDown => false,
+            ControlType.DateTimePicker => false,
+            ControlType.NumericTextBox => false,
+            ControlType.LookupBox => false,
+            ControlType.ImageUpload => false,
+            ControlType.FileUpload => false,
+            ControlType.DataGrid => true,
+            ControlType.CurrencyBox => false,
+            ControlType.ExternalViewBox => false,
+            _ => false,
+        };
+
+    public Result<UiPageViewModel> Validate(in UiPageViewModel? model) =>
+    model.ArgumentNotNull().Check()
+         .NotNull(x => x.Name)
+         .NotNull(x => x.NameSpace)
+         .NotNull(x => x.ClassName)
+         .NotNull(x => x.DataContext)
+         .NotNull(x => x.Module)
+         //.NotNull(x => x.Route)
+         .Build();
 }

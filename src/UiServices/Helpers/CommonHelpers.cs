@@ -6,6 +6,7 @@ namespace Services.Helpers;
 
 internal static class CommonHelpers
 {
+    [return: NotNullIfNotNull(nameof(name))]
     public static string? Purify(string? name) =>
         name?.TrimEnd(".")
              .TrimEnd("Dto")

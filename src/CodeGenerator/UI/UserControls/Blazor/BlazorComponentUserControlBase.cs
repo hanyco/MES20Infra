@@ -9,7 +9,8 @@ public class BlazorComponentUserControlBase : AsyncDataBindUserControl
 {
     public BlazorComponentUserControlBase()
     {
-        this.Service = null!;
+        this.CodeService = DI.GetService< IBlazorComponentCodingService>();
+        this.Service = DI.GetService<IBlazorComponentService>();
         this.IsEnabled = false;
         this.DataContextChanged += this.BlazorComponentUserControlBase_DataContextChanged;
     }
@@ -20,10 +21,11 @@ public class BlazorComponentUserControlBase : AsyncDataBindUserControl
         set => this.DataContext = value;
     }
 
-    protected IBlazorComponentCodingService Service { get; private set; }
+    protected IBlazorComponentCodingService CodeService { get; private set; }
+    protected IBlazorComponentService Service { get; private set; }
 
     public virtual void Initialize(IBlazorComponentCodingService service)
-        => this.Service = service;
+        => this.CodeService ??= service;
 
     protected override Task OnBindDataAsync(bool isFirstBinding)
         => Task.CompletedTask;

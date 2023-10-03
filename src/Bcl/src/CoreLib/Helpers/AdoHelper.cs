@@ -1,7 +1,9 @@
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 
+using Library.Results;
 using Library.Validations;
 
 namespace Library.Helpers;
@@ -9,6 +11,7 @@ namespace Library.Helpers;
 /// <summary>
 /// A utility to do some common tasks about ADO arguments
 /// </summary>
+[DebuggerStepThrough]
 public static partial class AdoHelper
 {
     /// <summary>
@@ -16,27 +19,41 @@ public static partial class AdoHelper
     /// </summary>
     /// <param name="conn">The SqlConnection to check.</param>
     /// <returns>True if the SqlConnection can connect, false otherwise.</returns>
-    public static bool CanConnect(this SqlConnection conn)
-            => conn.TryConnectAsync() == null;
+    public static async Task<bool> CanConnectAsync(this SqlConnection conn)
+    {
+        var result = await conn.TryConnectAsync();
+        return result.IsSucceed;
+    }
 
     /// <summary>
-    /// Checks the connection string asynchronously and returns an exception if one occurs.
+    /// Checks if a value retrieved from a SqlDataReader is DBNull and provides a default value if it is.
     /// </summary>
-    public static async Task<Exception?> CheckConnectionStringAsync(string connectionString)
-            => await Using(() => new SqlConnection(connectionString), x => x.TryConnectAsync());
-
-    /// <summary>
-    /// Checks the value of a column in a SqlDataReader and returns the default value if it is null.
-    /// </summary>
-    /// <param name="reader">The SqlDataReader to check.</param>
-    /// <param name="columnName">The name of the column to check.</param>
-    /// <param name="defaultValue">The default value to return if the column is null.</param>
-    /// <param name="converter">A function to convert the value of the column to the desired type.</param>
-    /// <returns>The value of the column or the default value if the column is null.</returns>
+    /// <typeparam name="T">The type of the value to check.</typeparam>
+    /// <param name="reader">The SqlDataReader to retrieve the value from.</param>
+    /// <param name="columnName">The name of the column in the SqlDataReader.</param>
+    /// <param name="defaultValue">The default value to return if the retrieved value is DBNull.</param>
+    /// <param name="converter">A function to convert the retrieved object to the desired type.</param>
+    /// <returns>
+    /// The converted value if it's not DBNull, or the provided defaultValue if it is DBNull.
+    /// </returns>
     public static T CheckDbNull<T>(this SqlDataReader reader, string columnName, T defaultValue, Func<object, T> converter)
-        => reader is not null and { IsClosed: false }
-            ? ObjectHelper.CheckDbNull(reader[columnName], defaultValue, converter)
-            : throw new ArgumentNullException(nameof(reader));
+    {
+        // Check if the SqlDataReader is not null and not closed.
+        if (reader is not null and { IsClosed: false })
+        {
+            // Retrieve the value from the SqlDataReader using the columnName.
+            object? value = reader[columnName];
+
+            // Use the ObjectHelper.CheckDbNull method to check for DBNull and provide a default value if needed.
+            return ObjectHelper.CheckDbNull(value, defaultValue, converter);
+        }
+        else
+        {
+            // Throw an ArgumentNullException if the SqlDataReader is null or closed.
+            throw new ArgumentNullException(nameof(reader));
+        }
+    }
+
 
     public static SqlCommand CreateCommand(this SqlConnection connection, string commandText, Action<SqlParameterCollection>? fillParams = null)
     {
@@ -452,9 +469,6 @@ public static partial class AdoHelper
     public static bool IsNullOrEmpty(this DataRow row, string columnTitle)
         => row is null || row[columnTitle] is null || StringHelper.IsEmpty(row[columnTitle].ToString()) || row[columnTitle] == DBNull.Value;
 
-    public static bool IsValidConnectionString(string connectionString)
-        => CheckConnectionStringAsync(connectionString)?.Result == null;
-
     /// <summary>
     /// Selects the specified table.
     /// </summary>
@@ -634,16 +648,16 @@ public static partial class AdoHelper
     /// </summary>
     /// <param name="conn">The SqlConnection to connect to.</param>
     /// <returns>An exception if the connection fails, otherwise null.</returns>
-    public static async Task<Exception?> TryConnectAsync(this SqlConnection conn)
+    public static async Task<TryMethodResult> TryConnectAsync(this SqlConnection conn)
     {
         try
         {
             await conn.EnsureClosedAsync(c => c.OpenAsync());
-            return null;
+            return TryMethodResult.CreateSuccess();
         }
         catch (Exception ex)
         {
-            return ex;
+            return TryMethodResult.CreateFailure(ex);
         }
     }
 

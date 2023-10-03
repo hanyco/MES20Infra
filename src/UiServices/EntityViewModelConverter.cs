@@ -63,13 +63,14 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         return viewModel;
     }
 
-    public UiComponentAction? ToDbEntity(UiComponentActionViewModel? model) =>
+    public UiComponentAction? ToDbEntity(UiComponentButtonViewModelBase? model) =>
         model is null ? null : this._mapper.Map<UiComponentAction>(model)
-            .ForMember(x => x.TriggerTypeId = model.TriggerType.Cast().ToInt())
-            .ForMember(x => x.CqrsSegregateId = model.CqrsSegregate?.Id)
+            .ForMember(x => x.TriggerTypeId = model.Placement.Cast().ToInt())
+            // TODO: Think about how to save component complexity in database
+            //?.ForMember(x => x.CqrsSegregateId = model.CqrsSegregate?.Id)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!);
 
-    public UiComponentProperty? ToDbEntity(UiComponentPropertyViewModel? model) =>
+    public UiComponentProperty? ToDbEntity(UiPropertyViewModel? model) =>
         model is null ? null : this._mapper.Map<UiComponentProperty>(model)
             .ForMember(x => x.Position = this.ToDbEntity(model.Position)!)
             .ForMember(x => x.PropertyId = model.Property?.Id)
@@ -84,8 +85,10 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.PageDataContextPropertyId = model.PageDataContextProperty?.Id)
             .ForMember(x => x.IsGrid = model.IsGrid)
             .Fluent()
-            .IfTrue(model.UiProperties.Any() is true, x => x.UiComponentProperties = model.UiProperties.Select(this.ToDbEntity).ToList()!)
-            .IfTrue(model.UiActions.Any() is true, x => x.UiComponentActions = model.UiActions.Select(this.ToDbEntity).ToList()!);
+            .IfTrue(model.Properties.Any() is true, x => x.UiComponentProperties = model.Properties.Select(this.ToDbEntity).Compact().ToList());
+
+    // TODO: Think about how to load component complexity from database
+    //?.IfTrue(model.UiActions.Any() is true, x => x.UiComponentActions = model.UiActions.Select(this.ToDbEntity).ToList()!);
 
     public Module? ToDbEntity(ModuleViewModel? model) =>
         model is null ? null : this._mapper.Map<Module>(model);
@@ -181,7 +184,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                 Id = columnViewModel.ObjectId * -1
             };
 
-    public UiComponentPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel) =>
+    public UiPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel) =>
         propertyViewModel == null ? null : new()
         {
             Name = propertyViewModel.Name.NotNull(),
@@ -222,19 +225,33 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public UiComponentViewModel? ToViewModel(UiComponent? entity) =>
         entity is null ? null : this._mapper.Map<UiComponentViewModel>(entity)
             .ForMember(x => x.IsGrid = entity.IsGrid ?? false)
-            .ForMember(x => x.UiProperties!.AddRange(entity.UiComponentProperties.Select(this.ToViewModel)))
-            .ForMember(x => x.UiActions!.AddRange(entity.UiComponentActions.Select(this.ToViewModel)))
+            .ForMember(x => x.Properties!.AddRange(entity.UiComponentProperties.Select(this.ToViewModel)))
+            .ForMember(x => x.Actions!.AddRange(entity.UiComponentActions.Select(this.ToViewModel).Compact()))
             .ForMember(x => x.PageDataContext = this.ToViewModel(entity.PageDataContext))
             .ForMember(x => x.PageDataContextProperty = this.ToViewModel(entity.PageDataContextProperty));
 
-    public UiComponentActionViewModel? ToViewModel(UiComponentAction? entity) =>
-        entity is null ? null : this._mapper.Map<UiComponentActionViewModel>(entity)
-            .ForMember(x => x.Position = this.ToViewModel(entity.Position) ?? new())
-            .ForMember(x => x.CqrsSegregate = this.ToViewModel(entity.CqrsSegregate))
-            .ForMember(x => x.TriggerType = EnumHelper.ToEnum<TriggerType>(entity.TriggerTypeId));
+    public UiComponentButtonViewModelBase? ToViewModel(UiComponentAction? entity)
+    {
+        if (entity is null)
+        {
+            return null;
+        }
 
-    public UiComponentPropertyViewModel? ToViewModel(UiComponentProperty? entity) =>
-        entity is null ? null : this._mapper.Map<UiComponentPropertyViewModel>(entity)
+        if (entity.CqrsSegregate is not null)
+        {
+            return this._mapper.Map<UiComponentCqrsButtonViewModel>(entity)
+                .ForMember(x => x.Position = this.ToViewModel(entity.Position) ?? new())
+                .ForMember(x => x.CqrsSegregate = this.ToViewModel(entity.CqrsSegregate))
+                .ForMember(x => x.Placement = EnumHelper.ToEnum<Placement>(entity.TriggerTypeId));
+        };
+
+        return this._mapper.Map<UiComponentCustomButtonViewModel>(entity)
+            .ForMember(x => x.Position = this.ToViewModel(entity.Position) ?? new())
+            .ForMember(x => x.Placement = EnumHelper.ToEnum<Placement>(entity.TriggerTypeId));
+    }
+
+    public UiPropertyViewModel? ToViewModel(UiComponentProperty? entity) =>
+        entity is null ? null : this._mapper.Map<UiPropertyViewModel>(entity)
              .ForMember(x => x.Property = this.ToViewModel(entity.Property))
              .ForMember(x => x.ControlType = ControlTypeHelper.FromControlTypeId(entity.ControlTypeId));
 

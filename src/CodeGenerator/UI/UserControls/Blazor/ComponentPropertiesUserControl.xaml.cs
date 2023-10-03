@@ -8,7 +8,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Pages.ControlProperties;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Exceptions.Validations;
 using Library.Mapping;
@@ -27,7 +26,7 @@ public partial class ComponentPropertiesUserControl
     #region BlazorComponentPropertyViewModel SelectedProperty
 
     public static readonly DependencyProperty SelectedPropertyProperty
-        = ControlHelper.GetDependencyProperty<UiComponentPropertyViewModel?, ComponentPropertiesUserControl>(nameof(SelectedProperty),
+        = ControlHelper.GetDependencyProperty<UiPropertyViewModel?, ComponentPropertiesUserControl>(nameof(SelectedProperty),
             onPropertyChanged: (me, e) =>
             {
                 me.SelectedPropertyGrid.IsEnabled = me.SelectedProperty is not null;
@@ -35,9 +34,9 @@ public partial class ComponentPropertiesUserControl
                 //await me.BindDataAsync();
             });
 
-    public UiComponentPropertyViewModel? SelectedProperty
+    public UiPropertyViewModel? SelectedProperty
     {
-        get => (UiComponentPropertyViewModel)this.GetValue(SelectedPropertyProperty);
+        get => (UiPropertyViewModel)this.GetValue(SelectedPropertyProperty);
         set => this.SetValue(SelectedPropertyProperty, value);
     }
 
@@ -49,7 +48,7 @@ public partial class ComponentPropertiesUserControl
     public ComponentPropertiesUserControl() => this.InitializeComponent();
 
     public ControlType? SelectedControlType { get; set; }
-    public IEnumerable<UiComponentPropertyViewModel?>? SelectedProperties { get; set; }
+    public IEnumerable<UiPropertyViewModel?>? SelectedProperties { get; set; }
 
     protected override async Task OnBindDataAsync(bool isFirstBinding)
     {
@@ -64,7 +63,7 @@ public partial class ComponentPropertiesUserControl
         }
         if (this.SelectedPropertyComboBox.ItemsSource is null)
         {
-            _ = this.SelectedPropertyComboBox.BindItemsSource(this.ViewModel.UiProperties.Select(x => x.Property));
+            _ = this.SelectedPropertyComboBox.BindItemsSource(this.ViewModel.Properties.Select(x => x.Property));
         }
         this.BindPropertiesListView();
 
@@ -77,14 +76,14 @@ public partial class ComponentPropertiesUserControl
         {
             return;
         }
-        this.ViewModel.UiProperties.Clear();
+        this.ViewModel.Properties.Clear();
         var propertyService = DI.GetService<IPropertyService>();
         var codingService = DI.GetService<IBlazorComponentCodingService>();
         var properties = this.ViewModel.PageDataContextProperty is null
             ? await propertyService.GetByParentIdAsync(this.ViewModel.PageDataContext.Id!.Value)
             : await propertyService.GetByDtoIdAsync(this.ViewModel.PageDataContextProperty.Id!.Value);
-        _ = this.ViewModel.UiProperties.AddRange(properties.Select(x => this._converter.ToUiComponentProperty(x)));
-        _ = this.PropertiesListView.BindItemsSource(this.ViewModel.UiProperties);
+        _ = this.ViewModel.Properties.AddRange(properties.Select(x => this._converter.ToUiComponentProperty(x)));
+        _ = this.PropertiesListView.BindItemsSource(this.ViewModel.Properties);
     }
 
     private async void BrowserForDtoButton_Click(object sender, RoutedEventArgs e)
@@ -142,7 +141,7 @@ public partial class ComponentPropertiesUserControl
     private void ControlTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         this.SelectedControlType = e.GetSelection<ControlType?>();
-        this.ControlPropertiesButton.IsEnabled = this.Service.HasPropertiesPage(this.SelectedControlType);
+        this.ControlPropertiesButton.IsEnabled = this.CodeService.HasPropertiesPage(this.SelectedControlType);
     }
 
     private void DeletePropertyButton_Click(object sender, RoutedEventArgs e)
@@ -158,12 +157,12 @@ public partial class ComponentPropertiesUserControl
 
         foreach (var property in this.SelectedProperties.Compact().ToList())
         {
-            var index = this.ViewModel!.UiProperties.IndexOf(property);
+            var index = this.ViewModel!.Properties.IndexOf(property);
             if (index is -1)
             {
                 throw new ValidationException("Property not found.");
             }
-            this.ViewModel!.UiProperties.RemoveAt(index);
+            this.ViewModel!.Properties.RemoveAt(index);
             //this.SelectedPropertyGrid.DataContext = this.ViewModel!.UiProperties.Count > index
             //    ? this.ViewModel!.UiProperties[index]
             //    : this.ViewModel!.UiProperties.LastOrDefault();
@@ -173,13 +172,13 @@ public partial class ComponentPropertiesUserControl
 
     private async void NewPropertyButton_Click(object sender, RoutedEventArgs e)
     {
-        this.ViewModel!.UiProperties.Add(this.Service.CreateUnboundProperty());
+        this.ViewModel!.Properties.Add(this.Service.CreateUnboundProperty());
         await this.BindDataAsync();
     }
 
     private void PropertiesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var prop = this.PropertiesListView.GetSelection<UiComponentPropertyViewModel>(e);
+        var prop = this.PropertiesListView.GetSelection<UiPropertyViewModel>(e);
         this.SelectedProperty = prop;
         this.SelectedPropertyGrid.RebindDataContext(this.SelectedProperty);
         //await this.BindDataAsync();

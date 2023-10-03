@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
@@ -88,7 +89,7 @@ public static class HtmlElementExtensions
                 _ = statementBuilder.AppendLine("</div>")
                     .AppendLine("<div class='row'>");
             }
-            _ = statementBuilder.AppendLine($"{HtmlDoc.INDENT}{child.GenerateUiCode().Statement}");
+            _ = statementBuilder.AppendLine($"{CodeConstants.INDENT}{child.GenerateUiCode().Statement}");
             return 0;
         }
 

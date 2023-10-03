@@ -191,7 +191,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
             _ = codeTypeDeclaration.AddMethod(
                     accessModifiers: MemberAttributes.Final | MemberAttributes.Public,
                     returnType: $"async Task<{cqrsName}Result>", name: "HandleAsync",
-                    body: $"            {CodeTemplates.DEFAULT_CODE}",
+                    body: $"            throw new System.NotImplementedException();",
                     arguments: new MethodArgument($"{cqrsName}Parameter", "parameter"));
         }
 

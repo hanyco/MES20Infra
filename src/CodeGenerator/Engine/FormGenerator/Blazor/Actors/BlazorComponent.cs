@@ -1,7 +1,6 @@
 ﻿using HanyCo.Infra.Blazor;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
-using HanyCo.Infra.Security.Model;
 
 using Library.CodeGeneration.Models;
 using Library.Cqrs.Models.Commands;
@@ -9,77 +8,53 @@ using Library.Cqrs.Models.Queries;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 
 [Immutable]
 [Fluent]
-public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBlazorComponent
+public sealed class BlazorComponent(in string name) : BlazorComponentBase<BlazorComponent>(name), IBlazorComponent
 {
-    public BlazorComponent(in string name) : base(name)
-    {
-    }
-
     public Dictionary<string, string?> BlazorAttributes { get; } = new Dictionary<string, string?>();
-    public (TypePath Type, string Name)? DataContextProprty { get; private set; }
+    public (TypePath Type, string Name)? DataContextProperty { get; set; }
 
-    /// <summary>
-    /// Gets a value indicating whether [should generate full UI code].
-    /// </summary>
-    /// <value><c>true</c> if [should generate full UI code]; otherwise, <c>false</c>.</value>
-    /// <remarks>
-    /// When we want to generated component code lonely, the code must be fully generated. But if
-    /// the component must be inserted in a page, the code mustn't be fully generated. Instead, we
-    /// need a simple tag
-    /// </remarks>
     public bool ShouldGenerateFullUiCode { get; internal set; } = true;
 
-    public static BlazorComponent New(in string name)
-        => new(name);
-
-    public BlazorComponent SetDataContextProperty((TypePath Type, string Name)? value)
-        => this.This(() => this.DataContextProprty = value);
-
-    public BlazorComponent SetDataContextProperty(TypePath type, string name)
-        => this.SetDataContextProperty((type, name));
+    public static BlazorComponent New(in string name) =>
+        new(name);
 
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {
-        var queryProcessorType = TypePath.New<IQueryProcessor>();
-        var commandProcessorType = TypePath.New<ICommandProcessor>();
-        var memoryCacheType = TypePath.New<IMemoryCache>();
-        var userContextType = TypePath.New<IUserContext>();
+        var injections = new[]
+        {
+            TypePath.New<IQueryProcessor>(),
+            TypePath.New<ICommandProcessor>(),
+            TypePath.New<IMemoryCache>(),
+            //TypePath.New<IUserContext>(),
+            TypePath.New<NavigationManager>(),
+        };
+        _ = codeStringBuilder
+            .AppendLine($"@namespace {this.NameSpace}")
+            .AppendLine()
+            .AppendAllLines(injections, x => $"@using {x.NameSpace}")
+            .AppendLine($"@using {typeof(ComponentBase<,>).Namespace}")
+            .AppendLine($"@using {this.DataContextType?.NameSpace}")
+            .AppendLine()
+            .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
+            .AppendLine();
+
         var baseTypeName = typeof(ComponentBase<,>).Name[..^2];
-        var dataContextType = (this.DataContextType, this.DataContextProprty) switch
+        var dataContextType = (this.DataContextType, this.DataContextProperty) switch
         {
             (_, { } dc) => dc.Type,
             ({ } dc, null) => dc,
             _ => null
         };
-        _ = codeStringBuilder
-                .AppendLine($"@namespace {this.NameSpace}")
-                .AppendLine()
-                .AppendLine($"@using {memoryCacheType.NameSpace}")
-                .AppendLine($"@using {queryProcessorType.NameSpace}")
-                .AppendLine($"@using {commandProcessorType.NameSpace}")
-                .AppendLine($"@using {userContextType.NameSpace}")
-                .AppendLine($"@using {typeof(ComponentBase<,>).Namespace}")
-                .AppendLine($"@using {this.DataContextType?.NameSpace}")
-                .AppendLine()
-                .AppendLine($"@inject {queryProcessorType.Name} {TypeMemberNameHelper.ToFieldName(queryProcessorType.Name!)}")
-                .AppendLine($"@inject {commandProcessorType.Name} {TypeMemberNameHelper.ToFieldName(commandProcessorType.Name!)}")
-                .AppendLine($"@inject {memoryCacheType.Name} {TypeMemberNameHelper.ToFieldName(memoryCacheType.Name!)}")
-                .AppendLine($"@inject {userContextType.Name} {TypeMemberNameHelper.ToFieldName(userContextType.Name!)}")
-                .AppendLine();
-        if (this.IsGrid)
-        {
-            _ = codeStringBuilder.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>");
-        }
-        else
-        {
-            _ = codeStringBuilder.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>");
-        }
+        _ = this.IsGrid
+            ? codeStringBuilder.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>")
+            : codeStringBuilder.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>");
         _ = codeStringBuilder.AppendLine();
         return codeStringBuilder;
     }
@@ -97,7 +72,7 @@ public sealed class BlazorComponent : BlazorComponentBase<BlazorComponent>, IBla
             {
                 element.Attributes.Add($"col-{this.Position.Col}", null);
             }
-            if (this.DataContextProprty is { } prop)
+            if (this.DataContextProperty is { } prop)
             {
                 element.Attributes.Add("DataContext", $"@this.DataContext?.{prop.Name}");
             }

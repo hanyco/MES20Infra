@@ -5,8 +5,6 @@ using HanyCo.Infra.UI.Helpers;
 
 using Library.Validations;
 
-using static HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements.HtmlButton;
-
 namespace Services.Helpers;
 
 public static class ControlTypeHelper
@@ -25,21 +23,4 @@ public static class ControlTypeHelper
 
     public static ControlType FromControlTypeId(int controlTypeId) =>
         EnumHelper.ToEnum<ControlType>(controlTypeId);
-}
-
-public static class TriggerTypeHelper
-{
-    public static ButtonType ToButtonType(this TriggerType triggerType) =>
-        triggerType switch
-        {
-            TriggerType.FormButton => ButtonType.FormButton,
-            TriggerType.RowButton => ButtonType.RowButton,
-            _ => throw new NotImplementedException(),
-        };
-}
-
-public enum TriggerKind
-{
-    Button,
-    Load
 }

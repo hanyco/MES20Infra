@@ -36,44 +36,56 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Menu>
-                <MenuItem Header="_Back-End">
-                    <MenuItem
-                        Name="CreateDtoMenuItem"
-                        Click="CreateDtoMenuItem_Click"
-                        Header="Manage _Models…" />
+                <MenuItem Header="Code _Generator">
+
+                    <MenuItem Header="_Back-End">
+                        <MenuItem
+                            Name="CreateDtoMenuItem"
+                            Click="CreateDtoMenuItem_Click"
+                            Header="Manage _Models…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
+                        <Separator />
+                        <MenuItem
+                            Name="CreateQueryMenuItem"
+                            Click="CreateQueryMenuItem_Click"
+                            Header="Manage CQRS _Queries…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
+                        <MenuItem
+                            Name="CreateCommandMenuItem"
+                            Click="CreateCommandMenuItem_Click"
+                            Header="Manage CQRS _Commands…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
+                    </MenuItem>
+                    <MenuItem Header="_Front-End">
+                        <MenuItem
+                            Name="GenerateSourceWizard"
+                            Click="GenerateSourceWizard_Click"
+                            Header="Generate Source _Wizard…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}"
+                            Visibility="Collapsed" />
+                        <MenuItem
+                            Name="BlazorComponentMenuItem"
+                            Click="BlazorComponentMenuItem_Click"
+                            Header="Blazor _Component…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
+                        <MenuItem
+                            Name="BlazorPageMenuItem"
+                            Click="BlazorPageMenuItem_Click"
+                            Header="Blazor _Page…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
+                    </MenuItem>
+                    <MenuItem Header="_Security">
+                        <MenuItem
+                            Click="EditSecurityDescriptor_Click"
+                            Header="_Edit Security Descriptor…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
+                    </MenuItem>
                     <Separator />
                     <MenuItem
-                        Name="CreateQueryMenuItem"
-                        Click="CreateQueryMenuItem_Click"
-                        Header="Manage CQRS _Queries…" />
-                    <MenuItem
-                        Name="CreateCommandMenuItem"
-                        Click="CreateCommandMenuItem_Click"
-                        Header="Manage CQRS _Commands…" />
-                    <Separator />
-                    <!--<MenuItem
-                        Name="CreateCrudMenuItem"
-                        Click="CreateCrudMenuItem_Click"
-                        Header="Custom _Full CRUD…" />-->
-                    <MenuItem
-                        Name="FunctionalityEditorManuItem"
-                        Click="FunctionalityEditorManuItem_Click"
-                        Header="_Functionality" />
-                </MenuItem>
-                <MenuItem Header="_Front-End">
-                    <MenuItem
-                        Name="GenerateSourceWizard"
-                        Click="GenerateSourceWizard_Click"
-                        Header="Generate Source _Wizard…"
-                        Visibility="Collapsed" />
-                    <MenuItem
-                        Name="BlazorComponentMenuItem"
-                        Click="BlazorComponentMenuItem_Click"
-                        Header="Blazor _Component" />
-                    <MenuItem
-                        Name="BlazorPageMenuItem"
-                        Click="BlazorPageMenuItem_Click"
-                        Header="Blazor _Page" />
+                            Name="FunctionalityEditorManuItem"
+                            Click="FunctionalityEditorManuItem_Click"
+                            Header="_Functionality…"
+                            IsEnabled="{Binding ElementName=Me, Path=IsInitiated}" />
                 </MenuItem>
                 <MenuItem Header="_Tools">
                     <MenuItem
@@ -81,8 +93,8 @@
                         Click="SettingMenuItem_Click"
                         Header="_Settings…" />
                 </MenuItem>
-                <MenuItem Header="Security">
-                    <MenuItem Click="EditSecurityDescriptor_Click" Header="_Edit Security Descriptor…" />
+                <MenuItem Header="_Help">
+                    <MenuItem Click="HelpAboutMenuItem_Click" Header="_About" />
                 </MenuItem>
             </Menu>
         </Grid>

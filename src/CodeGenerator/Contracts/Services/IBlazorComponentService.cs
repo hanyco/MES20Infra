@@ -9,4 +9,18 @@ public interface IBlazorComponentService
     , IAsyncCrud<UiComponentViewModel>
 {
     Task<IEnumerable<UiComponentViewModel>> GetByPageDataContextIdAsync(long dtoId, CancellationToken token = default);
+
+    UiPropertyViewModel CreateBoundPropertyByDto(DtoViewModel viewModel);
+
+    Task<UiComponentViewModel> CreateNewComponentAsync(CancellationToken token = default);
+
+    Task<UiComponentViewModel> CreateNewComponentByDtoAsync(DtoViewModel dto, CancellationToken token = default);
+
+    UiComponentViewModel CreateViewModel(DtoViewModel dto);
+
+    UiComponentCustomButtonViewModel CreateUnboundAction();
+
+    UiPropertyViewModel CreateUnboundProperty();
+
+    Task<UiPropertyViewModel?> FillUiComponentPropertyViewModelAsync(UiPropertyViewModel? prop, CancellationToken token = default);
 }

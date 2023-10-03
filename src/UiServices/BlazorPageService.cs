@@ -1,14 +1,10 @@
 ﻿using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.CodeGeneration.Definitions;
-using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
-using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
-using Library.CodeGeneration.Models;
 using Library.Results;
 using Library.Validations;
 
@@ -22,7 +18,7 @@ internal sealed class BlazorPageService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
-    ILogger logger) : IBlazorPageService, IBlazorPageCodingService
+    ILogger logger) : IBlazorPageService
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
@@ -97,34 +93,6 @@ internal sealed class BlazorPageService(
 
     public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
         ServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
-
-    public Result<Codes> GenerateCodes(in UiPageViewModel viewModel, GenerateCodesParameters? arguments = null)
-    {
-        if (!this.Validate(viewModel).TryParse(out var vr))
-        {
-            return vr.WithValue(Codes.Empty);
-        }
-        this.Logger.Debug($"Generating code is started.");
-        var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
-        var page = (viewModel.Route.IsNullOrEmpty()
-            ? BlazorPage.NewByModuleName(viewModel.Name!, viewModel.Module.Name!)
-            : BlazorPage.NewByPageRoute(viewModel.Name!, viewModel.Route))
-                .SetNameSpace(viewModel.NameSpace)
-                .SetDataContext(dataContextType);
-        _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
-
-        var result = page.GenerateCodes(CodeCategory.Page, arguments);
-        this.Logger.Debug($"Generating code is done.");
-
-        return Result<Codes>.New(result);
-
-        static IHtmlElement toHtmlElement(UiComponentViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
-            BlazorComponent.New(component.Name!)
-                .SetNameSpace(component.NameSpace)
-                .SetDataContext(dataContextType)
-                .SetDataContextProperty(dataContextTypeProperty)
-                .SetPosition(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan, component.Position.Offset);
-    }
 
     public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
         => ServiceHelper.GetAllAsync<UiPageViewModel, UiPage>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);

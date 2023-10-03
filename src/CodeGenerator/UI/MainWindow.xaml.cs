@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -11,6 +10,7 @@ using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Windows;
 using Library.Wpf.Dialogs;
+using Library.Wpf.Windows.UI;
 
 using Microsoft.Data.SqlClient;
 
@@ -21,12 +21,11 @@ namespace UI;
 /// </summary>
 public partial class MainWindow
 {
-    #region Fields
+    public static readonly DependencyProperty IsInitiatedProperty =
+        DependencyProperty.Register("IsInitiated", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
 
     private readonly IEventualLogger _logger;
     private readonly InfraWriteDbContext _writeDbContext;
-
-    #endregion Fields
 
     public MainWindow(InfraWriteDbContext writeDbContext, IEventualLogger logger, IProgressReport reportHost)
     {
@@ -42,6 +41,12 @@ public partial class MainWindow
     public static DependencyProperty CurrentPageTitleProperty { get; } = ControlHelper.GetDependencyProperty<string?, MainWindow>(propertyName: nameof(CurrentPageTitle), defaultValue: "(No page)");
 
     public string? CurrentPageTitle { get => (string)this.GetValue(CurrentPageTitleProperty); set => this.SetValue(CurrentPageTitleProperty, value); }
+
+    private bool IsInitiated
+    {
+        get => (bool)this.GetValue(IsInitiatedProperty);
+        set => this.SetValue(IsInitiatedProperty, value);
+    }
 
     private void BlazorComponentMenuItem_Click(object sender, RoutedEventArgs e) =>
         this.Navigate<BlazorComponentGenertorPage>();
@@ -72,6 +77,17 @@ public partial class MainWindow
     {
         var wizardDlg = new SourceGeneratorWizardWindow();
         _ = wizardDlg.ShowDialog();
+    }
+
+    private void HelpAboutMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var title = $"About {ApplicationHelper.Company} {ApplicationHelper.ApplicationTitle}";
+        var productName = ApplicationHelper.ProductTitle;
+        var version = $"Version {ApplicationHelper.Version}";
+        var copr = $"{ApplicationHelper.Copyright}{Environment.NewLine}All rights reserved.";
+        var description = $"{ApplicationHelper.Description}{Environment.NewLine}{Environment.NewLine}{version}{Environment.NewLine}{Environment.NewLine}{copr}";
+        var warning = "Warning: This computer program is protected by copyright law and international treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.";
+        MsgBox2.Inform(productName, description, title, detailsExpandedText: warning);
     }
 
     private void Log(object message)
@@ -119,8 +135,9 @@ public partial class MainWindow
         {
             this.StatusProgressBar.Visibility = Visibility.Collapsed;
             this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
-            this.Log(e.Item ?? "Ready.");
             this.StatusProgressBar.Refresh();
+            _ = Taskbar.MainWindow.ProgressBar.SetState(TaskbarProgressState.None);
+            this.Log(e.Item ?? "Ready.");
         });
 
     private void ReportHost_Reported(object? sender, ItemActedEventArgs<ProgressData> e) =>
@@ -132,11 +149,13 @@ public partial class MainWindow
                 this.StatusProgressBar.Maximum = e.Item.Max.Cast().ToInt(0);
                 this.StatusProgressBar.Value = e.Item.Current.Cast().ToInt(0);
                 this.StatusProgressBar.Background = System.Windows.Media.Brushes.Maroon;
+                _ = Taskbar.MainWindow.ProgressBar.SetState(TaskbarProgressState.Normal).SetValue(this.StatusProgressBar.Value, this.StatusProgressBar.Maximum);
             }
             else
             {
                 this.StatusProgressBar.Visibility = Visibility.Collapsed;
                 this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
+                _ = Taskbar.MainWindow.ProgressBar.SetState(TaskbarProgressState.None);
             }
             if (!e.Item.Description.IsNullOrEmpty())
             {
@@ -161,11 +180,12 @@ public partial class MainWindow
                 MsgBox2.Warn(
                     "Database created.",
                     "Database not found. But created from schema information.",
-                    footerText: "Please do not forget to initialize database, if required.",
+                    footerText: "Please remember to initialize database, if required.",
                     footerIcon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Warning);
             }
 
             this._logger.Debug("Ready.");
+            this.IsInitiated = true;
         }
         catch (SqlException ex) when (ex.ErrorCode == -2146232060)
         {
@@ -180,7 +200,7 @@ public partial class MainWindow
                 message.Title,
                 detailsExpandedText: message.Details,
                 window: this,
-                controls: new Microsoft.WindowsAPICodePack.Dialogs.TaskDialogControl[] { closeButton, continueButton });
+                controls: [closeButton, continueButton]);
         }
         catch (Exception ex)
         {

@@ -33,7 +33,7 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
                     where x.Id == id
                     select x;
         var dbResult = await query.FirstOrDefaultAsync(token);
-        var result = _converter.ToViewModel(dbResult);
+        var result = this._converter.ToViewModel(dbResult);
         return result;
     }
 
@@ -53,7 +53,7 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
     public Task<Result> RemoveEntityClaimsAsync(Guid value, bool persist, CancellationToken token)
     {
         var result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == value).ForEach(x => this._infraWriteDb.EntityClaims.Remove(x)));
-        return Task.FromResult(result.ToResult());
+        return Task.FromResult(result);
     }
 
     public void ResetChanges() =>
