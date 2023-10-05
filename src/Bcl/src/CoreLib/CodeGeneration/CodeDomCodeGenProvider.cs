@@ -13,37 +13,47 @@ public sealed class CodeDomCodeGenProvider : ICodeGenProvider
 
     public Codes GenerateCode(in INameSpace nameSpace, in GenerateCodesParameters? arguments = default)
     {
+        Check.MustBeArgumentNotNull(nameSpace);
+
         LibLogger.Debug("Generating Behind Code");
-        var myNameSpace = nameSpace.ArgumentNotNull();
-        var mainUnit = new CodeCompileUnit();
-        var partUnit = new CodeCompileUnit();
-        var mainNs = mainUnit.AddNewNameSpace(nameSpace.FullName).UseNameSpace(myNameSpace.UsingNameSpaces);
-        var partNs = partUnit.AddNewNameSpace(nameSpace.FullName).UseNameSpace(myNameSpace.UsingNameSpaces);
+        var generateMain = arguments?.GenerateMainCode ?? false;
+        var generatePart = arguments?.GeneratePartialCode ?? false;
+        var mainUnit = generateMain ? new CodeCompileUnit() : null;
+        var partUnit = generatePart ? new CodeCompileUnit() : null;
+        var mainNs = mainUnit?.AddNewNameSpace(nameSpace.FullName).UseNameSpace(nameSpace.UsingNameSpaces);
+        var partNs = partUnit?.AddNewNameSpace(nameSpace.FullName).UseNameSpace(nameSpace.UsingNameSpaces);
+        CodeTypeDeclaration? codeTypeBuffer;
         foreach (var type in nameSpace.CodeGenTypes)
         {
-            var codeType = (type.IsPartial ? partNs : mainNs).UseNameSpace(type.UsingNameSpaces).AddNewClass(type.Name, type.BaseTypes, type.IsPartial);
+            codeTypeBuffer = (type.IsPartial ? partNs : mainNs)?.UseNameSpace(type.UsingNameSpaces).AddNewClass(type.Name, type.BaseTypes, type.IsPartial);
+            if (codeTypeBuffer == null)
+            {
+                continue;
+            }
+
             foreach (var member in type.Members)
             {
-                switch (member)
+                _ = member switch
                 {
-                    case FieldInfo field:
-                        codeType = codeType.AddField(field.Type, field.Type, field.Comment, field.AccessModifier);
-                        break;
+                    FieldInfo field => addField(codeTypeBuffer, field),
+                    PropertyInfo property when property.HasBackingField => addProperty(codeTypeBuffer, property),
+                    PropertyInfo property => addProperty(codeTypeBuffer, property),
 
-                    case PropertyInfo property when property.HasBackingField:
-                        codeType = addProperty(codeType, property);
-                        break;
-
-                    case PropertyInfo property:
-                        codeType = addProperty(codeType, property);
-                        break;
-                }
+                    _ => throw new NotImplementedException()
+                };
             }
         }
 
-        var mainCode = new Code("Main", Languages.CSharp, mainUnit.GenerateCode(), false);
-        var partCode = new Code("Partial", Languages.CSharp, partUnit.GenerateCode(), true);
-        var result = new Codes(mainCode, partCode);
+        var codeList = new List<Code>();
+        if (generateMain)
+        {
+            codeList.Add(new Code("Main", Languages.CSharp, mainUnit!.GenerateCode(), false));
+        }
+        if(generatePart)
+        {
+            codeList.Add(new Code("Partial", Languages.CSharp, partUnit!.GenerateCode(), true));
+        }
+        var result = new Codes(codeList);
         LibLogger.Debug("Generated Behind Code");
         return result;
 
@@ -56,5 +66,8 @@ public sealed class CodeDomCodeGenProvider : ICodeGenProvider
             property.Setter,
             property.InitCode,
             property.IsNullable);
+
+        static CodeTypeDeclaration addField(CodeTypeDeclaration codeTypeBuffer, FieldInfo field) => 
+            codeTypeBuffer.AddField(field.Type, field.Type, field.Comment, field.AccessModifier);
     }
 }
