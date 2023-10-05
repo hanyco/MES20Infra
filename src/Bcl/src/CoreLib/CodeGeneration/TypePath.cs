@@ -1,4 +1,4 @@
-﻿using Library.CodeGeneration.Models;
+using Library.CodeGeneration.Models;
 using Library.DesignPatterns.Markers;
 
 using GenericTypeInfo = (Library.CodeGeneration.TypePath Type, string? Constraints);
@@ -30,7 +30,6 @@ public sealed class TypePath : IEquatable<TypePath>
 
     public ISet<GenericTypeInfo> GenericTypes { get; } = new HashSet<GenericTypeInfo>();
     public string? Name { get; }
-
     public string? NameSpace { get; }
 
     public static string Combine(string part1, params string[] parts) =>
@@ -38,7 +37,6 @@ public sealed class TypePath : IEquatable<TypePath>
 
     public static implicit operator string?(in TypePath typeInfo) =>
         typeInfo.ToString();
-
     public static implicit operator TypePath(in string? typeInfo) =>
         new(typeInfo);
 
@@ -47,10 +45,6 @@ public sealed class TypePath : IEquatable<TypePath>
 
     public static TypePath New(in Type? type) =>
         new(type?.FullName);
-
-    public static TypePath New<TType>() =>
-        new(typeof(TType).FullName);
-
     public static bool operator !=(TypePath left, TypePath right) =>
         !(left == right);
 
@@ -69,6 +63,10 @@ public sealed class TypePath : IEquatable<TypePath>
             ? (typePath, null)
             : (typePath[(dotLastIndex + 1)..], typePath[..dotLastIndex]);
     }
+//========
+//        var dotLastIndex = typePath.LastIndexOf('.');
+//        return dotLastIndex == -1 ? ((string? Name, string? NameSpace))(typePath, null) : ((string? Name, string? NameSpace))(typePath[(dotLastIndex + 1)..], typePath[..dotLastIndex]);
+//    }
 
     public static (string? Name, string? NameSpace) SplitTypePath(in string? name, in string? nameSpace = null) =>
         string.IsNullOrEmpty(nameSpace)
@@ -86,6 +84,9 @@ public sealed class TypePath : IEquatable<TypePath>
         return this;
     }
 
+    public static TypePath New<TType>()
+        => new(typeof(Type).Name, typeof(Type).Namespace);
+
     public void Deconstruct(out string? name, out string? nameSpace) =>
         (name, nameSpace) = (this.Name, this.NameSpace);
 
@@ -97,7 +98,6 @@ public sealed class TypePath : IEquatable<TypePath>
 
     public override int GetHashCode() =>
         HashCode.Combine(this.Name?.GetHashCode() ?? 0, this.NameSpace?.GetHashCode() ?? 0);
-
     public override string ToString() =>
         this.FullPath;
 
