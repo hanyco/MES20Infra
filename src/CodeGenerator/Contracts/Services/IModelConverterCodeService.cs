@@ -1,12 +1,13 @@
 ﻿using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
+
 using Library.CodeGeneration.Models;
 using Library.Interfaces;
 using Library.Results;
 
 namespace Contracts.Services;
 
-public interface IModelConverterCodeService : IBusinessService
+public interface IModelConverterCodeService : IBusinessService, ICodeGenerator<ModelConverterCodeViewModel>
 {
-    Result<Codes> GenerateCode(DtoViewModel src, string srcClassName, string dstClassName, string? methodName = null);
 }

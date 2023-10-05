@@ -56,6 +56,8 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     public Codes InsertCommandCodes { get => this.Get(); set => this.Set(value); }
 
     public Codes SourceDtoCodes { get => this.Get(); set => this.Set(value); }
+    
+    public Codes ConverterCodes { get => this.Get(); set => this.Set(value); }
 
     /// <summary>
     /// Gets or sets the codes for the UpdateCommandCodes functionality.

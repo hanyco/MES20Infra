@@ -1,5 +1,7 @@
 ﻿using System.CodeDom;
 
+using Library.Helpers.CodeGen;
+
 namespace HanyCo.Infra.CodeGeneration.Definitions;
 
 [Immutable]
@@ -110,12 +112,20 @@ public static class CodeConstants
             .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqrs, cqResult);")
             .ToString();
 
-    public static string WrapInClass(string className, bool isPartial, MemberAttributes accessModifier, params string[] members) =>
-        new StringBuilder()
-            .AppendLine($"{INDENT.Repeat(0)}public {(isPartial ? "partial " : "")} class {className}")
-            .AppendLine($"{INDENT.Repeat(0)}{{")
-            .AppendAllLines(members.Merge(Environment.NewLine).Split(Environment.NewLine)
-                , line => line.StartsWith(INDENT) ? line : $"{INDENT.Repeat(1)}{line}")
-            .AppendLine($"{INDENT.Repeat(0)}}}")
-            .ToString();
+    public static string WrapInClass(string className, bool isPartial, MemberAttributes accessModifier, params string[] members)
+    {
+        return new StringBuilder()
+        .AppendLine($"{INDENT.Repeat(0)}public {(isPartial ? "partial" : "")} class {className}")
+        //.Append(INDENT.Repeat(0))
+        //.Append(accessModifier.Contains(MemberAttributes.Private) ? "private" : "")
+        //.Append(accessModifier.Contains(MemberAttributes.Family) ? "internal" : "")
+        //.Append(accessModifier.Contains(MemberAttributes.Public) ? "public" : "")
+        //.Append(accessModifier.Contains(MemberAttributes.Final) ? "sealed" : "")
+        //.Append(accessModifier.Contains(MemberAttributes.Abstract) ? "abstract" : "")
+        .AppendLine($"{INDENT.Repeat(0)}{{")
+        .AppendAllLines(members.Merge(Environment.NewLine).Split(Environment.NewLine)
+            , line => line.StartsWith(INDENT) ? line : $"{INDENT.Repeat(1)}{line}")
+        .AppendLine($"{INDENT.Repeat(0)}}}")
+        .ToString();
+    }
 }

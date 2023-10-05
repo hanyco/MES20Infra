@@ -13,11 +13,8 @@ using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
-using Library.Wpf.Bases;
 
 using Services.Helpers;
-
-using Windows.Data.Xml.Dom;
 
 namespace Services;
 
@@ -184,9 +181,17 @@ internal sealed partial class FunctionalityService
                 {
                     return result;
                 }
-                
+
                 codes.BlazorDetailsComponentCodes = codeGenRes;
-                _ = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
+            }
+            if (true)
+            {
+                var codeGenRes = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+                codes.ConverterCodes = codeGenRes;
             }
 
             return result;
