@@ -30,7 +30,7 @@ public sealed class TypePath : IEquatable<TypePath>
 
     public ISet<GenericTypeInfo> GenericTypes { get; } = new HashSet<GenericTypeInfo>();
     public string? Name { get; }
-    public string? NameSpace { get; }
+//namespace Library.CodeGeneration.v2.Back;
 
     public static string Combine(string part1, params string[] parts) =>
         new StringBuilder(part1).AppendAll(parts, part => $".{part.Trim('.')}").ToString();
