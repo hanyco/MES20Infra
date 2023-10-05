@@ -63,10 +63,10 @@ public sealed class TypePath : IEquatable<TypePath>
             ? (typePath, null)
             : (typePath[(dotLastIndex + 1)..], typePath[..dotLastIndex]);
     }
-//========
-//        var dotLastIndex = typePath.LastIndexOf('.');
-//        return dotLastIndex == -1 ? ((string? Name, string? NameSpace))(typePath, null) : ((string? Name, string? NameSpace))(typePath[(dotLastIndex + 1)..], typePath[..dotLastIndex]);
-//    }
+    //========
+    //        var dotLastIndex = typePath.LastIndexOf('.');
+    //        return dotLastIndex == -1 ? ((string? Name, string? NameSpace))(typePath, null) : ((string? Name, string? NameSpace))(typePath[(dotLastIndex + 1)..], typePath[..dotLastIndex]);
+    //    }
 
     public static (string? Name, string? NameSpace) SplitTypePath(in string? name, in string? nameSpace = null) =>
         string.IsNullOrEmpty(nameSpace)
