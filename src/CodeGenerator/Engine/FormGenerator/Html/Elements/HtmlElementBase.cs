@@ -1,4 +1,5 @@
-﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
+﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration.Models;

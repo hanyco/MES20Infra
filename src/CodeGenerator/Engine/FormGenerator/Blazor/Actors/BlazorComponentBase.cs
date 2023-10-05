@@ -1,11 +1,13 @@
 ﻿using System.CodeDom;
 
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.DesignPatterns.Behavioral.Observation;
 using Library.Exceptions.Validations;
@@ -31,7 +33,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     Dictionary<string, string?> IHtmlElement.Attributes { get; }
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
     public TypePath? DataContextType { get; set; }
-    public IList<FieldActor> Fields { get; } = new List<FieldActor>();
+    public IList<FieldInfo> Fields { get; } = new List<FieldInfo>();
     public virtual string HtmlFileExtension { get; } = "razor";
     public bool IsGrid { get; set; }
     public virtual string MainCodeFileExtension { get; } = "razor.cs";
@@ -251,7 +253,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var field in this.Fields.Where(m => m.IsPartial))
             {
-                _ = partClassType.AddField(field.ToFieldInfo());
+                _ = partClassType.AddField(field.Type, field.Name, field.Comment, field.AccessModifier, field.IsReadOnly, field.IsPartial);
             }
         }
 
@@ -267,7 +269,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var field in this.Fields.Where(m => !m.IsPartial))
             {
-                _ = mainClassType.AddField(field.ToFieldInfo());
+                _ = mainClassType.AddField(field.Type, field.Name, field.Comment, field.AccessModifier, field.IsReadOnly, field.IsPartial);
             }
         }
 

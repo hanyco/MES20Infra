@@ -1,4 +1,6 @@
-﻿using Library.CodeGeneration.Models;
+﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+
+using Library.CodeGeneration.Models;
 using Library.Results;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;

@@ -1,9 +1,12 @@
-﻿using Library.DesignPatterns.Markers;
+﻿using Library.CodeGeneration.Models;
+using Library.DesignPatterns.Markers;
 
-namespace Library.CodeGeneration.v2.Back;
+using GenericTypeInfo = (Library.CodeGeneration.TypePath Type, string? Constraints);
+
+namespace Library.CodeGeneration;
 
 [Immutable]
-public readonly struct TypePath : IEquatable<TypePath>
+public sealed class TypePath : IEquatable<TypePath>
 {
     public TypePath(in string? name, in string? nameSpace = null) =>
         (this.Name, this.NameSpace) = SplitTypePath(Validate(name), nameSpace);
@@ -19,17 +22,19 @@ public readonly struct TypePath : IEquatable<TypePath>
             var result = this.NameSpace.IsNullOrEmpty() ? this.Name : $"{this.NameSpace}.{this.Name}";
             if (this.GenericTypes.Any())
             {
-                result = $"{result}<{StringHelper.Merge(this.GenericTypes.Select(x => x.FullPath), ',')}>";
+                result = $"{result}<{StringHelper.Merge(this.GenericTypes.Select(x => x.Type.FullPath), ',')}>";
             }
             return result;
         }
     }
 
-    public ISet<TypePath> GenericTypes { get; } = new HashSet<TypePath>();
-
+    public ISet<GenericTypeInfo> GenericTypes { get; } = new HashSet<GenericTypeInfo>();
     public string? Name { get; }
 
     public string? NameSpace { get; }
+
+    public static string Combine(string part1, params string[] parts) =>
+        new StringBuilder(part1).AppendAll(parts, part => $".{part.Trim('.')}").ToString();
 
     public static implicit operator string?(in TypePath typeInfo) =>
         typeInfo.ToString();
@@ -37,21 +42,8 @@ public readonly struct TypePath : IEquatable<TypePath>
     public static implicit operator TypePath(in string? typeInfo) =>
         new(typeInfo);
 
-    public static string Merge(string part1, params string[] parts)
-    {
-        var result = new StringBuilder(part1);
-        foreach (var part in parts)
-        {
-            _ = result.Append(part.EndsWith('.') ? part : string.Concat(part, "."));
-        }
-        return result.ToString();
-    }
-
     public static TypePath New(in string? name, in string? nameSpace = null) =>
         new(name, nameSpace);
-
-    public static TypePath New((string? Name, string? NameSpace) typePath) =>
-        new(typePath.Name, typePath.NameSpace);
 
     public static TypePath New(in Type? type) =>
         new(type?.FullName);
@@ -73,7 +65,9 @@ public readonly struct TypePath : IEquatable<TypePath>
         }
 
         var dotLastIndex = typePath.LastIndexOf('.');
-        return dotLastIndex == -1 ? ((string? Name, string? NameSpace))(typePath, null) : ((string? Name, string? NameSpace))(typePath[(dotLastIndex + 1)..], typePath[..dotLastIndex]);
+        return dotLastIndex == -1
+            ? (typePath, null)
+            : (typePath[(dotLastIndex + 1)..], typePath[..dotLastIndex]);
     }
 
     public static (string? Name, string? NameSpace) SplitTypePath(in string? name, in string? nameSpace = null) =>
@@ -81,9 +75,14 @@ public readonly struct TypePath : IEquatable<TypePath>
             ? SplitTypePath(name)
             : nameSpace.EndsWith('.') ? SplitTypePath($"{nameSpace}{name}") : SplitTypePath($"{nameSpace}.{name}");
 
-    public TypePath AddGenericType(TypePath typePath)
+    public TypePath AddGenericType(GenericTypeInfo genericType)
     {
-        _ = this.GenericTypes.Add(typePath);
+        _ = this.GenericTypes.Add(genericType);
+        return this;
+    }
+    public TypePath AddGenericType(string genericType)
+    {
+        _ = this.GenericTypes.Add((genericType, null));
         return this;
     }
 
@@ -95,9 +94,6 @@ public readonly struct TypePath : IEquatable<TypePath>
 
     public override bool Equals(object? obj) =>
         obj is TypePath path && this.Equals(path);
-
-    public bool Equals(TypePath other) =>
-        (this.Name, this.NameSpace) == (other.Name, other.NameSpace);
 
     public override int GetHashCode() =>
         HashCode.Combine(this.Name?.GetHashCode() ?? 0, this.NameSpace?.GetHashCode() ?? 0);

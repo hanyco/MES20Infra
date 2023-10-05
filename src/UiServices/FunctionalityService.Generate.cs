@@ -8,6 +8,7 @@ using Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.Results;
 using Library.Threading;
@@ -184,15 +185,16 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorDetailsComponentCodes = codeGenRes;
             }
-            if (true)
-            {
-                var codeGenRes = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
-                if (!codeGenRes)
-                {
-                    return result;
-                }
-                codes.ConverterCodes = codeGenRes;
-            }
+            // TODO Fix this
+            //if (true)
+            //{
+            //    var codeGenRes = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
+            //    if (!codeGenRes)
+            //    {
+            //        return result;
+            //    }
+            //    codes.ConverterCodes = codeGenRes;
+            //}
 
             return result;
 
