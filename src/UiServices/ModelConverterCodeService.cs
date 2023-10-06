@@ -22,7 +22,7 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
 
     public Result<Codes> GenerateCodes(ModelConverterCodeViewModel viewModel, GenerateCodesParameters? arguments = null)
     {
-        if (!viewModel.SrcClassName.Check().ArgumentNotNull().NotNull(x => x.Name).TryParse(out var vr))
+        if (!viewModel.SourceDto.Check().ArgumentNotNull().NotNull(x => x.Name).TryParse(out var vr))
         {
             return vr.WithValue(Codes.Empty);
         }
