@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
 
-using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra;
@@ -10,15 +9,14 @@ using HanyCo.Infra.UI;
 using HanyCo.Infra.UI.Controls.Pages;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Pages;
-using HanyCo.Infra.UI.Services;
 
 using Library.BusinessServices;
+using Library.CodeGeneration.v2;
 using Library.EventsArgs;
 using Library.Interfaces;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Windows;
-using Library.Wpf.Windows.UI;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,8 +24,6 @@ using Microsoft.Extensions.DependencyInjection;
 using UiContracts;
 
 using UiServices;
-
-using Windows.UI.Notifications;
 
 namespace UI;
 
@@ -47,6 +43,7 @@ public partial class App : LibApp
         var settings = SettingsService.Get();
         Check.MustBeArgumentNotNull(settings.connectionString);
 
+        addBclServices(services);
         addDataContext(services, settings);
         addLogger(services);
         addMesInfraServices(services, settings);
@@ -54,6 +51,9 @@ public partial class App : LibApp
         addPages(services);
 
         return;
+
+        static void addBclServices(IServiceCollection services) => 
+            services.AddScoped<ICodeGeneratorEngine, CodeDomCodeGenerator>();
 
         static void addDataContext(IServiceCollection services, SettingsModel settings)
             => services
@@ -81,13 +81,10 @@ public partial class App : LibApp
 #endif
                ;
 
-        static void addLogger(IServiceCollection services)
-        {
-            _ = services
+        static void addLogger(IServiceCollection services) => _ = services
                 .AddSingleton<ILogger>(AppLogger)
                 .AddSingleton<Microsoft.Extensions.Logging.ILogger>(new WebLogger(AppLogger))
                 .AddSingleton(IProgressReport.New());
-        }
 
         static void registerServices(IServiceCollection services)
             => services
@@ -117,12 +114,12 @@ public partial class App : LibApp
 
     private void Logger_Logging(object? sender, ItemActedEventArgs<object> e)
     {
-        
+
     }
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
-        InitializeLog();
+        this.InitializeLog();
         var mainWindow = DI.GetService<MainWindow>();
         mainWindow!.Show();
     }
