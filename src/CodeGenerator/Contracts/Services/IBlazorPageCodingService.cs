@@ -1,4 +1,5 @@
-﻿using HanyCo.Infra.CodeGeneration.Definitions;
+﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -7,6 +8,6 @@ using Library.Validations;
 
 namespace Contracts.Services;
 
-public interface IBlazorPageCodingService : IBusinessService, ICodeGenerator<UiPageViewModel>, IValidator<UiPageViewModel>
+public interface IBlazorPageCodingService : IBusinessService, ICodeGenerator<UiPageViewModel, GenerateCodesParameters>, IValidator<UiPageViewModel>
 {
 }

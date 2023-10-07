@@ -185,16 +185,15 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorDetailsComponentCodes = codeGenRes;
             }
-            // TODO Fix this
-            //if (true)
-            //{
-            //    var codeGenRes = addToList(this._converterCodeService.GenerateCode(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
-            //    if (!codeGenRes)
-            //    {
-            //        return result;
-            //    }
-            //    codes.ConverterCodes = codeGenRes;
-            //}
+            if (true)
+            {
+                var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new() viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
+                if (!codeGenRes)
+                {
+                    return result;
+                }
+                codes.ConverterCodes = codeGenRes;
+            }
 
             return result;
 

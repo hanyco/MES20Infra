@@ -1,9 +1,5 @@
-﻿using System.CodeDom;
+﻿using Contracts.Services;
 
-using Contracts.Services;
-using Contracts.ViewModels;
-
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 
 using Library.CodeGeneration;
@@ -20,13 +16,14 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
 {
     private readonly ICodeGeneratorEngine _codeGenerator = codeGenerator;
 
-    public Result<Codes> GenerateCodes(ModelConverterCodeViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(ModelConverterCodeParameter parameter)
     {
-        if (!viewModel.SourceDto.Check().ArgumentNotNull().NotNull(x => x.Name).TryParse(out var vr))
+        var vr = validate(parameter);
+        if (!vr)
         {
             return vr.WithValue(Codes.Empty);
         }
-        (var src, var srcClassName, var dstClassName, var methodName) = viewModel;
+        var (src, srcClassName, dstClassName, methodName) = parameter!;
         methodName ??= CodeConstants.Converter_Convert_MethodName(dstClassName);
 
         var ma = new Method(methodName)
@@ -62,5 +59,11 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
         //.ToCodes();
 
         return Result<Codes>.CreateSuccess(result);
+
+        static Result validate(ModelConverterCodeParameter? viewModel) => viewModel.ArgumentNotNull()
+                .Check()
+                .NotNull(x => x.SourceDto)
+                .NotNull(x => x.SourceDto.Name)
+                .Build();
     }
 }

@@ -65,6 +65,7 @@
                         Style="{StaticResource LongLongTextBox}"
                         Text="{Binding connectionString}" />
                     <Button
+                        Visibility="Collapsed"
                         x:Name="TestButton"
                         Click="TestButton_Click"
                         Style="{StaticResource IconButton}">
