@@ -29,13 +29,12 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
         (var src, var srcClassName, var dstClassName, var methodName) = viewModel;
         methodName ??= CodeConstants.Converter_Convert_MethodName(dstClassName);
         var ns = INamespace.New($"{src.NameSpace}.Converters");
+        var cl = new Class(srcClassName) { InheritanceModifier = InheritanceModifier.Partial | InheritanceModifier.Static };
+        var ma = new Method(CodeConstants.Converter_Convert_MethodName(dstClassName)) { IsExtension = true };
+        cl.Members.Add(ma);
+
         var rs = _codeGenerator.Generate(ns);
         
-
-        var codeCompileUnit = CodeDomHelper.Begin();
-        var nameSpace = codeCompileUnit.AddNewNameSpace($"{src.NameSpace}.Converters");
-        var converterClass = nameSpace.AddNewClass("ModelConverter", isPartial: true);
-
         var singleConverter = CodeConstants.Converter_ConvertSingle_MethodBody(srcClassName, dstClassName, "o", src.Properties.Select(x => x.Name));
         var enumerableConverter = CodeConstants.Converter_ConvertEnumerable_MethodBody(srcClassName, dstClassName, "o");
         var statement = CodeConstants.WrapInClass("ModelConverter", true, accessModifier: MemberAttributes.Public, singleConverter, enumerableConverter);
