@@ -6,10 +6,10 @@ using Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
-using Library.Helpers.CodeGen;
 using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
@@ -28,19 +28,38 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
         }
         (var src, var srcClassName, var dstClassName, var methodName) = viewModel;
         methodName ??= CodeConstants.Converter_Convert_MethodName(dstClassName);
-        var ns = INamespace.New($"{src.NameSpace}.Converters");
-        var cl = new Class(srcClassName) { InheritanceModifier = InheritanceModifier.Partial | InheritanceModifier.Static };
-        var ma = new Method(CodeConstants.Converter_Convert_MethodName(dstClassName)) { IsExtension = true };
-        cl.Members.Add(ma);
 
-        var rs = _codeGenerator.Generate(ns);
-        
-        var singleConverter = CodeConstants.Converter_ConvertSingle_MethodBody(srcClassName, dstClassName, "o", src.Properties.Select(x => x.Name));
-        var enumerableConverter = CodeConstants.Converter_ConvertEnumerable_MethodBody(srcClassName, dstClassName, "o");
-        var statement = CodeConstants.WrapInClass("ModelConverter", true, accessModifier: MemberAttributes.Public, singleConverter, enumerableConverter);
+        var ma = new Method(methodName)
+        {
+            IsExtension = true,
+            Body = CodeConstants.Converter_ConvertSingle_MethodBody(srcClassName, dstClassName, "o", src.Properties.Select(x => x.Name)),
+            ReturnType = dstClassName
+        }.AddParameter(srcClassName, "o");
+        var mb = new Method(methodName)
+        {
+            IsExtension = true,
+            Body = CodeConstants.Converter_ConvertEnumerable_MethodBody(srcClassName, dstClassName, "o"),
+            ReturnType = $"System.IEnumerable<{TypePath.GetName(dstClassName)}>"
+        }.AddParameter($"System.IEnumerable<{TypePath.GetName(srcClassName)}>", "o");
+
+        var cl = new Class(srcClassName) { InheritanceModifier = InheritanceModifier.Partial | InheritanceModifier.Static }
+            .AddMember(ma)
+            .AddMember(mb);
+
+        var ns = INamespace.New($"{src.NameSpace}.Converters")
+            .AddType(cl);
+
+        var statement = this._codeGenerator.Generate(ns);
         var result = Code.New(methodName, Languages.CSharp, statement, true, $"ModelConverter.{srcClassName}.{methodName}.cs")
-        .With(x => x.props().Category = CodeCategory.Converter)
-        .ToCodes();
+            .With(x => x.props().Category = CodeCategory.Converter)
+            .ToCodes();
+
+        //var singleConverter = CodeConstants.Converter_ConvertSingle_MethodBody(srcClassName, dstClassName, "o", src.Properties.Select(x => x.Name));
+        //var enumerableConverter = CodeConstants.Converter_ConvertEnumerable_MethodBody(srcClassName, dstClassName, "o");
+        //var statement = CodeConstants.WrapInClass("ModelConverter", true, accessModifier: MemberAttributes.Public, singleConverter, enumerableConverter);
+        //var result = Code.New(methodName, Languages.CSharp, statement, true, $"ModelConverter.{srcClassName}.{methodName}.cs")
+        //.With(x => x.props().Category = CodeCategory.Converter)
+        //.ToCodes();
 
         return Result<Codes>.CreateSuccess(result);
     }
