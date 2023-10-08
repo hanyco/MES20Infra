@@ -2,6 +2,7 @@
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
+using Library.CodeGeneration;
 using Library.Interfaces;
 
 namespace Contracts.Services;
@@ -10,13 +11,13 @@ public interface IModelConverterCodeService : IBusinessService, ICodeGenerator<M
 {
 }
 
-public sealed class ModelConverterCodeParameter(DtoViewModel sourceDto, string srcClassName, string dstClassName, string? methodName)
+public sealed class ModelConverterCodeParameter(DtoViewModel sourceDto, string srcClass, string dstClass, string? methodName)
 {
-    public string DstClassName { get; } = dstClassName;
+    public TypePath DstClass { get; } = dstClass;
     public string? MethodName { get; } = methodName;
     public DtoViewModel SourceDto { get; } = sourceDto;
-    public string SrcClassName { get; } = srcClassName;
+    public TypePath SrcClass { get; } = srcClass;
 
-    public void Deconstruct(out DtoViewModel sourceDto, out string srcClassName, out string dstClassName, out string methodName) =>
-        (sourceDto, srcClassName, dstClassName, methodName) = (this.SourceDto, this.SrcClassName, this.DstClassName, this.MethodName);
+    public void Deconstruct(out DtoViewModel sourceDto, out TypePath srcClass, out TypePath dstClass, out string methodName) =>
+        (sourceDto, srcClass, dstClass, methodName) = (this.SourceDto, this.SrcClass, this.DstClass, this.MethodName);
 }
