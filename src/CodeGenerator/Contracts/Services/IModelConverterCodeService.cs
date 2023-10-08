@@ -10,10 +10,10 @@ public interface IModelConverterCodeService : IBusinessService, ICodeGenerator<M
 {
 }
 
-public sealed class ModelConverterCodeParameter(DtoViewModel sourceDto, string srcClassName, string dstClassName, string methodName)
+public sealed class ModelConverterCodeParameter(DtoViewModel sourceDto, string srcClassName, string dstClassName, string? methodName)
 {
     public string DstClassName { get; } = dstClassName;
-    public string MethodName { get; } = methodName;
+    public string? MethodName { get; } = methodName;
     public DtoViewModel SourceDto { get; } = sourceDto;
     public string SrcClassName { get; } = srcClassName;
 

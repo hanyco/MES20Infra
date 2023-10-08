@@ -132,7 +132,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
 
         var interfaceNames = dto.GetBaseTypes().Select(ns => ns.Name);
         var dtoClass = dtoNameSpace
-            .AddNewClass(dto.Name, interfaceNames, true)
+            .AddNewType(dto.Name, interfaceNames, true)
             .AddSummary(dto.Comment ?? $"The data transfer object of {dto.Name.Replace("DTO", "").Replace("Dto", "")}");
         _ = AddProps(dto, dtoClass, dtoNameSpace, dtoNs);
         return (dtoUnit, dtoClass);
@@ -178,7 +178,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
         }
 
         var className = $"{cqrsName}{segregate.Suffix}";
-        var codeTypeDeclaration = nameSpace.AddNewClass(className, null, true);
+        var codeTypeDeclaration = nameSpace.AddNewType(className, null, true);
 
         if (IsValidSegregatePartial(segregate, Partials.OnInitialize))
         {
@@ -216,7 +216,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
 
         var interfaceNames = segInterfaces.Select(ns => ns.Name);
         var className = $"{cqrsName}{segregate.Suffix}";
-        var segClass = nameSpace.AddNewClass(className, interfaceNames, true);
+        var segClass = nameSpace.AddNewType(className, interfaceNames, true);
         _ = segClass.AddSummary(segregate.Comment ?? $"The {segregate.Suffix.ToLower(CultureInfo.InvariantCulture)} of {cqrsName}");
 
         var ctorParams = new List<(string Type, string Name, string DataMemberName)>();

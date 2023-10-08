@@ -373,13 +373,13 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                         .UseNameSpace(typeof(Enumerable).Namespace!)
                         .UseNameSpace(typeof(Task).Namespace!)
                         .UseNameSpace(typeof(ObservationRepository).Namespace!)
-                        .AddNewClass(this.Name, isPartial: true, baseTypes: this.GetBaseTypes().IsNullOrEmpty() ? null : new[] { this.GetBaseTypes()! });
+                        .AddNewType(this.Name, isPartial: true, baseTypes: this.GetBaseTypes().IsNullOrEmpty() ? null : new[] { this.GetBaseTypes()! });
 
         CodeTypeDeclaration createMainClass(in CodeNamespace mainNameSpace)
             => mainNameSpace.UseNameSpace(typeof(string).Namespace!)
                         .UseNameSpace(typeof(Enumerable).Namespace!)
                         .UseNameSpace(typeof(Task).Namespace!)
-                        .AddNewClass(this.Name, isPartial: true);
+                        .AddNewType(this.Name, isPartial: true);
     }
 
     private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)

@@ -187,7 +187,7 @@ internal sealed partial class FunctionalityService
             }
             if (true)
             {
-                var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new() viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null));
+                var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null)));
                 if (!codeGenRes)
                 {
                     return result;

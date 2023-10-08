@@ -1,4 +1,6 @@
-﻿using Contracts.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Contracts.Services;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
 
@@ -16,14 +18,13 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
 {
     private readonly ICodeGeneratorEngine _codeGenerator = codeGenerator;
 
-    public Result<Codes> GenerateCodes(ModelConverterCodeParameter parameter)
+    public Result<Codes> GenerateCodes(ModelConverterCodeParameter args)
     {
-        var vr = validate(parameter);
-        if (!vr)
+        if (!validate(args).TryParse(out var vr))
         {
             return vr.WithValue(Codes.Empty);
         }
-        var (src, srcClassName, dstClassName, methodName) = parameter!;
+        var (src, srcClassName, dstClassName, methodName) = args;
         methodName ??= CodeConstants.Converter_Convert_MethodName(dstClassName);
 
         var ma = new Method(methodName)
@@ -46,8 +47,12 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
         var ns = INamespace.New($"{src.NameSpace}.Converters")
             .AddType(cl);
 
-        var statement = this._codeGenerator.Generate(ns);
-        var result = Code.New(methodName, Languages.CSharp, statement, true, $"ModelConverter.{srcClassName}.{methodName}.cs")
+        var codeGenRes = this._codeGenerator.Generate(ns);
+        if (codeGenRes.IsFailure)
+        {
+            return codeGenRes.WithValue(Codes.Empty);
+        }
+        var result = Code.New(methodName, Languages.CSharp, codeGenRes, true, $"ModelConverter.{srcClassName}.{methodName}.cs")
             .With(x => x.props().Category = CodeCategory.Converter)
             .ToCodes();
 
@@ -60,7 +65,8 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
 
         return Result<Codes>.CreateSuccess(result);
 
-        static Result validate(ModelConverterCodeParameter? viewModel) => viewModel.ArgumentNotNull()
+        [return: NotNull]
+        static Result validate([NotNull] ModelConverterCodeParameter? viewModel) => viewModel.ArgumentNotNull()
                 .Check()
                 .NotNull(x => x.SourceDto)
                 .NotNull(x => x.SourceDto.Name)

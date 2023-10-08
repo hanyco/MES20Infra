@@ -47,12 +47,12 @@ public interface IBehindCodeGenerator
 }
 
 /// <summary>
-/// Represents an interface for generating codes based on a specific view model and optional parameters.
+/// Represents an interface for generating codes based on a specific parameter.
 /// </summary>
-/// <typeparam name="TParameter">The type of the parameter.</typeparam>
-public interface ICodeGenerator<in TParameter>
+/// <typeparam name="TArguments">The type of the parameter.</typeparam>
+public interface ICodeGenerator<in TArguments>
 {
-    Result<Codes> GenerateCodes([DisallowNull]TParameter args);
+    Result<Codes> GenerateCodes([DisallowNull] TArguments args);
 }
 
 /// <summary>
