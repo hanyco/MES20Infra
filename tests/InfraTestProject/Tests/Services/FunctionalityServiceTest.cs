@@ -1,6 +1,8 @@
 ﻿using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.UI.ViewModels;
+
 using Library.BusinessServices;
 using Library.Coding;
 
@@ -8,9 +10,6 @@ namespace InfraTestProject.Tests.Services;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
-    private readonly IFunctionalityCodeService _codeService = codeService;
-    private readonly IFunctionalityService _service = service;
-
     [Fact]
     public async Task _10_GenerateModelTest()
     {
@@ -19,12 +18,12 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var model = CreateModel();
 
         // Act
-        var actual = await this._service.GenerateViewModelAsync(model);
+        var actual = await service.GenerateViewModelAsync(model);
 
         // Assert
         if (!actual.IsSucceed)
         {
-            Assert.Fail(actual.Message ?? $"{nameof(this._service.GenerateViewModelAsync)} failed.");
+            Assert.Fail(actual.Message ?? $"{nameof(service.GenerateViewModelAsync)} failed.");
         }
     }
 
@@ -32,10 +31,10 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     public async void _20_GenerateCodeTest()
     {
         // Assign
-        var model = await this._service.GenerateViewModelAsync(CreateModel());
+        var model = await service.GenerateViewModelAsync(CreateModel());
 
         // Act
-        var actual = await this._codeService.GenerateCodesAsync(model!);
+        var actual = await codeService.GenerateCodesAsync(model!);
 
         // Assert
         if (!actual.IsSucceed)
@@ -56,10 +55,10 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     public async void _30_SaveModelTest()
     {
         // Assign
-        var model = await this._service.GenerateViewModelAsync(CreateModel());
+        var model = await service.GenerateViewModelAsync(CreateModel());
 
         // Act
-        var result = await this._service.SaveViewModelAsync(model!);
+        var result = await service.SaveViewModelAsync(model!);
 
         // Assert
         Assert.True(result);
@@ -67,10 +66,11 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
 
     private static FunctionalityViewModel CreateModel()
     {
+        var personTable = new DbTableViewModel("Person", -1, "dbo");
         var model = new FunctionalityViewModel
         {
-            SourceDto = new(-1, "PersonDTO") { Module = new(1, "Module") },
-            Name = "TestFunctionality",
+            SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "CodeGen.UnitTests.Dtos" },
+            Name = "PersonDto"
         }.With(x => x.SourceDto.NameSpace = "CodeGen.UnitTests");
         _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {

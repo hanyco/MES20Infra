@@ -52,11 +52,11 @@ public partial class App : LibApp
 
         return;
 
-        static void addBclServices(IServiceCollection services) => 
+        static void addBclServices(IServiceCollection services) =>
             services.AddScoped<ICodeGeneratorEngine, CodeDomCodeGenerator>();
 
-        static void addDataContext(IServiceCollection services, SettingsModel settings)
-            => services
+        static void addDataContext(IServiceCollection services, SettingsModel settings) =>
+            services
 #if !TEST_MODE
                .AddDbContext<InfraWriteDbContext>(options =>
                {

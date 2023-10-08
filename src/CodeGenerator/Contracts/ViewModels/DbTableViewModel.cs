@@ -24,6 +24,6 @@ public sealed class DbTableViewModel : DbObjectViewModel
     public static DbTableViewModel FromDbTable([DisallowNull] Table table)
     {
         Check.MustBeArgumentNotNull(table);
-        return new DbTableViewModel(table.Name, table.Id, table.Schema);
+        return new(table.Name, table.Id, table.Schema);
     }
 }

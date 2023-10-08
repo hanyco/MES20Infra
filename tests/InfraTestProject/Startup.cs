@@ -3,6 +3,7 @@
 using InfraTestProject.Tests;
 
 using Library.BusinessServices;
+using Library.CodeGeneration.v2;
 using Library.Interfaces;
 using Library.Logging;
 using Library.Mapping;
@@ -59,12 +60,14 @@ internal static class ServiceCollectionExtensions
         _ = services
                 .AddScoped<IMapper, Mapper>()
                 .AddScoped<ILogger, EmptyLogger>()
-                .AddSingleton(IProgressReport.New());
-        
+                .AddSingleton(IProgressReport.New())
+                .AddScoped<ICodeGeneratorEngine, CodeDomCodeGenerator>();
+
         var inMemoryDatabaseRoot = new InMemoryDatabaseRoot();
         _ = services
                 .AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot)
                                                                      .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)))
                 .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot));
+        
     }
 }

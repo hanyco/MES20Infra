@@ -258,7 +258,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
             {
                 switch (action)
                 {
-                    case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject.Name != null:
+                    case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject?.Name != null:
                         var entityName = StringHelper.Pluralize(load.CqrsSegregate.DbObject.Name);
                         result.Actions.Add(new(GetAll_OnCallingMethodName(entityName), false));
                         result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), body: GetAll_CallMethodBody(entityName)));
