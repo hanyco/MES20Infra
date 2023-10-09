@@ -29,7 +29,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
 
     [Fact]
     [Trait("Category", "__ActiveTest")]
-    public async void _20_GenerateCodeTest()
+    public async void _20_GenerateCode()
     {
         // Assign
         var model = await service.GenerateViewModelAsync(CreateModel());
@@ -43,7 +43,8 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
             Assert.Fail(actual.ToString());
         }
 
-        foreach (var code in actual.Value)
+        var codes = actual.Value;
+        foreach (var code in codes)
         {
             if (code?.props().Category == null)
             {
