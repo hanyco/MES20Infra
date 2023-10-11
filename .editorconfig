@@ -218,6 +218,7 @@ dotnet_naming_style.all_upper.capitalization = all_upper
 
 # CA1307: Specify StringComparison for clarity
 dotnet_diagnostic.CA1307.severity = none
+csharp_style_prefer_primary_constructors = true:suggestion
 
 [*.{cs,vb}]
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
@@ -233,3 +234,4 @@ dotnet_style_collection_initializer = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
 dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+dotnet_style_prefer_collection_expression = true:suggestion
