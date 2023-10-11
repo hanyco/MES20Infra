@@ -25,51 +25,31 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
     /// <returns>A result containing the generated codes.</returns>
     public Result<Codes> GenerateCodes(ModelConverterCodeParameter args)
     {
-        // Validate the input parameters.
         if (!validate(args).TryParse(out var vr))
         {
             return vr.WithValue(Codes.Empty);
         }
 
-        // Deconstruct the input parameters.
         (var dto, var srcClass, var dstClass, var methodName) = args;
-
-        // If methodName is null, use a default method name.
         methodName ??= CodeConstants.Converter_Convert_MethodName(dstClass.Name!);
 
-        // Create a single DTO converter.
         var ma = createSingleDtoConverter(dto, srcClass, dstClass, methodName);
-
-        // Create an enumerable converter.
         var mb = createEnumerableConverter(srcClass, dstClass, methodName);
-
-        // Create an extension class and add members.
         var cl = createExtensionClassAndAddMembers(srcClass, ma, mb);
-
-        // Create a namespace.
         var ns = createNameSpace(dto);
 
-        // Add the class to the namespace.
         AddClassToNameSpace(cl, ns);
-
-        // Add necessary using statements
         AddUsings(dto, ma, mb, ns);
 
-        // Generate the code.
         var codeGenRes = this._codeGenerator.Generate(ns);
-
-        // If code generation failed, return an empty result.
         if (codeGenRes.IsFailure)
         {
             return codeGenRes.WithValue(Codes.Empty);
         }
 
-        // Create a new code object and set its properties.
         var result = Code.New(methodName, Languages.CSharp, codeGenRes, true, $"ModelConverter.{srcClass}.{methodName}.cs")
             .With(x => x.props().Category = CodeCategory.Converter)
             .ToCodes();
-
-        // Return the result.
         return Result<Codes>.CreateSuccess(result);
 
         // Validate the input parameters.
@@ -100,7 +80,7 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
 
         // Create an extension class and add members.
         static Class createExtensionClassAndAddMembers(TypePath srcClass, Method ma, Method mb) =>
-            new Class(srcClass.Name!) { InheritanceModifier = InheritanceModifier.Partial | InheritanceModifier.Static, AccessModifier = AccessModifier.Public }
+            new Class(srcClass.Name!) { InheritanceModifier = InheritanceModifier.Partial | InheritanceModifier.Static }
                     .AddMember(ma)
                     .AddMember(mb);
 
