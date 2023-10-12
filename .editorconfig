@@ -235,3 +235,5 @@ dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
 dotnet_style_prefer_conditional_expression_over_return = true:suggestion
 dotnet_style_prefer_collection_expression = true:suggestion
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1307.severity = none

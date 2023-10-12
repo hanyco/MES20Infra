@@ -1,13 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Contracts.Services;
+﻿using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
 using Library.Coding;
-using Library.Validations;
 
 namespace InfraTestProject.Tests.Services;
 
@@ -29,7 +26,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
             Assert.Fail(actual.Message ?? $"{nameof(service.GenerateViewModelAsync)} failed.");
         }
     }
-    
+
     [Fact]
     [Trait("Category", "__ActiveTest")]
     public async void _20_GenerateCode()
@@ -85,12 +82,4 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         });
         return model;
     }
-}
-
-public static class Extensions
-{
-    public static async Task RunAsync([DisallowNull]this Task task)
-        => await task.ArgumentNotNull().ConfigureAwait(false);
-    public static async Task<TResult> RunAsync<TResult>([DisallowNull] this Task<TResult> task)
-        => await task.ArgumentNotNull().ConfigureAwait(false);
 }
