@@ -89,13 +89,12 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
                 .AppendLine("@inject NavigationManager NavigationManager")
                 .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
                 .AppendLine();
-            var inherits = TypePath.New<PageBase<int>>();
-
+            List<string> generics = [];
             if (this.DataContextType is { } dct2)
             {
-                inherits = inherits.AddGenericType(dct2.Name);
-            }
-
+                generics.Add(dct2.Name);
+            };
+            var inherits = TypePath.New<PageBase<int>>(generics);
             _ = codeStringBuilder.AppendLine($"@inherits {inherits}");
             _ = codeStringBuilder.AppendLine();
             return result;
