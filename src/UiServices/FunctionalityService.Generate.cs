@@ -27,10 +27,10 @@ internal sealed partial class FunctionalityService
         Check.MustBeArgumentNotNull(viewModel);
 
         // Determine whether to update existing codes or generate new ones.
-        var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : new();
+        var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : [];
 
         // Generate codes asynchronously and combine the results.
-        var results = await generateCodes(viewModel, codeResult, token);
+        var results = await generateCodes(viewModel, codeResult, token).ConfigureAwait(false);
 
         // Combine generated results if available, or return a failure message.
         return results.Any()
@@ -57,7 +57,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for GetAllQueryViewModel if available.
             if (viewModel.GetAllQueryViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.GetAllQueryViewModel, token: token);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.GetAllQueryViewModel, token: token).ConfigureAwait(false);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -69,7 +69,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for GetByIdQueryViewModel if available.
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.GetByIdQueryViewModel, token: token);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.GetByIdQueryViewModel, token: token).ConfigureAwait(false);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -81,7 +81,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for InsertCommandViewModel if available.
             if (viewModel.InsertCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.InsertCommandViewModel, token: token);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.InsertCommandViewModel, token: token).ConfigureAwait(false);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -93,7 +93,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for UpdateCommandViewModel if available.
             if (viewModel.UpdateCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.UpdateCommandViewModel, token: token);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.UpdateCommandViewModel, token: token).ConfigureAwait(false);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -105,7 +105,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for DeleteCommandViewModel if available.
             if (viewModel.DeleteCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.DeleteCommandViewModel, token: token);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.DeleteCommandViewModel, token: token).ConfigureAwait(false);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -185,9 +185,11 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorDetailsComponentCodes = codeGenRes;
             }
-            if (true)
+            if (viewModel.GetAllQueryViewModel != null && viewModel.SourceDto != null)
             {
-                var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new(viewModel.SourceDto!, viewModel.GetAllQueryViewModel!.ResultDto.Name!, $"{viewModel.SourceDto!.Name}", null)));
+                var srcClass = TypePath.New(viewModel.GetAllQueryViewModel.ResultDto.Name, viewModel.GetAllQueryViewModel.ResultDto.NameSpace);
+                var dstClass = TypePath.New(viewModel.SourceDto.Name, viewModel.SourceDto.NameSpace);
+                var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new(viewModel.SourceDto!, srcClass, dstClass, null)));
                 if (!codeGenRes)
                 {
                     return result;
@@ -214,7 +216,7 @@ internal sealed partial class FunctionalityService
                     // Generate the codes of CQRS result.
                     addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto)),
                     // Generate the codes of CQRS handler.
-                    addToList(await this._cqrsCodeService.GenerateCodesAsync(cqrsViewModel, token: token))
+                    addToList(await this._cqrsCodeService.GenerateCodesAsync(cqrsViewModel, token: token).ConfigureAwait(false))
                 };
                 return getAllCodes;
             }
@@ -249,7 +251,7 @@ internal sealed partial class FunctionalityService
         this._reporter.Report(description: getTitle("Running..."));
 
         // Run the process asynchronously
-        var processResult = await process.RunAsync(tokenSource.Token);
+        var processResult = await process.RunAsync(tokenSource.Token).ConfigureAwait(false);
 
         // Get the result message based on the process result and cancellation token
         var message = getResultMessage(processResult, tokenSource.Token);
@@ -508,14 +510,14 @@ internal sealed partial class FunctionalityService
 
         async Task createHandler(CancellationToken token)
         {
-            data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
+            data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token).ConfigureAwait(false);
             data.ViewModel.DeleteCommandViewModel.Name = $"{name}Command";
             data.ViewModel.DeleteCommandViewModel.Category = CqrsSegregateCategory.Delete;
             data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Commands");
             data.ViewModel.DeleteCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.DeleteCommandViewModel.FriendlyName = data.ViewModel.DeleteCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.DeleteCommandViewModel.Comment = data.COMMENT;
-            data.ViewModel.DeleteCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token);
+            data.ViewModel.DeleteCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token).ConfigureAwait(false);
         }
 
         void createParams(CreationData data)
@@ -547,18 +549,18 @@ internal sealed partial class FunctionalityService
             .Then(createParams)
             .Then(createResult)
             .Then(setupSecurity)
-            .RunAsync(token);
+            .RunAsync(token).ConfigureAwait(false);
 
         async Task createViewModel(CreationData data, CancellationToken token)
         {
-            data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token);
+            data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token).ConfigureAwait(false);
             data.ViewModel.GetAllQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetAllQueryViewModel.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Queries");
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
-            data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token).ConfigureAwait(false);
         }
 
         void createParams(CreationData data)
@@ -592,14 +594,14 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CancellationToken token)
         {
-            data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token);
+            data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token).ConfigureAwait(false);
             data.ViewModel.GetByIdQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetByIdQueryViewModel.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Queries");
             data.ViewModel.GetByIdQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.ViewModel.GetByIdQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
-            data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token).ConfigureAwait(false);
         }
 
         void createParams()
@@ -636,14 +638,14 @@ internal sealed partial class FunctionalityService
 
         async Task createHandler(CreationData data, CancellationToken token)
         {
-            data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token);
+            data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token).ConfigureAwait(false);
             data.ViewModel.InsertCommandViewModel.Name = $"{name}Command";
             data.ViewModel.InsertCommandViewModel.Category = CqrsSegregateCategory.Create;
             data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Commands");
             data.ViewModel.InsertCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.InsertCommandViewModel.FriendlyName = data.ViewModel.InsertCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.InsertCommandViewModel.Comment = data.COMMENT;
-            data.ViewModel.InsertCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token);
+            data.ViewModel.InsertCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token).ConfigureAwait(false);
         }
 
         void createParams(CreationData data)
@@ -685,14 +687,14 @@ internal sealed partial class FunctionalityService
 
         async Task createHandler(CreationData data, CancellationToken token)
         {
-            data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token);
+            data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token).ConfigureAwait(false);
             data.ViewModel.UpdateCommandViewModel.Name = $"{name}Command";
             data.ViewModel.UpdateCommandViewModel.Category = CqrsSegregateCategory.Update;
             data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(GetNameSpace(data), "Commands");
             data.ViewModel.UpdateCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.UpdateCommandViewModel.FriendlyName = data.ViewModel.UpdateCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.UpdateCommandViewModel.Comment = data.COMMENT;
-            data.ViewModel.UpdateCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.UpdateCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token).ConfigureAwait(false);
         }
 
         void createParamsAsync(CreationData data)

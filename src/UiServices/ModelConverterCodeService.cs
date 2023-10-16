@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using Contracts.Services;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
 
@@ -30,16 +31,16 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
             return vr.WithValue(Codes.Empty);
         }
 
-        (var dto, var srcClass, var dstClass, var methodName) = args;
-        methodName ??= CodeConstants.Converter_Convert_MethodName(dstClass.Name!);
+        (var dto, var srcClass, var dstClass, var isSrvEnumerable) = args;
 
-        var ma = createSingleDtoConverter(dto, srcClass, dstClass, methodName);
-        var mb = createEnumerableConverter(srcClass, dstClass, methodName);
-        var cl = createExtensionClassAndAddMembers(srcClass, ma, mb);
+        var methods = new List<Method>();
+        if (!isSrvEnumerable)
+            methods.AddRange(createNormalMethods(dto, srcClass, dstClass));
+        var cl = createExtensionClassAndAddMembers(srcClass, dstClass, methods);
         var ns = createNameSpace(dto);
 
         AddClassToNameSpace(cl, ns);
-        AddUsings(dto, ma, mb, ns);
+        AddUsings(ns, methods, dto);
 
         var codeGenRes = this._codeGenerator.Generate(ns);
         if (codeGenRes.IsFailure)
@@ -47,45 +48,47 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
             return codeGenRes.WithValue(Codes.Empty);
         }
 
-        var result = Code.New(methodName, Languages.CSharp, codeGenRes, true, $"ModelConverter.{srcClass}.{methodName}.cs")
+        var result = Code.New($"ModelConverter.{srcClass}", Languages.CSharp, codeGenRes, true, $"{srcClass}.ModelConverter.cs")
             .With(x => x.props().Category = CodeCategory.Converter)
             .ToCodes();
         return Result<Codes>.CreateSuccess(result);
 
         // Validate the input parameters.
         [return: NotNull]
-        static Result validate([NotNull] ModelConverterCodeParameter? viewModel) => viewModel.ArgumentNotNull()
+        static Result validate([NotNull] ModelConverterCodeParameter viewModel) => viewModel.ArgumentNotNull()
                 .Check()
                 .NotNull(x => x.SourceDto)
                 .NotNull(x => x.SourceDto.Name)
                 .Build();
 
         // Create a single DTO converter.
-        static Method createSingleDtoConverter(Contracts.ViewModels.DtoViewModel src, TypePath srcClass, TypePath dstClass, string methodName) =>
+        static Method createSingleDtoConverter(DtoViewModel src, TypePath srcClass, TypePath dstClass, string methodName) =>
             new Method(methodName)
             {
                 IsExtension = true,
-                Body = CodeConstants.Converter_ConvertSingle_MethodBody(srcClass.Name!, dstClass.Name!, "o", src.Properties.Select(x => x.Name)),
+                Body = CodeConstants.Converter_ConvertSingle_MethodBody(srcClass, dstClass.Name, "o", src.Properties.Select(x => x.Name)),
                 ReturnType = dstClass
-            }.AddParameter(srcClass.Name!, "o");
+            }.AddParameter(srcClass, "o");
 
         // Create an enumerable converter.
         static Method createEnumerableConverter(TypePath srcClass, TypePath dstClass, string methodName) =>
             new Method(methodName)
             {
                 IsExtension = true,
-                Body = CodeConstants.Converter_ConvertEnumerable_MethodBody(srcClass.Name!, dstClass.Name!, "o"),
-                ReturnType = $"System.IEnumerable<{dstClass.Name}>"
-            }.AddParameter($"System.IEnumerable<{srcClass.Name}>", "o");
+                Body = CodeConstants.Converter_ConvertEnumerable_MethodBody(srcClass, dstClass, "o"),
+                ReturnType = $"System.IEnumerable<{dstClass}>"
+            }.AddParameter($"System.IEnumerable<{srcClass}>", "o");
 
         // Create an extension class and add members.
-        static Class createExtensionClassAndAddMembers(TypePath srcClass, Method ma, Method mb) =>
-            new Class(srcClass.Name!) { InheritanceModifier = InheritanceModifier.Partial | InheritanceModifier.Static }
-                    .AddMember(ma)
-                    .AddMember(mb);
+        static Class createExtensionClassAndAddMembers(TypePath srcClass, TypePath dstClass, IEnumerable<Method> methods)
+        {
+            var cl = new Class($"{srcClass.Name}To{dstClass.Name}Converter") { InheritanceModifier = InheritanceModifier.Partial | InheritanceModifier.Static };
+            methods.ForEach(x => cl.Members.Add(x));
+            return cl;
+        }
 
         // Create a namespace.
-        static INamespace createNameSpace(Contracts.ViewModels.DtoViewModel src) =>
+        static INamespace createNameSpace(DtoViewModel src) =>
             INamespace.New($"{src.NameSpace}.Converters");
 
         // Add the class to the namespace.
@@ -93,25 +96,24 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
             ns.AddType(cl);
 
         // Add `using` statements
-        static void AddUsings(Contracts.ViewModels.DtoViewModel src, Method ma, Method mb, INamespace ns)
+        static void AddUsings(INamespace ns, IEnumerable<Method> methods, DtoViewModel src)
         {
             if (src.NameSpace != null)
             {
                 _ = ns.AddUsingNameSpace(src.NameSpace);
             }
+            methods.ForEach(x => ns.AddUsingNameSpace(x.GetNameSpaces()));
+        }
 
-            if (ma.ReturnType?.NameSpace != null)
-            {
-                _ = ns.AddUsingNameSpace(ma.ReturnType.NameSpace);
-            }
+        static IEnumerable<Method> createNormalMethods(DtoViewModel dto, TypePath srcClass, TypePath dstClass)
+        {
+            var methodName = CodeConstants.Converter_Convert_MethodName(dstClass.Name);
 
-            if (mb.ReturnType?.NameSpace != null)
-            {
-                _ = ns.AddUsingNameSpace(mb.ReturnType.NameSpace);
-            }
+            var ma = createSingleDtoConverter(dto, srcClass, dstClass, methodName);
+            yield return ma;
 
-            _ = ns.AddUsingNameSpace(ma.Parameters.Select(x => TypePath.GetNameSpace(x.Type)));
-            _ = ns.AddUsingNameSpace(mb.Parameters.Select(x => TypePath.GetNameSpace(x.Type)));
+            var mb = createEnumerableConverter(srcClass, dstClass, methodName);
+            yield return mb;
         }
     }
 }
