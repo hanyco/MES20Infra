@@ -1,11 +1,13 @@
 ﻿using System.CodeDom;
 
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.DesignPatterns.Behavioral.Observation;
 using Library.Exceptions.Validations;
@@ -31,7 +33,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     Dictionary<string, string?> IHtmlElement.Attributes { get; }
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
     public TypePath? DataContextType { get; set; }
-    public IList<FieldActor> Fields { get; } = new List<FieldActor>();
+    public IList<FieldInfo> Fields { get; } = new List<FieldInfo>();
     public virtual string HtmlFileExtension { get; } = "razor";
     public bool IsGrid { get; set; }
     public virtual string MainCodeFileExtension { get; } = "razor.cs";
@@ -251,7 +253,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var field in this.Fields.Where(m => m.IsPartial))
             {
-                _ = partClassType.AddField(field.ToFieldInfo());
+                _ = partClassType.AddField(field.Type, field.Name, field.Comment, field.AccessModifier, field.IsReadOnly, field.IsPartial);
             }
         }
 
@@ -267,7 +269,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var field in this.Fields.Where(m => !m.IsPartial))
             {
-                _ = mainClassType.AddField(field.ToFieldInfo());
+                _ = mainClassType.AddField(field.Type, field.Name, field.Comment, field.AccessModifier, field.IsReadOnly, field.IsPartial);
             }
         }
 
@@ -279,7 +281,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
             {
                 var body = method.Body.SplitMerge(mergeSeparator: INDENT.Repeat(3), addSeparatorToEnd: false);
-                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial == true, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
+                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x=>(x.Type.FullPath,x.Name)).ToArray());
             }
             var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync())?.Body);
             _ = partClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
@@ -289,7 +291,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
             {
-                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, method.Arguments?.ToArray() ?? Array.Empty<MethodArgument>());
+                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
             _ = mainClassType.AddMethod("OnLoadAsync", body: DefaultTaskMethodBody(), accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "Task");
         }
@@ -371,13 +373,13 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                         .UseNameSpace(typeof(Enumerable).Namespace!)
                         .UseNameSpace(typeof(Task).Namespace!)
                         .UseNameSpace(typeof(ObservationRepository).Namespace!)
-                        .AddNewClass(this.Name, isPartial: true, baseTypes: this.GetBaseTypes().IsNullOrEmpty() ? null : new[] { this.GetBaseTypes()! });
+                        .AddNewType(this.Name, isPartial: true, baseTypes: this.GetBaseTypes().IsNullOrEmpty() ? null : new[] { this.GetBaseTypes()! });
 
         CodeTypeDeclaration createMainClass(in CodeNamespace mainNameSpace)
             => mainNameSpace.UseNameSpace(typeof(string).Namespace!)
                         .UseNameSpace(typeof(Enumerable).Namespace!)
                         .UseNameSpace(typeof(Task).Namespace!)
-                        .AddNewClass(this.Name, isPartial: true);
+                        .AddNewType(this.Name, isPartial: true);
     }
 
     private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)

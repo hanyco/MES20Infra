@@ -1,4 +1,8 @@
-﻿using Library.CodeGeneration.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+
+using Library.CodeGeneration.Models;
 using Library.Results;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
@@ -43,24 +47,12 @@ public interface IBehindCodeGenerator
 }
 
 /// <summary>
-/// Represents an interface for generating codes based on provided parameters.
+/// Represents an interface for generating codes based on a specific parameter.
 /// </summary>
-public interface ICodeGenerator
+/// <typeparam name="TArguments">The type of the parameter.</typeparam>
+public interface ICodeGenerator<in TArguments>
 {
-    /// <summary>
-    /// Generates codes based on the given parameters.
-    /// </summary>
-    /// <param name="arguments">The parameters used to generate the codes.</param>
-    /// <returns>The generated codes.</returns>
-    Codes GenerateCodes(in GenerateCodesParameters? arguments = null);
-}
-
-/// <summary>
-/// Represents an interface for generating codes based on a specific view model and optional parameters.
-/// </summary>
-/// <typeparam name="TViewModel">The type of the view model.</typeparam>
-public interface ICodeGenerator<in TViewModel> : ICodeGenerator<TViewModel, GenerateCodesParameters>
-{
+    Result<Codes> GenerateCodes([DisallowNull] TArguments args);
 }
 
 /// <summary>

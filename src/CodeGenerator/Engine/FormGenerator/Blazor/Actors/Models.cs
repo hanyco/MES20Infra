@@ -13,12 +13,6 @@ public record PropertyActor(in string Type,
     public PropertyInfo ToPropertyInfo()
         => new(this.Type, this.Name, this.AccessModifier, this.Getter, this.Setter);
 }
-public record FieldActor()
-{
-    public bool IsPartial { get; internal set; }
-
-    public FieldInfo ToFieldInfo() => new();
-}
 
 public class MethodActor(
     string? name,

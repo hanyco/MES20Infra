@@ -1,7 +1,9 @@
 ﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
-using Library.CodeGeneration.Models;
+
+using Library.CodeGeneration;
 using Library.Cqrs.Models.Queries;
+
 using System.ComponentModel;
 
 

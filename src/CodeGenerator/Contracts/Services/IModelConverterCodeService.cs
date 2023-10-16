@@ -2,12 +2,17 @@
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
-using Library.CodeGeneration.Models;
+using Library.CodeGeneration;
 using Library.Interfaces;
-using Library.Results;
 
 namespace Contracts.Services;
 
-public interface IModelConverterCodeService : IBusinessService, ICodeGenerator<ModelConverterCodeViewModel>
+public interface IModelConverterCodeService : IBusinessService, ICodeGenerator<ModelConverterCodeParameter>
 {
 }
+
+public readonly record struct ModelConverterCodeParameter(
+    DtoViewModel SourceDto,
+    string SrcClass,
+    TypePath DstClass,
+    bool IsSrcEnumerable);

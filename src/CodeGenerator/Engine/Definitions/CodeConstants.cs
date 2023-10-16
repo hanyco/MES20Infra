@@ -38,18 +38,15 @@ public static class CodeConstants
         => $"To{dstClassName}";
 
     public static string Converter_ConvertEnumerable_MethodBody(string srcClassName, string dstClassName, string argName) =>
-            $"{INDENT.Repeat(1)}public static IEnumerable<{dstClassName}?> {Converter_Convert_MethodName(dstClassName)}(this IEnumerable<{srcClassName}?> {argName}) =>{Environment.NewLine}{INDENT.Repeat(2)}models.Select(ToDbEntity);";
+            $"{INDENT.Repeat(2)}return {argName}.Select({Converter_Convert_MethodName(dstClassName)});";
 
     public static string Converter_ConvertSingle_MethodBody(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
         new StringBuilder()
-            .AppendLine($"{INDENT.Repeat(1)}public static {dstClassName} {Converter_Convert_MethodName(dstClassName)}(this {srcClassName} {argName})")
-            .AppendLine($"{INDENT.Repeat(1)}{{")
             .AppendLine($"{INDENT.Repeat(2)}var result = new {dstClassName}")
             .AppendLine($"{INDENT.Repeat(2)}{{")
-            .AppendAllLines(propNames, propName => $"{INDENT.Repeat(3)}{propName} = {argName}.{propName}")
+            .AppendAllLines(propNames, propName => $"{INDENT.Repeat(3)}{propName} = {argName}.{propName},")
             .AppendLine($"{INDENT.Repeat(2)}}};")
             .AppendLine($"{INDENT.Repeat(2)}return result;")
-            .AppendLine($"{INDENT.Repeat(1)}}}")
             .ToString();
 
     public static string DefaultTaskMethodBody() =>

@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.Blazor;
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
@@ -87,13 +89,12 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
                 .AppendLine("@inject NavigationManager NavigationManager")
                 .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
                 .AppendLine();
-            var inherits = TypePath.New<PageBase<int>>();
-
+            List<string> generics = [];
             if (this.DataContextType is { } dct2)
             {
-                inherits = inherits.AddGenericType(dct2.Name);
-            }
-
+                generics.Add(dct2.Name);
+            };
+            var inherits = TypePath.New<PageBase<int>>(generics);
             _ = codeStringBuilder.AppendLine($"@inherits {inherits}");
             _ = codeStringBuilder.AppendLine();
             return result;

@@ -5,4 +5,5 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Comment", "CM1001:Type or member does not have comment.", Justification = "<Pending>", Scope = "type", Target = "~T:InfraTestProject.Tests.ArchitecturalTests")]
+[assembly: SuppressMessage("Comment", "CM1001:Type or member does not have comment.", Justification = "<Pending>", Scope = "module")]
+[assembly: SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>", Scope = "module")]

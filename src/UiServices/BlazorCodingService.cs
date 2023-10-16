@@ -3,6 +3,7 @@
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
@@ -12,6 +13,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.Exceptions.Validations;
 using Library.Results;
@@ -205,7 +207,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                             new QueryCqrsSegregation(query.Name!, new(model.PageDataContextType, null!), query.ResultDto?.Name.IsNullOrEmpty() ?? true ? null : new(query.ResultDto.Name, null!))),
                         CqrsCommandViewModel command => button.SetAction(
                             command.Name!,
-                            new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(new(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(new(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
+                            new CommandCqrsSegregation(command.Name!, command.ParamsDto is null ? null : new(TypePath.New(command.ParamsDto.Name, command.ParamsDto.NameSpace), null!), command.ResultDto is null ? null : new(TypePath.New(command.ResultDto.Name, command.ResultDto.NameSpace), null!))),
                         _ => throw new NotImplementedException()
                     };
                 }
@@ -256,7 +258,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
             {
                 switch (action)
                 {
-                    case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject.Name != null:
+                    case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject?.Name != null:
                         var entityName = StringHelper.Pluralize(load.CqrsSegregate.DbObject.Name);
                         result.Actions.Add(new(GetAll_OnCallingMethodName(entityName), false));
                         result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), body: GetAll_CallMethodBody(entityName)));

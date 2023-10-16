@@ -137,7 +137,7 @@ public partial class CqrsExplorerTreeView : UserControl
     {
         var cases = this.FilterTextBox.Text.IsNullOrEmpty()
                     ? this._result
-                    : this._result.SelectAll(tvi => tvi.Items.Cast<TreeViewItem>())
+                    : this._result.SelectAllChildren(tvi => tvi.Items.Cast<TreeViewItem>())
                         .Where(x => x.GetModel<InfraViewModelBase>()?.Name?.Contains(this.FilterTextBox.Text, StringComparison.OrdinalIgnoreCase) ?? false);
         this.TreeView.BindItemsSource(cases);
     }

@@ -106,10 +106,15 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onTableSelected(Node<DbObjectViewModel>? node)
         {
-            var dbTable = node?.Value.Cast().As<DbTableViewModel>();
-            var children = node?.Children?.FirstOrDefault()?.Children;
-            var dbColumns = (List<DbColumnViewModel>?)(children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>()).ToList();
-            return (dbTable, dbColumns!);
+            if (node?.Value == null)
+            {
+                return default;
+            }
+
+            var dbTable = node.Value.Cast().As<DbTableViewModel>();
+            var children = node.Children?.FirstOrDefault()?.Children;
+            var dbColumns = (children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>()).ToList();
+            return (dbTable, dbColumns);
         }
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onColumnSelected(Node<DbObjectViewModel>? node) =>
             (null, EnumerableHelper.ToEnumerable(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());

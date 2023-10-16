@@ -49,6 +49,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "src\CodeGenerator\D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "src\CodeGenerator\Contracts\Contracts.csproj", "{0B10C9F7-C7D2-45A2-9577-87561F0933C1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{21D7EC28-AFFA-48D3-A4F9-682D2A63F10B}"
+	ProjectSection(SolutionItems) = preProject
+		doc\MES Infra.docx = doc\MES Infra.docx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unit Test|Any CPU = Debug Unit Test|Any CPU
