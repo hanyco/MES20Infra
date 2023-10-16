@@ -189,7 +189,7 @@ internal sealed partial class FunctionalityService
             {
                 var srcClass = TypePath.New(viewModel.GetAllQueryViewModel.ResultDto.Name, viewModel.GetAllQueryViewModel.ResultDto.NameSpace);
                 var dstClass = TypePath.New(viewModel.SourceDto.Name, viewModel.SourceDto.NameSpace);
-                var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new(viewModel.SourceDto!, srcClass, dstClass, null)));
+                var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new(viewModel.SourceDto!, srcClass, dstClass, true)));
                 if (!codeGenRes)
                 {
                     return result;

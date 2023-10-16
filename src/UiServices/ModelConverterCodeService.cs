@@ -31,16 +31,16 @@ internal sealed class ModelConverterCodeService(ICodeGeneratorEngine codeGenerat
             return vr.WithValue(Codes.Empty);
         }
 
-        (var dto, var srcClass, var dstClass, var isSrvEnumerable) = args;
+        (var sourceViewModel, var srcClass, var dstClass, var isSrvEnumerable) = args;
 
         var methods = new List<Method>();
         if (!isSrvEnumerable)
-            methods.AddRange(createNormalMethods(dto, srcClass, dstClass));
+            methods.AddRange(createNormalMethods(sourceViewModel, srcClass, dstClass));
         var cl = createExtensionClassAndAddMembers(srcClass, dstClass, methods);
-        var ns = createNameSpace(dto);
+        var ns = createNameSpace(sourceViewModel);
 
         AddClassToNameSpace(cl, ns);
-        AddUsings(ns, methods, dto);
+        AddUsings(ns, methods, sourceViewModel);
 
         var codeGenRes = this._codeGenerator.Generate(ns);
         if (codeGenRes.IsFailure)
