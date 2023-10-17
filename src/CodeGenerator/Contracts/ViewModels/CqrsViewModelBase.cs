@@ -93,6 +93,6 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         get => this._securityClaims;
         set => this.SetProperty(ref this._securityClaims, value);
     }
-
+    public string ExecuteBody { get; set; }
     protected abstract CqrsSegregateType SegregateType { get; }
 }

@@ -12,6 +12,9 @@ global using static Library.Coding.CodeHelper;
 global using static Library.Coding.Functional;
 global using static Library.Helpers.FluencyHelper;
 
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 
 //[assembly: RequiresPreviewFeatures]
+
+[assembly: InternalsVisibleTo("InfraTestProject")]
