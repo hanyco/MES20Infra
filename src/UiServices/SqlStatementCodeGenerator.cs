@@ -1,6 +1,8 @@
 ﻿using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.Definitions;
+
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.Data.SqlServer;
@@ -16,7 +18,7 @@ internal sealed class SqlStatementCodeGenerator : IBusinessService, ISqlStatemen
     public CodeGeneratorResult GenerateSelectAllSqlStatement(DtoViewModel dto, string codeName)
     {
         // Validation
-        if (validate(dto).TryParse(out var vr))
+        if (!validate(dto).TryParse(out var vr))
         {
             return vr.WithValue(Codes.Empty);
         }
@@ -24,7 +26,7 @@ internal sealed class SqlStatementCodeGenerator : IBusinessService, ISqlStatemen
         // Process
         var tableName = dto.DbObject.Name;
         var columns = dto.Properties.Select(p => p.DbObject!.Name);
-        var statement = generateStatement(tableName!, columns);
+        var statement = generateStatement(tableName!, dto.DbObject.Schema, columns);
         
         // Return result
         var code = Code.New(codeName, Languages.Sql, statement, false);
@@ -42,12 +44,12 @@ internal sealed class SqlStatementCodeGenerator : IBusinessService, ISqlStatemen
 
             vr = dto.Properties.Check()
                 .RuleFor(x => x.Any(), () => new NoItemValidationException())
-                .RuleFor(x => x.All(y => y.DbObject != null), () => new NoItemValidationException()).Build();
+                .RuleFor(x => x.All(y => y.DbObject != null), () => new ValidationException()).Build();
             return !vr ? vr : Result.Success;
         }
 
-        static string generateStatement(string tableName, IEnumerable<string?> columns) =>
-            SqlStatementBuilder.Select(tableName).AddColumns(columns!).Build();
+        static string generateStatement(string tableName, string? schema, IEnumerable<string?> columns) =>
+            SqlStatementBuilder.Select(tableName).SetSchema(schema).AddColumns(columns!).Build();
     }
 
     //public Result<Codes> GenerateCodes(ModelConverterCodeParameter args)

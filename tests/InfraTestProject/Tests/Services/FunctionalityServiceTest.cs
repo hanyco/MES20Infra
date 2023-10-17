@@ -28,7 +28,6 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     }
 
     [Fact]
-    [Trait("Category", "__ActiveTest")]
     public async void _20_GenerateCode()
     {
         // Assign
