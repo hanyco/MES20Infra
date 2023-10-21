@@ -3,7 +3,7 @@ using Contracts.ViewModels;
 
 namespace InfraTestProject.Tests.Services;
 
-public class SqlStatementCodeGeneratorTest(ISqlStatementCodeGenerator codeGenerator)
+public sealed class SqlStatementCodeGeneratorTest(ISqlStatementCodeGenerator codeGenerator)
 {
     private readonly ISqlStatementCodeGenerator _codeGenerator = codeGenerator;
 

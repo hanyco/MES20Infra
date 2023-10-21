@@ -32,8 +32,8 @@ public sealed record CodeGenCommandHandler : CodeGenCqrsSegregateType
 
     public override SegregationRole Role { get; } = SegregationRole.CommandHandler;
 
-    public static CodeGenCommandHandler New(CodeGenCommandParams CommandParam, CodeGenCommandResult CommandResult, IEnumerable<string> securityKeys, params (Type Type, string Name)[] props)
-        => new(CommandParam, CommandResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)), securityKeys);
+    public static CodeGenCommandHandler New(CodeGenCommandParams CommandParam, CodeGenCommandResult CommandResult, IEnumerable<string> securityKeys, string executeBody, params (Type Type, string Name)[] props)
+        => new(CommandParam, CommandResult, props.Select(p => CodeGenProp.New(new CodeGenType(p.Type), p.Name, false, false)), securityKeys) {ExecuteBody = executeBody };
 
     protected override IEnumerable<string> OnGetRequiredInterfaces(string cqrsName)
     {

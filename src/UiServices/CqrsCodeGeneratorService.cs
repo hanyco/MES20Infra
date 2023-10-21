@@ -49,7 +49,7 @@ internal sealed class CqrsCodeGeneratorService : ICqrsCodeGeneratorService
                 .With(x => x.props().Category = CodeCategory.Dto);
             var cmdResult = CodeGenCommandResult.New(securityKeys).AddProp(resultDto, "Result", isList: resultDto.IsList)
                 .With(x => x.props().Category = CodeCategory.Dto);
-            var cmdHandler = CodeGenCommandHandler.New(cmdParams, cmdResult, securityKeys, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
+            var cmdHandler = CodeGenCommandHandler.New(cmdParams, cmdResult, securityKeys, model.ExecuteBody, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
                 .With(x => x.props().Category = CodeCategory.Command);
 
             var cmd = CodeGenCommandModel.New(model.Name, model.CqrsNameSpace, model.DtoNameSpace, cmdHandler, cmdParams, cmdResult, GetSecurityKeys(model))

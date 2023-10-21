@@ -11,6 +11,7 @@ using HanyCo.Infra.Markers;
 using HanyCo.Infra.Security.Markers;
 
 using Library.CodeGeneration.Models;
+using Library.Data.SqlServer.Builders.Bases;
 using Library.Helpers.CodeGen;
 
 namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Strategies.CodeDom;
@@ -191,7 +192,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
             _ = codeTypeDeclaration.AddMethod(
                     accessModifiers: MemberAttributes.Final | MemberAttributes.Public,
                     returnType: $"async Task<{cqrsName}Result>", name: "HandleAsync",
-                    body: $"            throw new System.NotImplementedException();",
+                    body: segregate.ExecuteBody?? $"            throw new System.NotImplementedException();",
                     arguments: ($"{cqrsName}Parameter", "parameter"));
         }
 

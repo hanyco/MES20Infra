@@ -53,7 +53,7 @@ public partial class App : LibApp
         return;
 
         static void addBclServices(IServiceCollection services) =>
-            services.AddScoped<ICodeGeneratorEngine, CodeDomCodeGenerator>();
+            services.AddScoped<ICodeGeneratorEngine, RoslynCodeGenerator>();
 
         static void addDataContext(IServiceCollection services, SettingsModel settings) =>
             services

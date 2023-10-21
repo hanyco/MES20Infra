@@ -10,4 +10,5 @@ public interface ICodeGenCqrsSegregate : ICanInherit, IPropertyContainer, ISuppo
 
     IEnumerable<string> GetInterfaces(string cqrsName);
     IEnumerable<string>? SecurityKeys { get; }
+    string? ExecuteBody { get; }
 }
