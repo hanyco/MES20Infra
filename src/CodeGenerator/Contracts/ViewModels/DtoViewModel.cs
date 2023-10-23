@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.CodeGeneration;
 using Library.Helpers.CodeGen;
 
 namespace Contracts.ViewModels;
@@ -32,7 +33,7 @@ public sealed class DtoViewModel : InfraViewModelBase
 
     public ObservableCollection<PropertyViewModel> DeletedProperties { get; } = new();
 
-    public string FullName => TypeMemberNameHelper.GetFullName(this.NameSpace, this.Name);
+    public string FullName => TypePath.Combine(this.NameSpace, this.Name);
 
     public FunctionalityViewModel? Functionality { get => this._functionality; set => this.SetProperty(ref this._functionality, value); }
 

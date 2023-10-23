@@ -1,18 +1,15 @@
-#region Created by HanyCo Infrastructure Code Generator with ♥
+using System.Threading.Tasks;
 
 
-namespace Queries.HumanResources.Test
+using Dtos.HumanResources.Test;
+
+namespace CodeGen.UnitTests.Module.Queries
 {
-    using System.Threading.Tasks;
-    
-    
     public sealed partial class GetAllPeopleQueryHandler
     {
-        
-        public async Task<GetAllPeopleQueryResult> HandleAsync(GetAllPeopleQueryParameter parameter)
+        public Task<GetAllPeopleResult> HandleAsync(GetAllPeopleParams query)
         {
             throw new System.NotImplementedException();
         }
     }
 }
-#endregion
