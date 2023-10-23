@@ -10,12 +10,6 @@
         <EnablePreviewFeatures>true</EnablePreviewFeatures>
     </PropertyGroup>
     <ItemGroup>
-      <Compile Remove="Test\**" />
-      <Content Remove="Test\**" />
-      <EmbeddedResource Remove="Test\**" />
-      <None Remove="Test\**" />
-    </ItemGroup>
-    <ItemGroup>
       <None Include="Pages\Counter.razor" />
       <None Include="Pages\Error.cshtml" />
       <None Include="Pages\FetchData.razor" />
