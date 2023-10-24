@@ -1,5 +1,6 @@
 ﻿using System.CodeDom;
 
+using Library.CodeGeneration;
 using Library.Helpers.CodeGen;
 
 namespace HanyCo.Infra.CodeGeneration.Definitions;

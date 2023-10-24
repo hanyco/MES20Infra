@@ -9,7 +9,7 @@ using Library.Mapping;
 
 namespace BlazorApp;
 
-public class Program
+public sealed class Program
 {
     public static void Main(string[] args)
     {
@@ -27,7 +27,6 @@ public class Program
         _ = builder.Services
                 .AddSingleton<IMapper, Mapper>()
                 .AddMesInfraServices<Program>("connection string", Library.Logging.ILogger.Empty)
-                //.AddScoped<EntityViewModelConverter>()
                 ;
 
         _ = builder.Services.AddControllersWithViews(options =>

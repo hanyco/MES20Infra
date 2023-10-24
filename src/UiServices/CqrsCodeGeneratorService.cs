@@ -31,6 +31,14 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 {
     private readonly ICodeGeneratorEngine _codeGenerator = codeGenerator;
 
+    public static TypePath GetParamsName(CqrsQueryViewModel model) => TypePath.New($"{model.DbObject.Name}QueryParameter", model.ParamsDto.NameSpace);
+
+    public static TypePath GetParamsName(CqrsCommandViewModel model) => TypePath.New($"{model.DbObject.Name}CommandParameter", model.ParamsDto.NameSpace);
+
+    public static TypePath GetResultName(CqrsQueryViewModel model) => TypePath.New($"{model.DbObject.Name}QueryResult", model.ResultDto.NameSpace);
+
+    public static TypePath GetResultName(CqrsCommandViewModel model) => TypePath.New($"{model.DbObject.Name}CommandResult", model.ResultDto.NameSpace);
+
     [Obsolete]
     public Task<Result<Codes>> GenerateCodesAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
@@ -67,22 +75,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         {
             Check.MustBeArgumentNotNull(model?.Name);
 
-            //var securityKeys = model.SecurityClaims.ToSecurityKeys();
-            //var paramsDto = ConvertViewModelToCodeGen(model.ParamsDto)
-            //    .With(x => x.props().Category = CodeCategory.Dto);
-            //var resultDto = ConvertViewModelToCodeGen(model.ResultDto)
-            //    .With(x => x.props().Category = CodeCategory.Dto);
-            //var qryParams = CodeGenQueryParams.New(securityKeys).AddProp(paramsDto, "Params", isList: paramsDto.IsList)
-            //    .With(x => x.props().Category = CodeCategory.Dto);
-            //var qryResult = CodeGenQueryResult.New(securityKeys).AddProp(resultDto, "Result", isList: resultDto.IsList)
-            //    .With(x => x.props().Category = CodeCategory.Dto);
-            //var qryHandler = CodeGenQueryHandler.New(qryParams, qryResult, securityKeys, (typeof(ICommandProcessor), "CommandProcessor"), (typeof(IQueryProcessor), "QueryProcessor"))
-            //    .With(x => x.props().Category = CodeCategory.Query);
-
-            //var qry = CodeGenQueryModel.New(model.Name, model.CqrsNameSpace, model.DtoNameSpace, qryHandler, qryParams, qryResult, GetSecurityKeys(model))
-            //    .With(x => x.props().Category = CodeCategory.Query);
-            //return CodeGenerator.GenerateCode(qry);
-
             var mainCode = Code.New(model.Name, Languages.CSharp, generateMainCode(model).ThrowOnFail(), false);
             var partCode = Code.New(model.Name, Languages.CSharp, generatePartCode(model).ThrowOnFail(), true);
 
@@ -90,25 +82,34 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
             Result<string> generateMainCode(CqrsQueryViewModel model)
             {
-                var ns = INamespace.New(model.CqrsNameSpace);
                 var type = new Class(getHandlerClassName(model))
                 {
                     AccessModifier = AccessModifier.Public,
                     InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
                 };
-                _ = ns.Types.Add(type);
                 var handleAsyncMethod = new Method(nameof(IQueryHandler<string, string>.HandleAsync))
                 {
                     AccessModifier = AccessModifier.Public,
                     // UNDO: Replace with actual GetAll code.
-                    Body = "throw new System.NotImplementedException();",
+                    Body = @$"
+                        var dbTable = ""{model.ParamsDto.DbObject}"";
+                        var query = = SqlStatementBuilder
+                            .Select()
+                            //.Columns()
+                            //.OrderBy(""Id"")
+                            .Descending()
+                            .Build();
+                        throw new System.NotImplementedException();
+                        ",
                     Parameters =
                     {
-                        (TypePath.New(model.ParamsDto.Name, model.ParamsDto.NameSpace), "query")
+                        (GetParamsName(model), "query")
                     },
-                    ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.ResultDto.FullName}>")
+                    ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{GetResultName(model).Name}>")
                 };
                 _ = type.Members.Add(handleAsyncMethod);
+                var ns = INamespace.New(model.CqrsNameSpace);
+                _ = ns.Types.Add(type);
                 return this._codeGenerator.Generate(ns);
             }
             Result<string> generatePartCode(CqrsQueryViewModel model)
@@ -119,18 +120,17 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     AccessModifier = AccessModifier.Public,
                     InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
                 };
-                var baseType = TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { model.ParamsDto.FullName, model.ResultDto.FullName });
+                var baseType = TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { GetParamsName(model).FullPath, GetResultName(model).FullPath });
                 _ = type.BaseTypes.Add(baseType);
 
                 var cmdPcr = TypePath.New(typeof(ICommandProcessor));
                 var qryPcr = TypePath.New(typeof(IQueryProcessor));
                 var dal = TypePath.New(typeof(Sql));
-                var ctor = new Method(model.Name)
+                var ctor = new Method(model.Name!)
                 {
                     IsConstructor = true,
                     Body = @$"
-                        this.{fld(cmdPcr.Name)} = {arg(cmdPcr.Name)};
-                        this.{fld(qryPcr.Name)} = {arg(qryPcr.Name)};
+                        (this.{fld(cmdPcr.Name)}, this.{fld(qryPcr.Name)}) = ({arg(cmdPcr.Name)}, {arg(qryPcr.Name)});
                         this.{fld(dal.Name)} = {arg(dal.Name)};
                         ",
                 };
