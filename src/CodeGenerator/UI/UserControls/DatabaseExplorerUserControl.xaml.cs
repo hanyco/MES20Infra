@@ -117,7 +117,7 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
             return (dbTable, dbColumns);
         }
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onColumnSelected(Node<DbObjectViewModel>? node) =>
-            (null, EnumerableHelper.ToEnumerable(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());
+            (null, EnumerableHelper.Iterate(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());
 
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onUnknownSelected(Node<DbObjectViewModel>? node) =>
             (null, Enumerable.Empty<DbColumnViewModel>());

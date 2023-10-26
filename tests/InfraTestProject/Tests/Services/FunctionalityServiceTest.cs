@@ -4,7 +4,6 @@ using Contracts.ViewModels;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
-using Library.Coding;
 
 namespace InfraTestProject.Tests.Services;
 
@@ -71,9 +70,9 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var personTable = new DbTableViewModel("Person", -1, "dbo");
         var model = new FunctionalityViewModel
         {
-            SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "CodeGen.UnitTests.Dtos" },
+            SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "CodeGen.UnitTests" },
             Name = "PersonDto"
-        }.With(x => x.SourceDto.NameSpace = "CodeGen.UnitTests");
+        };
         _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
                 new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),

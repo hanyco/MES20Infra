@@ -213,7 +213,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     private IEnumerable<ClaimViewModel> SecurityClaimCollectorUserControl_OnAutoGenerateClaim() =>
         this.ViewModel?.Name.IsNullOrEmpty() ?? true
             ? Enumerable.Empty<ClaimViewModel>()
-            : EnumerableHelper.ToEnumerable(new ClaimViewModel { Key = this.ViewModel.Name });
+            : EnumerableHelper.Iterate(new ClaimViewModel { Key = this.ViewModel.Name });
 
     private async void SelectModuleBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
     {

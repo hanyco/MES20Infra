@@ -75,7 +75,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         }
 
         var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: DEFAULT_ACCESS_MODIFIER);
-        return EnumerableHelper.ToEnumerable(new CodeTypeMembers(main, null));
+        return EnumerableHelper.Iterate(new CodeTypeMembers(main, null));
     }
 
     private string? ParseOnClickEvent(string? onClick) =>

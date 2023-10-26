@@ -578,6 +578,8 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetAllQueryViewModel.ParamsDto = RawDto(data, false);
             data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{name}Params";
+            data.ViewModel.GetAllQueryViewModel.ParamsDto.DbObject = data.ViewModel.SourceDto.DbObject;
+            data.ViewModel.GetAllQueryViewModel.ParamsDto.Properties.AddRange(data.ViewModel.SourceDto.Properties);
             data.ViewModel.GetAllQueryViewModel.ParamsDto.IsParamsDto = true;
         }
 
@@ -585,6 +587,8 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, true);
             data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{name}Result";
+            data.ViewModel.GetAllQueryViewModel.ResultDto.DbObject = data.ViewModel.SourceDto.DbObject;
+            data.ViewModel.GetAllQueryViewModel.ResultDto.Properties.AddRange(data.ViewModel.SourceDto.Properties);
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }

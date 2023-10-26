@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+using Contracts;
 using Contracts.Services;
 using Contracts.ViewModels;
 
@@ -10,7 +11,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;

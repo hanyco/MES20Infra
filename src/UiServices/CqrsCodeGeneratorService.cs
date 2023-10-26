@@ -1,4 +1,6 @@
-﻿using Contracts.Services;
+﻿using System.Text;
+
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
@@ -15,6 +17,7 @@ using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
+using Library.Collections;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
@@ -29,22 +32,26 @@ namespace Services;
 [Service]
 internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerator) : ICqrsCodeGeneratorService
 {
-    private readonly ICodeGeneratorEngine _codeGenerator = codeGenerator;
+    private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGenerator;
 
-    public static TypePath GetParamsName(CqrsQueryViewModel model) => TypePath.New($"{model.DbObject.Name}QueryParameter", model.ParamsDto.NameSpace);
+    public static TypePath GetParamsType(CqrsQueryViewModel model) =>
+        TypePath.New($"{model.DbObject.Name}QueryParameter", model.ParamsDto.NameSpace);
 
-    public static TypePath GetParamsName(CqrsCommandViewModel model) => TypePath.New($"{model.DbObject.Name}CommandParameter", model.ParamsDto.NameSpace);
+    public static TypePath GetParamsType(CqrsCommandViewModel model) =>
+        TypePath.New($"{model.DbObject.Name}CommandParameter", model.ParamsDto.NameSpace);
 
-    public static TypePath GetResultName(CqrsQueryViewModel model) => TypePath.New($"{model.DbObject.Name}QueryResult", model.ResultDto.NameSpace);
+    public static TypePath GetResultType(CqrsQueryViewModel model) =>
+        TypePath.New($"{model.DbObject.Name}QueryResult", model.ResultDto.NameSpace);
 
-    public static TypePath GetResultName(CqrsCommandViewModel model) => TypePath.New($"{model.DbObject.Name}CommandResult", model.ResultDto.NameSpace);
+    public static TypePath GetResultType(CqrsCommandViewModel model) =>
+        TypePath.New($"{model.DbObject.Name}CommandResult", model.ResultDto.NameSpace);
 
     [Obsolete]
     public Task<Result<Codes>> GenerateCodesAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
         {
-            CqrsQueryViewModel queryViewModel => generateQuery(queryViewModel),
+            CqrsQueryViewModel queryViewModel => GenerateQuery(queryViewModel),
             CqrsCommandViewModel commandViewModel => generateCommand(commandViewModel),
             _ => throw new NotSupportedException()
         });
@@ -70,91 +77,97 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 .With(x => x.props().Category = CodeCategory.Command);
             return CodeGenerator.GenerateCode(cmd);
         }
+    }
 
-        Codes generateQuery(CqrsQueryViewModel model)
+    private Codes GenerateQuery(CqrsQueryViewModel model)
+    {
+        Check.MustBeArgumentNotNull(model?.Name);
+
+        var mainCode = Code.New(model.Name, Languages.CSharp, generateMainCode(model).ThrowOnFail(), false);
+        var partCode = Code.New(model.Name, Languages.CSharp, generatePartCode(model).ThrowOnFail(), true);
+
+        return Codes.New(mainCode, partCode);
+
+        Result<string> generateMainCode(CqrsQueryViewModel model)
         {
-            Check.MustBeArgumentNotNull(model?.Name);
+            var bodyQuery= SqlStatementBuilder
+                .Select(model.ParamsDto.DbObject.Name)
+                .Columns(model.ParamsDto.Properties.Select(x => x.DbObject.Name));
 
-            var mainCode = Code.New(model.Name, Languages.CSharp, generateMainCode(model).ThrowOnFail(), false);
-            var partCode = Code.New(model.Name, Languages.CSharp, generatePartCode(model).ThrowOnFail(), true);
-
-            return Codes.New(mainCode, partCode);
-
-            Result<string> generateMainCode(CqrsQueryViewModel model)
+            // Create `ExecuteAsync` method
+            var handleAsyncMethod = new Method(nameof(IQueryHandler<string, string>.HandleAsync))
             {
-                var type = new Class(getHandlerClassName(model))
-                {
-                    AccessModifier = AccessModifier.Public,
-                    InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
-                };
-                var handleAsyncMethod = new Method(nameof(IQueryHandler<string, string>.HandleAsync))
-                {
-                    AccessModifier = AccessModifier.Public,
-                    // UNDO: Replace with actual GetAll code.
-                    Body = @$"
-                        var dbTable = ""{model.ParamsDto.DbObject}"";
-                        var query = = SqlStatementBuilder
-                            .Select()
-                            //.Columns()
-                            //.OrderBy(""Id"")
-                            .Descending()
-                            .Build();
-                        throw new System.NotImplementedException();
-                        ",
-                    Parameters =
+                AccessModifier = AccessModifier.Public,
+                Body = bodyQuery.Build(),
+                Parameters =
                     {
-                        (GetParamsName(model), "query")
+                        (GetParamsType(model), "query")
                     },
-                    ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{GetResultName(model).Name}>")
-                };
-                _ = type.Members.Add(handleAsyncMethod);
-                var ns = INamespace.New(model.CqrsNameSpace);
-                _ = ns.Types.Add(type);
-                return this._codeGenerator.Generate(ns);
-            }
-            Result<string> generatePartCode(CqrsQueryViewModel model)
+                ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{GetResultType(model).FullPath}>")
+            };
+            // Create `QueryHandler` class
+            var type = new Class(getHandlerClassName(model))
             {
-                var ns = INamespace.New(model.CqrsNameSpace);
-                var type = new Class(getHandlerClassName(model))
-                {
-                    AccessModifier = AccessModifier.Public,
-                    InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
-                };
-                var baseType = TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { GetParamsName(model).FullPath, GetResultName(model).FullPath });
-                _ = type.BaseTypes.Add(baseType);
+                AccessModifier = AccessModifier.Public,
+                InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
+            };
+            _ = type.Members.Add(handleAsyncMethod);
 
-                var cmdPcr = TypePath.New(typeof(ICommandProcessor));
-                var qryPcr = TypePath.New(typeof(IQueryProcessor));
-                var dal = TypePath.New(typeof(Sql));
-                var ctor = new Method(model.Name!)
-                {
-                    IsConstructor = true,
-                    Body = @$"
+            // Create namespace
+            var ns = INamespace.New(model.CqrsNameSpace);
+            _ = ns.Types.Add(type);
+
+            // Generate result
+            var result = this._codeGeneratorEngine.Generate(ns);
+            return result;
+        }
+
+        Result<string> generatePartCode(CqrsQueryViewModel model)
+        {
+            // Initialize
+            var cmdPcr = TypePath.New(typeof(ICommandProcessor));
+            var qryPcr = TypePath.New(typeof(IQueryProcessor));
+            var dal = TypePath.New(typeof(Sql));
+
+            // Create constructor
+            var ctor = new Method(model.Name!)
+            {
+                IsConstructor = true,
+                Body = @$"
                         (this.{fld(cmdPcr.Name)}, this.{fld(qryPcr.Name)}) = ({arg(cmdPcr.Name)}, {arg(qryPcr.Name)});
                         this.{fld(dal.Name)} = {arg(dal.Name)};
                         ",
-                };
+            };
+            _ = ctor.AddParameter(cmdPcr.Name, arg(cmdPcr.Name));
+            _ = ctor.AddParameter(qryPcr.Name, arg(qryPcr.Name));
+            _ = ctor.AddParameter(dal.Name, arg(dal.Name));
 
-                _ = type.AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { IsReadOnly = true });
-                _ = ctor.AddParameter(cmdPcr.Name, arg(cmdPcr.Name));
+            // Create `QueryHandler` class
+            var type = new Class(getHandlerClassName(model))
+            {
+                AccessModifier = AccessModifier.Public,
+                InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
+            };
+            var baseType = TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { GetParamsType(model).FullPath, GetResultType(model).FullPath });
+            _ = type.BaseTypes.Add(baseType);
+            // Add members to `QueryHandler` class
+            _ = type.AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { IsReadOnly = true });
+            _ = type.AddMember(new Field(fld(qryPcr.Name), qryPcr) { IsReadOnly = true });
+            _ = type.AddMember(new Field(fld(dal.Name), dal) { IsReadOnly = true });
+            _ = type.AddMember(ctor);
 
-                _ = type.AddMember(new Field(fld(qryPcr.Name), qryPcr) { IsReadOnly = true });
-                _ = ctor.AddParameter(qryPcr.Name, arg(qryPcr.Name));
+            // Create namespace
+            var ns = INamespace.New(model.CqrsNameSpace);
+            _ = ns.Types.Add(type);
 
-                _ = type.AddMember(new Field(fld(dal.Name), dal) { IsReadOnly = true });
-                _ = ctor.AddParameter(dal.Name, arg(dal.Name));
-
-                _ = type.AddMember(ctor);
-
-                _ = ns.Types.Add(type);
-                var partCode = this._codeGenerator.Generate(ns);
-                return partCode;
-            }
-
-            static string arg(string name) => TypeMemberNameHelper.ToArgName(name);
-            static string fld(string name) => TypeMemberNameHelper.ToFieldName(name);
-            static TypePath getHandlerClassName(CqrsQueryViewModel model) => TypePath.New($"{model.Name}Handler", model.CqrsNameSpace);
+            // Generate code
+            var result = this._codeGeneratorEngine.Generate(ns);
+            return result;
         }
+
+        static string arg(string name) => TypeMemberNameHelper.ToArgName(name);
+        static string fld(string name) => TypeMemberNameHelper.ToFieldName(name);
+        static TypePath getHandlerClassName(CqrsQueryViewModel model) => TypePath.New($"{model.Name?.TrimEnd("Query")}QueryHandler", model.CqrsNameSpace);
     }
 
     [Obsolete]
