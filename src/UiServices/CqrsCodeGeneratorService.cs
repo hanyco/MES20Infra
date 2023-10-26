@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using static Services.Helpers.CommonHelpers;
+using System.Text;
 
 using Contracts.Services;
 using Contracts.ViewModels;
@@ -17,7 +18,6 @@ using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
-using Library.Collections;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
@@ -34,24 +34,12 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 {
     private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGenerator;
 
-    public static TypePath GetParamsType(CqrsQueryViewModel model) =>
-        TypePath.New($"{model.DbObject.Name}QueryParameter", model.ParamsDto.NameSpace);
-
-    public static TypePath GetParamsType(CqrsCommandViewModel model) =>
-        TypePath.New($"{model.DbObject.Name}CommandParameter", model.ParamsDto.NameSpace);
-
-    public static TypePath GetResultType(CqrsQueryViewModel model) =>
-        TypePath.New($"{model.DbObject.Name}QueryResult", model.ResultDto.NameSpace);
-
-    public static TypePath GetResultType(CqrsCommandViewModel model) =>
-        TypePath.New($"{model.DbObject.Name}CommandResult", model.ResultDto.NameSpace);
-
     [Obsolete]
     public Task<Result<Codes>> GenerateCodesAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
         {
-            CqrsQueryViewModel queryViewModel => GenerateQuery(queryViewModel),
+            CqrsQueryViewModel queryViewModel => this.GenerateQuery(queryViewModel),
             CqrsCommandViewModel commandViewModel => generateCommand(commandViewModel),
             _ => throw new NotSupportedException()
         });
@@ -79,6 +67,21 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         }
     }
 
+    [Obsolete]
+    private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
+    {
+        var result = CodeGenDto.New(TypeMemberNameHelper.GetFullName(resultViewModel.NameSpace, resultViewModel.Name))
+            .With(x => x.IsList = resultViewModel.IsList);
+        foreach (var prop in resultViewModel.Properties)
+        {
+            _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false);
+        }
+        return result;
+    }
+
+    private static IEnumerable<string> GetSecurityKeys(CqrsViewModelBase viewModel) =>
+            viewModel.SecurityClaims.Select(x => x.Key).Compact() ?? Enumerable.Empty<string>();
+
     private Codes GenerateQuery(CqrsQueryViewModel model)
     {
         Check.MustBeArgumentNotNull(model?.Name);
@@ -90,15 +93,22 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         Result<string> generateMainCode(CqrsQueryViewModel model)
         {
-            var bodyQuery= SqlStatementBuilder
+            // Create query to be used inside the body code.
+            var bodyQuery = SqlStatementBuilder
                 .Select(model.ParamsDto.DbObject.Name)
                 .Columns(model.ParamsDto.Properties.Select(x => x.DbObject.Name));
+            // Create body code.
+            var handlerBody = new StringBuilder()
+                .AppendLine($"var dbQuery = @\"{bodyQuery.Build()}\";")
+                .AppendLine($"var dbResult = this._sql.Select<{GetResultParam(model).Name}>(dbQuery).ToList();")
+                .AppendLine($"var result = new {GetResultType(model).Name}(dbResult);")
+                .Append($"return Task.FromResult(result);");
 
             // Create `ExecuteAsync` method
             var handleAsyncMethod = new Method(nameof(IQueryHandler<string, string>.HandleAsync))
             {
                 AccessModifier = AccessModifier.Public,
-                Body = bodyQuery.Build(),
+                Body = handlerBody.Build(),
                 Parameters =
                     {
                         (GetParamsType(model), "query")
@@ -106,7 +116,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{GetResultType(model).FullPath}>")
             };
             // Create `QueryHandler` class
-            var type = new Class(getHandlerClassName(model))
+            var type = new Class(GetHandlerClassName(model))
             {
                 AccessModifier = AccessModifier.Public,
                 InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
@@ -143,12 +153,12 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             _ = ctor.AddParameter(dal.Name, arg(dal.Name));
 
             // Create `QueryHandler` class
-            var type = new Class(getHandlerClassName(model))
+            var type = new Class(GetHandlerClassName(model))
             {
                 AccessModifier = AccessModifier.Public,
                 InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
             };
-            var baseType = TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { GetParamsType(model).FullPath, GetResultType(model).FullPath });
+            var baseType = TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { GetParamsType(model).FullPath, GetResultParam(model).FullPath });
             _ = type.BaseTypes.Add(baseType);
             // Add members to `QueryHandler` class
             _ = type.AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { IsReadOnly = true });
@@ -167,21 +177,5 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         static string arg(string name) => TypeMemberNameHelper.ToArgName(name);
         static string fld(string name) => TypeMemberNameHelper.ToFieldName(name);
-        static TypePath getHandlerClassName(CqrsQueryViewModel model) => TypePath.New($"{model.Name?.TrimEnd("Query")}QueryHandler", model.CqrsNameSpace);
     }
-
-    [Obsolete]
-    private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
-    {
-        var result = CodeGenDto.New(TypeMemberNameHelper.GetFullName(resultViewModel.NameSpace, resultViewModel.Name))
-            .With(x => x.IsList = resultViewModel.IsList);
-        foreach (var prop in resultViewModel.Properties)
-        {
-            _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false);
-        }
-        return result;
-    }
-
-    private static IEnumerable<string> GetSecurityKeys(CqrsViewModelBase viewModel) =>
-            viewModel.SecurityClaims.Select(x => x.Key).Compact() ?? Enumerable.Empty<string>();
 }

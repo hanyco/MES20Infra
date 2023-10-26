@@ -623,6 +623,8 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetByIdQueryViewModel.ParamsDto = RawDto(data, false);
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.Name = $"{name}Params";
+            data.ViewModel.GetByIdQueryViewModel.ParamsDto.DbObject = data.ViewModel.SourceDto.DbObject;
+            data.ViewModel.GetByIdQueryViewModel.ParamsDto.Properties.AddRange(data.ViewModel.SourceDto.Properties);
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
         }
@@ -631,6 +633,8 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.GetByIdQueryViewModel.ResultDto = RawDto(data, true);
             data.ViewModel.GetByIdQueryViewModel.ResultDto.Name = $"{name}Result";
+            data.ViewModel.GetByIdQueryViewModel.ResultDto.DbObject = data.ViewModel.SourceDto.DbObject;
+            data.ViewModel.GetByIdQueryViewModel.ResultDto.Properties.AddRange(data.ViewModel.SourceDto.Properties);
             data.ViewModel.GetByIdQueryViewModel.ResultDto.IsResultDto = true;
         }
 

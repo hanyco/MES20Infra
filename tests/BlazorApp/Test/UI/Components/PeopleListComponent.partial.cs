@@ -20,73 +20,79 @@ namespace HumanResources.Test
 
     public sealed partial class PeopleListComponent
     {
-        
-        public void NewButton_OnClick()
+
+        public PeopleListComponent()
         {
-            // TODO: Generated Code
-            //this._navigationManager.NavigateTo("/HumanResources/Perso
-            this._navigationManager.NavigateTo("/HumanResources/Perso");
+        }
+
+        public System.DateTime DateOfBirth
+        {
+            get;
+            set;
+        }
+
+        public string FirstName
+        {
+            get;
+            set;
+        }
+
+        public int Height
+        {
+            get;
+            set;
+        }
+
+        public long Id
+        {
+            get;
+            set;
+        }
+
+        public string LastName
+        {
+            get;
+            set;
         }
 
         public void Edit(long id)
         {
             this._navigationManager.NavigateTo("/HumanResources/Person/details" + "/" + id);
         }
-        
+
+        public void NewButton_OnClick()
+        {
+            // TODO: Generated Code
+            //this._navigationManager.NavigateTo("/HumanResources/Perso
+            this._navigationManager.NavigateTo("/HumanResources/Perso");
+        }
         protected override async Task OnInitializedAsync()
         {
             // Setup segregation parameters
             var paramsParams = new GetAllPeopleParams();
             var cqParams = new GetAllPeopleQueryParameter(paramsParams);
-            
+
             // Let the developer know what's going on.
             //cqParams = OnCallingGetAllPeopleQuery(cqParams);
-            
+
             // Invoke the query handler to retrieve all entities
             var cqResult = await this._queryProcessor.ExecuteAsync(cqParams);
-            
+
             // Let's inform the developer about the result.
             //cqResult = OnCalledGetAllPeopleQuery(cqParams, cqResult);
-            
+
             // Now, set the data context.
-            //this.DataContext = cqResult.Result.ToPersonDto();
-            
+            this.DataContext = cqResult.Result.Select(x => new PersonDto()
+            {
+                DateOfBirth = x.DateOfBirth,
+                FirstName = x.FirstName,
+                Height = x.Height,
+                Id = x.Id,
+                LastName = x.LastName,
+            }).ToList();
+
             // Call developer's method.
             await this.OnLoadAsync();
-        }
-        
-    public long Id
-    {
-        get;
-        set;
-    }
-        
-    public string FirstName
-    {
-        get;
-        set;
-    }
-        
-    public string LastName
-    {
-        get;
-        set;
-    }
-        
-    public System.DateTime DateOfBirth
-    {
-        get;
-        set;
-    }
-        
-    public int Height
-    {
-        get;
-        set;
-    }
-        
-        public PeopleListComponent()
-        {
         }
     }
 }

@@ -14,11 +14,11 @@ namespace CodeGen.UnitTests.Module.Queries
         private ICommandProcessor _commandProcessor;
         private IQueryProcessor _queryProcessor;
         private Sql _sql;
-        public GetAllPeopleQueryHandler(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public GetAllPeopleQueryHandler(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, Sql sql)
         {
             this._commandProcessor = commandProcessor;
             this._queryProcessor = queryProcessor;
-            //this._sql = sql;
+            this._sql = sql;
         }
     }
 }
