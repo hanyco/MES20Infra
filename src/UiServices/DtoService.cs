@@ -117,7 +117,7 @@ internal sealed class DtoService(
 
         static IProperty toProperty(PropertyViewModel pvm)
         {
-            var type = PropertyTypeHelper.ToFullTypeName(pvm.Type).NotNull();
+            var type = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
             if (pvm.IsList ?? false)
             {
                 type = $"IEnumerable<{type}>";
