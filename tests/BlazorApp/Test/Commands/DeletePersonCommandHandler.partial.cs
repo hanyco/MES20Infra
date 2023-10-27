@@ -7,17 +7,15 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Commands.HumanResources.Test
+namespace Test.HumanResources.Commands
 {
     using Library.Cqrs.Models.Commands;
     using Library.Cqrs.Models.Queries;
-
-
+    
+    
     /// <summary>
     /// The handler of DeletePersonCommand
     /// </summary>
-    // TODO: Generated Code
-    //public sealed partial class DeletePersonCommandHandler : ICommandHandler<DeletePersonCommandParameter, DeletePersonCommandResult>
     public sealed partial class DeletePersonCommandHandler : ICommandHandler<DeletePersonCommandParameter, DeletePersonCommandResult>
     {
         

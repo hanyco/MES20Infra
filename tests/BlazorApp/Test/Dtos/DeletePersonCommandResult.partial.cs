@@ -7,10 +7,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Commands.HumanResources.Test
+namespace Test.HumanResources.Commands
 {
     using Library.Cqrs.Models.Commands;
-    using Dtos.HumanResources.Test;
+    using Test.HumanResources.Dtos;
     
     
     /// <summary>

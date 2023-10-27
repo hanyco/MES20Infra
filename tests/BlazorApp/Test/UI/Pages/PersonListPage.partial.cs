@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HumanResources.Test.Pages
+namespace Test.HumanResources.Pages
 {
     using System;
     using System.Linq;

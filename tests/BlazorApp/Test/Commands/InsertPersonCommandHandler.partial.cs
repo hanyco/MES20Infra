@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Commands.HumanResources.Test
+namespace Test.HumanResources.Commands
 {
     using Library.Cqrs.Models.Commands;
     using Library.Cqrs.Models.Queries;

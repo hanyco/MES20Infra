@@ -1,5 +1,4 @@
-﻿using static Services.Helpers.CommonHelpers;
-using System.Text;
+﻿using System.Text;
 
 using Contracts.Services;
 using Contracts.ViewModels;
@@ -26,6 +25,8 @@ using Library.Results;
 using Library.Validations;
 
 using Services.Helpers;
+
+using static Services.Helpers.CommonHelpers;
 
 namespace Services;
 
@@ -89,7 +90,11 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         var mainCode = Code.New(model.Name, Languages.CSharp, generateMainCode(model).ThrowOnFail(), false);
         var partCode = Code.New(model.Name, Languages.CSharp, generatePartCode(model).ThrowOnFail(), true);
 
-        return Codes.New(mainCode, partCode);
+        return Codes.New(mainCode
+                .With(x => x.props().Category = CodeCategory.Query)
+            , partCode
+                .With(x => x.props().Category = CodeCategory.Query))
+            .With(x => x.props().Category = CodeCategory.Query);
 
         Result<string> generateMainCode(CqrsQueryViewModel model)
         {

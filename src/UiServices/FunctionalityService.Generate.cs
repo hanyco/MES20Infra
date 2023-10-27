@@ -185,27 +185,6 @@ internal sealed partial class FunctionalityService
 
                 codes.BlazorDetailsComponentCodes = codeGenRes;
             }
-            //if (viewModel.GetAllQueryViewModel != null && viewModel.SourceDto != null)
-            //{
-            //    var srcClass = TypePath.New(viewModel.GetAllQueryViewModel.ResultDto.Name, viewModel.GetAllQueryViewModel.ResultDto.NameSpace);
-            //    var dstClass = TypePath.New(viewModel.SourceDto.Name, viewModel.SourceDto.NameSpace);
-            //    var codeGenRes = addToList(this._converterCodeService.GenerateCodes(new(viewModel.SourceDto!, srcClass, dstClass, true)));
-            //    if (!codeGenRes)
-            //    {
-            //        return result;
-            //    }
-            //    codes.ConverterCodes = codeGenRes;
-            //}
-            
-            //if (viewModel.GetAllQueryViewModel?.ParamsDto != null)
-            //{
-            //    var codeGenRes = addToList(this._converterCodeService.GenerateSelectAllSqlStatement(viewModel.GetAllQueryViewModel.ParamsDto, nameof(viewModel.GetAllQueryViewModel.ParamsDto)));
-            //    if (!codeGenRes)
-            //    {
-            //        return result;
-            //    }
-            //    codes.ConverterCodes = codeGenRes;
-            //}
 
             return result;
 
