@@ -1,5 +1,7 @@
 ﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Interfaces;
 
+using Library.CodeGeneration;
+
 using static Library.Helpers.CodeGen.TypeMemberNameHelper;
 
 namespace HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
@@ -31,8 +33,8 @@ public record CodeGenType : ICanInherit, IPropertyContainer, IAttributeContainer
 
     public string FullName { get; }
 
-    public string Name => GetName(this.FullName);
-    public IEnumerable<string> Namespaces => GetNameSpaces(this.FullName);
+    public string Name => TypePath.GetName(this.FullName);
+    public IEnumerable<string> Namespaces => TypePath.GetNameSpaces(this.FullName);
 
     public IList<CodeGenAttr> Attributes { get; } = new List<CodeGenAttr>();
     public IList<CodeGenProp> Properties { get; } = new List<CodeGenProp>();

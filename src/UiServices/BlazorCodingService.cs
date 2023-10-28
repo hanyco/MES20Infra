@@ -57,7 +57,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
 
     public Result<Codes> GenerateCodes(UiViewModel model, GenerateCodesParameters? arguments = null)
     {
-        if (!Check.IfArgumentIsNotNull(model).TryParse(out var vr))
+        if (!Check.IfArgumentIsNull(model).TryParse(out var vr))
         {
             return vr.WithValue(Codes.Empty);
         }

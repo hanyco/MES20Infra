@@ -35,7 +35,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 {
     private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGenerator;
 
-    [Obsolete]
     public Task<Result<Codes>> GenerateCodesAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
@@ -68,10 +67,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         }
     }
 
-    [Obsolete]
     private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
     {
-        var result = CodeGenDto.New(TypeMemberNameHelper.GetFullName(resultViewModel.NameSpace, resultViewModel.Name))
+        var result = CodeGenDto.New(TypePath.New(resultViewModel.NameSpace, resultViewModel.Name).FullPath)
             .With(x => x.IsList = resultViewModel.IsList);
         foreach (var prop in resultViewModel.Properties)
         {
@@ -226,7 +224,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             }
         }
         Code toCode(string codeName, Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
-            Code.New($"{model.Name}.{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
+            Code.New($"{model.Name}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
 
         static string arg(string name) => TypeMemberNameHelper.ToArgName(name);
         static string fld(string name) => TypeMemberNameHelper.ToFieldName(name);

@@ -1,2 +1,7 @@
 <Project>
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);CA1304</NoWarn>
+		<NoWarn>$(NoWarn);CA1305</NoWarn>
+		<NoWarn>$(NoWarn);CA1311</NoWarn>
+	</PropertyGroup>
 </Project>
