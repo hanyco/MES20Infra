@@ -46,7 +46,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
         var componentBaseTypePath = TypePath.New(typeof(ComponentBase<,>),
             this.IsGrid
                 ? [$"List<{dataContextType.Name}>", this.DataContextType.Name]
-                : [$"{dataContextType?.Name}", "{this.DataContextType?.Name}"]);
+                : [$"{dataContextType?.Name}", $"{this.DataContextType?.Name}"]);
         _ = codeStringBuilder
             .AppendLine($"@namespace {this.NameSpace}")
             .AppendLine()
@@ -56,7 +56,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
             .AppendLine()
             .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
             .AppendLine()
-            .AppendLine($"@inherits {componentBaseTypePath.Name}")
+            .AppendLine($"@inherits {componentBaseTypePath.FullName}")
             .AppendLine();
         return codeStringBuilder;
     }

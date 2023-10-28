@@ -92,9 +92,9 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             List<string> generics = [];
             if (this.DataContextType is { } dct2)
             {
-                generics.Add(dct2.Name);
+                generics.Add(dct2);
             };
-            var inherits = TypePath.New<PageBase<int>>(generics);
+            var inherits = TypePath.New(typeof(PageBase<>), generics);
             _ = codeStringBuilder.AppendLine($"@inherits {inherits}");
             _ = codeStringBuilder.AppendLine();
             return result;
