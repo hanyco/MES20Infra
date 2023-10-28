@@ -245,6 +245,21 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 // Generate code
                 return this._codeGeneratorEngine.Generate(nameSpace);
             }
+            Result<string> createQueryInOut(DtoViewModel model, string kind)
+            {
+                var paramsPropTypeName = model.IsList
+                    ? $"IEnumerable<{Purify(model.Name)}{kind}>"
+                    : $"{Purify(model.Name)}{kind}";
+
+                var prop = new CodeGenProperty($"{kind}", TypePath.New(paramsPropTypeName));
+                var type = new Class($"{Purify(model.Name)}Query{kind}");
+                type = type.AddMember(prop);
+                var nameSpace = INamespace.New(model.NameSpace);
+                _ = nameSpace.Types.Add(type);
+
+                // Generate code
+                return this._codeGeneratorEngine.Generate(nameSpace);
+            }
         }
 
         static string arg(string name) => TypeMemberNameHelper.ToArgName(name);
