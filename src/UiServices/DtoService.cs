@@ -115,6 +115,12 @@ internal sealed class DtoService(
             return Result<Codes>.From(validationResult, Codes.Empty);
         }
 
+        var properties = viewModel.Properties.Select(toProperty);
+        var type = new Class(viewModel.Name!).AddMember(properties);
+        var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
+        var statement = this._codeGeneratorEngine.Generate(nameSpace);
+        return Result<Codes>.From(statement, new(new Code(viewModel.Name!, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Dto)));
+
         static IProperty toProperty(PropertyViewModel pvm)
         {
             var type = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
@@ -123,34 +129,13 @@ internal sealed class DtoService(
                 type = $"IEnumerable<{type}>";
             }
 
-            if (pvm.IsNullable ?? false)
-            {
-                type = string.Concat(type, "?");
-            }
+            // TODO Low Priority. Do this later.
+            //if (pvm.IsNullable ?? false)
+            //{
+            //    type = string.Concat(type, "?");
+            //}
 
             return IProperty.New(pvm.Name!, type);
-        }
-        var properties = viewModel.Properties.Select(toProperty);
-        var type = new Class(viewModel.Name!).AddMember(properties);
-        var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
-        var statement = this._codeGeneratorEngine.Generate(nameSpace);
-        return Result<Codes>.From(statement, new(new Code(viewModel.Name!, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Dto)));
-
-        var result = new Codes().With(x => x.props().Category = CodeCategory.Dto);
-
-        var codeGen = convertViewModelToCodeGen(viewModel);
-        var code = codeGen.GenerateCode(viewModel.NameSpace).With(x => x.props().Category = CodeCategory.Dto);
-
-        return Result<Codes>.New(result.Add(code));
-
-        static CodeGenDto convertViewModelToCodeGen(DtoViewModel resultViewModel, CancellationToken token = default)
-        {
-            var codeGen = CodeGenDto.New(TypePath.Combine(resultViewModel.NameSpace, resultViewModel.Name));
-            foreach (var prop in resultViewModel.Properties)
-            {
-                _ = codeGen.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false, comment: prop.Comment);
-            }
-            return codeGen;
         }
 
         [DebuggerStepThrough]

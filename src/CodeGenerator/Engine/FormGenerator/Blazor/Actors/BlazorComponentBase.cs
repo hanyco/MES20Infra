@@ -9,6 +9,7 @@ using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2.Back;
 using Library.DesignPatterns.Behavioral.Observation;
 using Library.Exceptions.Validations;
 using Library.Helpers.CodeGen;
@@ -186,6 +187,15 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         var args = arguments ?? GenerateCodesParameters.FullCode();
         this.OnInitializingBehindCode(args);
 
+        var ns = INamespace.New(this.NameSpace!);
+        ns = ns.AddUsingNameSpace(this.MainCodeUsingNameSpaces.AddImmuted(typeof(string).Namespace!).AddImmuted(typeof(Enumerable).Namespace!).AddImmuted(typeof(Task).Namespace!));
+        
+        var type = new Class(this.Name) { InheritanceModifier = InheritanceModifier.Partial };
+
+        
+
+
+        // Old codes
         var mainUnit = new CodeCompileUnit();
         var mainClassType = createMainClassType(mainUnit);
 

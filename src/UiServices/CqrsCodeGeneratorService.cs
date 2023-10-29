@@ -109,7 +109,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     .Columns(model.ParamsDto.Properties.Select(x => x.DbObject.Name));
                 // Create body code.
                 var handlerBody = new StringBuilder()
-                    .AppendLine($"var dbQuery = @\"{bodyQuery.Build()}\";")
+                    .AppendLine($"var dbQuery = @\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("    ", " ")}\";")
                     .AppendLine($"var dbResult = this._sql.Select<{GetResultParam(model).Name}>(dbQuery).ToList();")
                     .AppendLine($"var result = new {GetResultType(model, "Query").Name}(dbResult);")
                     .Append($"return Task.FromResult(result);");

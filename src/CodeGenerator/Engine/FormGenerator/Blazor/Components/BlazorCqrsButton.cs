@@ -189,7 +189,7 @@ public sealed class BlazorCustomButton(
         var dataContextValidatorMethod = CodeDomHelper.NewMethod("ValidateForm", accessModifiers: DEFAULT_ACCESS_MODIFIER);
         yield return new(dataContextValidatorMethod, null);
 
-        var body = this.Action.CodeStatement?.ToString();
+        var body = this.Action.CodeStatement?.Add(INDENT.Repeat(3));
 
         var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body);
         yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
