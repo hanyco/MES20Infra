@@ -9,9 +9,11 @@ using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
 using Library.DesignPatterns.Behavioral.Observation;
 using Library.Exceptions.Validations;
+using Library.Helpers;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
 using Library.Validations;
@@ -25,9 +27,14 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
     private static readonly string[] _parameterAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
+    private readonly ICodeGeneratorEngine _codeGeneratorEngine;
     private BootstrapPosition? _position;
 
-    protected BlazorComponentBase(in string name) => this.Name = name;
+    protected BlazorComponentBase(in string name, ICodeGeneratorEngine codeGeneratorEngine)
+    {
+        this.Name = name;
+        this._codeGeneratorEngine = codeGeneratorEngine;
+    }
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
     public IDictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
@@ -187,13 +194,65 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         var args = arguments ?? GenerateCodesParameters.FullCode();
         this.OnInitializingBehindCode(args);
 
-        var ns = INamespace.New(this.NameSpace!);
-        ns = ns.AddUsingNameSpace(this.MainCodeUsingNameSpaces.AddImmuted(typeof(string).Namespace!).AddImmuted(typeof(Enumerable).Namespace!).AddImmuted(typeof(Task).Namespace!));
-        
-        var type = new Class(this.Name) { InheritanceModifier = InheritanceModifier.Partial };
+        // Create namespaces
+        var mainNs = INamespace.New(this.NameSpace!)
+            .AddUsingNameSpace(this.MainCodeUsingNameSpaces.AddImmuted(typeof(string).Namespace!).AddImmuted(typeof(Enumerable).Namespace!).AddImmuted(typeof(Task).Namespace!));
 
+        var partNs = INamespace.New(this.NameSpace!)
+            .AddUsingNameSpace(this.PartialCodeUsingNameSpaces.AddImmuted(typeof(string).Namespace!).AddImmuted(typeof(Enumerable).Namespace!).AddImmuted(typeof(Task).Namespace!).AddImmuted(typeof(ObservationRepository).Namespace!));
         
+        // Create Blazor Page partial class
+        var mainType = new Class(this.Name) { InheritanceModifier = InheritanceModifier.Partial };
+        var partType = new Class(this.Name) { InheritanceModifier = InheritanceModifier.Partial };
+        // Add add the class to namespaces
+        partNs = partNs.AddType(partType);
+        mainNs = mainNs.AddType(mainType);
 
+        // Create initialization methods
+        var onPageInitializedAsyncMethod = new Method("OnPageInitializedAsync")
+        {
+            AccessModifier = AccessModifier.Private,
+            ReturnType = TypePath.New<Task>(),
+            Body = "return Task.CompletedTask;"
+        };
+        
+        var onInitializedAsyncMethod = new Method("OnInitializedAsync")
+        {
+            AccessModifier = AccessModifier.Protected,
+            InheritanceModifier = InheritanceModifier.Override,
+            Body = "return this.OnPageInitializedAsync();"
+        };
+        // Add initialization methods to classes.
+        mainType.AddMember(onPageInitializedAsyncMethod);
+        partType.AddMember(onInitializedAsyncMethod);
+
+        foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
+        {
+            var m = new Method();
+            mainType.
+        }
+
+
+            void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
+        {
+            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
+            {
+                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
+            }
+            _ = mainClassType.AddMethod("OnLoadAsync", body: DefaultTaskMethodBody(), accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "Task");
+        }
+
+
+        var mainCodeFileName = Path.ChangeExtension($"{this.Name}.tmp", this.MainCodeFileExtension);
+        var mainCode = args.GenerateMainCode
+            ? Code.New(this.Name, Languages.CSharp, _codeGeneratorEngine.Generate(mainNs), false, mainCodeFileName)
+            : null;
+
+        var partCodeFileName = Path.ChangeExtension($"{this.Name}.tmp", this.PartialCodeFileExtension);
+        var partCode = args.GeneratePartialCode
+            ? Code.New(this.Name, Languages.CSharp, _codeGeneratorEngine.Generate(partNs), true, partCodeFileName)
+            : null;
+        return new(mainCode, partCode);
 
         // Old codes
         var mainUnit = new CodeCompileUnit();
@@ -223,17 +282,17 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         addConstructor(partClassType, partNameSpace);
 
-        var mainCodeFileName = Path.ChangeExtension($"{this.Name}.tmp", this.MainCodeFileExtension);
-        var mainClass = args.GenerateMainCode
-            ? Code.New(this.Name, Languages.CSharp, CodeDomHelper.RemoveAutoGeneratedTag(mainUnit.GenerateCode()), false, mainCodeFileName)
-            : null;
+        //var mainCodeFileName = Path.ChangeExtension($"{this.Name}.tmp", this.MainCodeFileExtension);
+        //var mainClass = args.GenerateMainCode
+        //    ? Code.New(this.Name, Languages.CSharp, CodeDomHelper.RemoveAutoGeneratedTag(mainUnit.GenerateCode()), false, mainCodeFileName)
+        //    : null;
 
-        var partCodeFileName = Path.ChangeExtension($"{this.Name}.tmp", this.PartialCodeFileExtension);
-        var partClass = args.GeneratePartialCode
-            ? Code.New(this.Name, Languages.CSharp, partUnit.GenerateCode(), true, partCodeFileName)
-            : null;
+        //var partCodeFileName = Path.ChangeExtension($"{this.Name}.tmp", this.PartialCodeFileExtension);
+        //var partClass = args.GeneratePartialCode
+        //    ? Code.New(this.Name, Languages.CSharp, partUnit.GenerateCode(), true, partCodeFileName)
+        //    : null;
 
-        return new(mainClass, partClass);
+        //return new(mainClass, partClass);
 
         CodeTypeDeclaration createMainClassType(in CodeCompileUnit mainUnit)
         {
