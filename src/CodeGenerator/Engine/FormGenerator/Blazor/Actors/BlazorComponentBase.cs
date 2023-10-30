@@ -187,15 +187,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         var args = arguments ?? GenerateCodesParameters.FullCode();
         this.OnInitializingBehindCode(args);
 
-        var ns = INamespace.New(this.NameSpace!);
-        ns = ns.AddUsingNameSpace(this.MainCodeUsingNameSpaces.AddImmuted(typeof(string).Namespace!).AddImmuted(typeof(Enumerable).Namespace!).AddImmuted(typeof(Task).Namespace!));
-
-        var type = new Class(this.Name) { InheritanceModifier = InheritanceModifier.Partial };
-
-
-
-
-        // Old codes
         var mainUnit = new CodeCompileUnit();
         var mainClassType = createMainClassType(mainUnit);
 
@@ -290,7 +281,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
             {
-                var body = method.Body.SplitMerge(mergeSeparator: INDENT.Repeat(3), addSeparatorToEnd: false);
+                var body = method.Body;
                 _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
             var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync())?.Body);

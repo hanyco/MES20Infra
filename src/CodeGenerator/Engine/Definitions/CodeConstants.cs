@@ -14,24 +14,22 @@ public static class CodeConstants
 
     public static string CommandButton_CallCommandMethodBody(string dataContextValidatorName, string cqrsParamsType, string cqrsResultType, string segregation) =>
         new StringBuilder()
-            .AppendLine($"{INDENT.Repeat(3)}this.{dataContextValidatorName}();")
-            .AppendLine($"{INDENT.Repeat(3)}var dto = this.DataContext;")
-            .AppendLine($"{INDENT.Repeat(3)}var cqParams = new {cqrsParamsType}(dto);")
-            .AppendLine($"{INDENT.Repeat(3)}On{segregation}Calling(cqParams);")
-            .AppendLine($"{INDENT.Repeat(3)}var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType},{cqrsResultType}>(cqParams);")
-            .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqParams, cqResult);")
+            .AppendLine($"this.{dataContextValidatorName}();")
+            .AppendLine($"var dto = this.DataContext;")
+            .AppendLine($"var cqParams = new {cqrsParamsType}(dto);")
+            .AppendLine($"On{segregation}Calling(cqParams);")
+            .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType},{cqrsResultType}>(cqParams);")
+            .AppendLine($"On{segregation}Called(cqParams, cqResult);")
             .ToString();
 
     public static string Component_OnInitializedAsync_MethodBody(string? onInitializedAsyncAdditionalBody)
     {
         var result = onInitializedAsyncAdditionalBody
-            .Remove(INDENT.Repeat(3))
             .SplitMerge(mergeSeparator: $"{Environment.NewLine}{INDENT.Repeat(3)}")
             .Add(Environment.NewLine)
-            .Add($"{INDENT.Repeat(3)}// Call developer's method.")
+            .Add($"// Call developer's method.")
             .Add(Environment.NewLine)
-            .Add($"{INDENT.Repeat(3)}await this.OnLoadAsync();")
-            .AddStart(INDENT.Repeat(3));
+            .Add($"await this.OnLoadAsync();");
         return result;
     }
 
@@ -39,19 +37,19 @@ public static class CodeConstants
         => $"To{dstClassName}";
 
     public static string Converter_ConvertEnumerable_MethodBody(string srcClassName, string dstClassName, string argName) =>
-            $"{INDENT.Repeat(2)}return {argName}.Select({Converter_Convert_MethodName(dstClassName)});";
+            $"return {argName}.Select({Converter_Convert_MethodName(dstClassName)});";
 
     public static string Converter_ConvertSingle_MethodBody(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
         new StringBuilder()
-            .AppendLine($"{INDENT.Repeat(2)}var result = new {dstClassName}")
-            .AppendLine($"{INDENT.Repeat(2)}{{")
-            .AppendAllLines(propNames, propName => $"{INDENT.Repeat(3)}{propName} = {argName}.{propName},")
-            .AppendLine($"{INDENT.Repeat(2)}}};")
-            .AppendLine($"{INDENT.Repeat(2)}return result;")
+            .AppendLine($"var result = new {dstClassName}")
+            .AppendLine($"{{")
+            .AppendAllLines(propNames, propName => $"{propName} = {argName}.{propName},")
+            .AppendLine($"}};")
+            .AppendLine($"return result;")
             .ToString();
 
     public static string DefaultTaskMethodBody() =>
-        $"{INDENT.Repeat(3)}return Task.CompletedTask;";
+        "return Task.CompletedTask;";
 
     public static string GetAll_CallMethodBody(string entityName) =>
         new StringBuilder()
@@ -80,7 +78,7 @@ public static class CodeConstants
             $"OnCallingGetAll{entityName}Query(Queries.GetAll{entityName}QueryParameter cqParams)";
 
     public static string InitializedAsyncMethodBody() =>
-        $"{INDENT}await this.OnPageInitializedAsync();";
+        $"await this.OnPageInitializedAsync();";
 
     public static string InstanceDataContextProperty(string? name) =>
         $"this.DataContext.{name}";
@@ -102,18 +100,18 @@ public static class CodeConstants
 
     public static string QueryButton_CallQueryMethodBody(string dataContextValidatorName, string cqrsParamsType, string segregation) =>
         new StringBuilder()
-            .AppendLine($"{INDENT.Repeat(3)}this.{dataContextValidatorName}()")
-            .AppendLine($"{INDENT.Repeat(3)}var dto = this.DataContext;")
-            .AppendLine($"{INDENT.Repeat(3)}var cqrs = new {cqrsParamsType}(dto);")
-            .AppendLine($"{INDENT.Repeat(3)}On{segregation}Calling(cqrs);")
-            .AppendLine($"{INDENT.Repeat(3)}var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);")
-            .AppendLine($"{INDENT.Repeat(3)}On{segregation}Called(cqrs, cqResult);")
+            .AppendLine($"this.{dataContextValidatorName}()")
+            .AppendLine($"var dto = this.DataContext;")
+            .AppendLine($"var cqrs = new {cqrsParamsType}(dto);")
+            .AppendLine($"On{segregation}Calling(cqrs);")
+            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);")
+            .AppendLine($"On{segregation}Called(cqrs, cqResult);")
             .ToString();
 
     public static string WrapInClass(string className, bool isPartial, MemberAttributes accessModifier, params string[] members)
     {
         return new StringBuilder()
-        .AppendLine($"{INDENT.Repeat(0)}public {(isPartial ? "partial" : "")} class {className}")
+        .AppendLine($"public {(isPartial ? "partial" : "")} class {className}")
         //.Append(INDENT.Repeat(0))
         //.Append(accessModifier.Contains(MemberAttributes.Private) ? "private" : "")
         //.Append(accessModifier.Contains(MemberAttributes.Family) ? "internal" : "")
@@ -121,8 +119,7 @@ public static class CodeConstants
         //.Append(accessModifier.Contains(MemberAttributes.Final) ? "sealed" : "")
         //.Append(accessModifier.Contains(MemberAttributes.Abstract) ? "abstract" : "")
         .AppendLine($"{INDENT.Repeat(0)}{{")
-        .AppendAllLines(members.Merge(Environment.NewLine).Split(Environment.NewLine)
-            , line => line.StartsWith(INDENT) ? line : $"{INDENT.Repeat(1)}{line}")
+        .AppendAllLines(members.Merge(Environment.NewLine).Split(Environment.NewLine))
         .AppendLine($"{INDENT.Repeat(0)}}}")
         .ToString();
     }

@@ -229,10 +229,10 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
         {
             var id = model.Properties.First(x => x.Name!.EqualsTo("id"));
             var idType = TypePath.New(id.Property.NotNull().Type.ToFullTypeName());
-            foreach (var prop in model.Properties)
-            {
-                result.Properties.Add(new PropertyActor(prop.Property.NotNull().TypeFullName, prop.Name.NotNull(), prop.Caption));
-            }
+            //foreach (var prop in model.Properties)
+            //{
+            //    result.Properties.Add(new PropertyActor(prop.Property.NotNull().TypeFullName, prop.Name.NotNull(), prop.Caption));
+            //}
             foreach (var action in model.Actions.OfType<FrontElement>())
             {
                 switch (action)

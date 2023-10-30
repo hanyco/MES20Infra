@@ -69,7 +69,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
     private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
     {
-        var result = CodeGenDto.New(TypePath.New(resultViewModel.NameSpace, resultViewModel.Name).FullPath)
+        var result = CodeGenDto.New(TypePath.New(resultViewModel.Name, resultViewModel.NameSpace).FullPath)
             .With(x => x.IsList = resultViewModel.IsList);
         foreach (var prop in resultViewModel.Properties)
         {
