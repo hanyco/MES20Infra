@@ -109,10 +109,12 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var bodyQuery = SqlStatementBuilder
                     .Select(model.ParamsDto.DbObject.Name!)
                     .Columns(model.ResultDto.Properties.Select(x => x.DbObject.Name));
+                //model.ResultDto.IsList
                 // Create body code.
+                var sqlMethod = model.ResultDto.IsList ? nameof(Sql.Select) : nameof(Sql.FirstOrDefault);
                 var handlerBody = new StringBuilder()
                     .AppendLine($"var dbQuery = @\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("    ", " ")}\";")
-                    .AppendLine($"var dbResult = this._sql.Select<{GetResultParam(model).Name}>(dbQuery).ToList();")
+                    .AppendLine($"var dbResult = this._sql.{sqlMethod}<{GetResultParam(model).Name}>(dbQuery);")
                     .AppendLine($"var result = new {GetResultType(model, "Query").Name}(dbResult);")
                     .Append($"return Task.FromResult(result);");
 

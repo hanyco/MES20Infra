@@ -86,12 +86,6 @@ public static class CodeConstants
     public static string Keyword_AddToOnInitializedAsync() =>
         "OnLoad";
 
-    public static string OnCalledCqrsMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
-        $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";
-
-    public static string OnCallingCqrsMethodName(string segregation, string? cqrsParameterType = null) =>
-        $"On{segregation}Calling({cqrsParameterType ?? "System.Object"} parameter)";
-
     public static string QueryButton_CalledQueryMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
         $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";
 

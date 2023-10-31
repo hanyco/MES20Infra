@@ -147,15 +147,20 @@ public sealed class BlazorCqrsButton(
                 break;
 
             case ICommandCqrsSegregation:
-                var commandBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick))
-                    , CommandButton_CallCommandMethodBody(dataContextValidatorName, cqrsParamsType, cqrsResultType, calleeName)
-                    , returnType: "async void");
+                var commandBody = CodeDomHelper.NewMethod(
+                    this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
+                    CommandButton_CallCommandMethodBody(dataContextValidatorName, cqrsParamsType, cqrsResultType, calleeName),
+                    returnType: "async void");
                 var commandCalling = CodeDomHelper.NewMethod(
-                    OnCallingCqrsMethodName(calleeName, cqrsParamsType)
-                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
+                    $"On{calleeName}Calling",
+                    accessModifiers: DEFAULT_ACCESS_MODIFIER,
+                    arguments: [($"{cqrsParamsType ?? "System.Object"}", "parameter")],
+                    isPartial: true);
                 var commandCalled = CodeDomHelper.NewMethod(
-                    OnCalledCqrsMethodName(calleeName, cqrsParamsType, cqrsResultType)
-                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
+                    $"On{calleeName}Called",
+                    accessModifiers: DEFAULT_ACCESS_MODIFIER,
+                    arguments: [($"{cqrsParamsType ?? "System.Object"}", "parameter"), ($"{cqrsResultType ?? "System.Object"}", "result")],
+                    isPartial: true);
                 yield return new(commandCalling, null);
                 yield return new(null, commandBody);
                 yield return new(commandCalled, null);
