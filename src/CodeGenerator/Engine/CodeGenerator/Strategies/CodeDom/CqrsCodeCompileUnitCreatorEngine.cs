@@ -215,7 +215,7 @@ internal static class CqrsCodeCompileUnitCreatorEngine
             }
         }
 
-        var interfaceNames = segInterfaces.Select(ns => ns.Name);
+        var interfaceNames = segInterfaces.Select(ns => ns.FullName);
         var className = $"{cqrsName}{segregate.Suffix}";
         var segClass = nameSpace.AddNewType(className, interfaceNames, isPartial: true);
         _ = segClass.AddSummary(segregate.Comment ?? $"The {segregate.Suffix.ToLower(CultureInfo.InvariantCulture)} of {cqrsName}");

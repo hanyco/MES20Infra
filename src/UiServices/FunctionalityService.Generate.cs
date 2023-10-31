@@ -171,7 +171,7 @@ internal sealed partial class FunctionalityService
                     return result;
                 }
 
-                codes.  BlazorListComponentCodes = codeGenRes;
+                codes.BlazorListComponentCodes = codeGenRes;
             }
 
             // Generate codes for BlazorDetailsComponentViewModel if available.
@@ -558,7 +558,7 @@ internal sealed partial class FunctionalityService
 
         void createParams(CreationData data)
         {
-            data.ViewModel.GetAllQueryViewModel.ParamsDto = RawDto(data, true);
+            data.ViewModel.GetAllQueryViewModel.ParamsDto = RawDto(data, false);
             data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{name}Params";
             data.ViewModel.GetAllQueryViewModel.ParamsDto.IsParamsDto = true;
         }

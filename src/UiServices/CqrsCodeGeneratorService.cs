@@ -49,6 +49,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         {
             Check.MustBeArgumentNotNull(model?.Name);
 
+
+
             var securityKeys = model.SecurityClaims.ToSecurityKeys();
             var paramsDto = ConvertViewModelToCodeGen(model.ParamsDto)
                 .With(x => x.props().Category = CodeCategory.Dto);
@@ -106,7 +108,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 // Create query to be used inside the body code.
                 var bodyQuery = SqlStatementBuilder
                     .Select(model.ParamsDto.DbObject.Name!)
-                    .Columns(model.ParamsDto.Properties.Select(x => x.DbObject.Name));
+                    .Columns(model.ResultDto.Properties.Select(x => x.DbObject.Name));
                 // Create body code.
                 var handlerBody = new StringBuilder()
                     .AppendLine($"var dbQuery = @\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("    ", " ")}\";")
