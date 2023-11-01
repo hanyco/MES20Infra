@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 using Contracts;
 using Contracts.Services;
@@ -229,10 +230,6 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
         {
             var id = model.Properties.First(x => x.Name!.EqualsTo("id"));
             var idType = TypePath.New(id.Property.NotNull().Type.ToFullTypeName());
-            //foreach (var prop in model.Properties)
-            //{
-            //    result.Properties.Add(new PropertyActor(prop.Property.NotNull().TypeFullName, prop.Name.NotNull(), prop.Caption));
-            //}
             foreach (var action in model.Actions.OfType<FrontElement>())
             {
                 switch (action)
@@ -281,6 +278,25 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
 
         static BlazorComponent processFrontActions(UiViewModel model, BlazorComponent component) =>
             model.IsGrid ? createGrid(model, component) : createForm(model, component);
+
+        static string GetAll_CallMethodBody(string entityName) =>
+            new StringBuilder()
+                .AppendLine($"// Setup segregation parameters")
+                .AppendLine($"var paramsParams = new Dtos.GetAll{entityName}Params();")
+                .AppendLine($"var cqParams = new Dtos.GetAll{entityName}QueryParams(paramsParams);")
+                .AppendLine($"")
+                //.AppendLine($"// Let the developer know what's going on.")
+                //.AppendLine($"cqParams = OnCallingGetAll{entityName}Query(cqParams);")
+                .AppendLine($"")
+                .AppendLine($"// Invoke the query handler to retrieve all entities")
+                .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<Dtos.GetAll{entityName}QueryResult>(cqParams);")
+                .AppendLine($"")
+                //.AppendLine($"// Let's inform the developer about the result.")
+                //.AppendLine($"cqResult = OnCalledGetAll{entityName}Query(cqParams, cqResult);")
+                .AppendLine($"")
+                .AppendLine($"// Now, set the data context.")
+                .AppendLine($"this.DataContext = cqResult.Result;") //x .To{StringHelper.Singularize(entityName)}Dto()
+                .ToString();
     }
 
     public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments)

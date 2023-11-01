@@ -8,8 +8,8 @@ namespace Test.HumanResources.Queries
     {
         public Task<GetAllPeopleQueryResult> HandleAsync(GetAllPeopleQueryParams query)
         {
-            var dbQuery = @"SELECT [Id], [FirstName], [LastName], [DateOfBirth], [Height]  FROM [Person]";
-            var dbResult = this._sql.Select<GetAllPeopleResult>(dbQuery).ToList();
+            var dbQuery = @"SELECT [Id], [FirstName], [LastName], [DateOfBirth], [Height]   FROM [Person]";
+            var dbResult = this._sql.Select<GetAllPeopleResult>(dbQuery);
             var result = new GetAllPeopleQueryResult(dbResult);
             return Task.FromResult(result);
         }

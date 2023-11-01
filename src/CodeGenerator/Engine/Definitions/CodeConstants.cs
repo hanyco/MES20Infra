@@ -18,7 +18,7 @@ public static class CodeConstants
             .AppendLine($"var dto = this.DataContext;")
             .AppendLine($"var cqParams = new {cqrsParamsType}(dto);")
             .AppendLine($"On{segregation}Calling(cqParams);")
-            .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType},{cqrsResultType}>(cqParams);")
+            .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType}, {cqrsResultType}>(cqParams);")
             .AppendLine($"On{segregation}Called(cqParams, cqResult);")
             .ToString();
 
@@ -51,31 +51,11 @@ public static class CodeConstants
     public static string DefaultTaskMethodBody() =>
         "return Task.CompletedTask;";
 
-    public static string GetAll_CallMethodBody(string entityName) =>
-        new StringBuilder()
-            .AppendLine($"// Setup segregation parameters")
-            .AppendLine($"var paramsParams = new Dtos.GetAll{entityName}Params();")
-            .AppendLine($"var cqParams = new Queries.GetAll{entityName}QueryParameter(paramsParams);")
-            .AppendLine($"")
-            .AppendLine($"// Let the developer know what's going on.")
-            .AppendLine($"cqParams = OnCallingGetAll{entityName}Query(cqParams);")
-            .AppendLine($"")
-            .AppendLine($"// Invoke the query handler to retrieve all entities")
-            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync(cqParams);")
-            .AppendLine($"")
-            .AppendLine($"// Let's inform the developer about the result.")
-            .AppendLine($"cqResult = OnCalledGetAll{entityName}Query(cqParams, cqResult);")
-            .AppendLine($"")
-            .AppendLine($"// Now, set the data context.")
-            //TODO: `ToDo()` method must be written.
-            .AppendLine($"this.DataContext = cqResult.Result.To{StringHelper.Singularize(entityName)}Dto();")
-            .ToString();
-
     public static string GetAll_OnCalledMethodName(string entityName) =>
-        $"OnCalledGetAll{entityName}Query(Queries.GetAll{entityName}QueryParameter cqParams, Queries.GetAll{entityName}QueryResult cqResult)";
+        $"OnCalledGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams, Queries.GetAll{entityName}QueryResult cqResult)";
 
     public static string GetAll_OnCallingMethodName(string entityName) =>
-            $"OnCallingGetAll{entityName}Query(Queries.GetAll{entityName}QueryParameter cqParams)";
+            $"OnCallingGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams)";
 
     public static string InitializedAsyncMethodBody() =>
         $"await this.OnPageInitializedAsync();";

@@ -108,12 +108,12 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 // Create query to be used inside the body code.
                 var bodyQuery = SqlStatementBuilder
                     .Select(model.ParamsDto.DbObject.Name!)
+                    .SetTopCount(model.ResultDto.IsList ? (int?)null : 1)
                     .Columns(model.ResultDto.Properties.Select(x => x.DbObject.Name));
-                //model.ResultDto.IsList
                 // Create body code.
                 var sqlMethod = model.ResultDto.IsList ? nameof(Sql.Select) : nameof(Sql.FirstOrDefault);
                 var handlerBody = new StringBuilder()
-                    .AppendLine($"var dbQuery = @\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("    ", " ")}\";")
+                    .AppendLine($"var dbQuery = @\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
                     .AppendLine($"var dbResult = this._sql.{sqlMethod}<{GetResultParam(model).Name}>(dbQuery);")
                     .AppendLine($"var result = new {GetResultType(model, "Query").Name}(dbResult);")
                     .Append($"return Task.FromResult(result);");
