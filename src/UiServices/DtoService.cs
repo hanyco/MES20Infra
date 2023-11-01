@@ -126,7 +126,7 @@ internal sealed class DtoService(
             var type = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
             if (pvm.IsList ?? false)
             {
-                type = $"IEnumerable<{type}>";
+                type = $"List<{type}>";
             }
 
             // TODO Low Priority. Do this later.

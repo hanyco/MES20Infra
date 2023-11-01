@@ -12,16 +12,6 @@ public static class CodeConstants
     public const MemberAttributes DEFAULT_ACCESS_MODIFIER = MemberAttributes.Private | MemberAttributes.Final;
     public const string INDENT = "    ";
 
-    public static string CommandButton_CallCommandMethodBody(string dataContextValidatorName, string cqrsParamsType, string cqrsResultType, string segregation) =>
-        new StringBuilder()
-            .AppendLine($"this.{dataContextValidatorName}();")
-            .AppendLine($"var dto = this.DataContext;")
-            .AppendLine($"var cqParams = new {cqrsParamsType}(dto);")
-            .AppendLine($"On{segregation}Calling(cqParams);")
-            .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType}, {cqrsResultType}>(cqParams);")
-            .AppendLine($"On{segregation}Called(cqParams, cqResult);")
-            .ToString();
-
     public static string Component_OnInitializedAsync_MethodBody(string? onInitializedAsyncAdditionalBody)
     {
         var result = onInitializedAsyncAdditionalBody

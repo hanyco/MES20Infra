@@ -276,7 +276,7 @@ internal sealed partial class FunctionalityService
 
         // Initialize the steps for the process
         MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
-        //?! Don't change the sequence of steps !
+        //?! ☠ Don't change the sequence of steps ☠
             MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))

@@ -5,7 +5,7 @@ namespace Test.HumanResources
 {
     public sealed class PersonViewModel
     {
-        public IEnumerable<PersonDto> PeopleListDto { get; set; }
+        public List<PersonDto> PeopleListDto { get; set; }
         public PersonDto PersonDetailsDto { get; set; }
     }
 }

@@ -35,7 +35,7 @@ namespace Test.HumanResources
             // Invoke the query handler to retrieve all entities
             var cqResult = await this._queryProcessor.ExecuteAsync<Dtos.GetAllPeopleQueryResult>(cqParams);
             // Now, set the data context.
-            this.DataContext = cqResult.Result.ToPersonDto();
+            this.DataContext = cqResult.Result;
             // Call developer's method.
             await this.OnLoadAsync();
         }

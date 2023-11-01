@@ -1,6 +1,8 @@
+using Library.Cqrs.Models.Queries;
+
 namespace Test.HumanResources.Dtos
 {
-    public sealed class GetAllPeopleQueryParams
+    public sealed class GetAllPeopleQueryParams : IQuery<GetAllPeopleQueryResult>
     {
         public GetAllPeopleQueryParams(GetAllPeopleParams @params)
         {

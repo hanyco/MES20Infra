@@ -24,8 +24,6 @@ using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
 
-using Services.Helpers;
-
 using static Services.Helpers.CommonHelpers;
 
 namespace Services;
@@ -49,8 +47,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         {
             Check.MustBeArgumentNotNull(model?.Name);
 
-
-
             var securityKeys = model.SecurityClaims.ToSecurityKeys();
             var paramsDto = ConvertViewModelToCodeGen(model.ParamsDto)
                 .With(x => x.props().Category = CodeCategory.Dto);
@@ -67,21 +63,35 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 .With(x => x.props().Category = CodeCategory.Command);
             return CodeGenerator.GenerateCode(cmd);
         }
+        static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
+        {
+            var result = CodeGenDto.New(TypePath.New(resultViewModel.Name, resultViewModel.NameSpace).FullPath)
+                .With(x => x.IsList = resultViewModel.IsList);
+            foreach (var prop in resultViewModel.Properties)
+            {
+                _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false);
+            }
+            return result;
+        }
     }
 
-    private static CodeGenDto ConvertViewModelToCodeGen(DtoViewModel resultViewModel)
-    {
-        var result = CodeGenDto.New(TypePath.New(resultViewModel.Name, resultViewModel.NameSpace).FullPath)
-            .With(x => x.IsList = resultViewModel.IsList);
-        foreach (var prop in resultViewModel.Properties)
-        {
-            _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false);
-        }
-        return result;
-    }
+    private static TypePath GetHandlerClass(CqrsQueryViewModel model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}Handler", model.CqrsNameSpace);
+
+    private static TypePath GetParamsType(CqrsQueryViewModel model, string kind) =>
+        TypePath.New($"{Purify(model.ParamsDto.Name)}{kind}Params", model.ParamsDto.NameSpace);
+
+    private static TypePath GetResultParam(CqrsQueryViewModel model) =>
+        TypePath.New($"{Purify(model.ResultDto.Name)}Result", model.ResultDto.NameSpace);
+
+    private static TypePath GetResultType(CqrsQueryViewModel model, string kind) =>
+        TypePath.New($"{Purify(model.ResultDto.Name)}{kind}Result", model.ResultDto.NameSpace);
 
     private static IEnumerable<string> GetSecurityKeys(CqrsViewModelBase viewModel) =>
-            viewModel.SecurityClaims.Select(x => x.Key).Compact() ?? Enumerable.Empty<string>();
+        viewModel.SecurityClaims.Select(x => x.Key).Compact() ?? Enumerable.Empty<string>();
+
+    private static string GetSegregateClassName(DtoViewModel model, string? kind, string part) =>
+        $"{Purify(model.Name)}{kind}{part}";
 
     private Codes GenerateQuery(CqrsQueryViewModel model)
     {
@@ -90,8 +100,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         var mainCode = generateMainCode(model);
         var partCode = generatePartCode(model);
 
-        return Codes.New(mainCode.ToCodes().With(x => x.props().Category = mainCode.props().Category)
-                       , partCode.ToCodes().With(x => x.props().Category = partCode.props().Category));
+        return Codes.New(mainCode.ToCodes(), partCode.ToCodes());
 
         IEnumerable<Code> generateMainCode(CqrsQueryViewModel model)
         {
@@ -101,20 +110,22 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 yield return Code.Empty;
                 yield break;
             }
-            yield return toCode("Handler", statement, false, CodeCategory.Query);
+            yield return toCode(model.Name, "Handler", statement, false, CodeCategory.Query);
 
             Result<string> createQueryHandler(CqrsQueryViewModel model)
             {
                 // Create query to be used inside the body code.
                 var bodyQuery = SqlStatementBuilder
                     .Select(model.ParamsDto.DbObject.Name!)
-                    .SetTopCount(model.ResultDto.IsList ? (int?)null : 1)
-                    .Columns(model.ResultDto.Properties.Select(x => x.DbObject.Name));
+                    .SetTopCount(model.ResultDto.IsList ? null : 1)
+                    .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact());
                 // Create body code.
-                var sqlMethod = model.ResultDto.IsList ? nameof(Sql.Select) : nameof(Sql.FirstOrDefault);
+                (var sqlMethod, var toListMethod) = model.ResultDto.IsList ?
+                    (nameof(Sql.Select), ".ToList()") :
+                    (nameof(Sql.FirstOrDefault), string.Empty);
                 var handlerBody = new StringBuilder()
                     .AppendLine($"var dbQuery = @\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
-                    .AppendLine($"var dbResult = this._sql.{sqlMethod}<{GetResultParam(model).Name}>(dbQuery);")
+                    .AppendLine($"var dbResult = this._sql.{sqlMethod}<{GetResultParam(model).Name}>(dbQuery){toListMethod};")
                     .AppendLine($"var result = new {GetResultType(model, "Query").Name}(dbResult);")
                     .Append($"return Task.FromResult(result);");
 
@@ -130,7 +141,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{GetResultType(model, "Query").FullPath}>")
                 };
                 // Create `QueryHandler` class
-                var type = new Class(GetHandlerClassName(model, "Query"))
+                var type = new Class(GetHandlerClass(model, "Query"))
                 {
                     AccessModifier = AccessModifier.Public,
                     InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
@@ -149,9 +160,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         IEnumerable<Code> generatePartCode(CqrsQueryViewModel model)
         {
-            yield return toCode("Handler", createQueryHandler(model), true, CodeCategory.Query);
-            yield return toCode("Params", createQueryParams(model), true, CodeCategory.Dto);
-            yield return toCode("Result", createQueryResult(model), true, CodeCategory.Dto);
+            yield return toCode(model.Name, "Handler", createQueryHandler(model), true, CodeCategory.Query);
+            yield return toCode(model.Name, "Params", createQueryParams(model), true, CodeCategory.Dto);
+            yield return toCode(model.Name, "Result", createQueryResult(model), true, CodeCategory.Dto);
 
             Result<string> createQueryHandler(CqrsQueryViewModel model)
             {
@@ -174,7 +185,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 _ = ctor.AddParameter(dal.Name, arg(dal.Name));
 
                 // Create `QueryHandler` class
-                var type = new Class(GetHandlerClassName(model, "Query"))
+                var type = new Class(GetHandlerClass(model, "Query"))
                 {
                     AccessModifier = AccessModifier.Public,
                     InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
@@ -183,7 +194,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var resultType = GetResultType(model, "Query");
                 var baseType = TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { paramsType.FullPath, resultType.FullPath });
                 _ = type.BaseTypes.Add(baseType);
-                // Add members to `QueryHandler` class
                 _ = type.AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { IsReadOnly = true });
                 _ = type.AddMember(new Field(fld(qryPcr.Name), qryPcr) { IsReadOnly = true });
                 _ = type.AddMember(new Field(fld(dal.Name), dal) { IsReadOnly = true });
@@ -198,18 +208,15 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 return result;
             }
 
-            Result<string> createQueryResult(CqrsQueryViewModel model) =>
-                createQueryInOut(model.ResultDto, "Result");
-            Result<string> createQueryParams(CqrsQueryViewModel model) =>
-                createQueryInOut(model.ParamsDto, "Params");
-            Result<string> createQueryInOut(DtoViewModel model, string part)
+            Result<string> createQueryResult(CqrsQueryViewModel mode)
             {
-                var className = GetQueryClassName(model, "Query", part);
-                var paramsPropType = TypePath.New(model.IsList
-                    ? $"IEnumerable<{Purify(model.Name)}{part}>"
-                    : $"{Purify(model.Name)}{part}");
+                var resultDto = mode.ResultDto;
+                var className = GetSegregateClassName(resultDto, "Query", "Result");
+                var paramsPropType = TypePath.New(resultDto.IsList
+                    ? $"List<{Purify(resultDto.Name)}Result>"
+                    : $"{Purify(resultDto.Name)}Result");
 
-                var prop = new CodeGenProperty($"{prp(part)}", paramsPropType);
+                var prop = new CodeGenProperty($"{prp("Result")}", paramsPropType);
                 var ctor = new Method(className)
                 {
                     IsConstructor = true,
@@ -220,15 +227,47 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     }
                 };
                 var type = new Class(className).AddMember(ctor, prop);
-                var nameSpace = INamespace.New(model.NameSpace);
+                var nameSpace = INamespace.New(resultDto.NameSpace);
                 _ = nameSpace.Types.Add(type);
 
                 // Generate code
                 return this._codeGeneratorEngine.Generate(nameSpace);
             }
+
+            Result<string> createQueryParams(CqrsQueryViewModel model)
+            {
+                var paramsDto = model.ParamsDto;
+                var className = GetSegregateClassName(paramsDto, "Query", "Params");
+                var paramsPropType = TypePath.New(paramsDto.IsList
+                    ? $"IEnumerable<{GetSegregateClassName(paramsDto, null, "Params")}>"
+                    : GetSegregateClassName(paramsDto, null, "Params"));
+
+                var prop = new CodeGenProperty(prp("Params"), paramsPropType);
+                var ctor = new Method(className)
+                {
+                    IsConstructor = true,
+                    Body = $"this.{prop.Name} = {arg(prop.Name)};",
+                    Parameters =
+                    {
+                        (paramsPropType, arg(prop.Name))
+                    }
+                };
+                var type = new Class(className)
+                {
+                    BaseTypes =
+                    {
+                        TypePath.New(typeof(IQuery<>), [GetSegregateClassName(model.ResultDto, "Query", "Result")]),
+                    }
+                }.AddMember(ctor, prop);
+                var nameSpace = INamespace.New(paramsDto.NameSpace)
+                    .AddType(type);
+
+                // Generate code
+                return this._codeGeneratorEngine.Generate(nameSpace);
+            }
         }
-        Code toCode(string codeName, Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
-            Code.New($"{model.Name}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
+        static Code toCode(string? modelName, string codeName, Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
+            Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
 
         static string arg(string name) => TypeMemberNameHelper.ToArgName(name);
         static string fld(string name) => TypeMemberNameHelper.ToFieldName(name);

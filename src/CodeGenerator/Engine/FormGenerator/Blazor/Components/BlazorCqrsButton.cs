@@ -173,6 +173,16 @@ public sealed class BlazorCqrsButton(
 
     public BlazorCqrsButton SetAction(string name, ICqrsSegregation segregation) =>
         this.Fluent(() => this.Action = new CqrsAction(name, segregation));
+
+    static string CommandButton_CallCommandMethodBody(string dataContextValidatorName, string cqrsParamsType, string cqrsResultType, string segregation) =>
+        new StringBuilder()
+            .AppendLine($"this.{dataContextValidatorName}();")
+            .AppendLine($"var dto = this.DataContext;")
+            .AppendLine($"var cqParams = new {cqrsParamsType}(dto);")
+            .AppendLine($"On{segregation}Calling(cqParams);")
+            .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{cqrsParamsType}, {cqrsResultType}>(cqParams);")
+            .AppendLine($"On{segregation}Called(cqParams, cqResult);")
+            .ToString();
 }
 
 public sealed class BlazorCustomButton(
