@@ -93,6 +93,24 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
     private static string GetSegregateClassName(DtoViewModel model, string? kind, string part) =>
         $"{Purify(model.Name)}{kind}{part}";
 
+    private static string? ReplaceVariables(in DtoViewModel paramsDto, in string? statement, in string paramName)
+    {
+        if (statement.IsNullOrEmpty())
+        {
+            return string.Empty;
+        }
+
+        var result = statement;
+        foreach (var p in paramsDto.Properties)
+        {
+            result = result
+                .Replace($"%{p!.DbObject?.Name}%", $"{{{paramName}.{p.Name}}}")
+                .Replace($"^{p!.DbObject?.Name}^", p.Name)
+                ;
+        }
+        return result;
+    }
+
     private Codes GenerateQuery(CqrsQueryViewModel model)
     {
         Check.MustBeArgumentNotNull(model?.Name);
@@ -114,17 +132,19 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
             Result<string> createQueryHandler(CqrsQueryViewModel model)
             {
+                var paramName = "query";
                 // Create query to be used inside the body code.
                 var bodyQuery = SqlStatementBuilder
                     .Select(model.ParamsDto.DbObject.Name!)
                     .SetTopCount(model.ResultDto.IsList ? null : 1)
+                    .Where(ReplaceVariables(model.ParamsDto, model.AdditionalSqlStatement.WhereClause, $"{paramName}.Params"))
                     .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact());
                 // Create body code.
                 (var sqlMethod, var toListMethod) = model.ResultDto.IsList ?
                     (nameof(Sql.Select), ".ToList()") :
                     (nameof(Sql.FirstOrDefault), string.Empty);
                 var handlerBody = new StringBuilder()
-                    .AppendLine($"var dbQuery = @\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
+                    .AppendLine($"var dbQuery = $@\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
                     .AppendLine($"var dbResult = this._sql.{sqlMethod}<{GetResultParam(model).Name}>(dbQuery){toListMethod};")
                     .AppendLine($"var result = new {GetResultType(model, "Query").Name}(dbResult);")
                     .Append($"return Task.FromResult(result);");
@@ -136,7 +156,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     Body = handlerBody.Build(),
                     Parameters =
                     {
-                        (GetParamsType(model,"Query"), "query")
+                        (GetParamsType(model,"Query"), paramName)
                     },
                     ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{GetResultType(model, "Query").FullPath}>")
                 };

@@ -169,6 +169,16 @@ public sealed class BlazorCqrsButton(
             default:
                 throw new NotSupportedException();
         }
+        
+        static string QueryButton_CallQueryMethodBody(string dataContextValidatorName, string cqrsParamsType, string segregation) =>
+            new StringBuilder()
+                .AppendLine($"this.{dataContextValidatorName}()")
+                .AppendLine($"var dto = this.DataContext;")
+                .AppendLine($"var cqrs = new {cqrsParamsType}(dto);")
+                .AppendLine($"On{segregation}Calling(cqrs);")
+                .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync(cqrs);")
+                .AppendLine($"On{segregation}Called(cqrs, cqResult);")
+                .ToString();
     }
 
     public BlazorCqrsButton SetAction(string name, ICqrsSegregation segregation) =>

@@ -20,6 +20,8 @@ using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
 
+using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
+
 using ButtonViewModelBase = Contracts.ViewModels.UiComponentButtonViewModelBase;
 using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
 using CqrsLoadViewModel = Contracts.ViewModels.UiComponentCqrsLoadViewModel;
@@ -258,7 +260,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                     case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject?.Name != null:
                         var entityName = StringHelper.Pluralize(load.CqrsSegregate.DbObject.Name);
                         result.Actions.Add(new(GetAll_OnCallingMethodName(entityName), false));
-                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), body: GetAll_CallMethodBody(entityName)));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, body: GetAll_CallMethodBody(entityName)));
                         result.Actions.Add(new(GetAll_OnCalledMethodName(entityName), false));
                         break;
 
@@ -266,7 +268,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                         throw new InvalidOperationValidationException("`OnCqrsLoad` method has not required fields.");
 
                     case CstmLoadViewModel load when load.CodeStatement != null:
-                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync(), true, load.CodeStatement));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, true, load.CodeStatement));
                         break;
 
                     case CstmLoadViewModel load:
@@ -277,8 +279,6 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
 
             static string GetAll_OnCallingMethodName(string entityName) =>
                 $"OnCallingGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams)";
-            static string Keyword_AddToOnInitializedAsync() =>
-                "OnLoad";
             static string GetAll_OnCalledMethodName(string entityName) =>
                 $"OnCalledGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams, Queries.GetAll{entityName}QueryResult cqResult)";
         }

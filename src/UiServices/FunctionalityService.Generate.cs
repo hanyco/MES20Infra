@@ -57,7 +57,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for GetAllQueryViewModel if available.
             if (viewModel.GetAllQueryViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.GetAllQueryViewModel, token: token).ConfigureAwait(false);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.GetAllQueryViewModel, token: token);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -69,7 +69,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for GetByIdQueryViewModel if available.
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.GetByIdQueryViewModel, token: token).ConfigureAwait(false);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.GetByIdQueryViewModel, token: token);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -81,7 +81,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for InsertCommandViewModel if available.
             if (viewModel.InsertCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.InsertCommandViewModel, token: token).ConfigureAwait(false);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.InsertCommandViewModel, token: token);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -93,7 +93,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for UpdateCommandViewModel if available.
             if (viewModel.UpdateCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.UpdateCommandViewModel, token: token).ConfigureAwait(false);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.UpdateCommandViewModel, token: token);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -105,7 +105,7 @@ internal sealed partial class FunctionalityService
             // Generate codes for DeleteCommandViewModel if available.
             if (viewModel.DeleteCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.DeleteCommandViewModel, token: token).ConfigureAwait(false);
+                var codeGenRes = await gatherAllCodesAsync(viewModel.DeleteCommandViewModel, token: token);
                 if (codeGenRes.Any(x => !x))
                 {
                     return result;
@@ -396,8 +396,13 @@ internal sealed partial class FunctionalityService
                     Offset = 1
                 }
             };
+            var onLoad = new UiComponentCqrsLoadViewModel
+            {
+                CqrsSegregate = data.ViewModel.GetByIdQueryViewModel.With(x=> x.AdditionalSqlStatement.WhereClause = "[Id] = %Id%")
+            };
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
+            data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(onLoad);
         }
     }
 
