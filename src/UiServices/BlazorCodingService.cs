@@ -20,8 +20,6 @@ using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
 
-using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
-
 using ButtonViewModelBase = Contracts.ViewModels.UiComponentButtonViewModelBase;
 using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
 using CqrsLoadViewModel = Contracts.ViewModels.UiComponentCqrsLoadViewModel;
@@ -224,6 +222,8 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                 };
                 return button.SetAction(model.Name!, customButtonViewModel.CodeStatement);
             }
+            static string InstanceDataContextProperty(string? name) =>
+                $"this.DataContext.{name}";
         }
 
         static BlazorComponent createGrid(UiViewModel model, BlazorComponent result)
@@ -249,7 +249,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
             return result;
         }
 
-        static BlazorComponent processBackendActions(UiViewModel model, BlazorComponent result)
+        static BlazorComponent processBackendActions(in UiViewModel model, in BlazorComponent result)
         {
             foreach (var action in model.Actions.OfType<BackElement>())
             {
@@ -274,6 +274,13 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                 }
             }
             return result;
+
+            static string GetAll_OnCallingMethodName(string entityName) =>
+                $"OnCallingGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams)";
+            static string Keyword_AddToOnInitializedAsync() =>
+                "OnLoad";
+            static string GetAll_OnCalledMethodName(string entityName) =>
+                $"OnCalledGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams, Queries.GetAll{entityName}QueryResult cqResult)";
         }
 
         static BlazorComponent processFrontActions(UiViewModel model, BlazorComponent component) =>

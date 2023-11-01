@@ -452,4 +452,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             }
         }
     }
+    static string Component_OnInitializedAsync_MethodBody(in string? onInitializedAsyncAdditionalBody)
+    {
+        var result = new StringBuilder(onInitializedAsyncAdditionalBody)
+            .AppendLine()
+            .AppendLine($"// Call developer's method.")
+            .AppendLine($"await this.OnLoadAsync();");
+        return result.ToString();
+    }
 }

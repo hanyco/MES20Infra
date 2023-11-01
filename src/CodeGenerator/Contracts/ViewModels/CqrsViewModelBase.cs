@@ -1,14 +1,16 @@
 ﻿#nullable disable
 
-using Contracts.ViewModels;
-
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
+
+using Library.Data.SqlServer;
+using Library.Data.SqlServer.Builders.Bases;
 
 namespace Contracts.ViewModels;
 
 public abstract class CqrsViewModelBase : InfraViewModelBase
 {
+    private ISelectStatement _additionalWhereClause;
     private CqrsSegregateCategory _category;
     private string _comment;
     private string _cqrsNameSpace;
@@ -21,6 +23,8 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     private DtoViewModel _paramDto;
     private DtoViewModel _resultDto;
     private IEnumerable<ClaimViewModel> _securityClaims;
+
+    public IWhereClause AdditionalWhereClause => this._additionalWhereClause ??= SqlStatementBuilder.Select();
 
     public CqrsSegregateCategory Category
     {
@@ -51,6 +55,8 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         get => this._dtoNameSpace;
         set => this.SetProperty(ref this._dtoNameSpace, value);
     }
+
+    public string ExecuteBody { get; set; }
 
     public string FriendlyName
     {
@@ -93,6 +99,6 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         get => this._securityClaims;
         set => this.SetProperty(ref this._securityClaims, value);
     }
-    public string ExecuteBody { get; set; }
+
     protected abstract CqrsSegregateType SegregateType { get; }
 }
