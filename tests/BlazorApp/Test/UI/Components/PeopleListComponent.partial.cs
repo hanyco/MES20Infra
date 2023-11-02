@@ -17,31 +17,26 @@ namespace Test.HumanResources
 
     public sealed partial class PeopleListComponent
     {
-        public void NewButton_OnClick()
-        {
-            this._navigationManager.NavigateTo("/HumanResources/Person/details");
-        }
-
         public void Edit(long id)
         {
             this._navigationManager.NavigateTo("/HumanResources/Person/details" + "/" + id.ToString());
         }
 
+        public void NewButton_OnClick()
+        {
+            this._navigationManager.NavigateTo("/HumanResources/Person/details");
+        }
         protected override async Task OnInitializedAsync()
         {
             // Setup segregation parameters
-            var paramsParams = new Dtos.GetAllPeopleParams();
-            var cqParams = new Dtos.GetAllPeopleQueryParams(paramsParams);
+            var @params = new GetAllPeopleParams();
+            var cqParams = new Test.HumanResources.Dtos.GetAllPeopleQueryParams(@params);
             // Invoke the query handler to retrieve all entities
-            var cqResult = await this._queryProcessor.ExecuteAsync<Dtos.GetAllPeopleQueryResult>(cqParams);
+            var cqResult = await this._queryProcessor.ExecuteAsync<Test.HumanResources.Dtos.GetAllPeopleQueryResult>(cqParams);
             // Now, set the data context.
-            this.DataContext = cqResult.Result;
+            this.DataContext = cqResult.Result.ToViewModel();
             // Call developer's method.
             await this.OnLoadAsync();
-        }
-
-        public PeopleListComponent()
-        {
         }
     }
 }

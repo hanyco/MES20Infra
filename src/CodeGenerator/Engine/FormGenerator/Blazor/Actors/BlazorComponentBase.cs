@@ -23,12 +23,13 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>//, ICodeGenerator,  IComponentCodeUnit
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
-    private static readonly string[] _parameterAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
+    private static readonly string[] _parameterAttributes = ["Microsoft.AspNetCore.Components.Parameter"];
     private BootstrapPosition? _position;
 
     protected BlazorComponentBase(in string name) => this.Name = name;
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
+    public HashSet<string> AdditionalUsings { get; } = [];
     public IDictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
     Dictionary<string, string?> IHtmlElement.Attributes { get; }
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
@@ -154,7 +155,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             {
                 DataContextName = "this.DataContext"
             };
-            _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
+            _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!) { BindingName = x.BindingName.ArgumentNotNull() }));
             _ = table.Actions.AddRange(this.Actions.OfType<ButtonActor>().Where(x => x.ShowOnGrid)
                 .Select(x => new BlazorTableRowAction(x.Name!, x.Caption!) { OnClick = x.EventHandlerName }));
             var tableCode = table.GenerateUiCode().Statement;
@@ -260,6 +261,11 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         this.OnInitializingBehindCode(args);
 
         var mainUnit = new CodeCompileUnit();
+        mainUnit.Namespaces.AddRange(this.AdditionalUsings
+            .Compact().RemoveDuplicates()
+            .Select(x => new CodeNamespace(x))
+            .Except(mainUnit.Namespaces.Cast<CodeNamespace>())
+            .ToArray());
         var mainClassType = createMainClassType(mainUnit);
 
         var partUnit = new CodeCompileUnit();
@@ -279,7 +285,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         addFieldsToMainClass(mainClassType);
         addFieldsToPartClass(partClassType);
 
-        addPropertiesToPartClass(partClassType);
+        //! I'm not sure it's required.
+        //x addPropertiesToPartClass(partClassType);
         addParametersToPartClass(partClassType);
 
         addChildren(args, mainClassType, partClassType);
@@ -332,7 +339,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addPropertiesToPartClass(in CodeTypeDeclaration partClassType)
         {
-            foreach (var property in this.Properties)
+            foreach (var property in this.Properties.Where(x=>x.Caption.IsNullOrEmpty())
             {
                 _ = partClassType.AddProperty(property.ToPropertyInfo());
             }

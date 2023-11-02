@@ -21,7 +21,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
 {
     public Dictionary<string, string?> BlazorAttributes { get; } = [];
     public (TypePath Type, string Name)? DataContextProperty { get; set; }
-
+    
     public bool ShouldGenerateFullUiCode { get; internal set; } = true;
 
     public static BlazorComponent New(in string name) =>

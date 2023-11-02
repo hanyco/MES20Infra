@@ -20,12 +20,12 @@ namespace Test.HumanResources
         protected override async Task OnInitializedAsync()
         {
             // Setup segregation parameters
-            var paramsParams = new Dtos.GetAllPeopleParams();
-            var cqParams = new Dtos.GetAllPeopleQueryParams(paramsParams);
+            var @params = new GetByIdPersonParams();
+            var cqParams = new Test.HumanResources.Dtos.GetByIdPersonQueryParams(@params);
             // Invoke the query handler to retrieve all entities
-            var cqResult = await this._queryProcessor.ExecuteAsync<Dtos.GetAllPeopleQueryResult>(cqParams);
+            var cqResult = await this._queryProcessor.ExecuteAsync<Test.HumanResources.Dtos.GetByIdPersonQueryResult>(cqParams);
             // Now, set the data context.
-            this.DataContext = cqResult.Result;
+            this.DataContext = cqResult.Result.ToViewModel();
             // Call developer's method.
             await this.OnLoadAsync();
         }
@@ -33,11 +33,6 @@ namespace Test.HumanResources
         public async void SaveButton_OnClick()
         {
             this.ValidateForm();
-            var dto = this.DataContext;
-            var cqParams = new Test.HumanResources.Dtos.InsertPersonParams(dto);
-            OnInsertPersonCommandCalling(cqParams);
-            var cqResult = await this._commandProcessor.ExecuteAsync<Test.HumanResources.Dtos.InsertPersonParams, Test.HumanResources.Dtos.InsertPersonResult>(cqParams);
-            OnInsertPersonCommandCalled(cqParams, cqResult);
         }
 
         public void BackButton_OnClick()

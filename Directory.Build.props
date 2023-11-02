@@ -4,5 +4,6 @@
 		<NoWarn>$(NoWarn);CA1305</NoWarn>
 		<NoWarn>$(NoWarn);CA1311</NoWarn>
 		<NoWarn>$(NoWarn);CA2007</NoWarn>
+		<NoWarn>$(NoWarn);CA1031</NoWarn>
 	</PropertyGroup>
 </Project>

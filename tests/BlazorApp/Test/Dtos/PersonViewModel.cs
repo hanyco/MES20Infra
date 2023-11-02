@@ -1,5 +1,4 @@
 using Test.HumanResources;
-using Test.HumanResources;
 
 namespace Test.HumanResources
 {

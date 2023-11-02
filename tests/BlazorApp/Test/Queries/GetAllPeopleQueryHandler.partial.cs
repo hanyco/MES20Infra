@@ -1,7 +1,6 @@
 using Library.Cqrs.Models.Queries;
 using Test.HumanResources.Dtos;
 using Library.Cqrs.Models.Commands;
-using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
 
 namespace Test.HumanResources.Queries

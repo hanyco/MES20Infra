@@ -192,13 +192,12 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var codes = this.ViewModel!.Codes.SelectAll().Compact();
         if (!codes.Any())
         {
-            return Result<string>.CreateFailure("No code found. Please generate sources.", string.Empty);
+            return Result<string>.CreateFailure("No source code found. Please press <Generate Sources> button.", string.Empty);
         }
         var settings = SettingsService.Get();
         var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
-        var saveResult = FileUiTools.SaveToFile(files, $"Saving sources to {settings.projectSourceRoot}");
-        await Task.Delay(500);
-        App.Current.DoEvents();
+        var saveResult = FileUiTools.SaveToFile(files, $"Saving source codes to {settings.projectSourceRoot}");
+        await App.Current.DoEventsAsync(500);
         return saveResult.WithValue(settings.projectSourceRoot).IfSucceed(x => x.Message = "Codes are saved successfully.");
 
         static string getPath(SettingsModel settings, Code code)

@@ -13,21 +13,6 @@ public static class CodeConstants
     public static string InitializedAsyncMethodBody => $"await this.OnPageInitializedAsync();";
     public static string Keyword_AddToOnInitializedAsync => "OnLoad";
 
-    public static string Converter_Convert_MethodName(string dstClassName) =>
-        $"To{dstClassName}";
-
-    public static string Converter_ConvertEnumerable_MethodBody(string srcClassName, string dstClassName, string argName) =>
-        $"return {argName}.Select({Converter_Convert_MethodName(dstClassName)});";
-
-    public static string Converter_ConvertSingle_MethodBody(string srcClassName, string dstClassName, string argName, IEnumerable<string?> propNames) =>
-        new StringBuilder()
-            .AppendLine($"var result = new {dstClassName}")
-            .AppendLine($"{{")
-            .AppendAllLines(propNames, propName => $"{propName} = {argName}.{propName},")
-            .AppendLine($"}};")
-            .AppendLine($"return result;")
-            .ToString();
-
     public static string QueryButton_CalledQueryMethodName(string segregation, string? cqrsParameterType, string? cqrsResultType) =>
         $"On{segregation}Called({cqrsParameterType} parameter, {cqrsResultType} result)";
 

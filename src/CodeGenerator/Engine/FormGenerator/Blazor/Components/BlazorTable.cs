@@ -11,9 +11,9 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 
 public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
 {
-    public ObservableCollection<BlazorTableRowAction> Actions { get; } = new ObservableCollection<BlazorTableRowAction>();
+    public ObservableCollection<BlazorTableRowAction> Actions { get; } = [];
     Dictionary<string, string?> IBlazorComponent.BlazorAttributes { get; } = null!;
-    public ObservableCollection<BlazorTableColumn> Columns { get; } = new ObservableCollection<BlazorTableColumn>();
+    public ObservableCollection<BlazorTableColumn> Columns { get; } = [];
     public string? DataContextName { get; set; }
     string? IBlazorComponent.NameSpace { get; }
 
@@ -77,10 +77,10 @@ public sealed class BlazorTableColumn(string bindingName, string title) : Notify
 
 public sealed class BlazorTableRowAction(string name, string title) : NotifyPropertyChanged
 {
+    private string _name = name;
     private string? _onClick;
     private string _title = title;
-    private string _name = name;
+    public string Name { get => this._name; set => this.SetProperty(ref this._name, value); }
     public string? OnClick { get => this._onClick; set => this.SetProperty(ref this._onClick, value); }
     public string Title { get => this._title; set => this.SetProperty(ref this._title, value); }
-    public string Name { get => this._name; set => this.SetProperty(ref this._name, value); }
 }

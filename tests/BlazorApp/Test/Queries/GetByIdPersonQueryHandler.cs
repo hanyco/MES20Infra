@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Test.HumanResources.Dtos;
-using Test.HumanResources.Dtos;
 
 namespace Test.HumanResources.Queries
 {

@@ -8,7 +8,8 @@ public record PropertyActor(in string Type,
         in string? Caption,
         in MemberAttributes? AccessModifier = null,
         in PropertyAccessor? Getter = null,
-        in PropertyAccessor? Setter = null)
+        in PropertyAccessor? Setter = null,
+        in string? BindingName = null)
 {
     public PropertyInfo ToPropertyInfo()
         => new(this.Type, this.Name, this.AccessModifier, this.Getter, this.Setter);

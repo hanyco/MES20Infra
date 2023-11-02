@@ -16,9 +16,13 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2;
+using Library.CodeGeneration.v2.Back;
 using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
+
+using Services.Helpers;
 
 using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
 
@@ -32,8 +36,10 @@ using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
-internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodingService, IBlazorPageCodingService
+internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine codeGeneratorEngine) : IBlazorComponentCodingService, IBlazorPageCodingService
 {
+    private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGeneratorEngine;
+    private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
     private readonly ILogger _logger = logger;
 
     public bool ControlTypeHasPropertiesPage(ControlType controlType) =>
@@ -68,7 +74,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
             var component = createComponent(model);
             _ = processBackendActions(model, component);
             _ = processFrontActions(model, component);
-            var codes = component.GenerateCodes(CodeCategory.Component, arguments);
+            var codes = component.GenerateCodes(CodeCategory.Component, arguments).AddRange(this.GenerateModelConverterCode());
             return Result<Codes>.CreateSuccess(codes);
         }
         catch (Exception ex)
@@ -237,7 +243,7 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                 switch (action)
                 {
                     case ButtonViewModelBase button:
-                        var args = model.IsGrid && button.Placement == Placement.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
+                        var args = button.Placement == Placement.RowButton ? new[] { new MethodArgument(idType, "id") } : null;
                         result.Actions.Add(new ButtonActor(
                             button.Name,
                             button.Placement == Placement.RowButton,
@@ -248,20 +254,25 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                         break;
                 }
             }
+            
+            result.Properties.Clear();
+            foreach (var property in model.Properties)
+            {
+                result.Properties.Add(new PropertyActor(null!, property.Name!, property.Caption, BindingName: property.Property?.DbObject?.Name));
+            }
             return result;
         }
 
-        static BlazorComponent processBackendActions(in UiViewModel model, in BlazorComponent result)
+        BlazorComponent processBackendActions(in UiViewModel model, in BlazorComponent result)
         {
             foreach (var action in model.Actions.OfType<BackElement>())
             {
                 switch (action)
                 {
                     case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject?.Name != null:
-                        var entityName = StringHelper.Pluralize(load.CqrsSegregate.DbObject.Name);
-                        result.Actions.Add(new(GetAll_OnCallingMethodName(entityName), false));
-                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, body: GetAll_CallMethodBody(entityName)));
-                        result.Actions.Add(new(GetAll_OnCalledMethodName(entityName), false));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, body: this.GetAll_CallMethodBody(load.CqrsSegregate)));
+                        result.AdditionalUsings.Add(load.CqrsSegregate.CqrsNameSpace);
+                        result.AdditionalUsings.Add(load.CqrsSegregate.DtoNameSpace);
                         break;
 
                     case CqrsLoadViewModel load:
@@ -276,34 +287,10 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
                 }
             }
             return result;
-
-            static string GetAll_OnCallingMethodName(string entityName) =>
-                $"OnCallingGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams)";
-            static string GetAll_OnCalledMethodName(string entityName) =>
-                $"OnCalledGetAll{entityName}Query(Dtos.GetAll{entityName}QueryParams cqParams, Queries.GetAll{entityName}QueryResult cqResult)";
         }
 
         static BlazorComponent processFrontActions(UiViewModel model, BlazorComponent component) =>
             model.IsGrid ? createGrid(model, component) : createForm(model, component);
-
-        static string GetAll_CallMethodBody(string entityName) =>
-            new StringBuilder()
-                .AppendLine($"// Setup segregation parameters")
-                .AppendLine($"var paramsParams = new Dtos.GetAll{entityName}Params();")
-                .AppendLine($"var cqParams = new Dtos.GetAll{entityName}QueryParams(paramsParams);")
-                .AppendLine($"")
-                //.AppendLine($"// Let the developer know what's going on.")
-                //.AppendLine($"cqParams = OnCallingGetAll{entityName}Query(cqParams);")
-                .AppendLine($"")
-                .AppendLine($"// Invoke the query handler to retrieve all entities")
-                .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<Dtos.GetAll{entityName}QueryResult>(cqParams);")
-                .AppendLine($"")
-                //.AppendLine($"// Let's inform the developer about the result.")
-                //.AppendLine($"cqResult = OnCalledGetAll{entityName}Query(cqParams, cqResult);")
-                .AppendLine($"")
-                .AppendLine($"// Now, set the data context.")
-                .AppendLine($"this.DataContext = cqResult.Result;") //x .To{StringHelper.Singularize(entityName)}Dto()
-                .ToString();
     }
 
     public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments)
@@ -361,4 +348,77 @@ internal sealed class BlazorCodingService(ILogger logger) : IBlazorComponentCodi
          .NotNull(x => x.Module)
          //.NotNull(x => x.Route)
          .Build();
+
+    private IEnumerable<Code> GenerateModelConverterCode()
+    {
+        while (this._conversionSubjects.TryDequeue(out var conversionSubject))
+        {
+            var srcType = TypePath.New(conversionSubject.ResultDto.Name, conversionSubject.ResultDto.NameSpace); // CQRS Output
+            var dstType = TypePath.New(conversionSubject.ResultDto.GetRevertedDtoName(), conversionSubject.ResultDto.NameSpace); // Page ViewModel
+
+            var nameSpace = INamespace.New(conversionSubject.DtoNameSpace!);
+            var converterClass = new Class("ModelConverter")
+            {
+                AccessModifier = AccessModifier.Public,
+                InheritanceModifier = InheritanceModifier.Static | InheritanceModifier.Partial
+            };
+            var singleConverterMethod = new Method("ToViewModel")
+            {
+                IsExtension = true,
+                Body = convertSingle_MethodBody(dstType.Name, "model", conversionSubject.ResultDto.Properties.Select(x => x.Name)),
+                Parameters =
+                {
+                    (srcType, "model")
+                },
+                ReturnType = dstType
+            };
+            var listConverterMethod = new Method(singleConverterMethod.Name)
+            {
+                IsExtension = true,
+                Body = convertEnumerable_MethodBody(singleConverterMethod.Name, "models"),
+                Parameters =
+                {
+                    (TypePath.New(typeof(IEnumerable<>), [srcType]), "models")
+                },
+                ReturnType = TypePath.New(typeof(List<>), [dstType])
+            };
+            _ = converterClass.AddMember(singleConverterMethod, listConverterMethod);
+            _ = nameSpace.AddType(converterClass)
+                .UsingNamespaces.AddRange(srcType.GetNameSpaces()).AddRange(dstType.GetNameSpaces());
+
+            var statement = this._codeGeneratorEngine.Generate(nameSpace);
+            var fileName = $"{converterClass.Name}.{srcType.Name}.{dstType.Name}.partial.cs";
+            var result = Code.New(converterClass.Name, Languages.CSharp, statement, true, fileName)
+                .With(x => x.props().Category = CodeCategory.Converter);
+            yield return result;
+        }
+
+        static string convertSingle_MethodBody(string dstClassName, string argName, IEnumerable<string?> propNames) =>
+            new StringBuilder()
+                .AppendLine($"var result = new {dstClassName}")
+                .AppendLine($"{{")
+                .AppendAllLines(propNames, propName => $"{propName} = {argName}.{propName},")
+                .AppendLine($"}};")
+                .AppendLine($"return result;")
+                .ToString();
+        static string convertEnumerable_MethodBody(string singleConverterMethodName, string argName) =>
+            $"return {argName}.Select({singleConverterMethodName}).ToList();";
+    }
+
+    private string GetAll_CallMethodBody(CqrsViewModelBase cqrsViewModel)
+    {
+        this._conversionSubjects.Enqueue(cqrsViewModel);
+        return new StringBuilder()
+                    .AppendLine($"// Setup segregation parameters")
+                    .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}();")
+                    .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
+                    .AppendLine($"")
+                    .AppendLine($"// Invoke the query handler to retrieve all entities")
+                    .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
+                    .AppendLine($"")
+                    .AppendLine($"")
+                    .AppendLine($"// Now, set the data context.")
+                    .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
+                    .ToString();
+    }
 }

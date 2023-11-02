@@ -1,3 +1,1 @@
-﻿using System.Runtime.Versioning;
-
-//[assembly:RequiresPreviewFeatures]
+﻿global using Test.HumanResources.Dtos;

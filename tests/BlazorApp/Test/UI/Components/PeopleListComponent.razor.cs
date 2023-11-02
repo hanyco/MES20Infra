@@ -1,3 +1,11 @@
+namespace Test.HumanResources.Queries
+{
+}
+
+namespace Test.HumanResources.Dtos
+{
+}
+
 namespace Test.HumanResources
 {
     using System;
