@@ -285,8 +285,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         addFieldsToMainClass(mainClassType);
         addFieldsToPartClass(partClassType);
 
-        //! I'm not sure it's required.
-        //x addPropertiesToPartClass(partClassType);
+        addPropertiesToPartClass(partClassType);
         addParametersToPartClass(partClassType);
 
         addChildren(args, mainClassType, partClassType);
@@ -339,7 +338,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addPropertiesToPartClass(in CodeTypeDeclaration partClassType)
         {
-            foreach (var property in this.Properties.Where(x=>x.Caption.IsNullOrEmpty())
+            foreach (var property in this.Properties.Where(x=>x.Caption.IsNullOrEmpty()))
             {
                 _ = partClassType.AddProperty(property.ToPropertyInfo());
             }
