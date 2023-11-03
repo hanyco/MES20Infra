@@ -21,6 +21,7 @@ using Library.CodeGeneration.v2.Back;
 using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
+using Library.Wpf.Bases;
 
 using Services.Helpers;
 
@@ -74,6 +75,10 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
             var component = createComponent(model);
             _ = processBackendActions(model, component);
             _ = processFrontActions(model, component);
+            foreach (var parameter in model.Parameters)
+            {
+                component.Parameters.Add(new(parameter.Type, parameter.Name));
+            }
             var codes = component.GenerateCodes(CodeCategory.Component, arguments).AddRange(this.GenerateModelConverterCode());
             return Result<Codes>.CreateSuccess(codes);
         }

@@ -346,6 +346,7 @@ internal sealed partial class FunctionalityService
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(addActions)
+            .Then(addParameters)
             .RunAsync(token);
 
         void createViewModel(CreationData data)
@@ -404,6 +405,12 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(onLoad);
+        }
+
+        static void addParameters(CreationData data)
+        {
+            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New<long>(), "EntityId"));
+            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("Microsoft.AspNetCore.Components.EventCallback<long>"), "EntityIdChanged"));
         }
     }
 

@@ -30,10 +30,15 @@ namespace Test.HumanResources
             await this.OnLoadAsync();
         }
 
+        [Microsoft.AspNetCore.Components.Parameter]
+        public System.Int64? EntityId { get; set; }
+
+        [Microsoft.AspNetCore.Components.Parameter]
+        public Microsoft.AspNetCore.Components.EventCallback<long>? EntityIdChanged { get; set; }
+
         public async void SaveButton_OnClick()
         {
-            this.ValidateForm();
-            var dto = this.DataContext;
+            
         }
 
         public void BackButton_OnClick()
