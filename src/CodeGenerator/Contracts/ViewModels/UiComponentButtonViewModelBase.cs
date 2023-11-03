@@ -89,12 +89,13 @@ public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, Front
 {
     private UiComponentViewModel? _component;
     private ControlType? _controlType;
+    private bool _isParameter;
     private PropertyViewModel? _property;
-
     public UiComponentViewModel Component { get => this._component ??= new(); set => this.SetProperty(ref this._component, value); }
 
     public ControlType? ControlType { get => this._controlType; set => this.SetProperty(ref this._controlType, value); }
 
+    public bool IsParameter { get => this._isParameter; set => this.SetProperty(ref this._isParameter, value); }
     public override string? Name => this.Property?.Name;
 
     public PropertyViewModel? Property

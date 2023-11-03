@@ -73,7 +73,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
             SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "CodeGen.UnitTests" },
             Name = "PersonDto"
         };
-        _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
+        model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
                 new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),
                 new("Name", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),

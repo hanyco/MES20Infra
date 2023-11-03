@@ -21,7 +21,7 @@ public sealed class SqlStatementCodeGeneratorTest(ISqlStatementCodeGenerator cod
         {
             DbObject = new("Person", schema: "dto"),
         };
-        _ = model.Properties.AddRange(new PropertyViewModel[]
+        model.Properties.AddRange(new PropertyViewModel[]
         {
             new()
             {

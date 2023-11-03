@@ -338,7 +338,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addPropertiesToPartClass(in CodeTypeDeclaration partClassType)
         {
-            foreach (var property in this.Properties.Where(x=>x.Caption.IsNullOrEmpty()))
+            foreach (var property in this.Properties.Where(x => x.Caption.IsNullOrEmpty()))
             {
                 _ = partClassType.AddProperty(property.ToPropertyInfo());
             }

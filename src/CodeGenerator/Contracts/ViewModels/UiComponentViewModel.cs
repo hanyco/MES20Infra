@@ -39,7 +39,7 @@ public class UiComponentViewModel : UiComponentViewModelBase
 
     public ObservableCollection<IUiComponentContent> Actions { get; } = [];
 
-    public long? UiPageComponentId { get; set; }
-
     public ObservableCollection<UiPropertyViewModel> Properties { get; } = [];
+
+    public long? UiPageComponentId { get; set; }
 }

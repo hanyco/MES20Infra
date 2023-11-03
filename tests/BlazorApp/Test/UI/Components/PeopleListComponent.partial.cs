@@ -17,15 +17,16 @@ namespace Test.HumanResources
 
     public sealed partial class PeopleListComponent
     {
-        public void Edit(long id)
-        {
-            this._navigationManager.NavigateTo("/HumanResources/Person/details" + "/" + id.ToString());
-        }
-
         public void NewButton_OnClick()
         {
             this._navigationManager.NavigateTo("/HumanResources/Person/details");
         }
+
+        public void Edit(long id)
+        {
+            this._navigationManager.NavigateTo($"/HumanResources/Person/details{id.ToString()}");
+        }
+
         protected override async Task OnInitializedAsync()
         {
             // Setup segregation parameters
@@ -37,6 +38,10 @@ namespace Test.HumanResources
             this.DataContext = cqResult.Result.ToViewModel();
             // Call developer's method.
             await this.OnLoadAsync();
+        }
+
+        public PeopleListComponent()
+        {
         }
     }
 }

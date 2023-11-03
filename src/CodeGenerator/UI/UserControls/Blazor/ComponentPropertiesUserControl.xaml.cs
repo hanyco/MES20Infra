@@ -129,7 +129,7 @@ public partial class ComponentPropertiesUserControl
         {
             var grid = new BlazorTable();
             var dto = this._selectedDto;
-            _ = grid.Columns.AddRange(dto.Properties.Select(x => new BlazorTableColumn(x.Name, x.DbObject.Name)).ToArray());
+            grid.Columns.AddRange(dto.Properties.Select(x => new BlazorTableColumn(x.Name, x.DbObject.Name)).ToArray());
 
             var component = grid ?? new();
             ControlPropertiesDialog dlg = new() { MyPage = new BlazorGridPropertiesPage { BlazorGrid = component } };

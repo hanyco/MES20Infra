@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 using Contracts.Services;
@@ -361,7 +362,8 @@ internal sealed partial class FunctionalityService
 
         static void addActions(CreationData data)
         {
-            data.ViewModel.BlazorListPageViewModel.Route = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
+            var pageRoute = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
+            data.ViewModel.BlazorListPageViewModel.Routes.Add(pageRoute);
             // The Save button
             var saveButton = new UiComponentCqrsButtonViewModel()
             {
@@ -384,7 +386,7 @@ internal sealed partial class FunctionalityService
             var cancelButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Back",
-                CodeStatement = $"this._navigationManager.NavigateTo({data.ViewModel.BlazorListPageViewModel.Route.TrimStart("@page").Trim()});",
+                CodeStatement = $"this._navigationManager.NavigateTo({pageRoute.TrimStart("@page").Trim()});",
                 EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
@@ -398,7 +400,7 @@ internal sealed partial class FunctionalityService
             };
             var onLoad = new UiComponentCqrsLoadViewModel
             {
-                CqrsSegregate = data.ViewModel.GetByIdQueryViewModel.With(x=> x.AdditionalSqlStatement.WhereClause = "[Id] = %Id%")
+                CqrsSegregate = data.ViewModel.GetByIdQueryViewModel.With(x => x.AdditionalSqlStatement.WhereClause = "[Id] = %Id%")
             };
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
@@ -439,12 +441,14 @@ internal sealed partial class FunctionalityService
 
         void addActions(CreationData data)
         {
-            var route = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
-            data.ViewModel.BlazorDetailsPageViewModel.Route = route.Insert(route.Length - 1, "/details");
+            var pageName = $"{CommonHelpers.Purify(data.ViewModel.SourceDto.Name!)}/details";
+            var pureRoute = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null);
+            var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null, "{Id:long}");
+            data.ViewModel.BlazorDetailsPageViewModel.Routes.AddRange(pureRoute, routeWithId);
 
             var newButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $"this._navigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()});",
+                CodeStatement = $"this._navigationManager.NavigateTo({pureRoute.TrimStart("@page").Trim()});",
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -454,7 +458,7 @@ internal sealed partial class FunctionalityService
             };
             var editButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $"this._navigationManager.NavigateTo({data.ViewModel.BlazorDetailsPageViewModel.Route.TrimStart("@page").Trim()} + \"/\" + id.ToString());",
+                CodeStatement = $"this._navigationManager.NavigateTo(${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\");",
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
@@ -476,20 +480,25 @@ internal sealed partial class FunctionalityService
             {
                 CqrsSegregate = data.ViewModel.GetAllQueryViewModel
             };
-            _ = data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
+            data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
         }
     }
 
     private Task CreateBlazorListPage(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("ListPage");
-        createPageViewModel(data);
-        return Task.CompletedTask;
+        return TaskRunner.StartWith(data)
+            .Then(createPageViewModel)
+            .Then(addParameters)
+            .RunAsync(token);
 
         void createPageViewModel(CreationData data) =>
             data.ViewModel.BlazorListPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
                 .With(x => x.Name = name)
                 .With(x => x.ClassName = name);
+
+        static void addParameters(CreationData data) => 
+            data.ViewModel.BlazorListPageViewModel.Parameters.Add(new("Id", TypePath.New<long>()));
     }
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)
