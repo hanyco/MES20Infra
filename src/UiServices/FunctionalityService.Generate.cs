@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Windows.Forms;
 using System.Xml.Linq;
 
 using Contracts.Services;
@@ -411,13 +410,17 @@ internal sealed partial class FunctionalityService
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("DetailsPage");
-        createPageViewModel(data);
-        return Task.CompletedTask;
+        return TaskRunner.StartWith(data)
+            .Then(createPageViewModel)
+            .Then(addParameters)
+            .RunAsync(token);
 
         void createPageViewModel(CreationData data) =>
             data.ViewModel.BlazorDetailsPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
                 .With(x => x.Name = name)
                 .With(x => x.ClassName = name);
+        static void addParameters(CreationData data) =>
+            data.ViewModel.BlazorDetailsPageViewModel.Parameters.Add(new(TypePath.New<long>(), "Id"));
     }
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
@@ -489,16 +492,12 @@ internal sealed partial class FunctionalityService
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("ListPage");
         return TaskRunner.StartWith(data)
             .Then(createPageViewModel)
-            .Then(addParameters)
             .RunAsync(token);
 
         void createPageViewModel(CreationData data) =>
             data.ViewModel.BlazorListPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
                 .With(x => x.Name = name)
                 .With(x => x.ClassName = name);
-
-        static void addParameters(CreationData data) => 
-            data.ViewModel.BlazorListPageViewModel.Parameters.Add(new("Id", TypePath.New<long>()));
     }
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)

@@ -24,7 +24,7 @@ namespace Test.HumanResources
 
         public void Edit(long id)
         {
-            this._navigationManager.NavigateTo($"/HumanResources/Person/details{id.ToString()}");
+            this._navigationManager.NavigateTo($"/HumanResources/Person/details/{id.ToString()}");
         }
 
         protected override async Task OnInitializedAsync()

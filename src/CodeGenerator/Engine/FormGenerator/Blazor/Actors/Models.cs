@@ -2,6 +2,8 @@
 
 using Library.CodeGeneration.Models;
 
+using Microsoft.AspNetCore.Components;
+
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 public record PropertyActor(in string Type,
         in string Name,
@@ -9,10 +11,19 @@ public record PropertyActor(in string Type,
         in MemberAttributes? AccessModifier = null,
         in PropertyAccessor? Getter = null,
         in PropertyAccessor? Setter = null,
-        in string? BindingName = null)
+        in string? BindingName = null,
+        bool IsParameter = false)
 {
     public PropertyInfo ToPropertyInfo()
-        => new(this.Type, this.Name, this.AccessModifier, this.Getter, this.Setter);
+    {
+        var result = new PropertyInfo(this.Type, this.Name, this.AccessModifier, this.Getter, this.Setter);
+        if (this.IsParameter)
+        {
+            result.Attributes.Add(typeof(ParameterAttribute).FullName!);
+        }
+
+        return result;
+    }
 }
 
 public class MethodActor(

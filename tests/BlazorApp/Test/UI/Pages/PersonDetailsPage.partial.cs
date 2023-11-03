@@ -22,6 +22,9 @@ namespace Test.HumanResources.Pages
             await this.OnLoadAsync();
         }
 
+        [Microsoft.AspNetCore.Components.Parameter]
+        public System.Int64? Id { get; set; }
+
         public PersonDetailsPage()
         {
         }

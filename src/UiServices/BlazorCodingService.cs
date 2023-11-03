@@ -254,7 +254,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
                         break;
                 }
             }
-            
+
             result.Properties.Clear();
             foreach (var property in model.Properties)
             {
@@ -271,8 +271,8 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
                 {
                     case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject?.Name != null:
                         result.Actions.Add(new(Keyword_AddToOnInitializedAsync, body: this.GetAll_CallMethodBody(load.CqrsSegregate)));
-                        result.AdditionalUsings.Add(load.CqrsSegregate.CqrsNameSpace);
-                        result.AdditionalUsings.Add(load.CqrsSegregate.DtoNameSpace);
+                        _ = result.AdditionalUsings.Add(load.CqrsSegregate.CqrsNameSpace);
+                        _ = result.AdditionalUsings.Add(load.CqrsSegregate.DtoNameSpace);
                         break;
 
                     case CqrsLoadViewModel load:
@@ -306,6 +306,11 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
             : BlazorPage.NewByPageRoute(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Routes))
                 .With(x => x.NameSpace = viewModel.NameSpace)
                 .With(x => x.DataContextType = dataContextType);
+        
+        foreach (var parameter in viewModel.Parameters)
+        {
+            page.Parameters.Add(new(parameter.Type, parameter.Name));
+        }
         _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
 
         var result = page.GenerateCodes(CodeCategory.Page, arguments);

@@ -26,6 +26,6 @@ public sealed class UiPageViewModel : UiComponentViewModelBase
     public bool GenerateUiCode { get => this._generateUiCode; set => this.SetProperty(ref this._generateUiCode, value); }
     public ModuleViewModel Module { get => this._module; set => this.SetProperty(ref this._module, value); }
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
-    public ObservableCollection<(string Name, TypePath Type)> Parameters { get; } = [];
+    public ObservableCollection<(TypePath Type, string Name)> Parameters { get; } = [];
     public ObservableCollection<string> Routes { get; } = [];
 }

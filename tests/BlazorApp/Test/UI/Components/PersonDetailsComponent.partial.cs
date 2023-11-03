@@ -33,6 +33,7 @@ namespace Test.HumanResources
         public async void SaveButton_OnClick()
         {
             this.ValidateForm();
+            var dto = this.DataContext;
         }
 
         public void BackButton_OnClick()
