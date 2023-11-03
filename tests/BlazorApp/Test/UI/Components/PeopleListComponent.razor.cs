@@ -18,9 +18,9 @@ namespace Test.HumanResources
         {
         }
 
-        protected override Task OnLoadAsync()
+        protected override async Task OnLoadAsync()
         {
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
     }
 }

@@ -1,11 +1,3 @@
-namespace Test.HumanResources.Queries
-{
-}
-
-namespace Test.HumanResources.Dtos
-{
-}
-
 namespace Test.HumanResources
 {
     using System;
@@ -14,9 +6,25 @@ namespace Test.HumanResources
 
     public sealed partial class PersonDetailsComponent
     {
-        protected override Task OnLoadAsync()
+        protected override async Task OnLoadAsync()
         {
-            return Task.CompletedTask;
+            if (this.EntityId is { } entityId)
+            {
+                // Setup segregation parameters
+                var @params = new GetByIdPersonParams()
+                {
+                    Id = entityId , 
+                };
+                var cqParams = new Test.HumanResources.Dtos.GetByIdPersonQueryParams(@params);
+                // Invoke the query handler to retrieve all entities
+                var cqResult = await this._queryProcessor.ExecuteAsync<Test.HumanResources.Dtos.GetByIdPersonQueryResult>(cqParams);
+                // Now, set the data context.
+                this.DataContext = cqResult.Result.ToViewModel();
+            }
+            else
+            {
+                this.DataContext = new();
+            }
         }
 
         private void ValidateForm()

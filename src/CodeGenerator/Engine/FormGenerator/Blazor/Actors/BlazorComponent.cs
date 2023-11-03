@@ -83,6 +83,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
                 element.Attributes.Add("DataContext", "@this.DataContext");
             }
             element.Attributes.Add("PageDataContext", "@this.DataContext");
+            element.Attributes.AddRange(this.Attributes);
             return element.GenerateUiCode();
         }
     }

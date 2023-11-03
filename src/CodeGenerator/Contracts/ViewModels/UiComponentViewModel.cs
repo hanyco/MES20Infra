@@ -38,8 +38,10 @@ public class UiComponentViewModel : UiComponentViewModelBase
     public UiBootstrapPositionViewModel Position { get; private set; } = new();
 
     public ObservableCollection<IUiComponentContent> Actions { get; } = [];
+    public ObservableCollection<(string Key, string Value)> Attributes { get; } = [];
 
     public ObservableCollection<UiPropertyViewModel> Properties { get; } = [];
 
     public long? UiPageComponentId { get; set; }
+    public ISet<CqrsViewModelBase> ConversationSubjects { get; } = new HashSet<CqrsViewModelBase>();
 }

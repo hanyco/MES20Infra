@@ -21,7 +21,6 @@ using Library.CodeGeneration.v2.Back;
 using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
-using Library.Wpf.Bases;
 
 using Services.Helpers;
 
@@ -270,12 +269,14 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
 
         BlazorComponent processBackendActions(in UiViewModel model, in BlazorComponent result)
         {
+            model.ConversationSubjects.ForEach(_conversionSubjects.Enqueue);
             foreach (var action in model.Actions.OfType<BackElement>())
             {
                 switch (action)
                 {
-                    case CqrsLoadViewModel load when load.CqrsSegregate?.DbObject?.Name != null:
-                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, body: this.GetAll_CallMethodBody(load.CqrsSegregate)));
+                    case CqrsLoadViewModel load when load.CqrsSegregate is not null:
+                        this._conversionSubjects.Enqueue(load.CqrsSegregate);
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, true, body: ExecuteCqrs_MethodBody(load.CqrsSegregate)));
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.CqrsNameSpace);
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.DtoNameSpace);
                         break;
@@ -284,7 +285,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
                         throw new InvalidOperationValidationException("`OnCqrsLoad` method has not required fields.");
 
                     case CstmLoadViewModel load when load.CodeStatement != null:
-                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, true, load.CodeStatement));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, false, load.CodeStatement));
                         break;
 
                     case CstmLoadViewModel load:
@@ -311,7 +312,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
             : BlazorPage.NewByPageRoute(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Routes))
                 .With(x => x.NameSpace = viewModel.NameSpace)
                 .With(x => x.DataContextType = dataContextType);
-        
+
         foreach (var parameter in viewModel.Parameters)
         {
             page.Parameters.Add(new(parameter.Type, parameter.Name));
@@ -328,6 +329,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
                 .With(x => x.NameSpace = component.NameSpace)
                 .With(x => x.DataContextType = dataContextType)
                 .With(x => x.DataContextProperty = dataContextTypeProperty)
+                .With(x => x.Attributes.AddRange(component.Attributes.Select(x => new KeyValuePair<string, string?>(x.Key, x.Value))))
                 .With(x => x.Position = new(component.Position.Order, component.Position.Row, component.Position.Col, component.Position.ColSpan, component.Position.Offset));
     }
 
@@ -358,6 +360,21 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
          .NotNull(x => x.Module)
          //.NotNull(x => x.Route)
          .Build();
+
+    public string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
+        new StringBuilder()
+            .AppendLine($"// Setup segregation parameters")
+            .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}();")
+            .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
+            .AppendLine($"")
+            .AppendLine($"")
+            .AppendLine($"// Invoke the query handler to retrieve all entities")
+            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
+            .AppendLine($"")
+            .AppendLine($"")
+            .AppendLine($"// Now, set the data context.")
+            .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
+            .ToString();
 
     private IEnumerable<Code> GenerateModelConverterCode()
     {
@@ -413,22 +430,5 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
                 .ToString();
         static string convertEnumerable_MethodBody(string singleConverterMethodName, string argName) =>
             $"return {argName}.Select({singleConverterMethodName}).ToList();";
-    }
-
-    private string GetAll_CallMethodBody(CqrsViewModelBase cqrsViewModel)
-    {
-        this._conversionSubjects.Enqueue(cqrsViewModel);
-        return new StringBuilder()
-                    .AppendLine($"// Setup segregation parameters")
-                    .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}();")
-                    .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
-                    .AppendLine($"")
-                    .AppendLine($"// Invoke the query handler to retrieve all entities")
-                    .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
-                    .AppendLine($"")
-                    .AppendLine($"")
-                    .AppendLine($"// Now, set the data context.")
-                    .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
-                    .ToString();
     }
 }

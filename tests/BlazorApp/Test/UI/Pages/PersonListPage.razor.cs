@@ -6,9 +6,9 @@ namespace Test.HumanResources.Pages
 
     public sealed partial class PersonListPage
     {
-        protected override Task OnLoadAsync()
+        protected override async Task OnLoadAsync()
         {
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
     }
 }

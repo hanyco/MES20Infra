@@ -19,26 +19,18 @@ namespace Test.HumanResources
     {
         protected override async Task OnInitializedAsync()
         {
-            // Setup segregation parameters
-            var @params = new GetByIdPersonParams();
-            var cqParams = new Test.HumanResources.Dtos.GetByIdPersonQueryParams(@params);
-            // Invoke the query handler to retrieve all entities
-            var cqResult = await this._queryProcessor.ExecuteAsync<Test.HumanResources.Dtos.GetByIdPersonQueryResult>(cqParams);
-            // Now, set the data context.
-            this.DataContext = cqResult.Result.ToViewModel();
             // Call developer's method.
             await this.OnLoadAsync();
         }
 
         [Microsoft.AspNetCore.Components.Parameter]
-        public System.Int64? EntityId { get; set; }
+        public long? EntityId { get; set; }
 
         [Microsoft.AspNetCore.Components.Parameter]
-        public Microsoft.AspNetCore.Components.EventCallback<long>? EntityIdChanged { get; set; }
+        public Microsoft.AspNetCore.Components.EventCallback<long?>? EntityIdChanged { get; set; }
 
         public async void SaveButton_OnClick()
         {
-            
         }
 
         public void BackButton_OnClick()

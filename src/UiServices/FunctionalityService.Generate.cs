@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Xml.Linq;
 
 using Contracts.Services;
@@ -357,10 +358,11 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = false;
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorDetailsPageViewModel.DataContext;
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
+            data.ViewModel.BlazorDetailsComponentViewModel.Attributes.Add(new("@bind-EntityId", "this.Id"));
             data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
         }
 
-        static void addActions(CreationData data)
+        void addActions(CreationData data)
         {
             var pageRoute = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
             data.ViewModel.BlazorListPageViewModel.Routes.Add(pageRoute);
@@ -398,19 +400,44 @@ internal sealed partial class FunctionalityService
                     Offset = 1
                 }
             };
-            var onLoad = new UiComponentCqrsLoadViewModel
+            var onLoad = new UiComponentCustomLoadViewModel
             {
-                CqrsSegregate = data.ViewModel.GetByIdQueryViewModel.With(x => x.AdditionalSqlStatement.WhereClause = "[Id] = %Id%")
+                CodeStatement = loadMethodBody(data.ViewModel.GetByIdQueryViewModel),
             };
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(onLoad);
+            data.ViewModel.BlazorDetailsComponentViewModel.ConversationSubjects.Add(data.ViewModel.GetByIdQueryViewModel);
+
+            string loadMethodBody(CqrsViewModelBase cqrsViewModel) =>
+                new StringBuilder()
+                    .AppendLine("if (this.EntityId is { } entityId)")
+                    .AppendLine("{")
+                    .AppendLine($"// Setup segregation parameters")
+                    .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}()")
+                    .AppendLine("{")
+                    .AppendLine("    Id = entityId,")
+                    .AppendLine("};")
+                    .AppendLine("")
+                    .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
+                    .AppendLine($"// Invoke the query handler to retrieve all entities")
+                    .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
+                    .AppendLine($"")
+                    .AppendLine($"")
+                    .AppendLine($"// Now, set the data context.")
+                    .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
+                    .AppendLine("}")
+                    .AppendLine("else")
+                    .AppendLine("{")
+                    .AppendLine("this.DataContext = new();")
+                    .AppendLine("}")
+                    .ToString();
         }
 
         static void addParameters(CreationData data)
         {
-            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New<long>(), "EntityId"));
-            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("Microsoft.AspNetCore.Components.EventCallback<long>"), "EntityIdChanged"));
+            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("long"), "EntityId"));
+            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("Microsoft.AspNetCore.Components.EventCallback<long?>"), "EntityIdChanged"));
         }
     }
 

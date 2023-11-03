@@ -13,7 +13,7 @@ internal static class CqrsHelpers
     TypePath.New($"{Purify(model.Name)}{kind}Handler", model.CqrsNameSpace);
 
     public static TypePath GetParamsParam(this CqrsViewModelBase model) =>
-        TypePath.New($"{Purify(model.ResultDto.Name)}Params", model.ResultDto.NameSpace);
+        TypePath.New($"{Purify(model.ParamsDto.Name)}Params", model.ParamsDto.NameSpace);
 
     public static TypePath GetParamsType(this CqrsViewModelBase model, string kind) =>
             TypePath.New($"{Purify(model.ParamsDto.Name)}{kind}Params", model.ParamsDto.NameSpace);
