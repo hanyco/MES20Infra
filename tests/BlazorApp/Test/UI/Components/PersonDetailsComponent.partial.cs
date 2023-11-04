@@ -31,6 +31,18 @@ namespace Test.HumanResources
 
         public async void SaveButton_OnClick()
         {
+            if(DataContext.Id == default)
+            {
+                var @params = new UpdatePersonParams(this.DataContext);
+                var cqParams = new UpdatePersonQueryParams(@params);
+                var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);
+            }
+            else
+            {
+                var @params = new InsertPersonParams(this.DataContext);
+                var cqParams = new InsertPersonQueryParams(@params);
+                var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);
+            }
         }
 
         public void BackButton_OnClick()

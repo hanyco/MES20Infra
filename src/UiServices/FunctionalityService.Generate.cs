@@ -277,7 +277,7 @@ internal sealed partial class FunctionalityService
 
         // Initialize the steps for the process
         MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
-        //?! ☠ Don't change the sequence of steps ☠
+        //?! ☠ Don't change the sequence of the steps ☠
             MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
@@ -311,7 +311,7 @@ internal sealed partial class FunctionalityService
     }
 
     private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) =>
-        data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
+            data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
             ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
             : Enumerable.Empty<ClaimViewModel>();
 
@@ -367,10 +367,10 @@ internal sealed partial class FunctionalityService
             var pageRoute = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
             data.ViewModel.BlazorListPageViewModel.Routes.Add(pageRoute);
             // The Save button
-            var saveButton = new UiComponentCqrsButtonViewModel()
+            var saveButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Save",
-                CqrsSegregate = data.ViewModel.InsertCommandViewModel,
+                CodeStatement = CodeSnippets.SaveButton_OnClick_Body(),
                 EventHandlerName = "SaveButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
@@ -388,7 +388,7 @@ internal sealed partial class FunctionalityService
             var cancelButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Back",
-                CodeStatement = $"this._navigationManager.NavigateTo({pageRoute.TrimStart("@page").Trim()});",
+                CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart("@page").Trim()),
                 EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
@@ -402,36 +402,12 @@ internal sealed partial class FunctionalityService
             };
             var onLoad = new UiComponentCustomLoadViewModel
             {
-                CodeStatement = loadMethodBody(data.ViewModel.GetByIdQueryViewModel),
+                CodeStatement = CodeSnippets.GetById_LoadMethodBody(data.ViewModel.GetByIdQueryViewModel),
             };
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(onLoad);
-            data.ViewModel.BlazorDetailsComponentViewModel.ConversationSubjects.Add(data.ViewModel.GetByIdQueryViewModel);
-
-            string loadMethodBody(CqrsViewModelBase cqrsViewModel) =>
-                new StringBuilder()
-                    .AppendLine("if (this.EntityId is { } entityId)")
-                    .AppendLine("{")
-                    .AppendLine($"// Setup segregation parameters")
-                    .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}()")
-                    .AppendLine("{")
-                    .AppendLine("    Id = entityId,")
-                    .AppendLine("};")
-                    .AppendLine("")
-                    .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
-                    .AppendLine($"// Invoke the query handler to retrieve all entities")
-                    .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
-                    .AppendLine($"")
-                    .AppendLine($"")
-                    .AppendLine($"// Now, set the data context.")
-                    .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
-                    .AppendLine("}")
-                    .AppendLine("else")
-                    .AppendLine("{")
-                    .AppendLine("this.DataContext = new();")
-                    .AppendLine("}")
-                    .ToString();
+            _ = data.ViewModel.BlazorDetailsComponentViewModel.ConversationSubjects.Add(data.ViewModel.GetByIdQueryViewModel);
         }
 
         static void addParameters(CreationData data)
@@ -485,7 +461,7 @@ internal sealed partial class FunctionalityService
 
             var newButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $"this._navigationManager.NavigateTo({pureRoute.TrimStart("@page").Trim()});",
+                CodeStatement = CodeSnippets.NavigateTo(pureRoute.TrimStart("@page").Trim()),
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -495,7 +471,7 @@ internal sealed partial class FunctionalityService
             };
             var editButton = new UiComponentCustomButtonViewModel
             {
-                CodeStatement = $"this._navigationManager.NavigateTo(${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\");",
+                CodeStatement = CodeSnippets.NavigateTo($"${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\""), //$"this._navigationManager.NavigateTo(${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\");",
                 Caption = "Edit",
                 EventHandlerName = "Edit",
                 Guid = Guid.NewGuid(),
@@ -757,6 +733,39 @@ internal sealed partial class FunctionalityService
 
         void setupSecurity(CreationData data) =>
             data.ViewModel.UpdateCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.UpdateCommandViewModel);
+    }
+
+    [DebuggerStepThrough]
+    private class CodeSnippets
+    {
+        [return: NotNull]
+        public static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
+            new StringBuilder()
+                .AppendLine("if (this.EntityId is { } entityId)")
+                .AppendLine("{")
+                .AppendLine($"// Setup segregation parameters")
+                .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}()")
+                .AppendLine("{")
+                .AppendLine("    Id = entityId,")
+                .AppendLine("};")
+                .AppendLine("")
+                .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
+                .AppendLine($"// Invoke the query handler to retrieve all entities")
+                .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
+                .AppendLine($"")
+                .AppendLine($"")
+                .AppendLine($"// Now, set the data context.")
+                .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
+                .AppendLine("}")
+                .AppendLine("else")
+                .AppendLine("{")
+                .AppendLine("this.DataContext = new();")
+                .AppendLine("}")
+                .ToString();
+
+        [return: NotNull]
+        public static string NavigateTo(string url) => $"this._navigationManager.NavigateTo({url});";
+        internal static string SaveButton_OnClick_Body() => throw new NotImplementedException();
     }
 
     private sealed class CreationData(FunctionalityViewModel result, string sourceDtoName, CancellationTokenSource tokenSource)
