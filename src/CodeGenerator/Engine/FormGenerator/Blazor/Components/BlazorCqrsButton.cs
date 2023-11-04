@@ -104,8 +104,11 @@ public sealed class BlazorCqrsButton(
     string? onClick = null,
     string? body = null,
     ButtonType type = ButtonType.FormButton,
-    string? prefix = null) : BlazorButtonBase<BlazorCqrsButton, ISegregationAction>(id, name, onClick, body, type, prefix), IHasSegregationAction
+    string? prefix = null,
+    string? onClickReturnType = null) : BlazorButtonBase<BlazorCqrsButton, ISegregationAction>(id, name, onClick, body, type, prefix), IHasSegregationAction
 {
+    private readonly string? _onClickReturnType = onClickReturnType;
+
     public override string? OnClick
     {
         get => this.GetAttribute("onclick", isBlazorAttribute: true);
@@ -132,7 +135,7 @@ public sealed class BlazorCqrsButton(
             case IQueryCqrsSegregation query:
                 var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick))
                     , QueryButton_CallQueryMethodBody(dataContextValidatorName, cqrsParamsType, calleeName)
-                    , returnType: "async void");
+                    , returnType: this._onClickReturnType ?? "async void");
                 var queryParameterType = query.Parameter?.Type;
                 var queryCalling = CodeDomHelper.NewMethod(
                     QueryButton_CallingQueryMethodName(calleeName, cqrsParamsType)
@@ -169,7 +172,7 @@ public sealed class BlazorCqrsButton(
             default:
                 throw new NotSupportedException();
         }
-        
+
         static string QueryButton_CallQueryMethodBody(string dataContextValidatorName, string cqrsParamsType, string segregation) =>
             new StringBuilder()
                 .AppendLine($"this.{dataContextValidatorName}()")
@@ -184,7 +187,7 @@ public sealed class BlazorCqrsButton(
     public BlazorCqrsButton SetAction(string name, ICqrsSegregation segregation) =>
         this.Fluent(() => this.Action = new CqrsAction(name, segregation));
 
-    static string CommandButton_CallCommandMethodBody(string dataContextValidatorName, string cqrsParamsType, string cqrsResultType, string segregation) =>
+    private static string CommandButton_CallCommandMethodBody(string dataContextValidatorName, string cqrsParamsType, string cqrsResultType, string segregation) =>
         new StringBuilder()
             .AppendLine($"this.{dataContextValidatorName}();")
             .AppendLine($"var dto = this.DataContext;")

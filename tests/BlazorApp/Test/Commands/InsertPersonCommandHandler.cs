@@ -1,15 +1,14 @@
-#region Created by HanyCo Infrastructure Code Generator with ♥
+using System.Threading.Tasks;
+using Test.HumanResources.Dtos;
 
 namespace Test.HumanResources.Commands
 {
-    using System.Threading.Tasks;
-
     public sealed partial class InsertPersonCommandHandler
     {
-        public async Task<InsertPersonCommandResult> HandleAsync(InsertPersonCommandParameter parameter)
+        public Task<InsertPersonCommandResult> HandleAsync(InsertPersonCommandParams commmand)
         {
-            throw new System.NotImplementedException();
+            var result = new InsertPersonQueryResult(dbResult);
+            return Task.FromResult(result);
         }
     }
 }
-#endregion

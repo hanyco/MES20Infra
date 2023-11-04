@@ -42,6 +42,21 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
     private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
     private readonly ILogger _logger = logger;
 
+    public static string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
+        new StringBuilder()
+            .AppendLine($"// Setup segregation parameters")
+            .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}();")
+            .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
+            .AppendLine($"")
+            .AppendLine($"")
+            .AppendLine($"// Invoke the query handler to retrieve all entities")
+            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
+            .AppendLine($"")
+            .AppendLine($"")
+            .AppendLine($"// Now, set the data context.")
+            .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
+            .ToString();
+
     public bool ControlTypeHasPropertiesPage(ControlType controlType) =>
         controlType switch
         {
@@ -205,7 +220,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
 
             static BlazorCqrsButton createCqrsButton(UiViewModel model, CqrsButtonViewModel cqrsButtonViewModel)
             {
-                var button = new BlazorCqrsButton(name: cqrsButtonViewModel.Name, body: cqrsButtonViewModel.Caption, onClick: cqrsButtonViewModel.EventHandlerName)
+                var button = new BlazorCqrsButton(name: cqrsButtonViewModel.Name, body: cqrsButtonViewModel.Caption, onClick: cqrsButtonViewModel.EventHandlerName, onClickReturnType: cqrsButtonViewModel.ReturnType)
                 {
                     Position = cqrsButtonViewModel.Position.ToBootstrapPosition()
                 };
@@ -269,7 +284,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
 
         BlazorComponent processBackendActions(in UiViewModel model, in BlazorComponent result)
         {
-            model.ConversationSubjects.ForEach(_conversionSubjects.Enqueue);
+            model.ConversationSubjects.ForEach(this._conversionSubjects.Enqueue);
             foreach (var action in model.Actions.OfType<BackElement>())
             {
                 switch (action)
@@ -360,21 +375,6 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
          .NotNull(x => x.Module)
          //.NotNull(x => x.Route)
          .Build();
-
-    public string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
-        new StringBuilder()
-            .AppendLine($"// Setup segregation parameters")
-            .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}();")
-            .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
-            .AppendLine($"")
-            .AppendLine($"")
-            .AppendLine($"// Invoke the query handler to retrieve all entities")
-            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
-            .AppendLine($"")
-            .AppendLine($"")
-            .AppendLine($"// Now, set the data context.")
-            .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
-            .ToString();
 
     private IEnumerable<Code> GenerateModelConverterCode()
     {

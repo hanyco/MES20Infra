@@ -1,15 +1,14 @@
-#region Created by HanyCo Infrastructure Code Generator with ♥
+using System.Threading.Tasks;
+using Test.HumanResources.Dtos;
 
 namespace Test.HumanResources.Commands
 {
-    using System.Threading.Tasks;
-
     public sealed partial class DeletePersonCommandHandler
     {
-        public async Task<DeletePersonCommandResult> HandleAsync(DeletePersonCommandParameter parameter)
+        public Task<DeletePersonCommandResult> HandleAsync(DeletePersonCommandParams commmand)
         {
-            throw new System.NotImplementedException();
+            var result = new DeletePersonQueryResult(dbResult);
+            return Task.FromResult(result);
         }
     }
 }
-#endregion

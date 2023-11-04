@@ -13,7 +13,7 @@ namespace Test.HumanResources
                 // Setup segregation parameters
                 var @params = new GetByIdPersonParams()
                 {
-                    Id = entityId , 
+                    Id = entityId,
                 };
                 var cqParams = new Test.HumanResources.Dtos.GetByIdPersonQueryParams(@params);
                 // Invoke the query handler to retrieve all entities
@@ -28,14 +28,6 @@ namespace Test.HumanResources
         }
 
         private void ValidateForm()
-        {
-        }
-
-        void OnInsertPersonCommandCalling(Test.HumanResources.Dtos.InsertPersonParams parameter)
-        {
-        }
-
-        void OnInsertPersonCommandCalled(Test.HumanResources.Dtos.InsertPersonParams parameter, Test.HumanResources.Dtos.InsertPersonResult result)
         {
         }
     }

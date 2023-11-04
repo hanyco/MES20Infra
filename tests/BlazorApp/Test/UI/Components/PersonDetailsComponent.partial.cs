@@ -29,9 +29,9 @@ namespace Test.HumanResources
         [Microsoft.AspNetCore.Components.Parameter]
         public Microsoft.AspNetCore.Components.EventCallback<long?>? EntityIdChanged { get; set; }
 
-        public async void SaveButton_OnClick()
+        public void SaveButton_OnClick()
         {
-            if(DataContext.Id == default)
+            if (DataContext.Id == default)
             {
                 var @params = new UpdatePersonParams(this.DataContext);
                 var cqParams = new UpdatePersonQueryParams(@params);
