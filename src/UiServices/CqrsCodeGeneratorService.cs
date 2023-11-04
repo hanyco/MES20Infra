@@ -15,7 +15,6 @@ using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;
-using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
 
@@ -230,7 +229,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 {
                     BaseTypes =
                     {
-                        TypePath.New(typeof(ICommand<>), [model.ResultDto.GetSegregateClassName("Command", "Result")]),
+                        TypePath.New(typeof(ICommand), [model.ResultDto.GetSegregateClassName("Command", "Result")]),
                     }
                 }.AddMember(ctor, prop);
                 var nameSpace = INamespace.New(paramsDto.NameSpace)
