@@ -370,7 +370,7 @@ internal sealed partial class FunctionalityService
             var saveButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Save",
-                CodeStatement = CodeSnippets.SaveButton_OnClick_Body(),
+                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(),
                 EventHandlerName = "SaveButton_OnClick",
                 ReturnType = "async void",
                 Guid = Guid.NewGuid(),
@@ -739,7 +739,6 @@ internal sealed partial class FunctionalityService
     [DebuggerStepThrough]
     private class CodeSnippets
     {
-        [return: NotNull]
         public static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
             new StringBuilder()
                 .AppendLine("if (this.EntityId is { } entityId)")
@@ -764,11 +763,10 @@ internal sealed partial class FunctionalityService
                 .AppendLine("}")
                 .ToString();
 
-        [return: NotNull]
         public static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
 
-        public static string SaveButton_OnClick_Body() =>
+        public static string BlazorDetailsComponent_SaveButton_OnClick_Body() =>
             new StringBuilder()
                 .AppendLine("if (DataContext.Id == default)")
                 .AppendLine("{")

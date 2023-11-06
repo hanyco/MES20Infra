@@ -86,21 +86,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             Result<string> createCommandHandler(CqrsCommandViewModel model)
             {
                 var paramName = "command";
-                //// Create query to be used inside the body code.
-                //var bodyQuery = SqlStatementBuilder
-                //    .Select(model.ParamsDto.DbObject.Name!)
-                //    .SetTopCount(model.ResultDto.IsList ? null : 1)
-                //    .Where(ReplaceVariables(model.ParamsDto, model.AdditionalSqlStatement.WhereClause, $"{paramName}.Params"))
-                //    .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact());
-                //// Create body code.
-                //(var sqlMethod, var toListMethod) = model.ResultDto.IsList ?
-                //    (nameof(Sql.Select), ".ToList()") :
-                //    (nameof(Sql.FirstOrDefault), string.Empty);
                 var handlerBody = new StringBuilder()
-                    //.AppendLine($"var dbQuery = $@\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
-                    //.AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetResultParam().Name}>(dbQuery){toListMethod};")
-                    .AppendLine($"var result = new {model.GetResultType("Command").Name}(dbResult);")
-                    .Append($"return Task.FromResult(result);");
+                    .Append($"return Task.FromResult<{model.GetResultType("Command").Name}>(null!);");
 
                 // Create `HandleAsync` method
                 var handleAsyncMethod = new Method(nameof(ICommandHandler<ICommand, string>.HandleAsync))
@@ -113,7 +100,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     },
                     ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.GetResultType("Command").FullPath}>")
                 };
-                // Create `QueryHandler` class
+                // Create `CommandHandler` class
                 var handlerClass = new Class(model.GetHandlerClass("Command"))
                 {
                     AccessModifier = AccessModifier.Public,
@@ -152,26 +139,26 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                         (this.{fld(cmdPcr.Name)}, this.{fld(qryPcr.Name)}) = ({arg(cmdPcr.Name)}, {arg(qryPcr.Name)});
                         this.{fld(dal.Name)} = {arg(dal.Name)};
                         ",
-                };
-                _ = ctor.AddParameter(cmdPcr.Name, arg(cmdPcr.Name));
-                _ = ctor.AddParameter(qryPcr.Name, arg(qryPcr.Name));
-                _ = ctor.AddParameter(dal.Name, arg(dal.Name));
+                }
+                .AddParameter(cmdPcr.Name, arg(cmdPcr.Name))
+                .AddParameter(qryPcr.Name, arg(qryPcr.Name))
+                .AddParameter(dal.Name, arg(dal.Name));
 
-                // Create `QueryHandler` class
+                // Create `CommandHandler` class
+                var paramsType = model.GetParamsType("Command");
+                var resultType = model.GetResultType("Command");
+                var baseType = TypePath.New($"{typeof(ICommandHandler<,>).FullName}", new[] { paramsType.FullPath, resultType.FullPath });
                 var type = new Class(model.GetHandlerClass("Command"))
                 {
                     AccessModifier = AccessModifier.Public,
                     InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
-                };
-                var paramsType = model.GetParamsType("Command");
-                var resultType = model.GetResultType("Command");
-                var baseType = TypePath.New($"{typeof(ICommandHandler<,>).FullName}", new[] { paramsType.FullPath, resultType.FullPath });
-                _ = type.BaseTypes.Add(baseType);
-                _ = type.AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { IsReadOnly = true });
-                _ = type.AddMember(new Field(fld(qryPcr.Name), qryPcr) { IsReadOnly = true });
-                _ = type.AddMember(new Field(fld(dal.Name), dal) { IsReadOnly = true });
-                _ = type.AddMember(ctor);
-
+                }
+                .AddBaseType(baseType)
+                .AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { IsReadOnly = true })
+                .AddMember(new Field(fld(qryPcr.Name), qryPcr) { IsReadOnly = true })
+                .AddMember(new Field(fld(dal.Name), dal) { IsReadOnly = true })
+                .AddMember(ctor);
+                
                 // Create namespace
                 var ns = INamespace.New(model.CqrsNameSpace);
                 _ = ns.Types.Add(type);

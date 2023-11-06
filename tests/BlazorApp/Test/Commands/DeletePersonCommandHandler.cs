@@ -7,8 +7,7 @@ namespace Test.HumanResources.Commands
     {
         public Task<DeletePersonCommandResult> HandleAsync(DeletePersonCommandParams command)
         {
-            var result = new DeletePersonCommandResult(dbResult);
-            return Task.FromResult(result);
+            return Task.FromResult<DeletePersonCommandResult>(null!);
         }
     }
 }
