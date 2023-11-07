@@ -7,8 +7,7 @@ namespace Test.HumanResources.Commands
     {
         public Task<UpdatePersonCommandResult> HandleAsync(UpdatePersonCommandParams command)
         {
-            var result = new UpdatePersonCommandResult(dbResult);
-            return Task.FromResult(result);
+            throw new NotImplementedException();
         }
     }
 }

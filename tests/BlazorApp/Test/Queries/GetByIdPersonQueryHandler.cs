@@ -1,16 +1,14 @@
 using System.Threading.Tasks;
-using Test.HumanResources.Dtos;
 
-namespace Test.HumanResources.Queries
+using Test.HumanResources.Dtos;
+namespace Test.HumanResources.Queries;
+public sealed partial class GetByIdPersonQueryHandler
 {
-    public sealed partial class GetByIdPersonQueryHandler
+    public Task<GetByIdPersonQueryResult> HandleAsync(GetByIdPersonQueryParams query)
     {
-        public Task<GetByIdPersonQueryResult> HandleAsync(GetByIdPersonQueryParams query)
-        {
-            var dbQuery = $@"SELECT TOP (1) [Id], [FirstName], [LastName], [DateOfBirth], [Height]   FROM [Person]";
-            var dbResult = this._sql.FirstOrDefault<GetByIdPersonResult>(dbQuery);
-            var result = new GetByIdPersonQueryResult(dbResult);
-            return Task.FromResult(result);
-        }
+        var dbQuery = $@"SELECT TOP (1) [Id], [FirstName], [LastName], [DateOfBirth], [Height]   FROM [Person]   WHERE ID = {query.Params.Id}";
+        var dbResult = this._sql.FirstOrDefault<GetByIdPersonResult>(dbQuery);
+        var result = new GetByIdPersonQueryResult(dbResult);
+        return Task.FromResult(result);
     }
 }

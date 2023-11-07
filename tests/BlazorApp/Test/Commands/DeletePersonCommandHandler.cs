@@ -1,13 +1,7 @@
-using System.Threading.Tasks;
-using Test.HumanResources.Dtos;
+namespace Test.HumanResources.Commands;
 
-namespace Test.HumanResources.Commands
+public sealed partial class DeletePersonCommandHandler
 {
-    public sealed partial class DeletePersonCommandHandler
-    {
-        public Task<DeletePersonCommandResult> HandleAsync(DeletePersonCommandParams command)
-        {
-            return Task.FromResult<DeletePersonCommandResult>(null!);
-        }
-    }
+    public Task<DeletePersonCommandResult> HandleAsync(DeletePersonCommandParams command) => 
+        Task.FromResult<DeletePersonCommandResult>(null!);
 }

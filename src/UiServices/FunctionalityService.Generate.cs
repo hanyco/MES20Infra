@@ -620,6 +620,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.ViewModel.GetByIdQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
             data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.GetByIdQueryViewModel.AdditionalSqlStatement.WhereClause = "ID = %Id%";
         }
 
         void createParams()
