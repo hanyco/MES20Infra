@@ -124,6 +124,38 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             yield return toCode(model.Name, "Params", createCommandParams(model), true, CodeCategory.Dto);
             yield return toCode(model.Name, "Result", createCommandResult(model), true, CodeCategory.Dto);
 
+            Result<string> createCommandParams(CqrsCommandViewModel model)
+            {
+                var paramsDto = model.ParamsDto;
+                var className = paramsDto.GetSegregateClassName("Command", null);
+                var paramsPropType = TypePath.New(paramsDto.IsList
+                    ? $"IEnumerable<{paramsDto.GetSegregateClassName(null, "Params")}>"
+                    : paramsDto.GetSegregateClassName(null, "Params"));
+
+                var prop = new CodeGenProperty(prp("Params"), paramsPropType);
+                var ctor = new Method(className)
+                {
+                    IsConstructor = true,
+                    Body = $"this.{prop.Name} = {arg(prop.Name)};",
+                    Parameters =
+                    {
+                        (paramsPropType, arg(prop.Name))
+                    }
+                };
+                var type = new Class(className)
+                {
+                    BaseTypes =
+                    {
+                        TypePath.New(typeof(ICommand)),
+                    }
+                }.AddMember(ctor, prop);
+                var nameSpace = INamespace.New(paramsDto.NameSpace)
+                    .AddType(type);
+
+                // Generate code
+                return this._codeGeneratorEngine.Generate(nameSpace);
+            }
+
             Result<string> createCommandHandler(CqrsCommandViewModel model)
             {
                 // Initialize
@@ -158,7 +190,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 .AddMember(new Field(fld(qryPcr.Name), qryPcr) { IsReadOnly = true })
                 .AddMember(new Field(fld(dal.Name), dal) { IsReadOnly = true })
                 .AddMember(ctor);
-                
+
                 // Create namespace
                 var ns = INamespace.New(model.CqrsNameSpace);
                 _ = ns.Types.Add(type);
@@ -189,38 +221,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var type = new Class(className).AddMember(ctor, prop);
                 var nameSpace = INamespace.New(resultDto.NameSpace);
                 _ = nameSpace.Types.Add(type);
-
-                // Generate code
-                return this._codeGeneratorEngine.Generate(nameSpace);
-            }
-
-            Result<string> createCommandParams(CqrsCommandViewModel model)
-            {
-                var paramsDto = model.ParamsDto;
-                var className = paramsDto.GetSegregateClassName("Command", "Params");
-                var paramsPropType = TypePath.New(paramsDto.IsList
-                    ? $"IEnumerable<{paramsDto.GetSegregateClassName(null, "Params")}>"
-                    : paramsDto.GetSegregateClassName(null, "Params"));
-
-                var prop = new CodeGenProperty(prp("Params"), paramsPropType);
-                var ctor = new Method(className)
-                {
-                    IsConstructor = true,
-                    Body = $"this.{prop.Name} = {arg(prop.Name)};",
-                    Parameters =
-                    {
-                        (paramsPropType, arg(prop.Name))
-                    }
-                };
-                var type = new Class(className)
-                {
-                    BaseTypes =
-                    {
-                        TypePath.New(typeof(ICommand), [model.ResultDto.GetSegregateClassName("Command", "Result")]),
-                    }
-                }.AddMember(ctor, prop);
-                var nameSpace = INamespace.New(paramsDto.NameSpace)
-                    .AddType(type);
 
                 // Generate code
                 return this._codeGeneratorEngine.Generate(nameSpace);

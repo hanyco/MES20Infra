@@ -405,7 +405,7 @@ internal sealed class DtoService(
         var propsVm = viewModel.Properties.Copy();
         viewModel.Properties.Clear();
         var dto = this._converter.ToDbEntity(viewModel)!;
-        var props = propsVm.ConvertAll(x => this._converter.ToDbEntity(x).With(x => x.Id = dto.Id));
+        var props = propsVm.Select(x => this._converter.ToDbEntity(x).With(x => x.Id = dto.Id));
         return (dto, props!, propsVm);
     }
 }

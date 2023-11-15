@@ -311,7 +311,7 @@ internal sealed partial class FunctionalityService
     }
 
     private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) =>
-            data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
+        data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
             ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
             : Enumerable.Empty<ClaimViewModel>();
 
@@ -740,8 +740,24 @@ internal sealed partial class FunctionalityService
     [DebuggerStepThrough]
     private class CodeSnippets
     {
-        public static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
+        public static string BlazorDetailsComponent_SaveButton_OnClick_Body() =>
             new StringBuilder()
+                .AppendLine("if (DataContext.Id == default)")
+                .AppendLine("{")
+                .AppendLine("    var @params = new UpdatePersonParams(this.DataContext);")
+                .AppendLine("    var cqParams = new UpdatePersonCommandParams(@params);")
+                .AppendLine("    var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);")
+                .AppendLine("}")
+                .AppendLine("else")
+                .AppendLine("{")
+                .AppendLine("    var @params = new InsertPersonParams(this.DataContext);")
+                .AppendLine("    var cqParams = new InsertPersonCommandParams(@params);")
+                .AppendLine("    var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);")
+                .AppendLine("}")
+                .ToString();
+
+        public static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
+                    new StringBuilder()
                 .AppendLine("if (this.EntityId is { } entityId)")
                 .AppendLine("{")
                 .AppendLine($"// Setup segregation parameters")
@@ -766,22 +782,6 @@ internal sealed partial class FunctionalityService
 
         public static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
-
-        public static string BlazorDetailsComponent_SaveButton_OnClick_Body() =>
-            new StringBuilder()
-                .AppendLine("if (DataContext.Id == default)")
-                .AppendLine("{")
-                .AppendLine("    var @params = new UpdatePersonParams(this.DataContext);")
-                .AppendLine("    var cqParams = new UpdatePersonQueryParams(@params);")
-                .AppendLine("    var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);")
-                .AppendLine("}")
-                .AppendLine("else")
-                .AppendLine("{")
-                .AppendLine("    var @params = new InsertPersonParams(this.DataContext);")
-                .AppendLine("    var cqParams = new InsertPersonQueryParams(@params);")
-                .AppendLine("    var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);")
-                .AppendLine("}")
-                .ToString();
     }
 
     private sealed class CreationData(FunctionalityViewModel result, string sourceDtoName, CancellationTokenSource tokenSource)
