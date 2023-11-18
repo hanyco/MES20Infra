@@ -8,7 +8,7 @@ using Library.Interfaces;
 
 namespace Contracts.Services;
 
-public interface ICqrsCodeGeneratorService : IBusinessService, IAsyncCodeGenerator<CqrsViewModelBase, CqrsCodeGenerateCodesConfig>
+public interface ICqrsCodeGeneratorService : IBusinessService, ICodeGenerator<CqrsViewModelBase, CqrsCodeGenerateCodesConfig>
 {
 }
 

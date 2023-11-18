@@ -112,7 +112,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         _ = this.ViewModel.ParamsDto.Properties.ClearAndAddRange(props);
         props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
-        var codes = await this._codeGeneratorService.GenerateCodesAsync(this.ViewModel);
+        var codes = this._codeGeneratorService.GenerateCodes(this.ViewModel);
         this.ComponentCodeResultUserControl.Codes = codes;
         this.ResultsTabItem.IsSelected = true;
     }
@@ -199,7 +199,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
     private async void SaveAllToDiskButton_Click(object sender, RoutedEventArgs e)
     {
         _ = this.ViewModel.NotNull();
-        var codes = await this._codeGeneratorService.GenerateCodesAsync(this.ViewModel);
+        var codes = this._codeGeneratorService.GenerateCodes(this.ViewModel);
         _ = await SourceCodeHelper.SaveToFileAskAsync(codes);
     }
 

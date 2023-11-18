@@ -1,11 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
 
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
@@ -17,6 +20,9 @@ using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
+using Library.Wpf.Bases;
+
+using Newtonsoft.Json.Linq;
 
 using Services.Helpers;
 
@@ -24,168 +30,198 @@ namespace Services;
 
 internal sealed partial class FunctionalityService
 {
-    public async Task<Result<Codes>> GenerateCodesAsync(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null, CancellationToken token = default)
+    public Result<Codes> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null)
     {
-        // Check if viewModel is not null.
         Check.MustBeArgumentNotNull(viewModel);
-
         // Determine whether to update existing codes or generate new ones.
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : [];
 
-        // Generate codes asynchronously and combine the results.
-        var results = await generateCodes(viewModel, codeResult, token);
+        var scope = ActionScope.Begin(this.Logger, "Generating Functionality code.");
+        try
+        {
+            var results = generateCodes(viewModel, codeResult);
+            scope.End("Generated Functionality code.");
 
-        // Combine generated results if available, or return a failure message.
-        return results.Any()
-            ? Result<Codes>.Combine(results, Codes.Combine)
-            : Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
+            return results.Any()
+                ? Result<Codes>.Combine(results, Codes.Combine)
+                : Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
+        }
+        catch (Exception ex)
+        {
+            var result = Result<Codes>.CreateFailure(ex, Codes.Empty);
+            scope.End(result);
+            return result;
+        }
 
-        // Internal method to generate codes for various components and view models.
-        async Task<IEnumerable<Result<Codes>>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes, CancellationToken token)
+        IEnumerable<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes)
         {
             var result = new List<Result<Codes>>();
 
-            // Generate codes for SourceDto if available.
             if (viewModel.SourceDto != null)
             {
-                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.SourceDto));
+                this.Logger.Debug($"Generating Functionality code for {viewModel.SourceDto}");
+                var codeGenRes = addToResult(this._dtoCodeService.GenerateCodes(viewModel.SourceDto));
                 if (!codeGenRes)
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.SourceDto}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.SourceDto}");
                 codes.SourceDtoCodes = codeGenRes;
             }
 
-            // Generate codes for GetAllQueryViewModel if available.
             if (viewModel.GetAllQueryViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.GetAllQueryViewModel, token: token);
+                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
+                var codeGenRes = generateAllCodesAsync(viewModel.GetAllQueryViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.SourceDto}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
                 codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
             }
 
-            // Generate codes for GetByIdQueryViewModel if available.
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.GetByIdQueryViewModel, token: token);
+                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
+                var codeGenRes = generateAllCodesAsync(viewModel.GetByIdQueryViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.GetByIdQueryViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.GetByIdQueryViewModel}");
                 codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
             }
 
-            // Generate codes for InsertCommandViewModel if available.
             if (viewModel.InsertCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.InsertCommandViewModel, token: token);
+                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
+                var codeGenRes = generateAllCodesAsync(viewModel.InsertCommandViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.InsertCommandViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.InsertCommandViewModel}");
                 codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
-            // Generate codes for UpdateCommandViewModel if available.
             if (viewModel.UpdateCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.UpdateCommandViewModel, token: token);
+                this.Logger.Debug($"Generating Functionality code for {viewModel.UpdateCommandViewModel}");
+                var codeGenRes = generateAllCodesAsync(viewModel.UpdateCommandViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.UpdateCommandViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.UpdateCommandViewModel}");
                 codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
-            // Generate codes for DeleteCommandViewModel if available.
             if (viewModel.DeleteCommandViewModel != null)
             {
-                var codeGenRes = await gatherAllCodesAsync(viewModel.DeleteCommandViewModel, token: token);
+                this.Logger.Debug($"Generating Functionality code for {viewModel.DeleteCommandViewModel}");
+                var codeGenRes = generateAllCodesAsync(viewModel.DeleteCommandViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.DeleteCommandViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.DeleteCommandViewModel}");
                 codes.DeleteCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
-            // Generate codes for BlazorListPageViewModel if available.
             if (viewModel.BlazorListPageViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel));
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel}");
+                var codeGenRes = addToResult(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel));
                 if (!codeGenRes)
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorListPageViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel}");
                 codes.BlazorListPageCodes = codeGenRes;
             }
 
-            // Generate codes for BlazorListPageDataContext if available.
             if (viewModel.BlazorListPageViewModel?.DataContext != null)
             {
-                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext));
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel.DataContext}");
+                var codeGenRes = addToResult(this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext));
                 if (!codeGenRes)
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorListPageViewModel.DataContext}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel.DataContext}");
                 codes.BlazorListPageDataContextCodes = codeGenRes;
             }
 
-            // Generate codes for BlazorDetailsPageViewModel if available.
             if (viewModel.BlazorDetailsPageViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel));
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel}");
+                var codeGenRes = addToResult(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel));
                 if (!codeGenRes)
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorDetailsPageViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel}");
                 codes.BlazorDetailsPageCodes = codeGenRes;
             }
 
-            // Generate codes for BlazorDetailsPageDataContext if available.
             if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
             {
-                var codeGenRes = addToList(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel.DataContext}");
+                var codeGenRes = addToResult(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
                 if (!codeGenRes)
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorDetailsPageViewModel.DataContext}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel.DataContext}");
                 codes.BlazorListPageDataContextCodes = codeGenRes;
             }
 
-            // Generate codes for BlazorListComponentViewModel if available.
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel));
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListComponentViewModel}");
+                var codeGenRes = addToResult(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel));
                 if (!codeGenRes)
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorListComponentViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListComponentViewModel}");
                 codes.BlazorListComponentCodes = codeGenRes;
             }
 
-            // Generate codes for BlazorDetailsComponentViewModel if available.
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                var codeGenRes = addToList(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsComponentViewModel}");
+                var codeGenRes = addToResult(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
                 if (!codeGenRes)
                 {
+                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorDetailsComponentViewModel}. Error: {codeGenRes}");
                     return result;
                 }
 
+                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsComponentViewModel}");
                 codes.BlazorDetailsComponentCodes = codeGenRes;
             }
 
@@ -193,25 +229,35 @@ internal sealed partial class FunctionalityService
 
             // Internal method to add a code result to the result list.
             [DebuggerStepThrough]
-            Result<Codes> addToList(Result<Codes> codeResult)
+            Result<Codes> addToResult(Result<Codes> codeResult) =>
+                codeResult.Fluent(result.Add);
+
+            IEnumerable<Result<Codes>> generateAllCodesAsync(CqrsViewModelBase cqrsViewModel)
             {
-                result.Add(codeResult);
-                return codeResult;
+                // Generate the codes of CQRS parameters.
+                var paramsDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ParamsDto);
+                // Generate the codes of CQRS result.
+                var resultDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto);
+                // Generate the codes of CQRS handler.
+                var handlerCodeResult = this._cqrsCodeService.GenerateCodes(cqrsViewModel);
+
+                yield return addToResult(paramsDtoCodeResult);
+                yield return addToResult(resultDtoCodeResult);
+                yield return addToResult(handlerCodeResult);
             }
 
-            async Task<List<Result<Codes>>> gatherAllCodesAsync(CqrsViewModelBase cqrsViewModel, CancellationToken token)
-            {
-                var getAllCodes = new List<Result<Codes>>
-                {
-                    // Generate the codes of CQRS parameters.
-                    addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ParamsDto)),
-                    // Generate the codes of CQRS result.
-                    addToList(this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto)),
-                    // Generate the codes of CQRS handler.
-                    addToList(await this._cqrsCodeService.GenerateCodesAsync(cqrsViewModel, token: token))
-                };
-                return getAllCodes;
-            }
+            //Result<Codes> generateCodeFor<TViewModel>(ICodeGenerator<TViewModel, GenerateCodesParameters> generator, TViewModel model, [CallerArgumentExpression(nameof(model))] string? name = null)
+            //{
+            //    this.Logger.Debug($"Generating Functionality code for {name}");
+            //    var codeGenRes = addToResult(generator.GenerateCodes(model));
+            //    if (!codeGenRes)
+            //    {
+            //        this.Logger.Debug($"Not generated Functionality code for {name}. Error: {codeGenRes}");
+            //    }
+            //    else
+            //        this.Logger.Debug($"Generating Functionality code for {name}");
+            //    return codeGenRes;
+            //}
         }
     }
 
@@ -261,6 +307,7 @@ internal sealed partial class FunctionalityService
         return result!;
 
         // Get the title for the description
+        [DebuggerStepThrough]
         ProgressData getTitle(in string description) =>
             new(Description: description, Sender: nameof(FunctionalityService));
 
@@ -294,6 +341,7 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"));
 
         // Finalize the process
+        [DebuggerStepThrough]
         static string getResultMessage(in Result result, CancellationToken token)
         {
             if (!result.Message.IsNullOrEmpty())
@@ -312,14 +360,17 @@ internal sealed partial class FunctionalityService
         }
     }
 
+    [DebuggerStepThrough]
     private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) =>
         data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
             ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
             : Enumerable.Empty<ClaimViewModel>();
 
+    [DebuggerStepThrough]
     private static string GetNameSpace(CreationData data) =>
         data.ViewModel.SourceDto.NameSpace;
 
+    [DebuggerStepThrough]
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
         // Create an initial DTO based on the input data
@@ -343,6 +394,7 @@ internal sealed partial class FunctionalityService
         }
     }
 
+    [DebuggerStepThrough]
     private static string? ReplaceVariables(in DtoViewModel paramsDto, in string? statement, in string paramName)
     {
         if (statement.IsNullOrEmpty())
@@ -558,7 +610,7 @@ internal sealed partial class FunctionalityService
         void createParams(CreationData data)
         {
             data.ViewModel.DeleteCommandViewModel.ParamsDto = RawDto(data, true);
-            data.ViewModel.DeleteCommandViewModel.ParamsDto.Name = $"{name}Params";
+            data.ViewModel.DeleteCommandViewModel.ParamsDto.Name = $"{name}";
             data.ViewModel.DeleteCommandViewModel.ParamsDto.IsParamsDto = true;
         }
 
@@ -583,6 +635,7 @@ internal sealed partial class FunctionalityService
             .Then(createViewModel)
             .Then(createParams)
             .Then(createResult)
+            .Then(createHandleMethodBody)
             .Then(setupSecurity)
             .RunAsync(token);
 
@@ -596,14 +649,13 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
-            data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetAllQueryViewModel);
             data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
         }
 
         void createParams(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ParamsDto = RawDto(data, false);
-            data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{name}Params";
+            data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{name}";
             data.ViewModel.GetAllQueryViewModel.ParamsDto.IsParamsDto = true;
         }
 
@@ -614,6 +666,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }
+        static void createHandleMethodBody(CreationData data) =>
+            data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetAllQueryViewModel, "ID = %Id%");
 
         void setupSecurity(CreationData data) =>
             data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetAllQueryViewModel);
@@ -626,6 +680,7 @@ internal sealed partial class FunctionalityService
             .Then(createViewModel)
             .Then(createParams)
             .Then(createResult)
+            .Then(createHandleMethodBody)
             .Then(setupSecurity)
             .RunAsync(token);
 
@@ -640,14 +695,12 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.ViewModel.GetByIdQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
             data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
-            data.ViewModel.GetByIdQueryViewModel.AdditionalSqlStatement.WhereClause = "ID = %Id%";
-            data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetByIdQueryViewModel);
         }
 
         void createParams()
         {
             data.ViewModel.GetByIdQueryViewModel.ParamsDto = RawDto(data, false);
-            data.ViewModel.GetByIdQueryViewModel.ParamsDto.Name = $"{name}Params";
+            data.ViewModel.GetByIdQueryViewModel.ParamsDto.Name = $"{name}";
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQueryViewModel.ParamsDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
         }
@@ -661,6 +714,9 @@ internal sealed partial class FunctionalityService
 
         void setupSecurity(CreationData data) =>
             data.ViewModel.GetByIdQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetByIdQueryViewModel);
+
+        static void createHandleMethodBody(CreationData data) =>
+            data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetByIdQueryViewModel, "ID = %Id%");
     }
 
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
@@ -692,7 +748,7 @@ internal sealed partial class FunctionalityService
         void createParams(CreationData data)
         {
             data.ViewModel.InsertCommandViewModel.ParamsDto = RawDto(data, true);
-            data.ViewModel.InsertCommandViewModel.ParamsDto.Name = $"{name}Params";
+            data.ViewModel.InsertCommandViewModel.ParamsDto.Name = $"{name}";
             data.ViewModel.InsertCommandViewModel.ParamsDto.IsParamsDto = true;
             var idProp = data.ViewModel.InsertCommandViewModel.ParamsDto.Properties.FirstOrDefault(y => y.Name?.EqualsTo("id") is true);
             if (idProp != null)
@@ -742,7 +798,7 @@ internal sealed partial class FunctionalityService
         void createParamsAsync(CreationData data)
         {
             data.ViewModel.UpdateCommandViewModel.ParamsDto = RawDto(data, true);
-            data.ViewModel.UpdateCommandViewModel.ParamsDto.Name = $"{name}Params";
+            data.ViewModel.UpdateCommandViewModel.ParamsDto.Name = $"{name}";
             data.ViewModel.UpdateCommandViewModel.ParamsDto.IsParamsDto = true;
         }
 
@@ -758,7 +814,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.UpdateCommandViewModel);
     }
 
-    [DebuggerStepThrough]
     private class CodeSnippets
     {
         public static string BlazorDetailsComponent_SaveButton_OnClick_Body() =>
@@ -775,30 +830,33 @@ internal sealed partial class FunctionalityService
                 .AppendLine("    var cqParams = new InsertPersonCommandParams(@params);")
                 .AppendLine("    var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);")
                 .AppendLine("}")
-                .ToString();
+                .Build();
 
-        public static string CreateHandleMethodBody(CqrsQueryViewModel model)
+        public static string CreateHandleMethodBody(CqrsQueryViewModel model, string? additionalWhereClause)
         {
             // Create query to be used inside the body code.
             var bodyQuery = SqlStatementBuilder
                 .Select(model.ParamsDto.DbObject.Name!)
                 .SetTopCount(model.ResultDto.IsList ? null : 1)
-                .Where(ReplaceVariables(model.ParamsDto, model.AdditionalSqlStatement.WhereClause, "query.Params"))
-                .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact());
+                .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
+                .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact())
+                .Build();
             // Create body code.
             (var sqlMethod, var toListMethod) = model.ResultDto.IsList ?
                 (nameof(Sql.Select), ".ToList()") :
                 (nameof(Sql.FirstOrDefault), string.Empty);
             var handlerBody = new StringBuilder()
-                .AppendLine($"var dbQuery = $@\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
+                .AppendLine($"var dbQuery = $@\"{bodyQuery.Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
                 .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetResultParam().Name}>(dbQuery){toListMethod};")
                 .AppendLine($"var result = new {model.GetResultType("Query").Name}(dbResult);")
-                .Append($"return Task.FromResult(result);").Build();
+                .Append($"return Task.FromResult(result);")
+                .Build();
             return handlerBody;
         }
 
+        [DebuggerStepThrough]
         public static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
-                            new StringBuilder()
+            new StringBuilder()
                 .AppendLine("if (this.EntityId is { } entityId)")
                 .AppendLine("{")
                 .AppendLine($"// Setup segregation parameters")
@@ -819,8 +877,9 @@ internal sealed partial class FunctionalityService
                 .AppendLine("{")
                 .AppendLine("this.DataContext = new();")
                 .AppendLine("}")
-                .ToString();
+                .Build();
 
+        [DebuggerStepThrough]
         public static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
     }

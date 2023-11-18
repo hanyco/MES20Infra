@@ -34,7 +34,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var model = await service.GenerateViewModelAsync(CreateModel());
 
         // Act
-        var actual = await codeService.GenerateCodesAsync(model!);
+        var actual = codeService.GenerateCodes(model!);
 
         // Assert
         if (!actual.IsSucceed)

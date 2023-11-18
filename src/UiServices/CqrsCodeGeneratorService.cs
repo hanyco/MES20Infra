@@ -27,7 +27,7 @@ namespace Services;
 [Service]
 internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGeneratorEngine) : ICqrsCodeGeneratorService
 {
-    public Task<Result<Codes>> GenerateCodesAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
+    public Result<Codes> GenerateCodes(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
         {
@@ -35,7 +35,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             CqrsCommandViewModel commandViewModel => this.GenerateCommand(commandViewModel),
             _ => throw new NotSupportedException()
         });
-        return Task.FromResult(result);
+        return result;
     }
 
     private static string arg(in string name) =>

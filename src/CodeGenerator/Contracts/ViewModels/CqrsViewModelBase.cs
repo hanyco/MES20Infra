@@ -24,7 +24,6 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     private DtoViewModel _paramDto;
     private DtoViewModel _resultDto;
     private IEnumerable<ClaimViewModel> _securityClaims;
-    public IWhereClause AdditionalSqlStatement => this._additionalWhereClause ??= SqlStatementBuilder.Select();
 
     public CqrsSegregateCategory Category
     {
