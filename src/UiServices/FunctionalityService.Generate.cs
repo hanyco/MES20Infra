@@ -8,9 +8,11 @@ using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.Data.SqlServer;
 using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
@@ -341,6 +343,24 @@ internal sealed partial class FunctionalityService
         }
     }
 
+    private static string? ReplaceVariables(in DtoViewModel paramsDto, in string? statement, in string paramName)
+    {
+        if (statement.IsNullOrEmpty())
+        {
+            return string.Empty;
+        }
+
+        var result = statement;
+        foreach (var p in paramsDto.Properties)
+        {
+            result = result
+                .Replace($"%{p!.DbObject?.Name}%", $"{{{paramName}.{p.Name}}}")
+                .Replace($"^{p!.DbObject?.Name}^", p.Name)
+                ;
+        }
+        return result;
+    }
+
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.SourceDtoName);
@@ -576,7 +596,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
-            data.ViewModel.GetAllQueryViewModel.ExecuteBody = "";
+            data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetAllQueryViewModel);
             data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
         }
 
@@ -621,6 +641,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
             data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
             data.ViewModel.GetByIdQueryViewModel.AdditionalSqlStatement.WhereClause = "ID = %Id%";
+            data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetByIdQueryViewModel);
         }
 
         void createParams()
@@ -756,8 +777,28 @@ internal sealed partial class FunctionalityService
                 .AppendLine("}")
                 .ToString();
 
+        public static string CreateHandleMethodBody(CqrsQueryViewModel model)
+        {
+            // Create query to be used inside the body code.
+            var bodyQuery = SqlStatementBuilder
+                .Select(model.ParamsDto.DbObject.Name!)
+                .SetTopCount(model.ResultDto.IsList ? null : 1)
+                .Where(ReplaceVariables(model.ParamsDto, model.AdditionalSqlStatement.WhereClause, "query.Params"))
+                .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact());
+            // Create body code.
+            (var sqlMethod, var toListMethod) = model.ResultDto.IsList ?
+                (nameof(Sql.Select), ".ToList()") :
+                (nameof(Sql.FirstOrDefault), string.Empty);
+            var handlerBody = new StringBuilder()
+                .AppendLine($"var dbQuery = $@\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
+                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetResultParam().Name}>(dbQuery){toListMethod};")
+                .AppendLine($"var result = new {model.GetResultType("Query").Name}(dbResult);")
+                .Append($"return Task.FromResult(result);").Build();
+            return handlerBody;
+        }
+
         public static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
-                    new StringBuilder()
+                            new StringBuilder()
                 .AppendLine("if (this.EntityId is { } entityId)")
                 .AppendLine("{")
                 .AppendLine($"// Setup segregation parameters")

@@ -17,13 +17,13 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     private DbObjectViewModel _dbObject;
     private string _dtoNameSpace;
     private string _friendlyName;
+    private string _handleMethodBody;
     private bool _hasPartialHandler;
     private bool _hasPartialOnInitialize;
     private ModuleViewModel _module;
     private DtoViewModel _paramDto;
     private DtoViewModel _resultDto;
     private IEnumerable<ClaimViewModel> _securityClaims;
-
     public IWhereClause AdditionalSqlStatement => this._additionalWhereClause ??= SqlStatementBuilder.Select();
 
     public CqrsSegregateCategory Category
@@ -56,12 +56,16 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         set => this.SetProperty(ref this._dtoNameSpace, value);
     }
 
-    public string ExecuteBody { get; set; }
-
     public string FriendlyName
     {
         get => this._friendlyName;
         set => this.SetProperty(ref this._friendlyName, value);
+    }
+
+    public string HandleMethodBody
+    {
+        get => this._handleMethodBody;
+        set => this.SetProperty(ref this._handleMethodBody, value);
     }
 
     public bool HasPartialHandler

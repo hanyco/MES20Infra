@@ -16,7 +16,7 @@ internal static class CqrsHelpers
         TypePath.New($"{Purify(model.ParamsDto.Name)}Params", model.ParamsDto.NameSpace);
 
     public static TypePath GetParamsType(this CqrsViewModelBase model, string kind) =>
-            TypePath.New($"{Purify(model.ParamsDto.Name)}{kind}Params", model.ParamsDto.NameSpace);
+            TypePath.New($"{Purify(model.ParamsDto.Name)}{kind}", model.ParamsDto.NameSpace);
 
     public static TypePath GetResultParam(this CqrsViewModelBase model) =>
         TypePath.New($"{Purify(model.ResultDto.Name)}Result", model.ResultDto.NameSpace);
@@ -30,6 +30,6 @@ internal static class CqrsHelpers
     public static IEnumerable<string> GetSecurityKeys(this CqrsViewModelBase viewModel) =>
         viewModel.SecurityClaims.Select(x => x.Key).Compact() ?? Enumerable.Empty<string>();
 
-    public static string GetSegregateClassName(this DtoViewModel model, string? kind, string part) =>
+    public static string GetSegregateClassName(this DtoViewModel model, string? kind, string? part) =>
         $"{Purify(model.Name)}{kind}{part}";
 }

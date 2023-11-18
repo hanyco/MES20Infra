@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-using Contracts.Services;
+﻿using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
@@ -27,10 +25,8 @@ using ICommand = Library.Cqrs.Models.Commands.ICommand;
 namespace Services;
 
 [Service]
-internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerator) : ICqrsCodeGeneratorService
+internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGeneratorEngine) : ICqrsCodeGeneratorService
 {
-    private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGenerator;
-
     public Task<Result<Codes>> GenerateCodesAsync(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null, CancellationToken token = default)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
@@ -42,34 +38,19 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         return Task.FromResult(result);
     }
 
-    private static string arg(string name) => TypeMemberNameHelper.ToArgName(name);
+    private static string arg(in string name) =>
+        TypeMemberNameHelper.ToArgName(name);
 
-    private static string fld(string name) => TypeMemberNameHelper.ToFieldName(name);
+    private static string fld(in string name) =>
+            TypeMemberNameHelper.ToFieldName(name);
 
-    private static string prp(string name) => TypeMemberNameHelper.ToPropName(name);
+    private static string prp(in string name) =>
+        TypeMemberNameHelper.ToPropName(name);
 
-    private static string? ReplaceVariables(in DtoViewModel paramsDto, in string? statement, in string paramName)
-    {
-        if (statement.IsNullOrEmpty())
-        {
-            return string.Empty;
-        }
-
-        var result = statement;
-        foreach (var p in paramsDto.Properties)
-        {
-            result = result
-                .Replace($"%{p!.DbObject?.Name}%", $"{{{paramName}.{p.Name}}}")
-                .Replace($"^{p!.DbObject?.Name}^", p.Name)
-                ;
-        }
-        return result;
-    }
-
-    private static Code toCode(string? modelName, string codeName, Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
+    private static Code toCode(in string? modelName, in string codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
         Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
 
-    private Codes GenerateCommand(CqrsCommandViewModel model)
+    private Codes GenerateCommand(in CqrsCommandViewModel model)
     {
         Check.MustBeArgumentNotNull(model?.Name);
 
@@ -85,18 +66,16 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
             Result<string> createCommandHandler(CqrsCommandViewModel model)
             {
-                var paramName = "command";
-                var handlerBody = new StringBuilder()
-                    .Append($"return Task.FromResult<{model.GetResultType("Command").Name}>(null!);");
+                var handlerBody = model.HandleMethodBody ?? $"return Task.FromResult<{model.GetResultType("Command").Name}>(null!);";
 
                 // Create `HandleAsync` method
                 var handleAsyncMethod = new Method(nameof(ICommandHandler<ICommand, string>.HandleAsync))
                 {
                     AccessModifier = AccessModifier.Public,
-                    Body = handlerBody.Build(),
+                    Body = handlerBody,
                     Parameters =
                     {
-                        (model.GetParamsType("Command"), paramName)
+                        (model.GetParamsType("Command"), "command")
                     },
                     ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.GetResultType("Command").FullPath}>")
                 };
@@ -113,7 +92,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 _ = ns.Types.Add(handlerClass);
 
                 // Generate result
-                var result = this._codeGeneratorEngine.Generate(ns);
+                var result = codeGeneratorEngine.Generate(ns);
                 return result;
             }
         }
@@ -153,7 +132,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     .AddType(type);
 
                 // Generate code
-                return this._codeGeneratorEngine.Generate(nameSpace);
+                return codeGeneratorEngine.Generate(nameSpace);
             }
 
             Result<string> createCommandHandler(CqrsCommandViewModel model)
@@ -196,7 +175,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 _ = ns.Types.Add(type);
 
                 // Generate code
-                var result = this._codeGeneratorEngine.Generate(ns);
+                var result = codeGeneratorEngine.Generate(ns);
                 return result;
             }
 
@@ -223,12 +202,12 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 _ = nameSpace.Types.Add(type);
 
                 // Generate code
-                return this._codeGeneratorEngine.Generate(nameSpace);
+                return codeGeneratorEngine.Generate(nameSpace);
             }
         }
     }
 
-    private Codes GenerateQuery(CqrsQueryViewModel model)
+    private Codes GenerateQuery(in CqrsQueryViewModel model)
     {
         Check.MustBeArgumentNotNull(model?.Name);
 
@@ -242,33 +221,18 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             var statement = createQueryHandler(model);
             yield return toCode(model.Name, "Handler", statement, false, CodeCategory.Query);
 
-            Result<string> createQueryHandler(CqrsQueryViewModel model)
+            Result<string> createQueryHandler(in CqrsQueryViewModel model)
             {
-                var paramName = "query";
-                // Create query to be used inside the body code.
-                var bodyQuery = SqlStatementBuilder
-                    .Select(model.ParamsDto.DbObject.Name!)
-                    .SetTopCount(model.ResultDto.IsList ? null : 1)
-                    .Where(ReplaceVariables(model.ParamsDto, model.AdditionalSqlStatement.WhereClause, $"{paramName}.Params"))
-                    .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact());
-                // Create body code.
-                (var sqlMethod, var toListMethod) = model.ResultDto.IsList ?
-                    (nameof(Sql.Select), ".ToList()") :
-                    (nameof(Sql.FirstOrDefault), string.Empty);
-                var handlerBody = new StringBuilder()
-                    .AppendLine($"var dbQuery = $@\"{bodyQuery.Build().Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
-                    .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetResultParam().Name}>(dbQuery){toListMethod};")
-                    .AppendLine($"var result = new {model.GetResultType("Query").Name}(dbResult);")
-                    .Append($"return Task.FromResult(result);");
+                var handlerBody = model.HandleMethodBody ?? $"return Task.FromResult<{model.GetResultType("Query").Name}>(null!);";
 
                 // Create `HandleAsync` method
                 var handleAsyncMethod = new Method(nameof(IQueryHandler<string, string>.HandleAsync))
                 {
                     AccessModifier = AccessModifier.Public,
-                    Body = handlerBody.Build(),
+                    Body = handlerBody,
                     Parameters =
                     {
-                        (model.GetParamsType("Query"), paramName)
+                        (model.GetParamsType("Query"), "query")
                     },
                     ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.GetResultType("Query").FullPath}>")
                 };
@@ -285,7 +249,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 _ = ns.Types.Add(handlerClass);
 
                 // Generate result
-                var result = this._codeGeneratorEngine.Generate(ns);
+                var result = codeGeneratorEngine.Generate(ns);
                 return result;
             }
         }
@@ -336,7 +300,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 _ = ns.Types.Add(type);
 
                 // Generate code
-                var result = this._codeGeneratorEngine.Generate(ns);
+                var result = codeGeneratorEngine.Generate(ns);
                 return result;
             }
 
@@ -363,7 +327,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 _ = nameSpace.Types.Add(type);
 
                 // Generate code
-                return this._codeGeneratorEngine.Generate(nameSpace);
+                return codeGeneratorEngine.Generate(nameSpace);
             }
 
             Result<string> createQueryParams(CqrsQueryViewModel model)
@@ -395,7 +359,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     .AddType(type);
 
                 // Generate code
-                return this._codeGeneratorEngine.Generate(nameSpace);
+                return codeGeneratorEngine.Generate(nameSpace);
             }
         }
     }
