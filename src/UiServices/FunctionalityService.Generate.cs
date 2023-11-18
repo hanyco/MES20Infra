@@ -840,18 +840,19 @@ internal sealed partial class FunctionalityService
                 .SetTopCount(model.ResultDto.IsList ? null : 1)
                 .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
                 .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact())
-                .Build();
+                .Build()
+                .Replace(Environment.NewLine, " ").Replace("  ", " ");
             // Create body code.
-            (var sqlMethod, var toListMethod) = model.ResultDto.IsList ?
-                (nameof(Sql.Select), ".ToList()") :
-                (nameof(Sql.FirstOrDefault), string.Empty);
-            var handlerBody = new StringBuilder()
-                .AppendLine($"var dbQuery = $@\"{bodyQuery.Replace(Environment.NewLine, " ").Replace("  ", " ")}\";")
+            (var sqlMethod, var toListMethod) = model.ResultDto.IsList
+                ? (nameof(Sql.Select), ".ToList()")
+                : (nameof(Sql.FirstOrDefault), string.Empty);
+            var result = new StringBuilder()
+                .AppendLine($"var dbQuery = $@\"{bodyQuery}\";")
                 .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetResultParam().Name}>(dbQuery){toListMethod};")
                 .AppendLine($"var result = new {model.GetResultType("Query").Name}(dbResult);")
                 .Append($"return Task.FromResult(result);")
                 .Build();
-            return handlerBody;
+            return result;
         }
 
         [DebuggerStepThrough]
