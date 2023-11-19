@@ -108,44 +108,41 @@ internal sealed class DtoService(
                     .Build()!;
     }
 
-    public Result<Codes> GenerateCodes(DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(DtoViewModel viewModel, DtoCodeServiceGenerateCodesParameters? arguments = null)
     {
         if (!validate(viewModel).TryParse(out var validationResult))
         {
-            return Result<Codes>.From(validationResult, Codes.Empty);
+            return validationResult.WithValue(Codes.Empty);
         }
 
         var properties = viewModel.Properties.Select(toProperty);
-        var type = new Class(viewModel.Name!).AddMember(properties);
+        var type = new Class(arguments?.TypeName ?? viewModel.Name!).AddMember(properties);
         var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
         var statement = this._codeGeneratorEngine.Generate(nameSpace);
-        return Result<Codes>.From(statement, new(new Code(viewModel.Name!, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Dto)));
+        return Result<Codes>.From(statement, new(new Code(arguments?.TypeName ?? viewModel.Name!, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Dto)));
 
         static IProperty toProperty(PropertyViewModel pvm)
         {
-            var type = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
+            TypePath type = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
             if (pvm.IsList ?? false)
             {
-                type = $"List<{type}>";
+                type = TypePath.New(typeof(List<>).FullName, type.FullPath);
             }
 
-            // TODO Low Priority. Do this later.
-            //if (pvm.IsNullable ?? false)
-            //{
-            //    type = string.Concat(type, "?");
-            //}
+            if (pvm.IsNullable ?? false)
+            {
+                type = type.WithNullable(true);
+            }
 
             return IProperty.New(pvm.Name!, type);
         }
 
-        [DebuggerStepThrough]
-        [StackTraceHidden]
         static Result<DtoViewModel> validate(DtoViewModel? viewModel, CancellationToken token = default)
             => viewModel.ArgumentNotNull().Check()
                     .NotNull(x => x.Module)
                     .NotNullOrEmpty(x => x.Name)
                     .NotNullOrEmpty(x => x.NameSpace)
-                    .Build()!;
+                    .Build();
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync(CancellationToken token = default)

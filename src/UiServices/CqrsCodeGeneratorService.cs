@@ -3,6 +3,7 @@ using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.Markers;
+using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;
@@ -25,14 +26,14 @@ using ICommand = Library.Cqrs.Models.Commands.ICommand;
 namespace Services;
 
 [Service]
-internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGeneratorEngine) : ICqrsCodeGeneratorService
+internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGeneratorEngine, IDtoCodeService dtoCodeService) : ICqrsCodeGeneratorService
 {
     public Result<Codes> GenerateCodes(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
         {
-            CqrsQueryViewModel queryViewModel => this.GenerateQuery(queryViewModel),
-            CqrsCommandViewModel commandViewModel => this.GenerateCommand(commandViewModel),
+            CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.Query),
+            CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.Command),
             _ => throw new NotSupportedException()
         });
         return result;
@@ -42,7 +43,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         TypeMemberNameHelper.ToArgName(name);
 
     private static string fld(in string name) =>
-            TypeMemberNameHelper.ToFieldName(name);
+        TypeMemberNameHelper.ToFieldName(name);
 
     private static string prp(in string name) =>
         TypeMemberNameHelper.ToPropName(name);
@@ -50,26 +51,22 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
     private static Code toCode(in string? modelName, in string? codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
         Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
 
-    private Codes GenerateCommand(in CqrsCommandViewModel model) =>
-        this.GenerateSegregation(model, CodeCategory.Command);
-
-    private Codes GenerateQuery(in CqrsQueryViewModel model) =>
-        this.GenerateSegregation(model, CodeCategory.Query);
-
     private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind)
     {
+        //return Codes.Empty;
         Check.MustBeArgumentNotNull(model?.Name);
 
         var partCodes = generatePartCode(model, kind);
+        //x return partCodes.ToCodes();
         var mainCodes = generateMainCode(model, kind);
+        //x return mainCodes.ToCodes();
 
-        var allCodes = mainCodes.AddRangeImmuted(partCodes).OrderBy(x => x.Name);
-
-        return allCodes.ToCodes();
+        return partCodes.AddRangeImmuted(mainCodes).OrderBy(x => x).ToCodes();
 
         IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind)
         {
             yield return toCode(model.Name, "Handler", createHandler(model, kind), false, kind);
+            yield return toCode(model.Name, "QueryParams", createParams(model, kind), false, CodeCategory.Dto);
 
             Result<string> createHandler(in CqrsViewModelBase model, CodeCategory kind)
             {
@@ -102,12 +99,20 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var result = codeGeneratorEngine.Generate(ns);
                 return result;
             }
+
+            Result<string> createParams(CqrsViewModelBase model, CodeCategory kind)
+            {
+                var dtoCodeResult = dtoCodeService.GenerateCodes(model.ParamsDto, new(model.GetParamsParam(kind.ToString()).Name));
+                return dtoCodeResult.IsFailure
+                    ? dtoCodeResult.WithValue(string.Empty)
+                    : (Result<string>)dtoCodeResult.GetValue().Single()!.Statement;
+            }
         }
 
         IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind)
         {
             yield return toCode(model.Name, "Handler", createQueryHandler(model, kind), true, kind);
-            yield return toCode(model.Name, null, createParams(model, kind), true, CodeCategory.Dto);
+            yield return toCode(model.Name, null, createSegregationType(model, kind), true, CodeCategory.Dto);
             yield return toCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
 
             Result<string> createQueryHandler(CqrsViewModelBase model, CodeCategory kind)
@@ -185,13 +190,13 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 return codeGeneratorEngine.Generate(nameSpace);
             }
 
-            Result<string> createParams(CqrsViewModelBase model, CodeCategory kind)
+            Result<string> createSegregationType(CqrsViewModelBase model, CodeCategory kind)
             {
                 var paramsDto = model.ParamsDto; // ex. GetByIdPerson
                 var segregateName = paramsDto.GetSegregateClassName(kind.ToString()); // ex. GetByIdPersonQuery
                 var paramsType = TypePath.New(paramsDto.IsList
-                    ? $"List<{Purify(paramsDto.Name)}Params>"
-                    : $"{Purify(paramsDto.Name)}Params"); // ex. GetByIdPersonParams
+                    ? $"List<{model.GetParamsParam(kind.ToString())}>"
+                    : model.GetParamsParam(kind.ToString())); // ex. GetByIdPersonParams
 
                 var paramsProp = new CodeGenProperty(prp("Params"), paramsType);
                 var ctor = new Method(segregateName)
@@ -210,8 +215,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                         kind switch
                         {
                             CodeCategory.Query => TypePath.New(typeof(IQuery<>), [model.ResultDto.GetSegregateClassName(kind.ToString(), "Result")]),
-                            CodeCategory.Command => TypePath.New<ICommand>()
-                        },
+                            CodeCategory.Command => TypePath.New<ICommand>(),
+                            _ => throw new NotImplementedException() },
                     }
                 }.AddMember(ctor).AddMember(paramsProp);
                 var nameSpace = INamespace.New(paramsDto.NameSpace)

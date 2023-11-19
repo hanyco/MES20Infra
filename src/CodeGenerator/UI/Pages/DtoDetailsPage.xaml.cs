@@ -15,6 +15,7 @@ using Library.BusinessServices;
 using Library.Collections;
 using Library.EventsArgs;
 using Library.Exceptions.Validations;
+using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
@@ -292,8 +293,17 @@ public partial class DtoDetailsPage
             return;
         }
 
-        var result = await this._codeService.SaveSourceToDiskAskAsync(this.ViewModel, this.ValidateFormAsync).ThrowOnFailAsync(this.Title).ConfigureAwait(false);
+        var result = await saveSourceToDiskAskAsync().ThrowOnFailAsync(this.Title).ConfigureAwait(false);
         _ = this.EndActionScope(result);
+
+        async Task<Result<string?>> saveSourceToDiskAskAsync()
+        {
+            _ = await this.ValidateFormAsync();
+
+            var codes = this._codeService.GenerateCodes(this.ViewModel).GetValue();
+            var result = await codes.SaveToFileAskAsync();
+            return result;
+        }
     }
 
     private async void SaveDtoButton_Click(object sender, RoutedEventArgs e)
