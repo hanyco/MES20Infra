@@ -200,6 +200,31 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
             return Result<string>.CreateFailure("No source code found. Please press <Generate Sources> button.", string.Empty);
         }
         var settings = SettingsService.Get();
+        {
+            var dir = settings.projectSourceRoot;
+            if (Directory.Exists(dir))
+            {
+                if (Directory.GetFileSystemEntries(dir).Any())
+                {
+                    try
+                    {
+                        var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
+                        if (resp == TaskDialogResult.Cancel)
+                        {
+                            return Result<string>.CreateFailure(new Library.Exceptions.OperationCancelException());
+                        }
+                        if (resp == TaskDialogResult.Yes)
+                        {
+                            Directory.Delete(dir, true);
+                        }
+                    }
+                    finally
+                    {
+                        await Task.Delay(750);
+                    }
+                }
+            }
+        }
         var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
         var saveResult = FileUiTools.SaveToFile(files, $"Saving source codes to {settings.projectSourceRoot}");
         await App.Current.DoEventsAsync(500);

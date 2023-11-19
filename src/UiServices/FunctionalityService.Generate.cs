@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -74,7 +75,7 @@ internal sealed partial class FunctionalityService
             if (viewModel.GetAllQueryViewModel != null)
             {
                 this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
-                var codeGenRes = generateAllCodesAsync(viewModel.GetAllQueryViewModel);
+                var codeGenRes = generateAllCodes(viewModel.GetAllQueryViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
                     this.Logger.Debug($"Not generated Functionality code for {viewModel.SourceDto}. Error: {codeGenRes}");
@@ -87,8 +88,8 @@ internal sealed partial class FunctionalityService
 
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
-                var codeGenRes = generateAllCodesAsync(viewModel.GetByIdQueryViewModel);
+                this.Logger.Debug($"Generating Functionality code for {viewModel.GetByIdQueryViewModel}");
+                var codeGenRes = generateAllCodes(viewModel.GetByIdQueryViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
                     this.Logger.Debug($"Not generated Functionality code for {viewModel.GetByIdQueryViewModel}. Error: {codeGenRes}");
@@ -101,8 +102,8 @@ internal sealed partial class FunctionalityService
 
             if (viewModel.InsertCommandViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
-                var codeGenRes = generateAllCodesAsync(viewModel.InsertCommandViewModel);
+                this.Logger.Debug($"Generating Functionality code for {viewModel.InsertCommandViewModel}");
+                var codeGenRes = generateAllCodes(viewModel.InsertCommandViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
                     this.Logger.Debug($"Not generated Functionality code for {viewModel.InsertCommandViewModel}. Error: {codeGenRes}");
@@ -116,7 +117,7 @@ internal sealed partial class FunctionalityService
             if (viewModel.UpdateCommandViewModel != null)
             {
                 this.Logger.Debug($"Generating Functionality code for {viewModel.UpdateCommandViewModel}");
-                var codeGenRes = generateAllCodesAsync(viewModel.UpdateCommandViewModel);
+                var codeGenRes = generateAllCodes(viewModel.UpdateCommandViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
                     this.Logger.Debug($"Not generated Functionality code for {viewModel.UpdateCommandViewModel}. Error: {codeGenRes}");
@@ -130,7 +131,7 @@ internal sealed partial class FunctionalityService
             if (viewModel.DeleteCommandViewModel != null)
             {
                 this.Logger.Debug($"Generating Functionality code for {viewModel.DeleteCommandViewModel}");
-                var codeGenRes = generateAllCodesAsync(viewModel.DeleteCommandViewModel);
+                var codeGenRes = generateAllCodes(viewModel.DeleteCommandViewModel);
                 if (codeGenRes.Any(x => !x))
                 {
                     this.Logger.Debug($"Not generated Functionality code for {viewModel.DeleteCommandViewModel}. Error: {codeGenRes}");
@@ -228,22 +229,26 @@ internal sealed partial class FunctionalityService
             return result;
 
             // Internal method to add a code result to the result list.
-            [DebuggerStepThrough]
             Result<Codes> addToResult(Result<Codes> codeResult) =>
                 codeResult.Fluent(result.Add);
 
-            IEnumerable<Result<Codes>> generateAllCodesAsync(CqrsViewModelBase cqrsViewModel)
+            ImmutableArray<Result<Codes>> generateAllCodes(CqrsViewModelBase cqrsViewModel)
             {
-                // Generate the codes of CQRS parameters.
-                var paramsDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ParamsDto);
-                // Generate the codes of CQRS result.
-                var resultDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto);
-                // Generate the codes of CQRS handler.
-                var handlerCodeResult = this._cqrsCodeService.GenerateCodes(cqrsViewModel);
+                return gather(cqrsViewModel, result).ToImmutableArray();
 
-                yield return addToResult(paramsDtoCodeResult);
-                yield return addToResult(resultDtoCodeResult);
-                yield return addToResult(handlerCodeResult);
+                IEnumerable<Result<Codes>> gather(CqrsViewModelBase cqrsViewModel, List<Result<Codes>>? result)
+                {
+                    // Generate the codes of CQRS parameters.
+                    var paramsDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ParamsDto);
+                    // Generate the codes of CQRS result.
+                    var resultDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto);
+                    // Generate the codes of CQRS handler.
+                    var handlerCodeResult = this._cqrsCodeService.GenerateCodes(cqrsViewModel);
+
+                    //yield return addToResult(paramsDtoCodeResult);
+                    //yield return addToResult(resultDtoCodeResult);
+                    yield return addToResult(handlerCodeResult);
+                }
             }
 
             //Result<Codes> generateCodeFor<TViewModel>(ICodeGenerator<TViewModel, GenerateCodesParameters> generator, TViewModel model, [CallerArgumentExpression(nameof(model))] string? name = null)
