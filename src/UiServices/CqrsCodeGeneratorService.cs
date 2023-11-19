@@ -47,13 +47,13 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
     private static string prp(in string name) =>
         TypeMemberNameHelper.ToPropName(name);
 
-    private static Code toCode(in string? modelName, in string codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
+    private static Code toCode(in string? modelName, in string? codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
         Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
 
     private Codes GenerateCommand(in CqrsCommandViewModel model) =>
         this.GenerateSegregation(model, CodeCategory.Command);
 
-    private Codes GenerateQuery(in CqrsQueryViewModel model) => 
+    private Codes GenerateQuery(in CqrsQueryViewModel model) =>
         this.GenerateSegregation(model, CodeCategory.Query);
 
     private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind)
@@ -106,9 +106,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind)
         {
-            yield return toCode(model.Name, "Handler.partial", createQueryHandler(model, kind), true, kind);
-            yield return toCode(model.Name, "Params.partial", createParams(model, kind), true, CodeCategory.Dto);
-            yield return toCode(model.Name, "Result.partial", createResult(model, kind), true, CodeCategory.Dto);
+            yield return toCode(model.Name, "Handler", createQueryHandler(model, kind), true, kind);
+            yield return toCode(model.Name, null, createParams(model, kind), true, CodeCategory.Dto);
+            yield return toCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
 
             Result<string> createQueryHandler(CqrsViewModelBase model, CodeCategory kind)
             {
@@ -140,8 +140,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var resultType = model.GetResultType(kind.ToString());
                 var baseType = kind switch
                 {
-                    CodeCategory.Query => TypePath.New($"{typeof(IQueryHandler<,>).FullName}", new[] { paramsType.FullPath, resultType.FullPath }),
-                    CodeCategory.Command => TypePath.New(typeof(ICommand)),
+                    CodeCategory.Query => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.Command => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
                     _ => throw new NotImplementedException()
                 };
                 _ = type.BaseTypes.Add(baseType);
@@ -187,29 +187,35 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
             Result<string> createParams(CqrsViewModelBase model, CodeCategory kind)
             {
-                var paramsDto = model.ParamsDto;
-                var className = paramsDto.GetSegregateClassName(kind.ToString());
-                var paramsPropType = TypePath.New(paramsDto.GetSegregateClassName(part: "Params"));
+                var paramsDto = model.ParamsDto; // ex. GetByIdPerson
+                var segregateName = paramsDto.GetSegregateClassName(kind.ToString()); // ex. GetByIdPersonQuery
+                var paramsType = TypePath.New(paramsDto.IsList
+                    ? $"List<{Purify(paramsDto.Name)}Params>"
+                    : $"{Purify(paramsDto.Name)}Params"); // ex. GetByIdPersonParams
 
-                var prop = new CodeGenProperty(prp("Params"), paramsPropType);
-                var ctor = new Method(className)
+                var paramsProp = new CodeGenProperty(prp("Params"), paramsType);
+                var ctor = new Method(segregateName)
                 {
                     IsConstructor = true,
-                    Body = $"this.{prop.Name} = {arg(prop.Name)};",
+                    Body = $"this.{paramsProp.Name} = {arg(paramsProp.Name)};",
                     Parameters =
                     {
-                        (paramsPropType, arg(prop.Name))
+                        (paramsType, arg(paramsProp.Name)) // ex. ({GetAllPeopleParams}, "@params")
                     }
                 };
-                var type = new Class(className)
+                var segregateType = new Class(segregateName)
                 {
                     BaseTypes =
                     {
-                        TypePath.New(typeof(IQuery<>), [model.ResultDto.GetSegregateClassName(kind.ToString(), "Result")]),
+                        kind switch
+                        {
+                            CodeCategory.Query => TypePath.New(typeof(IQuery<>), [model.ResultDto.GetSegregateClassName(kind.ToString(), "Result")]),
+                            CodeCategory.Command => TypePath.New<ICommand>()
+                        },
                     }
-                }.AddMember(ctor, prop);
+                }.AddMember(ctor).AddMember(paramsProp);
                 var nameSpace = INamespace.New(paramsDto.NameSpace)
-                    .AddType(type);
+                    .AddType(segregateType);
 
                 // Generate code
                 return codeGeneratorEngine.Generate(nameSpace);
