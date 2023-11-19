@@ -73,12 +73,11 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 {
                     AccessModifier = AccessModifier.Public,
                     Body = handlerBody,
-                    Parameters =
-                    {
-                        (model.GetParamsType("Command"), "command")
-                    },
                     ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.GetResultType("Command").FullPath}>")
                 };
+                //x (model.GetParamsType("Command"), "command")
+                handleAsyncMethod.Parameters.AddRange(model.HandleMethodParameters);
+
                 // Create `CommandHandler` class
                 var handlerClass = new Class(model.GetHandlerClass("Command"))
                 {

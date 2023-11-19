@@ -3,6 +3,7 @@
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
+using Library.CodeGeneration;
 using Library.Data.SqlServer;
 using Library.Data.SqlServer.Builders.Bases;
 
@@ -66,6 +67,7 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         get => this._handleMethodBody;
         set => this.SetProperty(ref this._handleMethodBody, value);
     }
+    public ISet<(TypePath Type, string Name)> HandleMethodParameters { get; } = new HashSet<(TypePath Type, string Name)>();
 
     public bool HasPartialHandler
     {
