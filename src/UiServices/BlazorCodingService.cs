@@ -45,12 +45,12 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
     public static string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
         new StringBuilder()
             .AppendLine($"// Setup segregation parameters")
-            .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}();")
-            .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
+            .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").Name}();")
+            .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query")}(@params);")
             .AppendLine($"")
             .AppendLine($"")
             .AppendLine($"// Invoke the query handler to retrieve all entities")
-            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
+            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetSegregateResultType("Query")}>(cqParams);")
             .AppendLine($"")
             .AppendLine($"")
             .AppendLine($"// Now, set the data context.")
@@ -381,7 +381,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
         while (this._conversionSubjects.TryDequeue(out var conversionSubject))
         {
             var srcType = TypePath.New(conversionSubject.ResultDto.Name, conversionSubject.ResultDto.NameSpace); // CQRS Output
-            var dstType = TypePath.New(conversionSubject.ResultDto.GetRevertedDtoName(), conversionSubject.ResultDto.NameSpace); // Page ViewModel
+            var dstType = TypePath.New($"{conversionSubject.ResultDto.DbObject.Name}Dto", conversionSubject.ResultDto.NameSpace); // Page ViewModel
 
             var nameSpace = INamespace.New(conversionSubject.DtoNameSpace!);
             var converterClass = new Class("ModelConverter")

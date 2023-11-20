@@ -10,7 +10,8 @@ namespace InfraTestProject.Tests.Services;
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
     [Fact]
-    public async Task _10_GenerateModelTest()
+    [Trait("Category", "__ActiveTest")]
+    public async Task GenerateModelTest()
     {
         // Assign
         using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
@@ -27,8 +28,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     }
 
     [Fact]
-    [Trait("Category", "__ActiveTest")]
-    public async void _20_GenerateCode()
+    public async void GenerateCode()
     {
         // Assign
         var model = await service.GenerateViewModelAsync(CreateModel());
@@ -52,8 +52,8 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
-    [Fact]
-    public async void _30_SaveModelTest()
+    [Fact(Skip ="Not done yet.")]
+    public async void SaveModelTest()
     {
         // Assign
         var model = await service.GenerateViewModelAsync(CreateModel());

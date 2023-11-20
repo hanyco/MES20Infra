@@ -429,7 +429,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetAllQueryViewModel, "ID = %Id%");
+            data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateQueryHandleMethodBody(data.ViewModel.GetAllQueryViewModel, "ID = %Id%");
 
         void setupSecurity(CreationData data) =>
             data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetAllQueryViewModel);
@@ -478,7 +478,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetByIdQueryViewModel);
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateHandleMethodBody(data.ViewModel.GetByIdQueryViewModel, "ID = %Id%");
+            data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateQueryHandleMethodBody(data.ViewModel.GetByIdQueryViewModel, "ID = %Id%");
     }
 
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
@@ -594,7 +594,7 @@ internal sealed partial class FunctionalityService
                 .AppendLine("}")
                 .Build();
 
-        public static string CreateHandleMethodBody(CqrsQueryViewModel model, string? additionalWhereClause)
+        public static string CreateQueryHandleMethodBody(CqrsQueryViewModel model, string? additionalWhereClause)
         {
             // Create query to be used inside the body code.
             var bodyQuery = SqlStatementBuilder
@@ -610,8 +610,8 @@ internal sealed partial class FunctionalityService
                 : (nameof(Sql.FirstOrDefault), string.Empty);
             var result = new StringBuilder()
                 .AppendLine($"var dbQuery = $@\"{bodyQuery}\";")
-                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetResultParam().Name}>(dbQuery){toListMethod};")
-                .AppendLine($"var result = new {model.GetResultType("Query").Name}(dbResult);")
+                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetSegregateResultType("Query").Name}>(dbQuery){toListMethod};")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Query").Name}(dbResult);")
                 .Append($"return Task.FromResult(result);")
                 .Build();
             return result;
@@ -623,14 +623,14 @@ internal sealed partial class FunctionalityService
                 .AppendLine("if (this.EntityId is { } entityId)")
                 .AppendLine("{")
                 .AppendLine($"// Setup segregation parameters")
-                .AppendLine($"var @params = new {cqrsViewModel.GetParamsParam().Name}()")
+                .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").Name}()")
                 .AppendLine("{")
                 .AppendLine("    Id = entityId,")
                 .AppendLine("};")
                 .AppendLine("")
-                .AppendLine($"var cqParams = new {cqrsViewModel.GetParamsType("Query")}(@params);")
+                .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query")}(@params);")
                 .AppendLine($"// Invoke the query handler to retrieve all entities")
-                .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetResultType("Query")}>(cqParams);")
+                .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetSegregateResultType("Query")}>(cqParams);")
                 .AppendLine($"")
                 .AppendLine($"")
                 .AppendLine($"// Now, set the data context.")

@@ -1,7 +1,6 @@
 ﻿using Contracts.ViewModels;
 
 using Library.CodeGeneration;
-using Library.Wpf.Bases;
 
 using static Services.Helpers.CommonHelpers;
 
@@ -9,27 +8,23 @@ namespace Services.Helpers;
 
 internal static class CqrsHelpers
 {
-    public static TypePath GetHandlerClass(this CqrsViewModelBase model, string kind) =>
-    TypePath.New($"{Purify(model.Name)}{kind}Handler", model.CqrsNameSpace);
+    // GetAllPeopleQueryHandle
+    public static TypePath GetSegregateHandlerType(this CqrsViewModelBase model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}Handler", model.CqrsNameSpace);
 
-    public static TypePath GetParamsParam(this CqrsViewModelBase model, string? kind = null) =>
-        TypePath.New($"{Purify(model.ParamsDto.Name)}{kind}Params", model.ParamsDto.NameSpace);
+    // GetAllPeopleQuery
+    public static TypePath GetSegregateType(this CqrsViewModelBase model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}", model.DtoNameSpace);
 
-    public static TypePath GetParamsType(this CqrsViewModelBase model, string kind) =>
-            TypePath.New($"{Purify(model.ParamsDto.Name)}{kind}", model.ParamsDto.NameSpace);
+    // GetAllPeople
+    public static TypePath GetSegregateParamsType(this CqrsViewModelBase model, string? kind) =>
+        TypePath.New($"{model.ParamsDto.Name}", model.ParamsDto.NameSpace);
 
-    public static TypePath GetResultParam(this CqrsViewModelBase model) =>
-        TypePath.New($"{Purify(model.ResultDto.Name)}Result", model.ResultDto.NameSpace);
+    // GetAllPeopleQueryResult
+    public static TypePath GetSegregateResultType(this CqrsViewModelBase model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}Result", model.DtoNameSpace);
 
-    public static TypePath GetResultType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New($"{Purify(model.ResultDto.Name)}{kind}Result", model.ResultDto.NameSpace);
-
-    public static string GetRevertedDtoName(this DtoViewModel model) =>
-        $"{model.DbObject.Name}Dto";
-
-    public static IEnumerable<string> GetSecurityKeys(this CqrsViewModelBase viewModel) =>
-        viewModel.SecurityClaims.Select(x => x.Key).Compact() ?? Enumerable.Empty<string>();
-
-    public static string GetSegregateClassName(this DtoViewModel model, string? kind = null, string? part = null) =>
-        $"{Purify(model.Name)}{kind}{part}";
+    // GetAllPeopleResult
+    public static TypePath GetSegregateResultParamsType(this CqrsViewModelBase model, string? kind) =>
+        TypePath.New($"{model.ResultDto.Name}", model.ResultDto.NameSpace);
 }
