@@ -126,7 +126,7 @@ internal sealed class DtoService(
             TypePath type = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
             if (pvm.IsList ?? false)
             {
-                type = TypePath.New(typeof(List<>).FullName, type.FullPath);
+                type = TypePath.New(typeof(List<>).FullName,null,generics: type.FullPath);
             }
 
             if (pvm.IsNullable ?? false)

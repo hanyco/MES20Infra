@@ -42,7 +42,7 @@ internal sealed partial class FunctionalityService
         }
 
         // Get the initialized data and token source
-        var (data, tokenSource) = initResult.GetValue();
+        var (data, tokenSource) = initResult.Value;
 
         // Perform the initialization steps
         var process = initSteps(data);

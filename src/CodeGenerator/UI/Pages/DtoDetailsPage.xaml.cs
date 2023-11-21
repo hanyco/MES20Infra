@@ -300,7 +300,7 @@ public partial class DtoDetailsPage
         {
             _ = await this.ValidateFormAsync();
 
-            var codes = this._codeService.GenerateCodes(this.ViewModel).GetValue();
+            var codes = this._codeService.GenerateCodes(this.ViewModel).Value;
             var result = await codes.SaveToFileAskAsync();
             return result;
         }

@@ -243,7 +243,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                 _ => Result<string>.CreateFailure(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
             relativePath.ThrowOnFail().End();
-            var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.GetValue().NotNull());
+            var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.Value.NotNull());
             return path;
         }
     }
