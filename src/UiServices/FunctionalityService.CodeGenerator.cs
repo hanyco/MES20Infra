@@ -3,11 +3,15 @@
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.UI.ViewModels;
+
 using Library.CodeGeneration.Models;
 using Library.Results;
 using Library.Validations;
 
 using Newtonsoft.Json.Linq;
+
+using Services.Helpers;
 
 namespace Services;
 
@@ -216,19 +220,25 @@ internal sealed partial class FunctionalityService
 
             ImmutableArray<Result<Codes>> generateAllCodes(CqrsViewModelBase cqrsViewModel)
             {
-                return gather(cqrsViewModel, result).ToImmutableArray();
+                return gather(cqrsViewModel).ToImmutableArray();
 
-                IEnumerable<Result<Codes>> gather(CqrsViewModelBase cqrsViewModel, List<Result<Codes>>? result)
+                IEnumerable<Result<Codes>> gather(CqrsViewModelBase model)
                 {
+                    var kind = model switch
+                    {
+                        CqrsQueryViewModel => "Query",
+                        CqrsCommandViewModel => "Command",
+                        _ => throw new NotImplementedException()
+                    };
                     // Generate the codes of CQRS parameters.
-                    var paramsDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ParamsDto);
+                    var paramsDtoCodeResult = this._dtoCodeService.GenerateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
                     // Generate the codes of CQRS result.
-                    var resultDtoCodeResult = this._dtoCodeService.GenerateCodes(cqrsViewModel.ResultDto);
+                    var resultDtoCodeResult = this._dtoCodeService.GenerateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
                     // Generate the codes of CQRS handler.
-                    var handlerCodeResult = this._cqrsCodeService.GenerateCodes(cqrsViewModel);
+                    var handlerCodeResult = this._cqrsCodeService.GenerateCodes(model);
 
-                    //yield return addToResult(paramsDtoCodeResult);
-                    //yield return addToResult(resultDtoCodeResult);
+                    yield return addToResult(paramsDtoCodeResult);
+                    yield return addToResult(resultDtoCodeResult);
                     yield return addToResult(handlerCodeResult);
                 }
             }
