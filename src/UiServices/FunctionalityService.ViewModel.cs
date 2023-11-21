@@ -429,7 +429,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateQueryHandleMethodBody(data.ViewModel.GetAllQueryViewModel, "ID = %Id%");
+            data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetAllQueryHandleMethodBody(data.ViewModel.GetAllQueryViewModel);
 
         void setupSecurity(CreationData data) =>
             data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetAllQueryViewModel);
@@ -478,7 +478,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetByIdQueryViewModel);
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateQueryHandleMethodBody(data.ViewModel.GetByIdQueryViewModel, "ID = %Id%");
+            data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetByIdQueryHandleMethodBody(data.ViewModel.GetByIdQueryViewModel);
     }
 
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
@@ -594,28 +594,11 @@ internal sealed partial class FunctionalityService
                 .AppendLine("}")
                 .Build();
 
-        public static string CreateQueryHandleMethodBody(CqrsQueryViewModel model, string? additionalWhereClause)
-        {
-            // Create query to be used inside the body code.
-            var bodyQuery = SqlStatementBuilder
-                .Select(model.ParamsDto.DbObject.Name!)
-                .SetTopCount(model.ResultDto.IsList ? null : 1)
-                .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
-                .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact())
-                .Build()
-                .Replace(Environment.NewLine, " ").Replace("  ", " ");
-            // Create body code.
-            (var sqlMethod, var toListMethod) = model.ResultDto.IsList
-                ? (nameof(Sql.Select), ".ToList()")
-                : (nameof(Sql.FirstOrDefault), string.Empty);
-            var result = new StringBuilder()
-                .AppendLine($"var dbQuery = $@\"{bodyQuery}\";")
-                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetSegregateResultType("Query").Name}>(dbQuery){toListMethod};")
-                .AppendLine($"var result = new {model.GetSegregateResultType("Query").Name}(dbResult);")
-                .Append($"return Task.FromResult(result);")
-                .Build();
-            return result;
-        }
+        public static string CreateGetAllQueryHandleMethodBody(CqrsQueryViewModel model) =>
+            CreateQueryHandleMethodBody(model);
+
+        public static string CreateGetByIdQueryHandleMethodBody(CqrsQueryViewModel model) =>
+            CreateQueryHandleMethodBody(model, "[ID] = %Id%");
 
         [DebuggerStepThrough]
         public static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
@@ -645,5 +628,28 @@ internal sealed partial class FunctionalityService
         [DebuggerStepThrough]
         public static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
+
+        private static string CreateQueryHandleMethodBody(CqrsQueryViewModel model, string? additionalWhereClause = null)
+        {
+            // Create query to be used inside the body code.
+            var bodyQuery = SqlStatementBuilder
+                .Select(model.ParamsDto.DbObject.Name!)
+                .SetTopCount(model.ResultDto.IsList ? null : 1)
+                .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
+                .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact())
+                .Build()
+                .Replace(Environment.NewLine, " ").Replace("  ", " ");
+            // Create body code.
+            (var sqlMethod, var toListMethod) = model.ResultDto.IsList
+                ? (nameof(Sql.Select), ".ToList()")
+                : (nameof(Sql.FirstOrDefault), string.Empty);
+            var result = new StringBuilder()
+                .AppendLine($"var dbQuery = $@\"{bodyQuery}\";")
+                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetSegregateResultParamsType("Query").Name}>(dbQuery){toListMethod};")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Query").Name}(dbResult);")
+                .Append($"return Task.FromResult(result);")
+                .Build();
+            return result;
+        }
     }
 }
