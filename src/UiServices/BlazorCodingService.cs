@@ -45,12 +45,12 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
     public static string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
         new StringBuilder()
             .AppendLine($"// Setup segregation parameters")
-            .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").Name}();")
+            .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").FullPath}();")
             .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query")}(@params);")
             .AppendLine($"")
             .AppendLine($"")
             .AppendLine($"// Invoke the query handler to retrieve all entities")
-            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetSegregateResultType("Query")}>(cqParams);")
+            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetSegregateResultType("Query").FullPath}>(cqParams);")
             .AppendLine($"")
             .AppendLine($"")
             .AppendLine($"// Now, set the data context.")
@@ -243,9 +243,10 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
 
             static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel customButtonViewModel)
             {
-                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.CodeStatement, onClick: customButtonViewModel.EventHandlerName)
+                var button = new BlazorCustomButton(name: customButtonViewModel.Name, onClick: customButtonViewModel.EventHandlerName)
                 {
-                    Position = customButtonViewModel.Position.ToBootstrapPosition()
+                    Position = customButtonViewModel.Position.ToBootstrapPosition(),
+                    OnClickReturnType = customButtonViewModel.ReturnType,
                 };
                 return button.SetAction(model.Name!, customButtonViewModel.CodeStatement);
             }

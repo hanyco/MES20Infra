@@ -125,7 +125,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             {
                 generics.Add(dct2);
             };
-            var inherits = TypePath.New(typeof(PageBase<>), generics);
+            var inherits = TypePath.New(typeof(PageBase<>), generics).FullPath;
             _ = codeStringBuilder.AppendLine($"@inherits {inherits}");
             _ = codeStringBuilder.AppendLine();
             return result;

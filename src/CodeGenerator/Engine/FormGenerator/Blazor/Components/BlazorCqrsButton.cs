@@ -134,11 +134,11 @@ public sealed class BlazorCqrsButton(
         {
             case IQueryCqrsSegregation query:
                 var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick))
-                    , QueryButton_CallQueryMethodBody(dataContextValidatorName, cqrsParamsType, calleeName)
+                    , QueryButton_CallQueryMethodBody(dataContextValidatorName, cqrsParamsType.FullPath, calleeName)
                     , returnType: this._onClickReturnType ?? "async void");
                 var queryParameterType = query.Parameter?.Type;
                 var queryCalling = CodeDomHelper.NewMethod(
-                    QueryButton_CallingQueryMethodName(calleeName, cqrsParamsType)
+                    QueryButton_CallingQueryMethodName(calleeName, cqrsParamsType.FullPath)
                     , accessModifiers: DEFAULT_ACCESS_MODIFIER);
                 var queryResultType = query.Result?.Type;
                 var queryCalled = CodeDomHelper.NewMethod(
@@ -152,17 +152,17 @@ public sealed class BlazorCqrsButton(
             case ICommandCqrsSegregation:
                 var commandBody = CodeDomHelper.NewMethod(
                     this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
-                    CommandButton_CallCommandMethodBody(dataContextValidatorName, cqrsParamsType, cqrsResultType, calleeName),
+                    CommandButton_CallCommandMethodBody(dataContextValidatorName, cqrsParamsType.FullPath, cqrsResultType, calleeName),
                     returnType: "async void");
                 var commandCalling = CodeDomHelper.NewMethod(
                     $"On{calleeName}Calling",
                     accessModifiers: DEFAULT_ACCESS_MODIFIER,
-                    arguments: [($"{cqrsParamsType ?? "System.Object"}", "parameter")],
+                    arguments: [($"{cqrsParamsType.FullPath ?? "System.Object"}", "parameter")],
                     isPartial: true);
                 var commandCalled = CodeDomHelper.NewMethod(
                     $"On{calleeName}Called",
                     accessModifiers: DEFAULT_ACCESS_MODIFIER,
-                    arguments: [($"{cqrsParamsType ?? "System.Object"}", "parameter"), ($"{cqrsResultType ?? "System.Object"}", "result")],
+                    arguments: [($"{cqrsParamsType.FullPath ?? "System.Object"}", "parameter"), ($"{cqrsResultType ?? "System.Object"}", "result")],
                     isPartial: true);
                 yield return new(commandCalling, null);
                 yield return new(null, commandBody);
@@ -206,6 +206,7 @@ public sealed class BlazorCustomButton(
     ButtonType type = ButtonType.FormButton,
     string? prefix = null) : BlazorButtonBase<BlazorCustomButton, ICustomAction>(id, name, onClick, body, type, prefix), IHasCustomAction
 {
+    public string OnClickReturnType { get; set; }
     public IEnumerable<CodeTypeMembers>? GenerateCodeTypeMembers()
     {
         if (this.Action is null)
@@ -218,8 +219,8 @@ public sealed class BlazorCustomButton(
         yield return new(dataContextValidatorMethod, null);
 
         var body = this.Action.CodeStatement;
-
-        var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body);
+        var returnValue = OnClickReturnType =="void"?null:OnClickReturnType;
+        var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body, returnType: returnValue);
         yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
     }
 

@@ -424,7 +424,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var parameter in this.Parameters)
             {
-                _ = partClassType.AddProperty(parameter.Type,
+                _ = partClassType.AddProperty(parameter.Type.FullPath,
                                               parameter.Name,
                                               getter: new(true, false),
                                               setter: new(true, false),
