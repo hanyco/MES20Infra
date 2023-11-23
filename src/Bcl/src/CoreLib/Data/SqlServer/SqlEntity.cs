@@ -27,7 +27,7 @@ public static class SqlEntity
                 var isKey = keyAttr is not null || dbGen?.DatabaseGeneratedOption is DatabaseGeneratedOption.Identity;
                 var isFk = fkAttr is not null;
                 var fkName = fkAttr?.Name;
-                var type = colAttr?.TypeName is not null ? SqlHelper.SqlTypeToNetType(colAttr.TypeName) : prop.PropertyType;
+                var type = colAttr?.TypeName is not null ? SqlTypeHelper.SqlTypeToNetType(colAttr.TypeName) : prop.PropertyType;
                 var order = colAttr?.Order is not null ? colAttr.Order : int.MaxValue;
                 yield return new ColumnInfo(name, type, isKey, isFk, fkName, order);
             }
@@ -37,11 +37,12 @@ public static class SqlEntity
     public static TableInfo GetTableInfo<TEntity>()
         => new(GetTableName<TEntity>(), GetColumns<TEntity>());
 
-    public static string GetTableName<Entity>()
-        => GetTableName(typeof(Entity));
+    public static string GetTableName<TEntity>() =>
+        GetTableName(typeof(TEntity));
 
-    private static string GetTableName(Type tableType)
+    public static string GetTableName(Type tableType)
     {
+        Checker.MustBeArgumentNotNull(tableType);
         var tableAttr = ObjectHelper.GetAttribute<TableAttribute>(tableType);
         return tableAttr is not null
             ? tableAttr.Schema.IsNullOrEmpty() ? tableAttr.Name : $"{tableAttr.Schema}.{tableAttr.Name}"

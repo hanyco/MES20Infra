@@ -6,16 +6,15 @@ namespace HanyCo.Infra.Cqrs;
 public interface IQueryParameter
 {
 }
+
 public interface IQueryParameter<TQueryResult> : IQuery<TQueryResult>
 {
 }
 
-public interface IQueryResult: Library.Cqrs.Models.Queries.IQueryResult
+public interface IQueryResult : Library.Cqrs.Models.Queries.IQueryResult
 {
-    
 }
 
 public interface IQueryResult<TResult> : Library.Cqrs.Models.Queries.IQueryResult<TResult>
 {
-
 }

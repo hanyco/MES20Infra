@@ -34,10 +34,29 @@ public sealed class Check
     public static Result If(in bool notOk, in Func<Exception> getErrorMessage) =>
         notOk ? Result.CreateFailure(getErrorMessage()) : Result.CreateSuccess();
 
-    public static Result<TValue> If<TValue>(TValue value, in bool notOk, in Func<Exception> getErrorMessage) =>
+    public static Result<TValue> If<TValue>(in TValue value, in bool notOk, in Func<Exception> getErrorMessage) =>
         notOk ? Result<TValue>.CreateFailure(getErrorMessage(), value) : Result<TValue>.CreateSuccess(value);
 
-    public static Result<TValue> IfArgumentIsNotNull<TValue>(TValue obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
+    public static Result<IEnumerable<string?>?> IfAnyNull(in IEnumerable<string?>? items)
+    {
+        if (items?.Any() ?? false)
+        {
+            foreach (var item in items)
+            {
+                if (IfIsNull(item).TryParse(out var vr))
+                {
+                    return vr.WithValue(items)!;
+                }
+            }
+        }
+
+        return Result<IEnumerable<string?>?>.CreateSuccess(items);
+    }
+
+    public static Result<TValue> IfArgumentIsNull<TValue>(in TValue obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
+        If(obj, obj is null, () => new NullValueValidationException(argName!));
+
+    public static Result<TValue> IfIsNull<TValue>(in TValue obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
         If(obj, obj is null, () => new NullValueValidationException(argName!));
 
     /// <summary>
@@ -54,8 +73,9 @@ public sealed class Check
             Throw(getExceptionIfNot);
         }
     }
+
     public static void MustBe([DoesNotReturnIf(false)] bool ok, Func<string> getMessageIfNot) =>
-        MustBe(ok, ()=> new ValidationException(getMessageIfNot()));
+        MustBe(ok, () => new ValidationException(getMessageIfNot()));
 
     /// <summary>
     /// Checks if the given boolean is true, and throws a new instance of the specified exception if
@@ -79,7 +99,7 @@ public sealed class Check
     /// </summary>
     /// <param name="obj">The object to check.</param>
     /// <param name="argName">The name of the argument.</param>
-    public static void MustBeArgumentNotNull([NotNull][AllowNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
+    public static void MustBeArgumentNotNull([NotNull][AllowNull] in object? obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
         MustBe(obj is not null, () => new ArgumentNullException(argName));
 
     /// <summary>

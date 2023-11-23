@@ -10,7 +10,7 @@ public interface IMethod : IMember, IHasGenericTypes
     bool IsConstructor { get; }
     bool IsExtension { get; }
     ISet<(TypePath Type, string Name)> Parameters { get; }
-    public TypePath? ReturnType { get; }
+    TypePath? ReturnType { get; }
 }
 
 [Immutable]
@@ -38,20 +38,24 @@ public static class MethodExtensions
     public static IEnumerable<string> GetNameSpaces(this IMethod method)
     {
         Check.MustBeArgumentNotNull(method);
+        return new HashSet<string>(gather(method)).ToEnumerable();
 
-        if (method.ReturnType != null)
+        static IEnumerable<string> gather(IMethod method)
         {
-            foreach (var item in method.ReturnType.GetNameSpaces())
+            if (method.ReturnType != null)
             {
-                yield return item;
+                foreach (var item in method.ReturnType.GetNameSpaces())
+                {
+                    yield return item;
+                }
             }
-        }
 
-        foreach (var item in method.Parameters.Select(x => x.Type))
-        {
-            foreach (var ns in item.GetNameSpaces())
+            foreach (var item in method.Parameters.Select(x => x.Type))
             {
-                yield return ns;
+                foreach (var ns in item.GetNameSpaces())
+                {
+                    yield return ns;
+                }
             }
         }
     }

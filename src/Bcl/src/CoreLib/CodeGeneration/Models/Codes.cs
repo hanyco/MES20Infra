@@ -42,7 +42,7 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// </summary>
     /// <param name="name">The name of the Code item.</param>
     /// <returns>The Code item with the specified name. If no such item exists, returns null.</returns>
-    public Code? this[string name] => this.FirstOrDefault(x => x?.Name == name);
+    public Code? this[string name] => this.SingleOrDefault(x => x?.Name == name);
 
     /// <summary>
     /// Gets all the Code items with the specified language.
@@ -64,7 +64,13 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// Creates a new instance of the Codes class.
     /// </summary>
     /// <returns>A new instance of the Codes class.</returns>
-    public static Codes New(IEnumerable<Code> codes) =>
+    public static Codes New(IEnumerable<Code> arg) =>
+        new(arg);
+
+    public static Codes New(params Code[] codes) =>
+        new(codes);
+
+    public static Codes New(params Codes[] codes) =>
         new(codes);
 
     /// <summary>
@@ -72,7 +78,7 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// </summary>
     /// <returns>A new empty instance of the Codes class.</returns>
     public static Codes NewEmpty() =>
-        new();
+        [];
 
     /// <summary>
     /// Combines two Codes instances into one.
@@ -81,15 +87,13 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// <param name="c2">The second Codes instance.</param>
     /// <returns>A new Codes instance that combines the Code items from both input instances.</returns>
     public static Codes operator +(Codes c1, Codes c2) =>
-        new(c1.ToEnumerable().AddRangeImmuted(c2.ToEnumerable()));
+        new(c1.Iterate().AddRangeImmuted(c2.Iterate()));
 
-    /// <summary>
-    /// Adds a new Code item to the Codes collection.
-    /// </summary>
-    /// <param name="code">The Code item to be added.</param>
-    /// <returns>A new Codes instance containing the added Code item.</returns>
     public Codes Add(Code code) =>
         new(this.AddImmuted(code));
+
+    public Codes AddRange(IEnumerable<Code> codes) =>
+        new(this.AddRangeImmuted(codes));
 
     /// <summary>
     /// Composes all Code items in the Codes collection into a single Code.
@@ -105,4 +109,7 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
         }
         return result;
     }
+
+    public override string? ToString() =>
+        this.Count == 1 ? this[0]!.ToString() : $"{nameof(Codes)} ({this.Count})";
 }

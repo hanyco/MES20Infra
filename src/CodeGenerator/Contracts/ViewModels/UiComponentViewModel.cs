@@ -12,7 +12,7 @@ public class UiComponentViewModel : UiComponentViewModelBase
     private bool _generateUiCode = true;
     private bool _isGrid;
     private string? _nameSpace;
-    private DtoViewModel? _pageDataContext = null;
+    private DtoViewModel? _pageDataContext;
     private PropertyViewModel? _pageDataContextProperty;
 
     public string ClassName { get => this._className; set => this.SetProperty(ref this._className, value); }
@@ -37,9 +37,11 @@ public class UiComponentViewModel : UiComponentViewModelBase
 
     public UiBootstrapPositionViewModel Position { get; private set; } = new();
 
-    public ObservableCollection<IUiComponentContent> Actions { get; } = new();
+    public ObservableCollection<IUiComponentContent> Actions { get; } = [];
+    public ObservableCollection<(string Key, string Value)> Attributes { get; } = [];
+
+    public ObservableCollection<UiPropertyViewModel> Properties { get; } = [];
 
     public long? UiPageComponentId { get; set; }
-
-    public ObservableCollection<UiPropertyViewModel> Properties { get; } = new();
+    public ISet<CqrsViewModelBase> ConversationSubjects { get; } = new HashSet<CqrsViewModelBase>();
 }

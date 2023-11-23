@@ -39,11 +39,4 @@ public static class CodeGenerator
                             return code.With(x => x.props().Category = cg.props().Category);
                         }).ToCodes();
     }
-
-    public static Code GenerateCode(this CodeGenDto dto, string? nameSpace = null)
-    {
-        var generator = CqrsCodeCompileUnitCreatorEngine.Create(dto, nameSpace);
-        var code = generator.GenerateCode();
-        return code;
-    }
 }

@@ -28,4 +28,7 @@ public abstract class ComponentBase<TDataContextType, TPageDataContextType> : Co
         base.OnAfterRenderAsync(firstRender);
 
     protected override bool ShouldRender() => base.ShouldRender();
+
+    protected virtual Task OnLoadAsync() =>
+        Task.CompletedTask;
 }

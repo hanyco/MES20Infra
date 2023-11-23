@@ -32,17 +32,16 @@ public static class ServiceHelper
     /// <param name="detach">Whether to detach the entity from the database.</param>
     /// <param name="logger">The logger.</param>
     /// <returns>The result of the operation.</returns>
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static async Task<Result> DeleteAsync<TViewModel, TDbEntity>([DisallowNull] IAsyncWrite<TViewModel> service, [DisallowNull] DbContext dbContext, TViewModel model, bool persist, bool? detach = null, ILogger? logger = null)
         where TDbEntity : class, IIdenticalEntity<long>, new()
         where TViewModel : IHasKey<long?>
     {
         // Check if model and dbContext are not null
-        if (!Checker.IfArgumentIsNotNull(model?.Id).TryParse(out var res1))
+        if (!Checker.IfArgumentIsNull(model?.Id).TryParse(out var res1))
         {
             return res1;
         }
-        if (!Checker.IfArgumentIsNotNull(dbContext).TryParse(out var res2))
+        if (!Checker.IfArgumentIsNull(dbContext).TryParse(out var res2))
         {
             return res2;
         }
@@ -407,7 +406,7 @@ public static class ServiceHelper
         Checker.MutBeNotNull(manipulate);
         Checker.MustBeNotNull(convertToEntity);
         //! Check that all arguments are not null
-        if (!Checker.IfArgumentIsNotNull(model).TryParse(out var res1))
+        if (!Checker.IfArgumentIsNull(model).TryParse(out var res1))
         {
             return getResult(res1);
         }

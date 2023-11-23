@@ -20,23 +20,6 @@ public static class SourceCodeHelper
                 new("OK", (e1, e2) => MsgBox2.GetOnButtonClick(e1, e2).Parent.Close()),
                 new("Open Containing Folder…", (e1, e2) => { _ = Process.Start("explorer.exe", result.Value!); })).ToArray());
 
-    public static async Task<Result<string?>> SaveSourceToDiskAskAsync<TViewModel>(this ICodeGenerator<TViewModel, GenerateCodesParameters> codeGeneratorService,
-                                                                                TViewModel viewModel,
-                                                                                Func<Task> validatorAsync)
-    {
-        Check.MustBeArgumentNotNull(codeGeneratorService);
-        Check.MustBeArgumentNotNull(viewModel);
-
-        if (validatorAsync is not null)
-        {
-            await validatorAsync();
-        }
-
-        var codes = codeGeneratorService.GenerateCodes(viewModel).GetValue();
-        var result = await codes.SaveToFileAskAsync();
-        return result;
-    }
-
     public static async Task<Result<string?>> SaveToFileAskAsync(this Codes codes)
     {
         if (codes?.Any() is not true)

@@ -21,20 +21,44 @@ public sealed class Namespace(string name) : INamespace
     public ISet<IType> Types { get; } = new HashSet<IType>();
     public ISet<string> UsingNamespaces { get; } = new HashSet<string>();
 
-    public Result Validate() => Result.Success;
+    public Result Validate()
+    {
+        if (this.UsingNamespaces.Any(x => x.IsNullOrEmpty()))
+        {
+            return Result.CreateFailure(message: "Using namespace cannot be empty.");
+        }
+        if (this.Types.Any(x => x == null))
+        {
+            return Result.CreateFailure(message: "Type cannot be empty.");
+        }
+        foreach (var type in this.Types)
+        {
+            if (!type.Validate().TryParse(out var vr))
+            {
+                return vr;
+            }
+        }
+        return Result.Success;
+    }
 }
 
 public static class NamSpaceExtensions
 {
-    public static TNameSpace AddType<TNameSpace>(this TNameSpace nameSpace, IType type) where TNameSpace : INamespace =>
-        nameSpace.Fluent(nameSpace.Types.Add(type));
+    public static TNameSpace AddType<TNameSpace>(this TNameSpace nameSpace, params IType[] types) where TNameSpace : INamespace
+    {
+        foreach (var type in types.Compact())
+        {
+            _ = nameSpace.Types.Add(type);
+        }
+        return nameSpace;
+    }
 
     public static TNameSpace AddUsingNameSpace<TNameSpace>(this TNameSpace ns, IEnumerable<string> nameSpaces) where TNameSpace : INamespace =>
         AddUsingNameSpace(ns, nameSpaces.ToArray());
 
     public static TNameSpace AddUsingNameSpace<TNameSpace>(this TNameSpace ns, params string[] nameSpaces) where TNameSpace : INamespace
     {
-        nameSpaces.ForEach(x => ns.UsingNamespaces.Add(x));
+        nameSpaces.Distinct().Compact().ForEach(x => ns.UsingNamespaces.Add(x));
         return ns;
     }
 }

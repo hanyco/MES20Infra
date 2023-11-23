@@ -8,7 +8,6 @@ public sealed class SqlStatementCodeGeneratorTest(ISqlStatementCodeGenerator cod
     private readonly ISqlStatementCodeGenerator _codeGenerator = codeGenerator;
 
     [Fact]
-    [Trait("Category", "__ActiveTest")]
     public void _01_GenerateSelectAllSqlStatement()
     {
         var viewModel = CreateSampleViewModel();
@@ -22,7 +21,7 @@ public sealed class SqlStatementCodeGeneratorTest(ISqlStatementCodeGenerator cod
         {
             DbObject = new("Person", schema: "dto"),
         };
-        _ = model.Properties.AddRange(new PropertyViewModel[]
+        model.Properties.AddRange(new PropertyViewModel[]
         {
             new()
             {

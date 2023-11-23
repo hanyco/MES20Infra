@@ -19,9 +19,9 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 [Fluent]
 public sealed class BlazorComponent(in string name) : BlazorComponentBase<BlazorComponent>(name), IBlazorComponent
 {
-    public Dictionary<string, string?> BlazorAttributes { get; } = new Dictionary<string, string?>();
+    public Dictionary<string, string?> BlazorAttributes { get; } = [];
     public (TypePath Type, string Name)? DataContextProperty { get; set; }
-
+    
     public bool ShouldGenerateFullUiCode { get; internal set; } = true;
 
     public static BlazorComponent New(in string name) =>
@@ -37,27 +37,27 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
             //TypePath.New<IUserContext>(),
             TypePath.New<NavigationManager>(),
         };
-        _ = codeStringBuilder
-            .AppendLine($"@namespace {this.NameSpace}")
-            .AppendLine()
-            .AppendAllLines(injections, x => $"@using {x.NameSpace}")
-            .AppendLine($"@using {typeof(ComponentBase<,>).Namespace}")
-            .AppendLine($"@using {this.DataContextType?.NameSpace}")
-            .AppendLine()
-            .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
-            .AppendLine();
-
-        var baseTypeName = typeof(ComponentBase<,>).Name[..^2];
         var dataContextType = (this.DataContextType, this.DataContextProperty) switch
         {
             (_, { } dc) => dc.Type,
             ({ } dc, null) => dc,
             _ => null
         };
-        _ = this.IsGrid
-            ? codeStringBuilder.AppendLine($"@inherits {baseTypeName}<List<{dataContextType?.Name}>, {this.DataContextType?.Name}>")
-            : codeStringBuilder.AppendLine($"@inherits {baseTypeName}<{dataContextType?.Name},{this.DataContextType?.Name}>");
-        _ = codeStringBuilder.AppendLine();
+        var componentBaseTypePath = TypePath.New(typeof(ComponentBase<,>),
+            this.IsGrid
+                ? [$"List<{dataContextType.Name}>", this.DataContextType.Name]
+                : [$"{dataContextType?.Name}", $"{this.DataContextType?.Name}"]);
+        _ = codeStringBuilder
+            .AppendLine($"@namespace {this.NameSpace}")
+            .AppendLine()
+            .AppendAllLines(componentBaseTypePath.GetNameSpaces(), x => $"@using {x}")
+            .AppendAllLines(injections, x => $"@using {x.NameSpace}")
+            .AppendLine($"@using {this.DataContextType?.NameSpace}")
+            .AppendLine()
+            .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
+            .AppendLine()
+            .AppendLine($"@inherits {componentBaseTypePath.FullName}")
+            .AppendLine();
         return codeStringBuilder;
     }
 
@@ -83,6 +83,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
                 element.Attributes.Add("DataContext", "@this.DataContext");
             }
             element.Attributes.Add("PageDataContext", "@this.DataContext");
+            element.Attributes.AddRange(this.Attributes);
             return element.GenerateUiCode();
         }
     }

@@ -1,10 +1,15 @@
 ﻿using Library.CodeGeneration;
 using Library.DesignPatterns.Markers;
+using Library.Helpers.Models;
+using Library.Results;
 using Library.Validations;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
+
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 using MethodParameterInfo = (Library.CodeGeneration.TypePath Type, string Name);
 using PropertyAccessorInfo = (bool Has, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.CSharp.SyntaxKind>? AccessModifiers);
@@ -17,6 +22,13 @@ namespace Library.Helpers.CodeGen;
 
 public static class RoslynHelper
 {
+    public static RosClass AddBase(this RosClass type, string baseClassName)
+    {
+        Checker.MustBeArgumentNotNull(type);
+
+        return type.WithBaseList(BaseList(new SeparatedSyntaxList<BaseTypeSyntax>().Add(SimpleBaseType(ParseTypeName(baseClassName)))));
+    }
+
     public static RosClass AddConstructor(this RosClass type, IEnumerable<MethodParameterInfo>? parameters = null, string? body = null, IEnumerable<SyntaxKind>? modifiers = null) =>
         type.AddConstructor(out _, parameters, body);
 
@@ -24,7 +36,7 @@ public static class RoslynHelper
     {
         Checker.MustBeArgumentNotNull(type);
 
-        ctor = CreateConstructor(type.GetName(), parameters, body, modifiers);
+        ctor = CreateConstructor(type.GetName(), modifiers, parameters, body);
         return type.AddMethod(ctor);
     }
 
@@ -57,13 +69,13 @@ public static class RoslynHelper
         return type.AddMembers(method);
     }
 
-    public static CompilationUnitSyntax AddNameSpace(this CompilationUnitSyntax root, NamespaceDeclarationSyntax nameSpace) =>
-        root.ArgumentNotNull().WithMembers(SyntaxFactory.SingletonList<MemberDeclarationSyntax>(nameSpace));
+    public static CompilationUnitSyntax AddNameSpace(this CompilationUnitSyntax root, BaseNamespaceDeclarationSyntax nameSpace) =>
+        root.ArgumentNotNull().WithMembers(SingletonList<MemberDeclarationSyntax>(nameSpace));
 
-    public static CompilationUnitSyntax AddNameSpace(this CompilationUnitSyntax root, string nameSpaceName, out NamespaceDeclarationSyntax nameSpace)
+    public static CompilationUnitSyntax AddNameSpace(this CompilationUnitSyntax root, string nameSpaceName, out BaseNamespaceDeclarationSyntax nameSpace)
     {
         nameSpace = CreateNamespace(nameSpaceName);
-        return root.ArgumentNotNull().WithMembers(SyntaxFactory.SingletonList<MemberDeclarationSyntax>(nameSpace));
+        return root.ArgumentNotNull().WithMembers(SingletonList<MemberDeclarationSyntax>(nameSpace));
     }
 
     public static RosClass AddProperty<TPropertyType>(this RosClass type, string name, bool hasSetAccessor = true, bool hasGetAccessor = true) =>
@@ -83,10 +95,10 @@ public static class RoslynHelper
     public static RosClass AddProperty<TPropertyType>(this RosClass type, string name, out RosProp prop, bool hasSetAccessor = true, bool hasGetAccessor = true) =>
         type.AddProperty(name, typeof(TPropertyType), out prop, hasSetAccessor, hasGetAccessor);
 
-    public static RosClass AddProperty(this RosClass type, RosPropertyInfo propertyInfo) =>
+    public static RosClass AddProperty(this RosClass type, [DisallowNull] RosPropertyInfo propertyInfo) =>
         type.AddProperty(propertyInfo, out _);
 
-    public static RosClass AddProperty(this RosClass type, RosPropertyInfo propertyInfo, out RosProp property)
+    public static RosClass AddProperty([DisallowNull] this RosClass type, [DisallowNull] RosPropertyInfo propertyInfo, [DisallowNull] out RosProp property)
     {
         Checker.MustBeArgumentNotNull(type);
 
@@ -97,10 +109,10 @@ public static class RoslynHelper
     public static RosClass AddPropertyWithBackingField<TPropertyType>(this RosClass type, string propertyName) =>
         type.AddPropertyWithBackingField(new RosPropertyInfo(propertyName, typeof(TPropertyType)));
 
-    public static RosClass AddPropertyWithBackingField(this RosClass type, RosPropertyInfo propertyInfo, RosFieldInfo? fieldInfo = null) =>
+    public static RosClass AddPropertyWithBackingField([DisallowNull] this RosClass type, [DisallowNull] RosPropertyInfo propertyInfo, RosFieldInfo? fieldInfo = null) =>
         type.AddPropertyWithBackingField(propertyInfo, out _, fieldInfo);
 
-    public static RosClass AddPropertyWithBackingField(this RosClass type, RosPropertyInfo propertyInfo, out (RosProp Property, RosFld Field) fullProperty, RosFieldInfo? fieldInfo = null)
+    public static RosClass AddPropertyWithBackingField([DisallowNull] this RosClass type, [DisallowNull] RosPropertyInfo propertyInfo, out (RosProp Property, RosFld Field) fullProperty, RosFieldInfo? fieldInfo = null)
     {
         Checker.MustBeArgumentNotNull(type);
         Checker.MustBeArgumentNotNull(propertyInfo);
@@ -121,22 +133,17 @@ public static class RoslynHelper
         return type.AddMembers(property);
     }
 
-    public static NamespaceDeclarationSyntax AddType(this NamespaceDeclarationSyntax nameSpace, RosClass type)
+    public static BaseNamespaceDeclarationSyntax AddType(this BaseNamespaceDeclarationSyntax nameSpace, RosClass type)
     {
         Checker.MustBeArgumentNotNull(nameSpace);
 
         return nameSpace.AddMembers(type);
     }
-    public static RosClass AddBase(this RosClass type, string baseClassName)
-    {
-        Checker.MustBeArgumentNotNull(type);
 
-        return type.WithBaseList(SyntaxFactory.BaseList(new SeparatedSyntaxList<BaseTypeSyntax>().Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("BaseClass")))));
-    }
-    public static NamespaceDeclarationSyntax AddType(this NamespaceDeclarationSyntax nameSpace, string typeName) =>
+    public static BaseNamespaceDeclarationSyntax AddType(this BaseNamespaceDeclarationSyntax nameSpace, string typeName) =>
         nameSpace.AddType(typeName, out _);
 
-    public static NamespaceDeclarationSyntax AddType(this NamespaceDeclarationSyntax nameSpace, string typeName, out RosClass type, IEnumerable<SyntaxKind>? modifiers = null)
+    public static BaseNamespaceDeclarationSyntax AddType(this BaseNamespaceDeclarationSyntax nameSpace, string typeName, out RosClass type, IEnumerable<SyntaxKind>? modifiers = null)
     {
         Checker.MustBeArgumentNotNull(nameSpace);
 
@@ -147,21 +154,54 @@ public static class RoslynHelper
     public static CompilationUnitSyntax AddUsingNameSpace(this CompilationUnitSyntax root, string usingNamespace) =>
         root.ArgumentNotNull().AddUsings(CreateUsingNameSpace(usingNamespace));
 
-    public static NamespaceDeclarationSyntax AddUsingNameSpace(this NamespaceDeclarationSyntax nameSpace, string usingNamespace)
+    public static BaseNamespaceDeclarationSyntax AddUsingNameSpace(this BaseNamespaceDeclarationSyntax nameSpace, string usingNamespace)
     {
         Checker.MustBeArgumentNotNull(nameSpace);
 
-        var usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(usingNamespace));
+        var usingDirective = UsingDirective(ParseName(usingNamespace));
         return nameSpace.AddUsings(usingDirective);
     }
 
-    public static RosMethod CreateConstructor(string className, IEnumerable<MethodParameterInfo>? parameters = null, string? body = null, IEnumerable<SyntaxKind>? modifiers = null) =>
-                CreateConstructor(className, out _, parameters, body, modifiers);
-
-    public static RosMethod CreateConstructor(string className, out RosMethod ctor, IEnumerable<MethodParameterInfo>? parameters = null, string? body = null, IEnumerable<SyntaxKind>? modifiers = null)
+    public static Result CompileOnFly(CompileOnFlyOptionsBase options)
     {
-        modifiers ??= EnumerableHelper.ToEnumerable(SyntaxKind.PublicKeyword);
-        ctor = SyntaxFactory.ConstructorDeclaration(className).WithModifiers(modifiers.ToSyntaxTokenList());
+        var source = options switch
+        {
+            CompileOnFlyByFileOptions file => File.ReadAllText(file.SourceFile),
+            CompileOnFlyBySourceOptions src => src.Source,
+            _ => throw new NotImplementedException(),
+        };
+        var parsedSyntaxTree = ParseSyntaxTree(SourceText.From(source, Encoding.UTF8), CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest));
+        _ = options.FrameworkReferences.Add("mscorlib");
+        _ = options.FrameworkReferences.Add("System");
+        _ = options.FrameworkReferences.Add("System.Core.dll");
+        var defaultReferences = options.FrameworkReferences.Select(x => MetadataReference.CreateFromFile(x));
+        var defaultCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            .WithOverflowChecks(options.WithOverflowChecks)
+            .WithOptimizationLevel(options.IsReleaseMode ? OptimizationLevel.Release : OptimizationLevel.Debug);
+        var compilation = CSharpCompilation.Create($"{Guid.NewGuid}.dll", [parsedSyntaxTree], defaultReferences, defaultCompilationOptions);
+        try
+        {
+            var result = string.IsNullOrEmpty(options.OutputFile) ? compilation.Emit(Stream.Null) : compilation.Emit(options.OutputFile);
+            return result.Success
+                ? Result.Success
+                : Result.CreateFailure(errors: result.Diagnostics.Select(x => ((object)x.Id, (object)x.GetMessage())));
+        }
+        catch (Exception ex)
+        {
+            return Result.CreateFailure(ex);
+        }
+    }
+
+    public static Result CompileOnFlyByFile(string inputFile, string? outputFile = null) =>
+        CompileOnFly(new CompileOnFlyByFileOptions(inputFile, outputFile));
+
+    public static Result CompileOnFlyBySource(string source, string? outputFile = null) =>
+        CompileOnFly(new CompileOnFlyBySourceOptions(source, outputFile));
+
+    public static RosMethod CreateConstructor(string className, IEnumerable<SyntaxKind>? modifiers = null, IEnumerable<MethodParameterInfo>? parameters = null, string? body = null)
+    {
+        modifiers ??= EnumerableHelper.Iterate(SyntaxKind.PublicKeyword);
+        var ctor = ConstructorDeclaration(className).WithModifiers(modifiers.ToSyntaxTokenList());
         return InnerCreateBaseMethod(new(modifiers, null, TypePath.GetName(className), parameters, body), ctor);
     }
 
@@ -169,11 +209,11 @@ public static class RoslynHelper
     {
         Checker.MustBeArgumentNotNull(fieldInfo);
 
-        var result = SyntaxFactory.FieldDeclaration(
-            SyntaxFactory.VariableDeclaration(
-                SyntaxFactory.ParseTypeName(fieldInfo.Type.FullName),
-                SyntaxFactory.SeparatedList(new[] {
-                    SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier(fieldInfo.Name))
+        var result = FieldDeclaration(
+            VariableDeclaration(
+                ParseTypeName(fieldInfo.Type.FullName),
+                SeparatedList(new[] {
+                    VariableDeclarator(Identifier(fieldInfo.Name))
         })));
         if (fieldInfo.AccessModifiers?.Any() ?? false)
         {
@@ -193,15 +233,15 @@ public static class RoslynHelper
             modifiers = modifiers.AddImmuted(SyntaxKind.StaticKeyword);
         }
 
-        RosMethod result = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName(methodInfo.ReturnType?.Name ?? "void"), methodInfo.Name).WithModifiers(modifiers.ToSyntaxTokenList());
+        RosMethod result = MethodDeclaration(ParseTypeName(methodInfo.ReturnType?.FullName ?? "void"), methodInfo.Name).WithModifiers(modifiers.ToSyntaxTokenList());
 
         result = InnerCreateBaseMethod(methodInfo, result);
         return result;
     }
 
-    public static NamespaceDeclarationSyntax CreateNamespace(string nameSpaceName)
+    public static BaseNamespaceDeclarationSyntax CreateNamespace(string nameSpaceName)
     {
-        var result = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(nameSpaceName));
+        var result = FileScopedNamespaceDeclaration(ParseName(nameSpaceName));
         return result;
     }
 
@@ -210,13 +250,21 @@ public static class RoslynHelper
         Checker.MustBeArgumentNotNull(propertyInfo);
         var result = InnerCreatePropertyBase(propertyInfo);
 
-        if (propertyInfo.GetAccessor.Has)
+        if (propertyInfo.GetAccessor.Has || propertyInfo.SetAccessor.Has)
         {
-            result = result.AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+            if (propertyInfo.GetAccessor.Has)
+            {
+                result = result.AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+            }
+            if (propertyInfo.SetAccessor.Has)
+            {
+                result = result.AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+            }
         }
-        if (propertyInfo.SetAccessor.Has)
+        else
         {
-            result = result.AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+            result = result.AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+            result = result.AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
         }
 
         return result;
@@ -236,53 +284,53 @@ public static class RoslynHelper
         var result = InnerCreatePropertyBase(propertyInfo);
         if (propertyInfo.GetAccessor.Has || propertyInfo.SetAccessor.Has)
         {
-            var accessors = SyntaxFactory.List<AccessorDeclarationSyntax>();
+            var accessors = List<AccessorDeclarationSyntax>();
             if (propertyInfo.GetAccessor.Has)
             {
-                accessors = accessors.Add(SyntaxFactory.AccessorDeclaration(
+                accessors = accessors.Add(AccessorDeclaration(
                         SyntaxKind.GetAccessorDeclaration,
-                        SyntaxFactory.Block(
-                            SyntaxFactory.SingletonList<StatementSyntax>(
-                                SyntaxFactory.ReturnStatement(SyntaxFactory.IdentifierName(field.GetName()))
+                        Block(
+                            SingletonList<StatementSyntax>(
+                                ReturnStatement(IdentifierName(field.GetName()))
                             )
                         )
                     ));
             }
             if (propertyInfo.SetAccessor.Has)
             {
-                accessors = accessors.Add(SyntaxFactory.AccessorDeclaration(
+                accessors = accessors.Add(AccessorDeclaration(
                         SyntaxKind.SetAccessorDeclaration,
-                        SyntaxFactory.Block(
-                            SyntaxFactory.SingletonList<StatementSyntax>(
-                                SyntaxFactory.ExpressionStatement(
-                                    SyntaxFactory.AssignmentExpression(
+                        Block(
+                            SingletonList<StatementSyntax>(
+                                ExpressionStatement(
+                                    AssignmentExpression(
                                         SyntaxKind.SimpleAssignmentExpression,
-                                        SyntaxFactory.IdentifierName(field.GetName()),
-                                        SyntaxFactory.IdentifierName("value")
+                                        IdentifierName(field.GetName()),
+                                        IdentifierName("value")
                                     )
                                 )
                             )
                         )
                     ));
             }
-            result = result.WithAccessorList(SyntaxFactory.AccessorList(accessors));
+            result = result.WithAccessorList(AccessorList(accessors));
         }
         return result;
     }
 
     public static CompilationUnitSyntax CreateRoot() =>
-        SyntaxFactory.CompilationUnit();
+        CompilationUnit();
 
     public static RosClass CreateType(TypePath typeName, IEnumerable<SyntaxKind>? modifiers = null)
     {
         Checker.MustBeArgumentNotNull(typeName?.Name);
 
         modifiers ??= new[] { SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword };
-        return SyntaxFactory.ClassDeclaration(typeName.Name).WithModifiers(modifiers.ToSyntaxTokenList());
+        return ClassDeclaration(typeName.Name).WithModifiers(modifiers.ToSyntaxTokenList());
     }
 
     public static UsingDirectiveSyntax CreateUsingNameSpace(string usingNameSpace) =>
-                                SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(usingNameSpace));
+        UsingDirective(ParseName(usingNameSpace));
 
     public static string GenerateCode(this SyntaxNode syntaxNode) =>
         syntaxNode.NormalizeWhitespace().ToFullString();
@@ -292,6 +340,14 @@ public static class RoslynHelper
 
     public static string GetName(this RosClass type) =>
         type.ArgumentNotNull().Identifier.ValueText;
+
+    public static string ReformatCode(string sourceCode) =>
+        CSharpSyntaxTree.ParseText(sourceCode)
+            .GetRoot()
+            .NormalizeWhitespace()
+            .SyntaxTree
+            .GetText()
+            .ToString();
 
     private static RosMethod InnerCreateBaseMethod(RosMethodInfo methodInfo, RosMethod result)
     {
@@ -311,11 +367,11 @@ public static class RoslynHelper
                     createParam(p);
                 if (paramIndex != paramArray.Length - 1)
                 {
-                    nodes[++nodeIndex] = SyntaxFactory.Token(SyntaxKind.CommaToken);
+                    nodes[++nodeIndex] = Token(SyntaxKind.CommaToken);
                 }
                 nodeIndex++;
             }
-            result = result.WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList<ParameterSyntax>(nodes)));
+            result = result.WithParameterList(ParameterList(SeparatedList<ParameterSyntax>(nodes)));
         }
         if (!methodInfo.Body.IsNullOrEmpty())
         {
@@ -323,21 +379,21 @@ public static class RoslynHelper
 
             result = lines switch
             {
-                //{ Length: > 1 } => result.WithBody(SyntaxFactory.Block(lines.Select(x => SyntaxFactory.ParseStatement(x)))),
-                //{ Length: 1 } => result.WithExpressionBody(SyntaxFactory.ArrowExpressionClause(SyntaxFactory.ParseExpression(lines[0]))),
+                //{ Length: > 1 } => result.WithBody(Block(lines.Select(x => ParseStatement(x)))),
+                //{ Length: 1 } => result.WithExpressionBody(ArrowExpressionClause(ParseExpression(lines[0]))),
                 //_ => throw new NotImplementedException()
-                _ => result.WithBody(SyntaxFactory.Block(lines.Select(x => SyntaxFactory.ParseStatement(x)))),
+                _ => result.WithBody(Block(lines.Select(x => ParseStatement(x)))),
             };
         }
         return result;
 
         static ParameterSyntax createParam(MethodParameterInfo p) =>
-            SyntaxFactory.Parameter(SyntaxFactory.Identifier(p.Name)).WithType(SyntaxFactory.ParseTypeName(p.Type.FullName));
+            Parameter(Identifier(p.Name)).WithType(ParseTypeName(p.Type.FullName));
     }
 
     private static RosProp InnerCreatePropertyBase(RosPropertyInfo propertyInfo)
     {
-        var result = SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(propertyInfo.Type.Name), propertyInfo.Name);
+        var result = PropertyDeclaration(ParseTypeName(propertyInfo.Type.FullName), propertyInfo.Name);
         if (propertyInfo.Modifiers?.Any() ?? false)
         {
             result = result.AddModifiers(propertyInfo.Modifiers.ToSyntaxTokenArray());
@@ -353,7 +409,7 @@ public sealed class RosFieldInfo(
     in TypePath type,
     in IEnumerable<SyntaxKind>? accessModifiers = null) : IEquatable<RosFieldInfo>
 {
-    public IEnumerable<SyntaxKind>? AccessModifiers { get; } = accessModifiers ?? EnumerableHelper.ToEnumerable(SyntaxKind.PrivateKeyword);
+    public IEnumerable<SyntaxKind>? AccessModifiers { get; } = accessModifiers ?? EnumerableHelper.Iterate(SyntaxKind.PrivateKeyword);
     public string Name { get; } = name;
     public TypePath Type { get; } = type;
 
@@ -384,7 +440,7 @@ public sealed class RosMethodInfo(
 {
     public string? Body { get; } = body ?? "throw new NotImplementedException();";
     public bool IsExtensionMethod { get; } = isExtensionMethod;
-    public IEnumerable<SyntaxKind> Modifiers { get; } = modifiers ?? EnumerableHelper.ToEnumerable(SyntaxKind.PublicKeyword);
+    public IEnumerable<SyntaxKind> Modifiers { get; } = modifiers ?? EnumerableHelper.Iterate(SyntaxKind.PublicKeyword);
     public string Name { get; } = name;
     public IEnumerable<MethodParameterInfo>? Parameters { get; } = parameters;
     public TypePath? ReturnType { get; } = returnType;
@@ -413,10 +469,10 @@ public sealed class RosPropertyInfo(
     in PropertyAccessorInfo? getAccessor = null,
     in PropertyAccessorInfo? setAccessor = null) : IEquatable<RosPropertyInfo>
 {
-    public PropertyAccessorInfo GetAccessor { get; } = getAccessor == null ? (true, EnumerableHelper.ToEnumerable(SyntaxKind.PublicKeyword)) : getAccessor.Value;
-    public IEnumerable<SyntaxKind> Modifiers { get; } = modifiers ?? EnumerableHelper.ToEnumerable(SyntaxKind.PublicKeyword);
+    public PropertyAccessorInfo GetAccessor { get; } = getAccessor == null ? (true, EnumerableHelper.Iterate(SyntaxKind.PublicKeyword)) : getAccessor.Value;
+    public IEnumerable<SyntaxKind> Modifiers { get; } = modifiers ?? EnumerableHelper.Iterate(SyntaxKind.PublicKeyword);
     public string Name { get; } = name;
-    public PropertyAccessorInfo SetAccessor { get; } = setAccessor == null ? (true, EnumerableHelper.ToEnumerable(SyntaxKind.PublicKeyword)) : setAccessor.Value;
+    public PropertyAccessorInfo SetAccessor { get; } = setAccessor == null ? (true, EnumerableHelper.Iterate(SyntaxKind.PublicKeyword)) : setAccessor.Value;
     public TypePath Type { get; } = type;
 
     public static bool operator !=(RosPropertyInfo left, RosPropertyInfo right) =>
@@ -451,7 +507,7 @@ internal static partial class Helpers
             {
                 if (kind is { } k)
                 {
-                    yield return SyntaxFactory.Token(k);
+                    yield return Token(k);
                 }
             }
         }
@@ -463,7 +519,7 @@ internal static partial class Helpers
 
         foreach (var kind in syntaxKinds ?? Enumerable.Empty<SyntaxKind>())
         {
-            var token = SyntaxFactory.Token(kind);
+            var token = Token(kind);
             tokenList = tokenList.Add(token);
         }
 

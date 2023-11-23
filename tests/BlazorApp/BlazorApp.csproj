@@ -2,19 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Configurations>Debug;Release;Debug Unit Test</Configurations>
   </PropertyGroup>
     <PropertyGroup>
         <EnablePreviewFeatures>true</EnablePreviewFeatures>
     </PropertyGroup>
-    <ItemGroup>
-      <Compile Remove="Test\**" />
-      <Content Remove="Test\**" />
-      <EmbeddedResource Remove="Test\**" />
-      <None Remove="Test\**" />
-    </ItemGroup>
     <ItemGroup>
       <None Include="Pages\Counter.razor" />
       <None Include="Pages\Error.cshtml" />

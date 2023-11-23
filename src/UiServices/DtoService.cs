@@ -1,21 +1,20 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+using Contracts;
 using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.Definitions;
-using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2;
+using Library.CodeGeneration.v2.Back;
 using Library.Data.Linq;
 using Library.Exceptions.Validations;
 using Library.Helpers.CodeGen;
@@ -36,13 +35,14 @@ internal sealed class DtoService(
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
     ISecurityService securityDescriptor,
-    IPropertyService propertyService)
+    IPropertyService propertyService,
+    ICodeGeneratorEngine codeGeneratorEngine)
     : IDtoService, IDtoCodeService, IAsyncValidator<DtoViewModel>, IAsyncSaveChanges, IResetChanges
 {
+    private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGeneratorEngine;
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _db = readDbContext;
     private readonly IPropertyService _propertyService = propertyService;
-    private readonly ISecurityService _securityDescriptor = securityDescriptor;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     public Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
@@ -73,9 +73,9 @@ internal sealed class DtoService(
 
         try
         {
-            _ = await this._propertyService.DeleteByParentIdAsync(model.Id!.Value, false, token);
+            _ = await this._propertyService.DeleteByParentIdAsync(model.Id!.Value, false, token).ConfigureAwait(false);
             _ = this._writeDbContext.RemoveById<DtoEntity>(model.Id!.Value);
-            return await this.SubmitChangesAsync(persist: persist, token: token);
+            return await this.SubmitChangesAsync(persist: persist, token: token).ConfigureAwait(false);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_CqrsSegregate_Dto"))
         {
@@ -101,37 +101,41 @@ internal sealed class DtoService(
                     .Build()!;
     }
 
-    public Result<Codes> GenerateCodes(DtoViewModel viewModel, GenerateCodesParameters? arguments = null)
+    public Result<Codes> GenerateCodes(DtoViewModel viewModel, DtoCodeServiceGenerateCodesParameters? arguments = null)
     {
-        Check.MustBeArgumentNotNull(viewModel);
-        var result = new Codes().With(x => x.props().Category = CodeCategory.Dto);
         if (!validate(viewModel).TryParse(out var validationResult))
         {
-            return Result<Codes>.From(validationResult, result);
+            return validationResult.WithValue(Codes.Empty);
         }
 
-        var codeGen = convertViewModelToCodeGen(viewModel);
-        var code = codeGen.GenerateCode(viewModel.NameSpace).With(x => x.props().Category = CodeCategory.Dto);
+        var properties = viewModel.Properties.Select(toProperty);
+        var type = new Class(arguments?.TypeName ?? viewModel.Name!).AddMember(properties);
+        var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
 
-        return Result<Codes>.New(result.Add(code));
+        var statement = this._codeGeneratorEngine.Generate(nameSpace);
+        var code = new Code(type.Name, Languages.CSharp, statement.Value)
+            .With(x => x.props().Category = CodeCategory.Dto);
 
-        static CodeGenDto convertViewModelToCodeGen(DtoViewModel resultViewModel, CancellationToken token = default)
+        var result = Result.From(statement, code.ToCodes());
+        return result;
+
+        static IProperty toProperty(PropertyViewModel pvm)
         {
-            var result = CodeGenDto.New(TypeMemberNameHelper.GetFullName(resultViewModel.NameSpace, resultViewModel.Name!));
-            foreach (var prop in resultViewModel.Properties)
-            {
-                _ = result.AddProp(CodeGenType.New(prop.TypeFullName), prop.Name!, prop.IsList ?? false, prop.IsNullable ?? false, comment: prop.Comment);
-            }
-            return result;
+            var typeFullName = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
+            var type = ((pvm.IsList ?? false)
+                ? TypePath.New(typeof(List<>).FullName, null, generics: typeFullName)
+                : TypePath.New(typeFullName))
+                .WithNullable(pvm.IsNullable ?? false);
+
+            return IProperty.New(pvm.Name!, type);
         }
 
-        static Result<DtoViewModel> validate(DtoViewModel? viewModel, CancellationToken token = default)
-            => viewModel.Check()
-                    .NotNull(x => x)
-                    .NotNull(x => x.Module)
-                    .NotNullOrEmpty(x => x.Name)
-                    .NotNullOrEmpty(x => x.NameSpace)
-                    .Build()!;
+        static Result<DtoViewModel> validate(in DtoViewModel? viewModel, in CancellationToken token = default)
+            => viewModel.ArgumentNotNull().Check()
+                .NotNull(x => x.Module)
+                .NotNullOrEmpty(x => x.Name)
+                .NotNullOrEmpty(x => x.NameSpace)
+                .Build();
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync(CancellationToken token = default)
@@ -139,7 +143,7 @@ internal sealed class DtoService(
         var query = from dto in this._db.Dtos
                     select dto;
 
-        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._db.AsyncLock).ConfigureAwait(false);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
@@ -151,7 +155,7 @@ internal sealed class DtoService(
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels, token);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
 
-        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._db.AsyncLock).ConfigureAwait(false);
         var result = this._converter.FillByDbEntity(dbResult).ToReadOnlySet();
         return result;
 
@@ -182,12 +186,12 @@ internal sealed class DtoService(
 
     public async Task<DtoViewModel?> GetByIdAsync(long id, CancellationToken token = default)
     {
-        var dbResult = await getDto(id, token);
+        var dbResult = await getDto(id, token).ConfigureAwait(false);
         if (dbResult is null)
         {
             return null;
         }
-        var properties = await getProperties(dbResult, token);
+        var properties = await getProperties(dbResult, token).ConfigureAwait(false);
         var result = this._converter.ToViewModel(dbResult)!.ForMember(x => x.Properties.AddRange(properties));
 
         return result;
@@ -197,7 +201,7 @@ internal sealed class DtoService(
             var query = from x in this._db.Dtos.Include(x => x.Module)
                         where x.Id == id
                         select x;
-            var dbResult = await query.FirstOrDefaultLockAsync(this._db.AsyncLock);
+            var dbResult = await query.FirstOrDefaultLockAsync(this._db.AsyncLock).ConfigureAwait(false);
 
             //! MOHAMMAD: 💀 Sample code. Don't remove the following lines 💀
             //var q1 = EF.CompileAsyncQuery((InfraReadDbContext db, long id) => db.Dtos.FirstOrDefault(x => x.Id == id));
@@ -224,7 +228,6 @@ internal sealed class DtoService(
 
         Task<IReadOnlyList<PropertyViewModel>> getProperties(DtoEntity dbResult, CancellationToken token = default)
             => this._propertyService.GetByParentIdAsync(dbResult.Id, token);
-
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetByModuleId(long id, CancellationToken token = default)
@@ -232,7 +235,7 @@ internal sealed class DtoService(
         var query = from dto in this._db.Dtos
                     where dto.ModuleId == id
                     select dto;
-        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._db.AsyncLock).ConfigureAwait(false);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
@@ -242,7 +245,7 @@ internal sealed class DtoService(
 
     public async Task<Result<DtoViewModel>> InsertAsync(DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
-        var validationCheck = await this.ValidateAsync(viewModel, token);
+        var validationCheck = await this.ValidateAsync(viewModel, token).ConfigureAwait(false);
         if (!validationCheck.IsSucceed)
         {
             return validationCheck!;
@@ -252,13 +255,13 @@ internal sealed class DtoService(
         var entity = this.ToDbEntity(viewModel);
 
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(token);
-        await insertDto(viewModel, entity.Dto, token);
+        await insertDto(viewModel, entity.Dto, token).ConfigureAwait(false);
         if (persist)
         {
-            await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token);
+            await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token).ConfigureAwait(false);
         }
 
-        var result = await this.SubmitChangesAsync(persist, transaction).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
+        var result = await this.SubmitChangesAsync(persist, transaction, token: token).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id).ConfigureAwait(false);
         return Result<DtoViewModel>.From(result, viewModel);
 
         async Task insertDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
@@ -266,12 +269,12 @@ internal sealed class DtoService(
             _ = this._writeDbContext.ReAttach(dto.Module!).DbContext.Dtos.Add(dto).With(_ => viewModel.Guid = dto.Guid);
             if (persist)
             {
-                _ = await this.SaveChangesAsync(token);
+                _ = await this.SaveChangesAsync(token).ConfigureAwait(false);
             }
             //xawait this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
         }
         async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, CancellationToken token = default) =>
-            await this._propertyService.InsertProperties(properties, parentEntityId, persist, token);
+            await this._propertyService.InsertProperties(properties, parentEntityId, persist, token).ConfigureAwait(false);
     }
 
     public void ResetChanges()
@@ -282,21 +285,19 @@ internal sealed class DtoService(
 
     public async Task<Result<DtoViewModel>> UpdateAsync(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
-        _ = await this.CheckValidatorAsync(viewModel);
+        _ = await this.CheckValidatorAsync(viewModel).ConfigureAwait(false);
         _ = InitializeViewModel(viewModel);
         var entity = this.ToDbEntity(viewModel);
         this.ResetChanges();
 
         await using var transaction = await this._writeDbContext.BeginTransactionAsync(cancellationToken: token);
-        await removeDeletedProperties(viewModel.DeletedProperties, token);
-        await updateDto(viewModel, entity.Dto, token);
-        await updateProperties(entity.PropertyViewModels, entity.Dto, token);
-        var result = await this.SubmitChangesAsync(persist, transaction, token: token).With(_ => viewModel.Id = entity.Dto.Id);
+        await removeDeletedProperties(viewModel.DeletedProperties, token).ConfigureAwait(false);
+        updateDto(viewModel, entity.Dto, token);
+        updateProperties(entity.PropertyViewModels, entity.Dto, token);
+        var result = await this.SubmitChangesAsync(persist, transaction, token: token).With(_ => viewModel.Id = entity.Dto.Id).ConfigureAwait(false);
         return Result<DtoViewModel>.From(result, viewModel);
 
-        async Task updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
-        {
-            _ = this._writeDbContext.Attach(dto)
+        void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default) => _ = this._writeDbContext.Attach(dto)
                                     .SetModified(x => x.Name)
                                     .SetModified(x => x.NameSpace)
                                     .SetModified(x => x.Comment)
@@ -304,9 +305,7 @@ internal sealed class DtoService(
                                     .SetModified(x => x.IsParamsDto)
                                     .SetModified(x => x.IsResultDto)
                                     .SetModified(x => x.IsViewModel);
-
-        }
-        async Task updateProperties(IEnumerable<PropertyViewModel> properties, DtoEntity dto, CancellationToken token = default)
+        void updateProperties(IEnumerable<PropertyViewModel> properties, DtoEntity dto, CancellationToken token = default)
         {
             foreach (var prop in properties)
             {
@@ -338,7 +337,7 @@ internal sealed class DtoService(
                     }
                 }
             }
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
     }
 
@@ -357,7 +356,7 @@ internal sealed class DtoService(
         var query = from dto in this._db.Dtos
                     where dto.Name == viewModel!.Name && dto.Id != viewModel.Id
                     select dto.Id;
-        if (await query.AnyAsync(cancellationToken: token))
+        if (await query.AnyAsync(cancellationToken: token).ConfigureAwait(false))
         {
             return Result<DtoViewModel>.CreateFailure(new ObjectDuplicateValidationException("DTO"));
         }
@@ -396,7 +395,7 @@ internal sealed class DtoService(
         var propsVm = viewModel.Properties.Copy();
         viewModel.Properties.Clear();
         var dto = this._converter.ToDbEntity(viewModel)!;
-        var props = propsVm.ConvertAll(x => this._converter.ToDbEntity(x).With(x => x.Id = dto.Id));
+        var props = propsVm.Select(x => this._converter.ToDbEntity(x).With(x => x.Id = dto.Id));
         return (dto, props!, propsVm);
     }
 }

@@ -12,6 +12,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 /// </summary>
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
 /// <typeparam name="TArgs">The type of the arguments.</typeparam>
+[Obsolete("Violates the SRP rule in SOLD.", true)]
 public interface IAsyncCodeGenerator<in TViewModel, in TArgs>
 {
     /// <summary>
@@ -30,6 +31,7 @@ public interface IAsyncCodeGenerator<in TViewModel, in TArgs>
 /// Represents an interface for asynchronously generating codes based on a view model.
 /// </summary>
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
+[Obsolete("Violates the SRP rule in SOLD.", true)]
 public interface IAsyncCodeGenerator<in TViewModel>
 {
     /// <summary>

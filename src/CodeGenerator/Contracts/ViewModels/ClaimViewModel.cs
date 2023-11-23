@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Contracts.ViewModels;
 
@@ -34,4 +35,11 @@ public sealed class ClaimViewModel : InfraViewModelBase<Guid>, IEquatable<ClaimV
 
     private string GetDebuggerDisplay() =>
         this.ToString();
+}
+
+public static class ClaimViewModelExtensions
+{
+    [return: NotNull]
+    public static IEnumerable<string> ToSecurityKeys(this IEnumerable<ClaimViewModel> claims) =>
+        claims.Select(x => x.Key).Compact();
 }

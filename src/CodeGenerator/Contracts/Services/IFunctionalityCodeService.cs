@@ -7,7 +7,7 @@ using Library.Interfaces;
 
 namespace Contracts.Services;
 
-public interface IFunctionalityCodeService : IBusinessService, IAsyncCodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>
+public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>
 {
 }
 

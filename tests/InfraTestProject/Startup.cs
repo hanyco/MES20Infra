@@ -61,7 +61,7 @@ internal static class ServiceCollectionExtensions
                 .AddScoped<IMapper, Mapper>()
                 .AddScoped<ILogger, EmptyLogger>()
                 .AddSingleton(IProgressReport.New())
-                .AddScoped<ICodeGeneratorEngine, CodeDomCodeGenerator>();
+                .AddScoped<ICodeGeneratorEngine, RoslynCodeGenerator>();
 
         var inMemoryDatabaseRoot = new InMemoryDatabaseRoot();
         _ = services

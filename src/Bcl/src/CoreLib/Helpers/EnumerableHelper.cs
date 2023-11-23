@@ -17,24 +17,6 @@ namespace Library.Helpers;
 public static class EnumerableHelper
 {
     /// <summary>
-    /// Adds an item to the System.Collections.Generic.ICollection`1.
-    /// </summary>
-    /// <typeparam name="TDic">The type of the dic.</typeparam>
-    /// <typeparam name="TKey">The type of the key.</typeparam>
-    /// <typeparam name="TValue">The type of the value.</typeparam>
-    /// <param name="dic">The dic.</param>
-    /// <param name="key">The key.</param>
-    /// <param name="value">The value.</param>
-    /// <returns></returns>
-    public static TDic Add<TDic, TKey, TValue>([DisallowNull] this TDic dic, in TKey key, in TValue value)
-        where TDic : IList<KeyValuePair<TKey, TValue>>
-    {
-        Check.MustBeArgumentNotNull(dic);
-        dic.Add(new(key, value));
-        return dic;
-    }
-
-    /// <summary>
     /// Adds the specified item immutably and returns a new instance of source.
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -99,6 +81,19 @@ public static class EnumerableHelper
             }
         }
         return list; // Return the updated collection with added items.
+    }
+
+    public static void AddRange<TList, TItem>([DisallowNull] this TList list, params TItem[] items)
+        where TList : ICollection<TItem>
+    {
+        if (items?.Any() is true)
+        {
+            // Iterate through each item in the 'items' enumerable and add it to the collection.
+            foreach (var item in items)
+            {
+                list.Add(item);
+            }
+        }
     }
 
     /// <summary>
@@ -190,6 +185,7 @@ public static class EnumerableHelper
     /// <param name="source">The source IEnumerable.</param>
     /// <param name="items">The items to add.</param>
     /// <returns>A new IEnumerable containing the items from the source and the items to add.</returns>
+    [return: NotNull]
     public static IEnumerable<T> AddRangeImmuted<T>(this IEnumerable<T>? source, IEnumerable<T>? items)
     {
         return (source, items) switch
@@ -201,14 +197,20 @@ public static class EnumerableHelper
         };
         static IEnumerable<T> addRangeImmutedIterator(IEnumerable<T> source, IEnumerable<T> items)
         {
-            foreach (var item in source)
+            if (source != null)
             {
-                yield return item;
+                foreach (var item in source)
+                {
+                    yield return item;
+                }
             }
 
-            foreach (var item in items)
+            if (items != null)
             {
-                yield return item;
+                foreach (var item in items)
+                {
+                    yield return item;
+                }
             }
         }
     }
@@ -228,8 +230,8 @@ public static class EnumerableHelper
         var itemArray = items.ArgumentNotNull().ToArray();
         return itemArray switch
         {
-            [] => defaultValue, // Return the default value if the array is empty.
-            [var item] => item, // Return the single item if there's only one element.
+        [] => defaultValue, // Return the default value if the array is empty.
+        [var item] => item, // Return the single item if there's only one element.
             { Length: 2 } => aggregator.ArgumentNotNull()(itemArray.First(), itemArray.Last()), // Aggregate two elements using the aggregator function.
             [var item, .. var others] => aggregator(item, Aggregate(others, aggregator, defaultValue)) // Recursively aggregate remaining elements.
         };
@@ -283,7 +285,7 @@ public static class EnumerableHelper
     /// <returns>True if the IList contains any elements, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>([DisallowNull] this IList<T> source) =>
-        source.Count != 0; // Check if the count of elements in the IList is not zero.
+        source?.Count > 0; // Check if the count of elements in the IList is not zero or null.
 
     /// <summary>
     /// Determines whether any element exists in the given array.
@@ -293,7 +295,7 @@ public static class EnumerableHelper
     /// <returns>True if the array contains any elements, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this T[] source) =>
-        source.Length != 0; // Check if the length of the array is not zero.
+        source?.Length > 0; // Check if the length of the array is not zero or null.
 
     /// <summary>
     /// Determines whether any element exists in the given ICollection.
@@ -302,7 +304,7 @@ public static class EnumerableHelper
     /// <returns>True if the ICollection contains any elements, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this ICollection source) =>
-        source.Count != 0; // Check if the count of elements in the ICollection is not zero.
+        source?.Count > 0; // Check if the count of elements in the ICollection is not zero.
 
     /// <summary>
     /// Get a <see cref="Span{T}"/> view over a <see cref="List{T}"/>'s data. Items should not be
@@ -416,17 +418,20 @@ public static class EnumerableHelper
     /// <summary>
     /// Casts elements of the source sequence to the specified type if possible.
     /// </summary>
-    /// <typeparam name="T">The type of elements in the source sequence.</typeparam>
-    /// <typeparam name="U">The target type to cast elements to.</typeparam>
+    /// <typeparam name="TParams">The type of elements in the source sequence.</typeparam>
+    /// <typeparam name="TResult">The target type to cast elements to.</typeparam>
     /// <param name="source">The source sequence containing elements to be cast.</param>
     /// <returns>An IEnumerable containing elements cast to the specified type.</returns>
-    public static IEnumerable<U> CastSafe<T, U>(this IEnumerable<T> source)
+    public static IEnumerable<TResult> CastSafe<TParams, TResult>(this IEnumerable<TParams> source)
     {
-        foreach (var item in source)
+        if (source != null)
         {
-            if (item is U u)
+            foreach (var item in source)
             {
-                yield return u; // Yield the casted item.
+                if (item is TResult u)
+                {
+                    yield return u; // Yield the casted item.
+                }
             }
         }
     }
@@ -469,13 +474,17 @@ public static class EnumerableHelper
     /// <returns>The list with the added items.</returns>
     public static ICollection<TItem> ClearAndAddRange<TItem>(this ICollection<TItem> list, [DisallowNull] in IEnumerable<TItem> items)
     {
-        Check.MustBeArgumentNotNull(items);
+        Check.MustBeArgumentNotNull(list);
 
         list.Clear();
-        foreach (var item in items)
+        if (items != null)
         {
-            list.Add(item);
+            foreach (var item in items)
+            {
+                list.Add(item);
+            }
         }
+
         return list;
     }
 
@@ -495,13 +504,16 @@ public static class EnumerableHelper
     public static IEnumerable<TItem> Collect<TItem>(IEnumerable<TItem> items)
             where TItem : IParent<TItem>
     {
-        foreach (var item in items)
+        if (items != null)
         {
-            yield return item;
-
-            foreach (var child in Collect(item.Children))
+            foreach (var item in items)
             {
-                yield return child;
+                yield return item;
+
+                foreach (var child in Collect(item.Children))
+                {
+                    yield return child;
+                }
             }
         }
     }
@@ -509,10 +521,12 @@ public static class EnumerableHelper
     /// <summary>
     /// Returns an IEnumerable of non-null elements from the given IEnumerable of nullable elements.
     /// </summary>
+    [return: NotNull]
     public static IEnumerable<TSource> Compact<TSource>(this IEnumerable<TSource?>? items) where TSource : class =>
         items?
              .Where([DebuggerStepThrough] (x) => x is not null)
-             .Select([DebuggerStepThrough] (x) => x!) ?? Enumerable.Empty<TSource>();
+             .Select([DebuggerStepThrough] (x) => x!)
+        ?? Enumerable.Empty<TSource>();
 
     /// <summary>
     /// Checks if the given IEnumerable contains a key-value pair with the specified key.
@@ -528,7 +542,7 @@ public static class EnumerableHelper
     /// <returns>A new array containing elements copied from the original array.</returns>
     public static T[] Copy<T>(this T[] array) =>
         // Convert the array to an IEnumerable and then create an array from it.
-        array.ToEnumerable().ToArray();
+        array.Iterate().ToArray();
 
     /// <summary>
     /// Creates a new list by copying elements from an existing IList.
@@ -536,9 +550,9 @@ public static class EnumerableHelper
     /// <typeparam name="T">The type of elements in the list.</typeparam>
     /// <param name="array">The IList from which elements will be copied.</param>
     /// <returns>A new list containing elements copied from the original IList.</returns>
-    public static List<T> Copy<T>(this IList<T> array) =>
+    public static IList<T> Copy<T>(this IList<T> array) =>
         // Convert the IList to an IEnumerable and then create a List from it.
-        array.ToEnumerable().ToList();
+        array.Iterate().ToList();
 
     /// <summary>
     /// Creates an immutable array from an existing array.
@@ -548,7 +562,7 @@ public static class EnumerableHelper
     /// <returns>An immutable array containing elements from the original array.</returns>
     public static ImmutableArray<T> CopyImmutable<T>(this T[] array) =>
         // Convert the array to an IEnumerable and then create an immutable array from it.
-        array.ToEnumerable().ToImmutableArray();
+        array.Iterate().ToImmutableArray();
 
     /// <summary>
     /// Creates an immutable list from an existing IList.
@@ -558,7 +572,7 @@ public static class EnumerableHelper
     /// <returns>An immutable list containing elements from the original IList.</returns>
     public static ImmutableList<T> CopyImmutable<T>(this IList<T> array) =>
         // Convert the IList to an IEnumerable and then create an immutable list from it.
-        array.ToEnumerable().ToImmutableList();
+        array.Iterate().ToImmutableList();
 
     /// <summary> Counts the number of elements in a sequence that are not enumerated. </summary>
     /// <typeparam name="T">The type of the elements of source.</typeparam> <param name="source">The
@@ -601,9 +615,9 @@ public static class EnumerableHelper
     {
         Check.MustBeArgumentNotNull(items);
         Check.MustBeArgumentNotNull(action);
-        return getIterator(items, action);
+        return iterate(items, action);
 
-        static IEnumerable<TResult> getIterator(IEnumerable<T> items, Func<T, TResult> action)
+        static IEnumerable<TResult> iterate(IEnumerable<T> items, Func<T, TResult> action)
         {
             foreach (var item in items)
             {
@@ -628,6 +642,8 @@ public static class EnumerableHelper
     public static async IAsyncEnumerable<TItem> CreateIteratorAsync<TItem>([DisallowNull] this IAsyncEnumerable<TItem> asyncItems, Func<TItem, TItem> action, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(asyncItems);
+        Check.MustBeArgumentNotNull(action);
+
         await foreach (var item in asyncItems.WithCancellation(cancellationToken))
         {
             yield return action(item);
@@ -651,6 +667,8 @@ public static class EnumerableHelper
     public static async IAsyncEnumerable<TItem> CreateIteratorAsync<TItem>([DisallowNull] this IAsyncEnumerable<TItem> asyncItems, Action<TItem> action, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(asyncItems);
+        Check.MustBeArgumentNotNull(action);
+
         await foreach (var item in asyncItems.WithCancellation(cancellationToken))
         {
             action(item);
@@ -705,8 +723,12 @@ public static class EnumerableHelper
     /// <summary>
     /// Returns a collection of elements from the input sequence that do not satisfy the specified predicate.
     /// </summary>
-    public static IEnumerable<T> Except<T>(this IEnumerable<T> items, Func<T, bool> exceptor) =>
-        items.Where(x => !exceptor(x));
+    public static IEnumerable<T> Except<T>(this IEnumerable<T> items, Func<T, bool> exceptor)
+    {
+        Check.MustBeArgumentNotNull(exceptor);
+
+        return items.Where(x => !exceptor(x));
+    }
 
     /// <summary>
     /// Returns an IEnumerable of TItem from the source IEnumerable, excluding any items that match
@@ -737,7 +759,14 @@ public static class EnumerableHelper
     }
 
     public static IEnumerable<T> Flatten<T>([DisallowNull] IEnumerable<T> roots, [DisallowNull] Func<T, IEnumerable<T>?> getChildren) =>
-            roots.SelectAllChildren(getChildren);
+        roots.SelectAllChildren(getChildren);
+
+    public static TCollection FluentAdd<TCollection, T>(this TCollection collection, T item)
+            where TCollection : ICollection<T>
+    {
+        collection.Add(item);
+        return collection;
+    }
 
     /// <summary>
     /// Executes an action for each item in the given enumerable and returns a read-only list of the items.
@@ -813,7 +842,7 @@ public static class EnumerableHelper
     public static TryMethodResult<TResult?> GetValue<TResult>([DisallowNull] this HashSet<TResult> resultSet, TResult equalValue)
             where TResult : new()
     {
-        var tryResult = resultSet.TryGetValue(equalValue, out var actualValue);
+        var tryResult = resultSet.ArgumentNotNull().TryGetValue(equalValue, out var actualValue);
         return TryMethodResult<TResult?>.TryParseResult(tryResult, actualValue);
     }
 
@@ -906,6 +935,7 @@ public static class EnumerableHelper
     /// </remarks>
     public static IEnumerable<int> IndexesOf<T>(this IEnumerable<T> source, T item)
     {
+        Check.MustBeArgumentNotNull(source);
         var index = 0;
         foreach (var sourceItem in source)
         {
@@ -928,12 +958,17 @@ public static class EnumerableHelper
     /// This method initializes all elements in the given array with the specified default value. It
     /// iterates through each element in the array and assigns the default value to it.
     /// </remarks>
-    public static T[] InitializeItems<T>(this T[] items, T defaultItem)
+    [return: NotNullIfNotNull(nameof(items))]
+    public static T[]? InitializeItems<T>(this T[] items, T defaultItem)
     {
-        for (var index = 0; index < items.Length; index++)
+        if (items != null)
         {
-            items[index] = defaultItem;
+            for (var index = 0; index < items.Length; index++)
+            {
+                items[index] = defaultItem;
+            }
         }
+
         return items;
     }
 
@@ -977,6 +1012,67 @@ public static class EnumerableHelper
         (items1 == null && items2 == null) || (items1 != null && items2 != null && (items1.Equals(items2) || items1.SequenceEqual(items2)));
 
     /// <summary>
+    /// Converts a single item into an IEnumerable of that item.
+    /// </summary>
+    /// <param name="item">The item to convert.</param>
+    /// <returns>An IEnumerable containing the item.</returns>
+    /// <remarks>
+    /// This code creates an IEnumerable of type T and returns the item passed in as an argument.
+    /// </remarks>
+    [return: NotNull]
+    public static IEnumerable<T> Iterate<T>(T item)
+    {
+        //The yield keyword is used to return the item passed in as an argument.
+        yield return item;
+    }
+
+    [return: NotNull]
+    public static IEnumerable<T> Iterate<T>(params T[] items) =>
+            items.Iterate();
+
+    /// <summary>
+    /// Creates an IEnumerable from a given IEnumerable.
+    /// </summary>
+    /// <param name="source">The source IEnumerable.</param>
+    /// <returns>An IEnumerable.</returns>
+    public static IEnumerable<T> Iterate<T>(this IEnumerable<T> source)
+    {
+        //Check if the source is null
+        if (source is null)
+        {
+            //If it is, return an empty IEnumerable
+            yield break;
+        }
+        //Loop through each item in the source
+        foreach (var item in source)
+        {
+            //Return each item in the source
+            yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Converts an IEnumerable to an IEnumerable of objects.
+    /// </summary>
+    /// <param name="items">The input IEnumerable to convert.</param>
+    /// <returns>An IEnumerable of objects containing the items from the input IEnumerable.</returns>
+    public static IEnumerable<object> Iterate(this IEnumerable items)
+    {
+        // Check if the input enumerable is null, if so, return an empty enumerable.
+        if (items is null)
+        {
+            yield break; // The sequence is empty, so we yield break to exit the enumeration.
+        }
+
+        // Iterate through each item in the input enumerable.
+        foreach (var item in items)
+        {
+            // Yield return each item, effectively converting it to an IEnumerable<object>.
+            yield return item;
+        }
+    }
+
+    /// <summary>
     /// Projects each element of an IEnumerable sequence into a new form using the specified mapping function.
     /// </summary>
     /// <typeparam name="TSource">The type of elements in the source sequence.</typeparam>
@@ -1006,14 +1102,23 @@ public static class EnumerableHelper
     /// </remarks>
     public static IEnumerable<T> Merge<T>(params IEnumerable<T>[] enumerables)
     {
-        foreach (var enumerable in enumerables)
+        if (enumerables?.Any() ?? false)
         {
-            foreach (var item in enumerable)
+            foreach (var enumerable in enumerables)
             {
-                yield return item;
+                if (enumerable?.Any() ?? false)
+                {
+                    foreach (var item in enumerable)
+                    {
+                        yield return item;
+                    }
+                }
             }
         }
     }
+
+    public static IEnumerable<T> Merge<T>(IEnumerable<T> enumerable1, IEnumerable<T> enumerable2) =>
+        [.. enumerable1, .. enumerable2];
 
     /// <summary>
     /// Removes and returns the element at the specified index from the list.
@@ -1155,6 +1260,9 @@ public static class EnumerableHelper
     public static IEnumerable<TSource> RemoveDefaults<TSource>(this IEnumerable<TSource> source, TSource? defaultValue = default) =>
         defaultValue is null ? source.Where(item => item is not null) : source.Where(item => (!item?.Equals(defaultValue)) ?? false);
 
+    public static IEnumerable<T> RemoveDuplicates<T>(this IEnumerable<T> source) =>
+                                                                                                                    source.GroupBy(x => x).Select(x => x.First());
+
     /// <summary>
     /// Removes the specified item from the source IEnumerable.
     /// </summary>
@@ -1279,8 +1387,22 @@ public static class EnumerableHelper
     {
         foreach (var item in source)
         {
-            yield return await selectorAsync(item).ConfigureAwait(false);
+            yield return await selectorAsync(item);
         }
+    }
+
+    public static TResult? SelectImmutable<TItem, TResult>(this IEnumerable<TItem?> items, in Func<TItem?, TResult?, TResult?> selector, in TResult? defaultResult = default)
+    {
+        var result = defaultResult;
+        if (items is { } && items.Any())
+        {
+            Check.MustBeArgumentNotNull(selector);
+            foreach (var item in items)
+            {
+                result = selector(item, result);
+            }
+        }
+        return result;
     }
 
     /// <summary>
@@ -1396,7 +1518,7 @@ public static class EnumerableHelper
     /// <param name="item">The item to create an array from.</param>
     /// <returns>An array containing the item.</returns>
     public static T[] ToArray<T>(T item) =>
-        ToEnumerable(item).ToArray();
+        Iterate(item).ToArray();
 
     /// <summary>
     /// Converts an enumerable collection of key-value pairs into a dictionary.
@@ -1453,42 +1575,14 @@ public static class EnumerableHelper
         return result;
     }
 
-    /// <summary>
-    /// Converts a single item into an IEnumerable of that item.
-    /// </summary>
-    /// <param name="item">The item to convert.</param>
-    /// <returns>An IEnumerable containing the item.</returns>
-    /// <remarks>
-    /// This code creates an IEnumerable of type T and returns the item passed in as an argument.
-    /// </remarks>
-    [return: NotNull]
-    public static IEnumerable<T> ToEnumerable<T>(T item)
+    public static IEnumerable<T> ToEnumerable<T>(this IEnumerable<T> items)
     {
-        //The yield keyword is used to return the item passed in as an argument.
-        yield return item;
-    }
-
-    [return: NotNull]
-    public static IEnumerable<T> ToEnumerable<T>(params T[] items) =>
-        items.ToEnumerable();
-
-    /// <summary>
-    /// Creates an IEnumerable from a given IEnumerable.
-    /// </summary>
-    /// <param name="source">The source IEnumerable.</param>
-    /// <returns>An IEnumerable.</returns>
-    public static IEnumerable<T> ToEnumerable<T>(this IEnumerable<T> source)
-    {
-        //Check if the source is null
-        if (source is null)
+        if (items?.Any() != true)
         {
-            //If it is, return an empty IEnumerable
             yield break;
         }
-        //Loop through each item in the source
-        foreach (var item in source)
+        foreach (var item in items)
         {
-            //Return each item in the source
             yield return item;
         }
     }
@@ -1516,27 +1610,6 @@ public static class EnumerableHelper
     }
 
     /// <summary>
-    /// Converts an IEnumerable to an IEnumerable of objects.
-    /// </summary>
-    /// <param name="items">The input IEnumerable to convert.</param>
-    /// <returns>An IEnumerable of objects containing the items from the input IEnumerable.</returns>
-    public static IEnumerable<object> ToEnumerable(this IEnumerable items)
-    {
-        // Check if the input enumerable is null, if so, return an empty enumerable.
-        if (items is null)
-        {
-            yield break; // The sequence is empty, so we yield break to exit the enumeration.
-        }
-
-        // Iterate through each item in the input enumerable.
-        foreach (var item in items)
-        {
-            // Yield return each item, effectively converting it to an IEnumerable<object>.
-            yield return item;
-        }
-    }
-
-    /// <summary>
     /// Converts an IAsyncEnumerable to an IEnumerable.
     /// </summary>
     /// <typeparam name="TItem">The type of the items in the IAsyncEnumerable.</typeparam>
@@ -1551,7 +1624,7 @@ public static class EnumerableHelper
         {
             result.Add(item);
         }
-        return result.ToEnumerable();
+        return result.Iterate();
     }
 
     /// <summary>

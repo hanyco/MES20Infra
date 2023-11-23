@@ -7,7 +7,6 @@ using Contracts.ViewModels;
 
 using HanyCo.Infra.Exceptions;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.Pages;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.UserControls;
 using HanyCo.Infra.UI.ViewModels;
@@ -16,6 +15,7 @@ using Library.BusinessServices;
 using Library.Collections;
 using Library.EventsArgs;
 using Library.Exceptions.Validations;
+using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
 using Library.Wpf.Dialogs;
@@ -111,7 +111,7 @@ public partial class DtoDetailsPage
 
     private async void CreateDtoWithTableMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        this.ActionScopeBegin();
+        _ = this.ActionScopeBegin();
         this.IsEnabled = false;
         try
         {
@@ -127,7 +127,7 @@ public partial class DtoDetailsPage
             var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, tableNode.Value.Name!);
             this.ViewModel = this._service.CreateByDbTable(DbTableViewModel.FromDbObjectViewModel(tableNode!), columns.Compact());
             this.EndActionScope();
-            RefreshFormState();
+            this.RefreshFormState();
         }
         finally
         {
@@ -154,7 +154,7 @@ public partial class DtoDetailsPage
         }
         Application.Current.DoEvents();
         this.Debug("DTO deleting...");
-        var saveResult = await this._service.DeleteAsync(dto);
+        var saveResult = await this._service.DeleteAsync(dto).ConfigureAwait(false);
         if (saveResult.IsFailure && saveResult.Status is DbUpdateException ex)
         {
             if (ex.InnerException?.Message.Contains("infra.CqrsSegregate") ?? false)
@@ -163,15 +163,15 @@ public partial class DtoDetailsPage
             }
         }
         _ = saveResult.ThrowOnFail();
-        await this.InitDtoExplorerTreeAsync();
+        await this.InitDtoExplorerTreeAsync().ConfigureAwait(false);
         this.Debug("DTO deleted.");
     }
 
     private async void DtoDetailsPage_Binding(object sender, EventArgs e)
     {
         var scope = this.ActionScopeBegin("Initializing... Please wait.");
-        await this.InitDtoExplorerTreeAsync();
-        await this.DtoEditUserControl.BindAsync();
+        await this.InitDtoExplorerTreeAsync().ConfigureAwait(false);
+        await this.DtoEditUserControl.BindAsync().ConfigureAwait(false);
         this.RefreshFormState();
 
         scope.End();
@@ -199,7 +199,7 @@ public partial class DtoDetailsPage
     {
         var dto = this.CqrsExplorerTreeView.SelectedItem.Cast().As<DtoViewModel>();
         Check.MustBeNotNull(dto, () => "Please select a DTO");
-        var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value);
+        var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value).ConfigureAwait(false);
         this.ViewModel = viewModel.NotNull(() => new NotFoundValidationException("Entity not found."));
         this.EndActionScope();
     }
@@ -231,7 +231,7 @@ public partial class DtoDetailsPage
 
     private async void RefreshDatabaseButton_Click(object sender, RoutedEventArgs e)
     {
-        await this.RebindDataAsync();
+        await this.RebindDataAsync().ConfigureAwait(false);
         this.EndActionScope();
     }
 
@@ -293,18 +293,27 @@ public partial class DtoDetailsPage
             return;
         }
 
-        var result = await this._codeService.SaveSourceToDiskAskAsync(this.ViewModel, this.ValidateFormAsync).ThrowOnFailAsync(this.Title);
+        var result = await saveSourceToDiskAskAsync().ThrowOnFailAsync(this.Title).ConfigureAwait(false);
         _ = this.EndActionScope(result);
+
+        async Task<Result<string?>> saveSourceToDiskAskAsync()
+        {
+            _ = await this.ValidateFormAsync();
+
+            var codes = this._codeService.GenerateCodes(this.ViewModel).Value;
+            var result = await codes.SaveToFileAskAsync();
+            return result;
+        }
     }
 
     private async void SaveDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).ConfigureAwait(false);
 
         this.SaveDtoButton.IsEnabled = false;
         try
         {
-            await Lock(this, save);
+            await Lock(this, save).ConfigureAwait(false);
         }
         finally
         {
@@ -317,13 +326,13 @@ public partial class DtoDetailsPage
 
             this.Debug("Saving DTO…");
             var viewModel = this.ViewModel!;
-            var saveResult = await this._service.SaveViewModelAsync(viewModel).ThrowOnFailAsync(this.Title);
+            var saveResult = await this._service.SaveViewModelAsync(viewModel).ThrowOnFailAsync(this.Title).ConfigureAwait(false);
 
             this.Debug("Reloading DTO…");
-            var resultViewModel = await this._service.GetByIdAsync(viewModel.Id!.Value).WaitAsync(TimeSpan.FromSeconds(15));
+            var resultViewModel = await this._service.GetByIdAsync(viewModel.Id!.Value).WaitAsync(TimeSpan.FromSeconds(15)).ConfigureAwait(false);
             this.RebindDataContext(resultViewModel);
 
-            await this.InitDtoExplorerTreeAsync();
+            await this.InitDtoExplorerTreeAsync().ConfigureAwait(false);
             this.Debug("DTO saved.");
             _ = saveResult.ShowOrThrow();
         }
@@ -331,6 +340,5 @@ public partial class DtoDetailsPage
 
     private void SecurityDescriptorButton_Click(object sender, RoutedEventArgs e)
     {
-        
     }
 }

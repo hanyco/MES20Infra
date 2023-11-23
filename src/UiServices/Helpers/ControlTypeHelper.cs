@@ -1,7 +1,7 @@
-﻿using Contracts.ViewModels;
+﻿using Contracts;
+using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.Helpers;
 
 using Library.Validations;
 

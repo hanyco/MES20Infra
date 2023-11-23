@@ -6,7 +6,6 @@ using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
 using Library.EventsArgs;
@@ -259,7 +258,7 @@ public partial class BlazorPageGeneratorPage
     {
         this.ValidateForm();
         var viewModel = this.ViewModel!;
-        var code = this._codingService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
+        var code = this._codingService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).Value;
         _ = await code.SaveToFileAskAsync();
         return "Codes saved.";
     }
@@ -270,7 +269,7 @@ public partial class BlazorPageGeneratorPage
     {
         this.ValidateForm();
         var viewModel = this.ViewModel;
-        var code = this._codingService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).GetValue();
+        var code = this._codingService.GenerateCodes(viewModel, new(viewModel.GenerateMainCode, viewModel.GeneratePartialCode, viewModel.GenerateUiCode)).Value;
         _ = await code.SaveToFileAskAsync();
         this.EndActionScope("Codes saved.");
     }

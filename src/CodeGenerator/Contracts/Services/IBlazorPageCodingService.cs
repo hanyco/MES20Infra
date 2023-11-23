@@ -1,7 +1,8 @@
-﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+﻿using Contracts.ViewModels;
+
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Interfaces;
 using Library.Validations;

@@ -49,9 +49,10 @@ internal sealed class BlazorPageService(
             GeneratePartialCode = true,
             GenerateUiCode = true,
             Module = module ?? dto.Module,
-            NameSpace = nameSpace ?? $"{CommonHelpers.Purify(dto.NameSpace)}.Pages",
-            Route = route
+            NameSpace = nameSpace ?? $"{CommonHelpers.Purify(dto.NameSpace)}.Pages"
         };
+        if (!route.IsNullOrEmpty())
+            result.Routes.Add(route);
         if (dto.IsViewModel)
         {
             result.DataContext = dto;
@@ -86,7 +87,7 @@ internal sealed class BlazorPageService(
                 NameSpace = dto.NameSpace,
                 Module = dto.Module
             };
-            _ = result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
+            result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
         }
         return result;
     }

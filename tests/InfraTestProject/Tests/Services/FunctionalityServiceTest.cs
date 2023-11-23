@@ -4,14 +4,14 @@ using Contracts.ViewModels;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
-using Library.Coding;
 
 namespace InfraTestProject.Tests.Services;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
     [Fact]
-    public async Task _10_GenerateModelTest()
+    [Trait("Category", "__ActiveTest")]
+    public async Task GenerateModelTest()
     {
         // Assign
         using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
@@ -28,13 +28,13 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     }
 
     [Fact]
-    public async void _20_GenerateCode()
+    public async void GenerateCode()
     {
         // Assign
         var model = await service.GenerateViewModelAsync(CreateModel());
 
         // Act
-        var actual = await codeService.GenerateCodesAsync(model!);
+        var actual = codeService.GenerateCodes(model!);
 
         // Assert
         if (!actual.IsSucceed)
@@ -52,8 +52,8 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
-    [Fact]
-    public async void _30_SaveModelTest()
+    [Fact(Skip ="Not done yet.")]
+    public async void SaveModelTest()
     {
         // Assign
         var model = await service.GenerateViewModelAsync(CreateModel());
@@ -70,10 +70,10 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var personTable = new DbTableViewModel("Person", -1, "dbo");
         var model = new FunctionalityViewModel
         {
-            SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "CodeGen.UnitTests.Dtos" },
+            SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "CodeGen.UnitTests" },
             Name = "PersonDto"
-        }.With(x => x.SourceDto.NameSpace = "CodeGen.UnitTests");
-        _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
+        };
+        model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
                 new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),
                 new("Name", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),

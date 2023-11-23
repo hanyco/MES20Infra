@@ -28,10 +28,12 @@ public abstract class UiComponentButtonViewModelBase : UiComponentContentViewMod
 {
     private string? _eventHandlerName;
     private Placement _placement;
-
+    private string? _returnType;
     public string? EventHandlerName { get => this._eventHandlerName; set => this.SetProperty(ref this._eventHandlerName, value); }
 
     public Placement Placement { get => this._placement; set => this.SetProperty(ref this._placement, value); }
+
+    public string ReturnType { get => this._returnType ??= "void"; set => this.SetProperty(ref this._returnType, value); }
 }
 
 public abstract class UiComponentContentViewModelBase : InfraViewModelBase, IUiComponentContent
@@ -89,12 +91,13 @@ public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, Front
 {
     private UiComponentViewModel? _component;
     private ControlType? _controlType;
+    private bool _isParameter;
     private PropertyViewModel? _property;
-
     public UiComponentViewModel Component { get => this._component ??= new(); set => this.SetProperty(ref this._component, value); }
 
     public ControlType? ControlType { get => this._controlType; set => this.SetProperty(ref this._controlType, value); }
 
+    public bool IsParameter { get => this._isParameter; set => this.SetProperty(ref this._isParameter, value); }
     public override string? Name => this.Property?.Name;
 
     public PropertyViewModel? Property

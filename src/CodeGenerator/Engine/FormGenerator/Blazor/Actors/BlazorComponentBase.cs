@@ -23,12 +23,13 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>//, ICodeGenerator,  IComponentCodeUnit
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
-    private static readonly string[] _parameterAttributes = new[] { "Microsoft.AspNetCore.Components.Parameter" };
+    private static readonly string[] _parameterAttributes = ["Microsoft.AspNetCore.Components.Parameter"];
     private BootstrapPosition? _position;
 
     protected BlazorComponentBase(in string name) => this.Name = name;
 
     public IList<MethodActor> Actions { get; } = new List<MethodActor>();
+    public HashSet<string> AdditionalUsings { get; } = [];
     public IDictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
     Dictionary<string, string?> IHtmlElement.Attributes { get; }
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
@@ -111,8 +112,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
     }
 
-    public Code GenerateUiCode(GenerateCodesParameters? args = null) =>
-        this.GenerateUiCode(CodeCategory.Component, args);
+    public Code GenerateUiCode(GenerateCodesParameters? arguments = null) =>
+        this.GenerateUiCode(CodeCategory.Component, arguments);
 
     protected virtual string? GetBaseTypes() =>
         null;
@@ -154,7 +155,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             {
                 DataContextName = "this.DataContext"
             };
-            _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!)));
+            _ = table.Columns.AddRange(this.Properties.Select(x => new BlazorTableColumn(x.Name, x.Caption!) { BindingName = x.BindingName.ArgumentNotNull() }));
             _ = table.Actions.AddRange(this.Actions.OfType<ButtonActor>().Where(x => x.ShowOnGrid)
                 .Select(x => new BlazorTableRowAction(x.Name!, x.Caption!) { OnClick = x.EventHandlerName }));
             var tableCode = table.GenerateUiCode().Statement;
@@ -181,12 +182,90 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     protected TBlazorComponent This()
         => (this as TBlazorComponent)!;
 
+    private static string Component_OnInitializedAsync_MethodBody(in string? onInitializedAsyncAdditionalBody)
+    {
+        var result = new StringBuilder(onInitializedAsyncAdditionalBody)
+            .AppendLine()
+            .AppendLine($"// Call developer's method.")
+            .AppendLine($"await this.OnLoadAsync();");
+        return result.ToString();
+    }
+
+    private static IEnumerable<CodeTypeMembers> GetActionCodes(IHtmlElement element)
+    {
+        if (element is null)
+        {
+            yield break;
+        }
+
+        if (element is IHasSegregationAction segElement)
+        {
+            var actionCodes = segElement.GenerateCodeTypeMembers();
+            if (actionCodes is not null)
+            {
+                foreach (var actionCode in actionCodes)
+                {
+                    yield return actionCode;
+                }
+            }
+        }
+        else if (element is IHasCustomAction cusElement)
+        {
+            var actionCodes = cusElement.GenerateCodeTypeMembers();
+            if (actionCodes is not null)
+            {
+                foreach (var actionCode in actionCodes)
+                {
+                    yield return actionCode;
+                }
+            }
+        }
+
+        if (element.Children?.Any() == true)
+        {
+            foreach (var child in element.Children)
+            {
+                foreach (var code in BlazorComponentBase<TBlazorComponent>.GetActionCodes(child))
+                {
+                    yield return code;
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<CodeTypeMembers> GetCodeTypeMembers(IHtmlElement element, GenerateCodesParameters arguments)
+    {
+        if (element is ISupportsBehindCodeMember b)
+        {
+            var codes = b.GenerateTypeMembers(arguments);
+            foreach (var code in codes)
+            {
+                yield return code;
+            }
+        }
+        if (element.Children.Count != 0)
+        {
+            foreach (var child in element.Children)
+            {
+                foreach (var code in BlazorComponentBase<TBlazorComponent>.GetCodeTypeMembers(child, arguments))
+                {
+                    yield return code;
+                }
+            }
+        }
+    }
+
     private GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
     {
         var args = arguments ?? GenerateCodesParameters.FullCode();
         this.OnInitializingBehindCode(args);
 
         var mainUnit = new CodeCompileUnit();
+        mainUnit.Namespaces.AddRange(this.AdditionalUsings
+            .Compact().RemoveDuplicates()
+            .Select(x => new CodeNamespace(x))
+            .Except(mainUnit.Namespaces.Cast<CodeNamespace>())
+            .ToArray());
         var mainClassType = createMainClassType(mainUnit);
 
         var partUnit = new CodeCompileUnit();
@@ -259,7 +338,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addPropertiesToPartClass(in CodeTypeDeclaration partClassType)
         {
-            foreach (var property in this.Properties)
+            foreach (var property in this.Properties.Where(x => x.Caption.IsNullOrEmpty()))
             {
                 _ = partClassType.AddProperty(property.ToPropertyInfo());
             }
@@ -280,10 +359,9 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
             {
-                var body = method.Body.SplitMerge(mergeSeparator: INDENT.Repeat(3), addSeparatorToEnd: false);
-                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x=>(x.Type.FullPath,x.Name)).ToArray());
+                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
-            var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync())?.Body);
+            var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == true))?.Body);
             _ = partClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
         }
 
@@ -293,7 +371,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             {
                 _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
-            _ = mainClassType.AddMethod("OnLoadAsync", body: DefaultTaskMethodBody(), accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "Task");
+            var onInitializedAsyncBody = this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == false))?.Body;
+            _ = mainClassType.AddMethod("OnLoadAsync", body: onInitializedAsyncBody ?? DefaultTaskMethodBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
         }
 
         void addChildren(in GenerateCodesParameters arguments, in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType)
@@ -311,7 +390,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                     continue;
                 }
 
-                var actionCodes = this.GetActionCodes(child);
+                var actionCodes = BlazorComponentBase<TBlazorComponent>.GetActionCodes(child);
                 foreach (var (mainMember, partMember) in actionCodes)
                 {
                     if (mainMember is not null && !mainClassType.Members.Cast<CodeTypeMember>().Any(x => x.Name == mainMember.Name))
@@ -325,7 +404,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                     }
                 }
 
-                var members = this.GetCodeTypeMembers(child, arguments);
+                var members = BlazorComponentBase<TBlazorComponent>.GetCodeTypeMembers(child, arguments);
                 foreach (var (mainMember, partMember) in members)
                 {
                     if (mainMember is not null)
@@ -356,7 +435,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addPageInitializedMethod(in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType, in StringBuilder initializedAsyncMethodBody)
         {
-            _ = initializedAsyncMethodBody.AppendLine(InitializedAsyncMethodBody());
+            _ = initializedAsyncMethodBody.AppendLine(InitializedAsyncMethodBody);
             _ = mainClassType.AddMethod("OnPageInitializedAsync", returnType: "async Task", accessModifiers: MemberAttributes.Private);
             var initializedAsyncBodyLines = initializedAsyncMethodBody.ToString().Split(Environment.NewLine);
             _ = initializedAsyncMethodBody.Clear();
@@ -386,69 +465,5 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     {
         this.OnInitializingUiCode(arguments);
         return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = category);
-    }
-
-    private IEnumerable<CodeTypeMembers> GetActionCodes(IHtmlElement element)
-    {
-        if (element is null)
-        {
-            yield break;
-        }
-
-        if (element is IHasSegregationAction segElement)
-        {
-            var actionCodes = segElement.GenerateCodeTypeMembers();
-            if (actionCodes is not null)
-            {
-                foreach (var actionCode in actionCodes)
-                {
-                    yield return actionCode;
-                }
-            }
-        }
-        else if (element is IHasCustomAction cusElement)
-        {
-            var actionCodes = cusElement.GenerateCodeTypeMembers();
-            if (actionCodes is not null)
-            {
-                foreach (var actionCode in actionCodes)
-                {
-                    yield return actionCode;
-                }
-            }
-        }
-
-        if (element.Children?.Any() == true)
-        {
-            foreach (var child in element.Children)
-            {
-                foreach (var code in this.GetActionCodes(child))
-                {
-                    yield return code;
-                }
-            }
-        }
-    }
-
-    private IEnumerable<CodeTypeMembers> GetCodeTypeMembers(IHtmlElement element, GenerateCodesParameters arguments)
-    {
-        if (element is ISupportsBehindCodeMember b)
-        {
-            var codes = b.GenerateTypeMembers(arguments);
-            foreach (var code in codes)
-            {
-                yield return code;
-            }
-        }
-        if (element.Children.Count != 0)
-        {
-            foreach (var child in element.Children)
-            {
-                foreach (var code in this.GetCodeTypeMembers(child, arguments))
-                {
-                    yield return code;
-                }
-            }
-        }
     }
 }

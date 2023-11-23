@@ -21,31 +21,62 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 [Fluent]
 public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 {
-    private BlazorPage(in string name, in string? moduleName = null, in string? pageRoute = null) : base(name)
+    private BlazorPage(in string name, in string? moduleName = null, in IEnumerable<string>? pageRoutes = null) : base(name)
     {
-        _ = this.SetPageRoute(pageRoute);
+        _ = this.SetPageRoutes(pageRoutes);
         this.ModuleName = moduleName;
     }
 
     public string? ModuleName { get; }
-    public string? PageRoute { get; private set; }
+    public IEnumerable<string>? PageRoutes { get; private set; }
 
     [return: NotNull]
-    public static string GetPageRoute(string name, string? moduleName, string? pageRoute) =>
-        pageRoute.IsNullOrEmpty()
-            ? $"@page \"/{moduleName.NotNull().Remove(" ")}/{name.NotNull().TrimEnd("Page", StringComparison.OrdinalIgnoreCase).TrimStart('/')}\""
-            : (pageRoute.StartsWith("@page") ? pageRoute : $"@page \"/{pageRoute.TrimStart('/')}\"");
+    public static string GetPageRoute(string pageName, string? moduleName, string? pageRoute, params string[] parameters)
+    {
+        string? pureRoute;
+        if (pageRoute.IsNullOrEmpty())
+        {
+            // Generate route form scratch.
+            pureRoute = $"@page \"/{moduleName.ArgumentNotNull().Remove(" ")}/{purify(pageName)}";
+        }
+        else
+        {
+            if (pageRoute.StartsWith("@page "))
+            {
+                // The input value is a complete route. Not required to be reformatted. Just add
+                // parameters to the end of the route, if any.
+                pureRoute = pageRoute.TrimEnd('\"');
+            }
+            else
+            {
+                pureRoute = $"@page \"/{purify(pageRoute)}";
+            }
+        }
+
+        var fixedParameters = parameters.Select(x => x.TrimStart('{').TrimEnd('}').Format(x => $"{{{x}}}"));
+        var result = merge(pureRoute, fixedParameters).AddEnd("\"");
+
+        return result;
+
+        static string purify(string pageName) => pageName.NotNull().TrimStart('/').TrimEnd('/').TrimEnd("Page").Trim();
+        static string merge(string s, IEnumerable<string> items)
+        {
+            var result = new StringBuilder(s);
+            items.ForEach(item => result.Append($"/{item}"));
+            return result.ToString();
+        }
+    }
 
     [return: NotNull]
     public static BlazorPage NewByModuleName([DisallowNull] in string name, [DisallowNull] in string moduleName) =>
         new(name.NotNull(), moduleName: moduleName.NotNull());
 
     [return: NotNull]
-    public static BlazorPage NewByPageRoute([DisallowNull] in string name, [DisallowNull] in string pageRoute) =>
-        new(name.NotNull(), pageRoute: pageRoute.NotNull());
+    public static BlazorPage NewByPageRoute([DisallowNull] in string name, [DisallowNull] in IEnumerable<string> pageRoutes) =>
+        new(name.NotNull(), pageRoutes: pageRoutes);
 
-    public BlazorPage SetPageRoute(string? value) =>
-        this.Fluent(() => this.PageRoute = value);
+    public BlazorPage SetPageRoutes(IEnumerable<string>? value) =>
+        this.Fluent(() => this.PageRoutes = value);
 
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {
@@ -63,13 +94,13 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
                 TypePath.New<NavigationManager>(),
             };
 
-            var pageRoute = this.PageRoute;
+            var pageRoute = this.PageRoutes;
             var moduleName = this.ModuleName;
             var name = this.Name;
-            var route = GetPageRoute(name, moduleName, pageRoute);
+            var routes = pageRoute?.Select(pageRoute => GetPageRoute(name, moduleName, pageRoute));
 
             var result = codeStringBuilder
-                .AppendLine(route)
+                .AppendAllLines(routes)
                 .AppendLine()
                 .AppendLine($"@namespace {this.NameSpace}")
                 .AppendLine()
@@ -92,9 +123,9 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
             List<string> generics = [];
             if (this.DataContextType is { } dct2)
             {
-                generics.Add(dct2.Name);
+                generics.Add(dct2);
             };
-            var inherits = TypePath.New<PageBase<int>>(generics);
+            var inherits = TypePath.New(typeof(PageBase<>), generics);
             _ = codeStringBuilder.AppendLine($"@inherits {inherits}");
             _ = codeStringBuilder.AppendLine();
             return result;

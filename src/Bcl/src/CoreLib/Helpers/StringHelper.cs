@@ -15,11 +15,11 @@ namespace Library.Helpers;
 /// <summary>
 /// A utility to do some common tasks about strings
 /// </summary>
-[DebuggerStepThrough]
-[StackTraceHidden]
+//[DebuggerStepThrough]
+//[StackTraceHidden]
 public static class StringHelper
 {
-    private static readonly char[] _standardSeparators = new[] { '\0', '\n', '\r', '\t', '_', '-' };
+    private static readonly char[] _standardSeparators = ['\0', '\n', '\r', '\t', '_', '-'];
 
     /// <summary>
     /// Adds a specified number of characters to a string, either before or after the string.
@@ -42,7 +42,7 @@ public static class StringHelper
     /// <returns>The string with the added string at the end.</returns>
     [Pure]
     [return: NotNull]
-    public static string? Add(this string? str, string? s) =>
+    public static string? Add(this string? str, in string? s) =>
         string.Concat(str, s);
 
     /// <summary>
@@ -55,6 +55,17 @@ public static class StringHelper
     [return: NotNull]
     public static string AddEnd(this string? str, in string? s) =>
         string.Concat(str, s);
+
+    /// <summary>
+    /// Adds the given string to the end of the current string.
+    /// </summary>
+    /// <param name="str">The original string.</param>
+    /// <param name="c">The character to add to the end of the original string.</param>
+    /// <returns>The string with the added string at the end.</returns>
+    [Pure]
+    [return: NotNull]
+    public static string AddEnd(this string? str, in char c) =>
+        string.Concat(str, c);
 
     /// <summary>
     /// Adds the given string to the start of the current string.
@@ -108,6 +119,9 @@ public static class StringHelper
 
     public static StringBuilder AppendAll([DisallowNull] this StringBuilder sb, IEnumerable<string> lines)
     {
+        Check.MustBeArgumentNotNull(sb);
+
+        if(lines != null)
         foreach (var line in lines)
         {
             _ = sb.Append(line);
@@ -128,8 +142,10 @@ public static class StringHelper
         return sb;
     }
 
-    public static StringBuilder AppendAllLines([DisallowNull] this StringBuilder sb, IEnumerable<string> lines)
+    public static StringBuilder AppendAllLines([DisallowNull] this StringBuilder sb, IEnumerable<string>? lines)
     {
+        Check.MustBeArgumentNotNull(sb);
+        if(lines?.Any() == true)
         foreach (var line in lines)
         {
             _ = sb.AppendLine(line);
@@ -147,6 +163,9 @@ public static class StringHelper
     [return: NotNullIfNotNull(nameof(value))]
     public static string ArabicCharsToPersian(this string value) =>
         value.IsNullOrEmpty() ? value : value.ReplaceAll(PersianTools.InvalidArabicCharPairs.Select(x => (x.Arabic, x.Persian)));
+
+    public static string Build(this StringBuilder sb) =>
+            sb.ArgumentNotNull().ToString();
 
     /// <summary>
     /// Checks if all characters in the given string are valid according to the given validation function.
@@ -398,9 +417,12 @@ public static class StringHelper
     /// <summary>
     /// Formats a string using the specified arguments.
     /// </summary>
-    [Pure]
     public static string Format(this string format, params object[] args)
         => string.Format(format, args);
+
+    [Pure]
+    public static string Format(this string str, Func<string, string> formatter) =>
+        formatter.ArgumentNotNull()(str);
 
     /// <summary>
     /// Gets a sequence of key-value tuples from a string.
@@ -902,6 +924,15 @@ public static class StringHelper
         }
     }
 
+    public static string Merge(this string s, IEnumerable<string> items, string delimiter)
+    {
+        if(!items.Any())
+            return s;
+        var result = new StringBuilder(s);
+        items.ForEach(item => result.Append($"{item}{delimiter}"));
+        return result.ToString().TrimEnd(delimiter);
+    }
+
     /// <summary>
     /// Merges the given strings with the given separator and parameters.
     /// </summary>
@@ -1304,27 +1335,6 @@ public static class StringHelper
 
         return result.ToString();
     }
-
-    /// <summary>
-    /// Splits a string by a separator, merges the resulting array back into a string with a
-    /// different separator, and optionally adds the separator to the end.
-    /// </summary>
-    /// <param name="str">The string to split and merge.</param>
-    /// <param name="splitSeparator">
-    /// The separator to use when splitting the string. If null, Environment.NewLine is used.
-    /// </param>
-    /// <param name="mergeSeparator">
-    /// The separator to use when merging the string. If null, Environment.NewLine is used.
-    /// </param>
-    /// <param name="addSeparatorToEnd">
-    /// A flag indicating whether to add the merge separator to the end of the string.
-    /// </param>
-    /// <param name="options">Specifies the options to use when splitting the string.</param>
-    /// <returns>The split and merged string, or null if the original string is null or empty.</returns>
-    [return: NotNullIfNotNull(nameof(str))]
-    [Obsolete("Subject to remove. Do it by yourself!")]
-    public static string? SplitMerge(this string? str, string? splitSeparator = null, string? mergeSeparator = null, bool addSeparatorToEnd = true, StringSplitOptions options = StringSplitOptions.None) =>
-        str.IsNullOrEmpty() ? str : str.Split(splitSeparator ?? Environment.NewLine, options).Merge(mergeSeparator ?? Environment.NewLine, addSeparatorToEnd);
 
     /// <summary>
     /// Splits a string into a sequence of key-value pairs. (To be used in `ConnectionString`-like strings)

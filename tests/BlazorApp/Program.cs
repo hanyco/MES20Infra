@@ -5,11 +5,12 @@ using Autofac.Extensions.DependencyInjection;
 using HanyCo.Infra;
 
 using Library.Cqrs;
+using Library.Data.SqlServer;
 using Library.Mapping;
 
 namespace BlazorApp;
 
-public class Program
+public sealed class Program
 {
     public static void Main(string[] args)
     {
@@ -25,9 +26,9 @@ public class Program
         _ = builder.Services.AddServerSideBlazor();
 
         _ = builder.Services
+                .AddSingleton(new Sql("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True"))
                 .AddSingleton<IMapper, Mapper>()
                 .AddMesInfraServices<Program>("connection string", Library.Logging.ILogger.Empty)
-                //.AddScoped<EntityViewModelConverter>()
                 ;
 
         _ = builder.Services.AddControllersWithViews(options =>

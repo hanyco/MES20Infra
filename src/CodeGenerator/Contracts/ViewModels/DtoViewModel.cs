@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.Helpers.CodeGen;
+using Library.CodeGeneration;
 
 namespace Contracts.ViewModels;
 
@@ -30,9 +30,9 @@ public sealed class DtoViewModel : InfraViewModelBase
 
     public DbObjectViewModel DbObject { get => this._dbObject; set => this.SetProperty(ref this._dbObject, value); }
 
-    public ObservableCollection<PropertyViewModel> DeletedProperties { get; } = new();
+    public ObservableCollection<PropertyViewModel> DeletedProperties { get; } = [];
 
-    public string FullName => TypeMemberNameHelper.GetFullName(this.NameSpace, this.Name);
+    public string FullName => TypePath.Combine(this.NameSpace, this.Name);
 
     public FunctionalityViewModel? Functionality { get => this._functionality; set => this.SetProperty(ref this._functionality, value); }
 
@@ -67,7 +67,7 @@ public sealed class DtoViewModel : InfraViewModelBase
 
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
 
-    public ObservableCollection<PropertyViewModel> Properties { get; } = new();
+    public ObservableCollection<PropertyViewModel> Properties { get; } = [];
 
     public IEnumerable<ClaimViewModel> SecurityClaims
     {

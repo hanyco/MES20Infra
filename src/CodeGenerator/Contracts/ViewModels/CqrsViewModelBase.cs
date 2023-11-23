@@ -1,20 +1,24 @@
 ﻿#nullable disable
 
-using Contracts.ViewModels;
-
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
+
+using Library.CodeGeneration;
+using Library.Data.SqlServer;
+using Library.Data.SqlServer.Builders.Bases;
 
 namespace Contracts.ViewModels;
 
 public abstract class CqrsViewModelBase : InfraViewModelBase
 {
+    private ISelectStatement _additionalWhereClause;
     private CqrsSegregateCategory _category;
     private string _comment;
     private string _cqrsNameSpace;
     private DbObjectViewModel _dbObject;
     private string _dtoNameSpace;
     private string _friendlyName;
+    private string _handleMethodBody;
     private bool _hasPartialHandler;
     private bool _hasPartialOnInitialize;
     private ModuleViewModel _module;
@@ -58,6 +62,13 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         set => this.SetProperty(ref this._friendlyName, value);
     }
 
+    public string HandleMethodBody
+    {
+        get => this._handleMethodBody;
+        set => this.SetProperty(ref this._handleMethodBody, value);
+    }
+    public ISet<(TypePath Type, string Name)> HandleMethodParameters { get; } = new HashSet<(TypePath Type, string Name)>();
+
     public bool HasPartialHandler
     {
         get => this._hasPartialHandler;
@@ -93,6 +104,6 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         get => this._securityClaims;
         set => this.SetProperty(ref this._securityClaims, value);
     }
-    public string ExecuteBody { get; set; }
+
     protected abstract CqrsSegregateType SegregateType { get; }
 }

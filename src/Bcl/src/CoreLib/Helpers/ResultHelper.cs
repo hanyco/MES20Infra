@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 
@@ -6,6 +7,7 @@ using Library.Exceptions;
 using Library.Interfaces;
 using Library.Logging;
 using Library.Results;
+using Library.Types;
 using Library.Windows;
 
 namespace Library.Helpers;
@@ -116,8 +118,11 @@ public static class ResultHelper
     /// <param name="owner">The object that is throwing the exception.</param>
     /// <param name="instruction">The instruction that is throwing the exception.</param>
     /// <returns>The given Result.</returns>
-    public static Result ThrowOnFail([DisallowNull] this Result result, object? owner = null, string? instruction = null)
-        => InnerThrowOnFail(result, owner, instruction);
+    public static Result ThrowOnFail([DisallowNull] this Result result, object? owner = null, string? instruction = null)=> 
+        InnerThrowOnFail(result, owner, instruction);
+
+    public static void End([DisallowNull] this Result result) =>
+        Actions.Void();
 
     /// <summary>
     /// Throws an exception if the given result is not successful.
@@ -141,6 +146,9 @@ public static class ResultHelper
     public static Result<TValue> ThrowOnFail<TValue>([DisallowNull] this Result<TValue> result, object? owner = null, string? instruction = null)
         => InnerThrowOnFail(result, owner, instruction);
 
+    public static void End<TValue>([DisallowNull] this Result<TValue> result) =>
+        Actions.Void();
+
     /// <summary>
     /// Throws an exception if the result of the provided Task is a failure.
     /// </summary>
@@ -158,6 +166,10 @@ public static class ResultHelper
 
     public static async Task<Result> ThrowOnFailAsync(this Task<Result> resultAsync, object? owner = null, string? instruction = null)
         => InnerThrowOnFail(await resultAsync, owner, instruction);
+
+    public static Task EndAsync(this Task<Result> resultAsync) =>
+        Task.CompletedTask;
+
 
     public static Task<TResult> ToAsync<TResult>(this TResult result) where TResult : ResultBase
         => Task.FromResult(result);
@@ -210,10 +222,10 @@ public static class ResultHelper
     /// <param name="errors">The errors to add to the Result.</param>
     /// <returns>A new instance of the Result class with the specified errors.</returns>
     public static Result WithError(this ResultBase result, params (object Id, object Error)[] errors) =>
-        new(result) { Errors = errors };
+        new(result) { Errors = errors.ToImmutableArray() };
 
     public static Result WithError(this ResultBase result, IEnumerable<(object Id, object Error)> errors) =>
-        result.WithError(errors.ToArray());
+        new(result) { Errors = errors.ToImmutableArray() };
 
     public static Result WithSucceed(this ResultBase result, bool? succeed) =>
         new(result) { Succeed = succeed };
@@ -241,7 +253,7 @@ public static class ResultHelper
         }
 
         var exception =
-            result.Errors?.Select(x => x.Error).Cast<Exception>().FirstOrDefault()
+            result.Errors.Select(x => x.Error).Cast<Exception>().FirstOrDefault()
             ?? result.Status switch
             {
                 Exception ex => ex.With(x => x.Source = owner?.ToString()),

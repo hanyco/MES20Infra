@@ -91,8 +91,13 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     }
 
     protected override async Task OnBindDataAsync() =>
-        //await this.FunctionalityTreeView.BindAsync();
         await base.OnBindDataAsync();
+
+    protected override Task<Result> OnValidateFormAsync()
+    {
+        this.CheckIfInitiated();
+        return base.OnValidateFormAsync();
+    }
 
     [MemberNotNull(nameof(ViewModel))]
     private void CheckIfInitiated() =>
@@ -100,7 +105,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
+        await this.AskToSaveIfChangedAsync().BreakOnFail().EndAsync();
         this.ViewModel = null;
         this.ViewModel = await this.GetNewViewModelAsync();
     }
@@ -109,23 +114,23 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         //Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
         var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
-        _ = Check.If(resp != TaskDialogResult.Ok).BreakOnFail();
+        Check.If(resp != TaskDialogResult.Ok).BreakOnFail().End();
         //_ = await this._service.DeleteAsync(this.FunctionalityTreeView.SelectedItem).ShowOrThrowAsync(this.Title);
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
-        (_, var code) = await this.ActionScopeRunAsync(() => this._codeService.GenerateCodesAsync(this.ViewModel!, new(true)), "Generating codes...").ThrowOnFailAsync(this.Title);
+        await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
+        var codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
 
-        this.ComponentCodeResultUserControl.Codes = code;
+        this.ComponentCodeResultUserControl.Codes = codes;
     }
 
     private async void GenerateViewModelButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
+        await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
         this.PrepareViewModel();
-        (_, var viewModel) = await this.ActionScopeRunAsync(() => this._service.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
+        var viewModel = await this.ActionScopeRunAsync(() => this._service.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
         this.ViewModel = viewModel;
     }
 
@@ -188,32 +193,57 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
         {
             return validationResult.WithValue<string?>(null);
-        };
+        }
         var codes = this.ViewModel!.Codes.SelectAll().Compact();
         if (!codes.Any())
         {
-            return Result<string>.CreateFailure("No code found. Please generate sources.", string.Empty);
+            return Result<string>.CreateFailure("No source code found. Please press <Generate Sources> button.", string.Empty);
         }
         var settings = SettingsService.Get();
+        {
+            var dir = settings.projectSourceRoot;
+            if (Directory.Exists(dir))
+            {
+                if (Directory.GetFileSystemEntries(dir).Any())
+                {
+                    try
+                    {
+                        var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
+                        if (resp == TaskDialogResult.Cancel)
+                        {
+                            return Result<string>.CreateFailure(new Library.Exceptions.OperationCancelException());
+                        }
+                        if (resp == TaskDialogResult.Yes)
+                        {
+                            Directory.Delete(dir, true);
+                        }
+                    }
+                    finally
+                    {
+                        await Task.Delay(750);
+                    }
+                }
+            }
+        }
         var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
-        var saveResult = FileUiTools.SaveToFile(files, $"Saving sources to {settings.projectSourceRoot}");
-        await Task.Delay(500);
-        App.Current.DoEvents();
+        var saveResult = FileUiTools.SaveToFile(files, $"Saving source codes to {settings.projectSourceRoot}");
+        await App.Current.DoEventsAsync(500);
         return saveResult.WithValue(settings.projectSourceRoot).IfSucceed(x => x.Message = "Codes are saved successfully.");
 
         static string getPath(SettingsModel settings, Code code)
         {
-            var relativePath = code.props().Category switch
+            Result<string> relativePath = code.props().Category switch
             {
-                CodeCategory.Dto => settings.dtosPath,
-                CodeCategory.Query => settings.queriesPath,
-                CodeCategory.Command => settings.commandsPath,
-                CodeCategory.Page => settings.blazorPagesPath,
-                CodeCategory.Component => settings.blazorComponentsPath,
-                CodeCategory.Converter => settings.convertersPath,
-                _ => throw new NotSupportedException("Code category is null or not supported.")
+                CodeCategory.Dto => settings.dtosPath ?? "Dtos",
+                CodeCategory.Query => settings.queriesPath ?? "Queries",
+                CodeCategory.Command => settings.commandsPath ?? "Commands",
+                CodeCategory.Page => settings.blazorPagesPath ?? "UI/Pages",
+                CodeCategory.Component => settings.blazorComponentsPath ?? "UI/Components",
+                CodeCategory.Converter => settings.convertersPath ?? "Converters",
+                _ => Result<string>.CreateFailure(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
-            var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.NotNull());
+            relativePath.ThrowOnFail().End();
+            var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.Value.NotNull());
             return path;
         }
     }

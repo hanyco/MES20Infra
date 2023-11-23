@@ -120,7 +120,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         _ = this.ViewModel.ParamsDto.Properties.ClearAndAddRange(props);
         props = await this._dtoService.GetPropertiesByDtoIdAsync(this.ViewModel.ResultDto.Id!.Value);
         _ = this.ViewModel.ResultDto.Properties.ClearAndAddRange(props);
-        var codes = await this._codeGeneratorService.GenerateCodesAsync(this.ViewModel);
+        var codes = this._codeGeneratorService.GenerateCodes(this.ViewModel);
         this.ComponentCodeResultUserControl.Codes = codes;
         this.ResultsTabItem.IsSelected = true;
     }
@@ -200,7 +200,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     private async void SaveAllToDiskButton_Click(object sender, RoutedEventArgs e)
     {
         _ = this.ViewModel.NotNull();
-        var codes = await this._codeGeneratorService.GenerateCodesAsync(this.ViewModel);
+        var codes = this._codeGeneratorService.GenerateCodes(this.ViewModel);
         _ = await SourceCodeHelper.SaveToFileAskAsync(codes);
     }
 
@@ -213,7 +213,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     private IEnumerable<ClaimViewModel> SecurityClaimCollectorUserControl_OnAutoGenerateClaim() =>
         this.ViewModel?.Name.IsNullOrEmpty() ?? true
             ? Enumerable.Empty<ClaimViewModel>()
-            : EnumerableHelper.ToEnumerable(new ClaimViewModel { Key = this.ViewModel.Name });
+            : EnumerableHelper.Iterate(new ClaimViewModel { Key = this.ViewModel.Name });
 
     private async void SelectModuleBox_SelectedModuleChanged(object sender, ItemActedEventArgs<ModuleViewModel> e)
     {
