@@ -1,17 +1,11 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using Contracts;
 using Contracts.Services;
 using Contracts.ViewModels;
 
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Actors;
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Bases;
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Models.Components;
 using HanyCo.Infra.CodeGeneration.Definitions;
-using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
@@ -31,7 +25,6 @@ using Library.Validations;
 using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 using DtoEntity = HanyCo.Infra.Internals.Data.DataSources.Dto;
 
@@ -118,26 +111,26 @@ internal sealed class DtoService(
         var properties = viewModel.Properties.Select(toProperty);
         var type = new Class(arguments?.TypeName ?? viewModel.Name!).AddMember(properties);
         var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
+
         var statement = this._codeGeneratorEngine.Generate(nameSpace);
-        return Result<Codes>.From(statement, new(new Code(arguments?.TypeName ?? viewModel.Name!, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Dto)));
+        var code = new Code(type.Name, Languages.CSharp, statement.Value)
+            .With(x => x.props().Category = CodeCategory.Dto);
+
+        var result = Result.From(statement, code.ToCodes());
+        return result;
 
         static IProperty toProperty(PropertyViewModel pvm)
         {
-            TypePath type = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
-            if (pvm.IsList ?? false)
-            {
-                type = TypePath.New(typeof(List<>).FullName,null,generics: type.FullPath);
-            }
-
-            if (pvm.IsNullable ?? false)
-            {
-                type = type.WithNullable(true);
-            }
+            var typeFullName = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
+            var type = ((pvm.IsList ?? false)
+                ? TypePath.New(typeFullName)
+                : TypePath.New(typeof(List<>).FullName, null, generics: typeFullName))
+                .WithNullable(pvm.IsNullable ?? false);
 
             return IProperty.New(pvm.Name!, type);
         }
 
-        static Result<DtoViewModel> validate(DtoViewModel? viewModel, CancellationToken token = default)
+        static Result<DtoViewModel> validate(in DtoViewModel? viewModel, in CancellationToken token = default)
             => viewModel.ArgumentNotNull().Check()
                     .NotNull(x => x.Module)
                     .NotNullOrEmpty(x => x.Name)
