@@ -204,7 +204,7 @@ internal sealed partial class FunctionalityService
             var saveButton = new UiComponentCustomButtonViewModel()
             {
                 Caption = "Save",
-                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(),
+                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel),
                 EventHandlerName = "SaveButton_OnClick",
                 ReturnType = "async void",
                 Guid = Guid.NewGuid(),
@@ -578,20 +578,20 @@ internal sealed partial class FunctionalityService
 
     private class CodeSnippets
     {
-        public static string BlazorDetailsComponent_SaveButton_OnClick_Body() =>
+        public static string BlazorDetailsComponent_SaveButton_OnClick_Body(CqrsCommandViewModel insert, CqrsCommandViewModel update) =>
             new StringBuilder()
-                .AppendLine("if (DataContext.Id == default)")
-                .AppendLine("{")
-                .AppendLine("    var @params = new UpdatePersonParams(this.DataContext);")
-                .AppendLine("    var cqParams = new UpdatePersonCommandParams(@params);")
-                .AppendLine("    var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);")
-                .AppendLine("}")
-                .AppendLine("else")
-                .AppendLine("{")
-                .AppendLine("    var @params = new InsertPersonParams(this.DataContext);")
-                .AppendLine("    var cqParams = new InsertPersonCommandParams(@params);")
-                .AppendLine("    var cqResult = await this._commandProcessor.ExecuteAsync(cqParams);")
-                .AppendLine("}")
+                .AppendLine($"if (DataContext.Id == default)")
+                .AppendLine($"{{")
+                .AppendLine($"    var @params = this.DataContext.To{insert.GetSegregateParamsType("Command").Name}();")
+                .AppendLine($"    var cqParams = new {insert.GetSegregateType("Command")}(@params);")
+                .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{insert.GetSegregateType("Command")}, {insert.GetSegregateResultType("Command")}>(cqParams);")
+                .AppendLine($"}}")
+                .AppendLine($"else")
+                .AppendLine($"{{")
+                .AppendLine($"    var @params = this.DataContext.To{update.GetSegregateParamsType("Command").Name}();")
+                .AppendLine($"    var cqParams = new {update.GetSegregateType("Command")}(@params);")
+                .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{update.GetSegregateType("Command")}, {update.GetSegregateResultType("Command")}>(cqParams);")
+                .AppendLine($"}}")
                 .Build();
 
         public static string CreateGetAllQueryHandleMethodBody(CqrsQueryViewModel model) =>

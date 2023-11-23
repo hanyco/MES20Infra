@@ -123,8 +123,8 @@ internal sealed class DtoService(
         {
             var typeFullName = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
             var type = ((pvm.IsList ?? false)
-                ? TypePath.New(typeFullName)
-                : TypePath.New(typeof(List<>).FullName, null, generics: typeFullName))
+                ? TypePath.New(typeof(List<>).FullName, null, generics: typeFullName)
+                : TypePath.New(typeFullName))
                 .WithNullable(pvm.IsNullable ?? false);
 
             return IProperty.New(pvm.Name!, type);
@@ -132,10 +132,10 @@ internal sealed class DtoService(
 
         static Result<DtoViewModel> validate(in DtoViewModel? viewModel, in CancellationToken token = default)
             => viewModel.ArgumentNotNull().Check()
-                    .NotNull(x => x.Module)
-                    .NotNullOrEmpty(x => x.Name)
-                    .NotNullOrEmpty(x => x.NameSpace)
-                    .Build();
+                .NotNull(x => x.Module)
+                .NotNullOrEmpty(x => x.Name)
+                .NotNullOrEmpty(x => x.NameSpace)
+                .Build();
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync(CancellationToken token = default)
