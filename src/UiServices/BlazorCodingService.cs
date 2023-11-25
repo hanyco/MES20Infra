@@ -36,7 +36,7 @@ using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
-internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine codeGeneratorEngine) : IBlazorComponentCodingService, IBlazorPageCodingService
+internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine codeGeneratorEngine, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodingService, IBlazorPageCodingService
 {
     private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGeneratorEngine;
     private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
@@ -87,12 +87,9 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
         try
         {
             var component = createComponent(model);
-            _ = processBackendActions(model, component);
-            _ = processFrontActions(model, component);
-            foreach (var parameter in model.Parameters)
-            {
-                component.Parameters.Add(new(parameter.Type, parameter.Name));
-            }
+            processBackendActions(model, component);
+            processFrontActions(model, component);
+            addParameters(model, component);
             var codes = component.GenerateCodes(CodeCategory.Component, arguments).AddRange(this.GenerateModelConverterCode());
             return Result<Codes>.CreateSuccess(codes);
         }
@@ -283,7 +280,7 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
             return result;
         }
 
-        BlazorComponent processBackendActions(in UiViewModel model, in BlazorComponent result)
+        void processBackendActions(in UiViewModel model, in BlazorComponent result)
         {
             model.ConversationSubjects.ForEach(this._conversionSubjects.Enqueue);
             foreach (var action in model.Actions.OfType<BackElement>())
@@ -308,11 +305,27 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
                         throw new InvalidOperationValidationException("`OnCustomLoad` method has not required fields.");
                 }
             }
-            return result;
         }
 
-        static BlazorComponent processFrontActions(UiViewModel model, BlazorComponent component) =>
-            model.IsGrid ? createGrid(model, component) : createForm(model, component);
+        static void processFrontActions(UiViewModel model, BlazorComponent component)
+        {
+            if (model.IsGrid)
+            {
+                _ = createGrid(model, component);
+            }
+            else
+            {
+                _ = createForm(model, component);
+            }
+        }
+
+        static void addParameters(UiViewModel model, BlazorComponent component)
+        {
+            foreach (var parameter in model.Parameters)
+            {
+                component.Parameters.Add(new(parameter.Type, parameter.Name));
+            }
+        }
     }
 
     public Result<Codes> GenerateCodes(UiPageViewModel viewModel, GenerateCodesParameters? arguments)
@@ -381,55 +394,60 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
     {
         while (this._conversionSubjects.TryDequeue(out var conversionSubject))
         {
-            var srcType = TypePath.New(conversionSubject.ResultDto.Name, conversionSubject.ResultDto.NameSpace); // CQRS Output
-            var dstType = TypePath.New($"{conversionSubject.ResultDto.DbObject.Name}Dto", conversionSubject.ResultDto.NameSpace); // Page ViewModel
+            var codes = mapperSourceGenerator.GenerateCodes(new(conversionSubject.ResultDto, conversionSubject.ResultDto, conversionSubject.DtoNameSpace));
+            foreach (var code in codes.Value)
+                yield return code!;
 
-            var nameSpace = INamespace.New(conversionSubject.DtoNameSpace!);
-            var converterClass = new Class("ModelConverter")
-            {
-                AccessModifier = AccessModifier.Public,
-                InheritanceModifier = InheritanceModifier.Static | InheritanceModifier.Partial
-            };
-            var singleConverterMethod = new Method("ToViewModel")
-            {
-                IsExtension = true,
-                Body = convertSingle_MethodBody(dstType.Name, "model", conversionSubject.ResultDto.Properties.Select(x => x.Name)),
-                Parameters =
-                {
-                    (srcType, "model")
-                },
-                ReturnType = dstType
-            };
-            var listConverterMethod = new Method(singleConverterMethod.Name)
-            {
-                IsExtension = true,
-                Body = convertEnumerable_MethodBody(singleConverterMethod.Name, "models"),
-                Parameters =
-                {
-                    (TypePath.New(typeof(IEnumerable<>), [srcType]), "models")
-                },
-                ReturnType = TypePath.New(typeof(List<>), [dstType])
-            };
-            _ = converterClass.AddMember(singleConverterMethod, listConverterMethod);
-            _ = nameSpace.AddType(converterClass)
-                .UsingNamespaces.AddRange(srcType.GetNameSpaces()).AddRange(dstType.GetNameSpaces());
+            //var srcType = TypePath.New(conversionSubject.ResultDto.Name, conversionSubject.ResultDto.NameSpace); // CQRS Output
+            //var dstType = TypePath.New($"{conversionSubject.ResultDto.DbObject.Name}Dto", conversionSubject.ResultDto.NameSpace); // Page ViewModel
+            //var dtoNameSpace = conversionSubject.DtoNameSpace!;
 
-            var statement = this._codeGeneratorEngine.Generate(nameSpace);
-            var fileName = $"{converterClass.Name}.{srcType.Name}.{dstType.Name}.partial.cs";
-            var result = Code.New(converterClass.Name, Languages.CSharp, statement, true, fileName)
-                .With(x => x.props().Category = CodeCategory.Converter);
-            yield return result;
+            //var nameSpace = INamespace.New(dtoNameSpace);
+            //var converterClass = new Class("ModelConverter")
+            //{
+            //    AccessModifier = AccessModifier.Public,
+            //    InheritanceModifier = InheritanceModifier.Static | InheritanceModifier.Partial
+            //};
+            //var singleConverterMethod = new Method("ToViewModel")
+            //{
+            //    IsExtension = true,
+            //    Body = convertSingle_MethodBody(dstType.Name, "model", conversionSubject.ResultDto.Properties.Select(x => x.Name)),
+            //    Parameters =
+            //    {
+            //        (srcType, "model")
+            //    },
+            //    ReturnType = dstType
+            //};
+            //var listConverterMethod = new Method(singleConverterMethod.Name)
+            //{
+            //    IsExtension = true,
+            //    Body = convertEnumerable_MethodBody(singleConverterMethod.Name, "models"),
+            //    Parameters =
+            //    {
+            //        (TypePath.New(typeof(IEnumerable<>), [srcType]), "models")
+            //    },
+            //    ReturnType = TypePath.New(typeof(List<>), [dstType])
+            //};
+            //_ = converterClass.AddMember(singleConverterMethod, listConverterMethod);
+            //_ = nameSpace.AddType(converterClass)
+            //    .UsingNamespaces.AddRange(srcType.GetNameSpaces()).AddRange(dstType.GetNameSpaces());
+
+            //var statement = this._codeGeneratorEngine.Generate(nameSpace);
+            //var fileName = $"{converterClass.Name}.{srcType.Name}.{dstType.Name}.partial.cs";
+            //var result = Code.New(converterClass.Name, Languages.CSharp, statement, true, fileName)
+            //    .With(x => x.props().Category = CodeCategory.Converter);
+            //yield return result;
         }
 
-        static string convertSingle_MethodBody(string dstClassName, string argName, IEnumerable<string?> propNames) =>
-            new StringBuilder()
-                .AppendLine($"var result = new {dstClassName}")
-                .AppendLine($"{{")
-                .AppendAllLines(propNames, propName => $"{propName} = {argName}.{propName},")
-                .AppendLine($"}};")
-                .AppendLine($"return result;")
-                .ToString();
-        static string convertEnumerable_MethodBody(string singleConverterMethodName, string argName) =>
-            $"return {argName}.Select({singleConverterMethodName}).ToList();";
+        //static string convertSingle_MethodBody(string dstClassName, string argName, IEnumerable<string?> propNames) =>
+        //    new StringBuilder()
+        //        .AppendLine($"var result = new {dstClassName}")
+        //        .AppendLine($"{{")
+        //        .AppendAllLines(propNames, propName => $"{propName} = {argName}.{propName},")
+        //        .AppendLine($"}};")
+        //        .AppendLine($"return result;")
+        //        .ToString();
+        //static string convertEnumerable_MethodBody(string singleConverterMethodName, string argName) =>
+        //    $"return {argName}.Select({singleConverterMethodName}).ToList();";
     }
 }

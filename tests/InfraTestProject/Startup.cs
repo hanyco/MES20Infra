@@ -55,7 +55,7 @@ internal static class ServiceCollectionExtensions
     public static void AddUnitTestServices(this IServiceCollection services)
     {
         _ = services
-                .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule));
+                .RegisterServices<IService>(typeof(ContractsModule), typeof(ServicesModule));
         
         _ = services
                 .AddScoped<IMapper, Mapper>()

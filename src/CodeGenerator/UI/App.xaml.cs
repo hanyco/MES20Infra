@@ -88,7 +88,7 @@ public partial class App : LibApp
 
         static void registerServices(IServiceCollection services)
             => services
-                .RegisterServices<IService>(typeof(ContarctsModule), typeof(ServicesModule))
+                .RegisterServices<IService>(typeof(ContractsModule), typeof(ServicesModule))
                 .RegisterServicesWithIService<App>();
 
         static void addPages(IServiceCollection services)

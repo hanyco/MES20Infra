@@ -2,7 +2,7 @@
 
 namespace UiContracts;
 
-public static class ContarctsModule
+public static class ContractsModule
 {
     //x [ModuleInitializer]
     public static void Startup()
