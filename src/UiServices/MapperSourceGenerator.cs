@@ -11,56 +11,78 @@ using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
 using Library.Helpers.CodeGen;
 using Library.Results;
+using Library.Validations;
 
 namespace Services;
 
-internal sealed class MapperSourceGenerator(ILogger logger, ICodeGeneratorEngine codeGeneratorEngine) : IMapperSourceGenerator
+internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEngine) : IMapperSourceGenerator
 {
     public Result<Codes> GenerateCodes([DisallowNull] MapperSourceGeneratorArguments args)
     {
-        var srcType = TypePath.New(args.Source.Name, args.Source.NameSpace); // CQRS Output
-        var dstType = TypePath.New($"{args.Destination.DbObject.Name}Dto", args.Destination.NameSpace); // Page ViewModel
-        var dtoNameSpace = args.DtoNameSpace;
-
-        var singleConverterMethod = new Method(args.MethodName)
+        var validate = args.Check()
+            .ArgumentNotNull()
+            .NotNull(x => x.Source)
+            .NotNull(x => x.Destination)
+            .NotNull(x => x.Source.Model)
+            .NotNull(x => x.Destination.Model)
+            .NotNull(x => x.DtoNameSpace);
+        if (!validate.TryParse(out var vr))
         {
-            IsExtension = args.IsExtension,
-            Body = convertSingle_MethodBody(dstType.Name, args.InputArgumentName, args.Destination.Properties.Select(x => x.Name)),
-            Parameters =
-            {
-                (srcType, args.InputArgumentName)
-            },
-            ReturnType = dstType
-        };
-        var listConverterMethod = new Method(singleConverterMethod.Name)
+            return vr.WithValue(Codes.Empty);
+        }
+
+        var (srcModel, srcType) = args.Source; // CQRS Output
+        var (dstModel, dstType) = args.Destination; // Page ViewModel
+        srcType ??= TypePath.New(srcModel.Name, srcModel.NameSpace);
+        dstType ??= TypePath.New($"{dstModel.DbObject.Name}Dto", dstModel.NameSpace);
+
+        var converterClass = createClass(args.ClassName);
+        var singleConverterMethod = createSingleConverterMethod(args, srcType, dstType);
+        _ = converterClass.AddMember(singleConverterMethod);
+        if (args.GenerateListConverter)
         {
-            IsExtension = args.IsExtension,
-            Body = convertEnumerable_MethodBody(singleConverterMethod.Name, StringHelper.Pluralize(args.InputArgumentName)),
-            Parameters =
-            {
-                (TypePath.New(typeof(IEnumerable<>), [srcType]), StringHelper.Pluralize(args.InputArgumentName))
-            },
-            ReturnType = TypePath.New(typeof(List<>), [dstType])
-        };
+            var listConverterMethod = createListConverterMethod(args, srcType, dstType);
+            _ = converterClass.AddMember(listConverterMethod);
+        }
+        var nameSpace = INamespace.New(args.DtoNameSpace)
+            .AddUsingNameSpace(srcType.GetNameSpaces())
+            .AddUsingNameSpace(dstType.GetNameSpaces())
+            .AddType(converterClass);
 
-        var converterClass = new Class(args.ClassName)
-        {
-            AccessModifier = AccessModifier.Public,
-            InheritanceModifier = InheritanceModifier.Static | InheritanceModifier.Partial
-        }.AddMember(singleConverterMethod, listConverterMethod);
-
-        var nameSpace = INamespace.New(dtoNameSpace);
-        _ = nameSpace.AddType(converterClass)
-            .UsingNamespaces.AddRange(srcType.GetNameSpaces()).AddRange(dstType.GetNameSpaces());
-
-        var statement = codeGeneratorEngine.Generate(nameSpace);
-        var formatted = RoslynHelper.ReformatCode(statement);
-        var fileName = args.FileName ?? $"{converterClass.Name}.{srcType.Name}.{dstType.Name}{(args.IsPartial ? ".partial" : "")}.cs";
-        var code = Code.New(converterClass.Name, Languages.CSharp, formatted, args.IsPartial, fileName)
+        var fileName = args.FileName ?? $"{args.ClassName}.{srcType.Name}.{dstType.Name}{(args.IsPartial ? ".partial" : "")}.cs";
+        var code = codeGeneratorEngine.Generate(nameSpace, args.ClassName, Languages.CSharp, args.IsPartial, fileName)
             .With(x => x.props().Category = CodeCategory.Converter);
 
-        return Result<Codes>.CreateSuccess(code.ToCodes());
+        return code.ToCodesResult();
 
+        static Class createClass(string name) =>
+            new(name)
+            {
+                AccessModifier = AccessModifier.Public,
+                InheritanceModifier = InheritanceModifier.Static | InheritanceModifier.Partial
+            };
+        static Method createSingleConverterMethod(MapperSourceGeneratorArguments args, TypePath srcType, TypePath dstType) =>
+            new(args.MethodName)
+            {
+                IsExtension = args.IsExtension,
+                Body = convertSingle_MethodBody(dstType.Name, args.InputArgumentName, args.Destination.Model.Properties.Select(x => x.Name)),
+                Parameters =
+                {
+                    (srcType, args.InputArgumentName)
+                },
+                ReturnType = dstType
+            };
+        static Method createListConverterMethod(MapperSourceGeneratorArguments args, TypePath srcType, TypePath dstType) =>
+            new(args.MethodName)
+            {
+                IsExtension = args.IsExtension,
+                Body = convertEnumerable_MethodBody(args.MethodName, StringHelper.Pluralize(args.InputArgumentName)),
+                Parameters =
+                {
+                    (TypePath.New(typeof(IEnumerable<>), [srcType]), StringHelper.Pluralize(args.InputArgumentName))
+                },
+                ReturnType = TypePath.New(typeof(List<>), [dstType])
+            };
         static string convertEnumerable_MethodBody(string singleConverterMethodName, string argName) =>
             $"return {argName}.Select({singleConverterMethodName}).ToList();";
         static string convertSingle_MethodBody(string dstClassName, string argName, IEnumerable<string?> propNames) =>

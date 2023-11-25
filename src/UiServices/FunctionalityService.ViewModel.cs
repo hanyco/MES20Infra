@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Xml.Linq;
 
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
@@ -182,6 +183,7 @@ internal sealed partial class FunctionalityService
             .Then(createViewModel)
             .Then(addActions)
             .Then(addParameters)
+            .Then(createConverters)
             .RunAsync(token);
 
         void createViewModel(CreationData data)
@@ -242,13 +244,35 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(onLoad);
-            _ = data.ViewModel.BlazorDetailsComponentViewModel.ConversationSubjects.Add(data.ViewModel.GetByIdQueryViewModel);
+            //_ = data.ViewModel.BlazorDetailsComponentViewModel.ConversationSubjects.Add(data.ViewModel.GetByIdQueryViewModel);
         }
 
         static void addParameters(CreationData data)
         {
             data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("long"), "EntityId"));
             data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("Microsoft.AspNetCore.Components.EventCallback<long?>"), "EntityIdChanged"));
+        }
+
+        void createConverters(CreationData data)
+        {
+            var codesList = new List<Codes>();
+
+            {
+                var getByIdQueryViewModel = data.ViewModel.GetByIdQueryViewModel;
+                var dtoNameSpace = data.ViewModel.GetByIdQueryViewModel.DtoNameSpace;
+                var args = MapperSourceGeneratorArguments.New(getByIdQueryViewModel.ResultDto, getByIdQueryViewModel.ResultDto, dtoNameSpace);
+                var codes = mapperSourceGenerator.GenerateCodes(args);
+            }
+
+            {
+                var dataContext = data.ViewModel.BlazorDetailsPageViewModel.DataContext;
+                var insert = data.ViewModel.InsertCommandViewModel;
+                var dstTypePath = insert.GetSegregateParamsType("Command");
+                var args = MapperSourceGeneratorArguments.New((dataContext, null), (insert.ResultDto, dstTypePath), data.ViewModel.SourceDto.NameSpace, methodName: $"To{dstTypePath.Name}");
+                var mapper1 = this._mapperSourceGenerator.GenerateCodes(args);
+            }
+
+            data.ViewModel.Codes.BlazorDetailsComponentMapperCodes = Codes.New(codesList);
         }
     }
 
@@ -582,13 +606,13 @@ internal sealed partial class FunctionalityService
             new StringBuilder()
                 .AppendLine($"if (DataContext.Id == default)")
                 .AppendLine($"{{")
-                .AppendLine($"    var @params = this.DataContext.To{insert.GetSegregateParamsType("Command").FullName}();")
+                .AppendLine($"    var @params = this.DataContext.To{insert.GetSegregateParamsType("Command").Name}();")
                 .AppendLine($"    var cqParams = new {insert.GetSegregateType("Command").FullName}(@params);")
                 .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{insert.GetSegregateType("Command").FullName}, {insert.GetSegregateResultType("Command").FullName}>(cqParams);")
                 .AppendLine($"}}")
                 .AppendLine($"else")
                 .AppendLine($"{{")
-                .AppendLine($"    var @params = this.DataContext.To{update.GetSegregateParamsType("Command").FullName}();")
+                .AppendLine($"    var @params = this.DataContext.To{update.GetSegregateParamsType("Command").Name}();")
                 .AppendLine($"    var cqParams = new {update.GetSegregateType("Command").FullName}(@params);")
                 .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{update.GetSegregateType("Command").FullName}, {update.GetSegregateResultType("Command").FullName}>(cqParams);")
                 .AppendLine($"}}")

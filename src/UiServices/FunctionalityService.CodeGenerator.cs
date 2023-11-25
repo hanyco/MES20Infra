@@ -26,12 +26,18 @@ internal sealed partial class FunctionalityService
         var scope = ActionScope.Begin(this.Logger, "Generating Functionality code.");
         try
         {
-            var results = generateCodes(viewModel, codeResult);
+            var results = generateCodes(viewModel, codeResult).ToImmutableArray();
             scope.End("Generated Functionality code.");
 
-            return results.Any()
-                ? Result<Codes>.Combine(results, Codes.Combine)
-                : Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
+            if (!results.Any())
+            {
+                return Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
+            };
+            if (results.Any(x => x.IsFailure))
+            {
+                return Result<Codes>.From(results.First(x => x.IsFailure), new(results.Select(x => x.Value)));
+            };
+            return Result<Codes>.Combine(results, Codes.Combine);
         }
         catch (Exception ex)
         {
@@ -42,181 +48,137 @@ internal sealed partial class FunctionalityService
 
         IEnumerable<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes)
         {
-            var result = new List<Result<Codes>>();
-
             if (viewModel.SourceDto != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.SourceDto}");
-                var codeGenRes = addToResult(this._dtoCodeService.GenerateCodes(viewModel.SourceDto));
+                var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.SourceDto);
+                codes.SourceDtoCodes = codeGenRes;
+                yield return codes.SourceDtoCodes;
                 if (!codeGenRes)
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.SourceDto}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.SourceDto}");
-                codes.SourceDtoCodes = codeGenRes;
             }
 
             if (viewModel.GetAllQueryViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
                 var codeGenRes = generateAllCodes(viewModel.GetAllQueryViewModel);
+                codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
+                yield return codes.GetAllQueryCodes;
                 if (codeGenRes.Any(x => !x))
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.SourceDto}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.GetAllQueryViewModel}");
-                codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
             }
 
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.GetByIdQueryViewModel}");
                 var codeGenRes = generateAllCodes(viewModel.GetByIdQueryViewModel);
+                codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
+                yield return codes.GetByIdQueryCodes;
                 if (codeGenRes.Any(x => !x))
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.GetByIdQueryViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.GetByIdQueryViewModel}");
-                codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
             }
 
             if (viewModel.InsertCommandViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.InsertCommandViewModel}");
                 var codeGenRes = generateAllCodes(viewModel.InsertCommandViewModel);
+                codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
+                yield return codes.InsertCommandCodes;
                 if (codeGenRes.Any(x => !x))
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.InsertCommandViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.InsertCommandViewModel}");
-                codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
             if (viewModel.UpdateCommandViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.UpdateCommandViewModel}");
                 var codeGenRes = generateAllCodes(viewModel.UpdateCommandViewModel);
+                codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
+                yield return codes.UpdateCommandCodes;
                 if (codeGenRes.Any(x => !x))
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.UpdateCommandViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.UpdateCommandViewModel}");
-                codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
             if (viewModel.DeleteCommandViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.DeleteCommandViewModel}");
                 var codeGenRes = generateAllCodes(viewModel.DeleteCommandViewModel);
+                codes.DeleteCommandCodes = new(codeGenRes.Select(x => x.Value));
+                yield return codes.DeleteCommandCodes;
                 if (codeGenRes.Any(x => !x))
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.DeleteCommandViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.DeleteCommandViewModel}");
-                codes.DeleteCommandCodes = new(codeGenRes.Select(x => x.Value));
             }
 
             if (viewModel.BlazorListPageViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel}");
-                var codeGenRes = addToResult(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel));
+                var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel);
+                codes.BlazorListPageCodes = codeGenRes;
+                yield return codes.BlazorListPageCodes;
                 if (!codeGenRes)
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorListPageViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel}");
-                codes.BlazorListPageCodes = codeGenRes;
             }
 
             if (viewModel.BlazorListPageViewModel?.DataContext != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel.DataContext}");
-                var codeGenRes = addToResult(this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext));
+                var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext);
+                codes.BlazorListPageDataContextCodes = codeGenRes;
+                yield return codes.BlazorListPageDataContextCodes;
                 if (!codeGenRes)
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorListPageViewModel.DataContext}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListPageViewModel.DataContext}");
-                codes.BlazorListPageDataContextCodes = codeGenRes;
             }
 
             if (viewModel.BlazorDetailsPageViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel}");
-                var codeGenRes = addToResult(this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel));
+                var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel);
+                codes.BlazorDetailsPageCodes = codeGenRes;
+                yield return codes.BlazorDetailsPageCodes;
                 if (!codeGenRes)
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorDetailsPageViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel}");
-                codes.BlazorDetailsPageCodes = codeGenRes;
             }
 
             if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel.DataContext}");
-                var codeGenRes = addToResult(this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext));
+                var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext);
+                codes.BlazorListPageDataContextCodes = codeGenRes;
+                yield return codes.BlazorListPageDataContextCodes;
                 if (!codeGenRes)
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorDetailsPageViewModel.DataContext}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsPageViewModel.DataContext}");
-                codes.BlazorListPageDataContextCodes = codeGenRes;
             }
 
             if (viewModel.BlazorListComponentViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListComponentViewModel}");
-                var codeGenRes = addToResult(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel));
+                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel);
+                codes.BlazorListComponentCodes = codeGenRes;
+                yield return codes.BlazorListComponentCodes;
                 if (!codeGenRes)
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorListComponentViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorListComponentViewModel}");
-                codes.BlazorListComponentCodes = codeGenRes;
             }
 
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsComponentViewModel}");
-                var codeGenRes = addToResult(this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel));
+                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+                codes.BlazorDetailsComponentCodes = codeGenRes;
+                yield return codes.BlazorDetailsComponentCodes;
                 if (!codeGenRes)
                 {
-                    this.Logger.Debug($"Not generated Functionality code for {viewModel.BlazorDetailsComponentViewModel}. Error: {codeGenRes}");
-                    return result;
+                    yield break;
                 }
-
-                this.Logger.Debug($"Generating Functionality code for {viewModel.BlazorDetailsComponentViewModel}");
-                codes.BlazorDetailsComponentCodes = codeGenRes;
             }
-
-            return result;
-
-            // Internal method to add a code result to the result list.
-            Result<Codes> addToResult(Result<Codes> codeResult) =>
-                codeResult.Fluent(result.Add);
 
             ImmutableArray<Result<Codes>> generateAllCodes(CqrsViewModelBase cqrsViewModel)
             {
@@ -237,9 +199,9 @@ internal sealed partial class FunctionalityService
                     // Generate the codes of CQRS handler.
                     var handlerCodeResult = this._cqrsCodeService.GenerateCodes(model);
 
-                    yield return addToResult(paramsDtoCodeResult);
-                    yield return addToResult(resultDtoCodeResult);
-                    yield return addToResult(handlerCodeResult);
+                    yield return paramsDtoCodeResult;
+                    yield return resultDtoCodeResult;
+                    yield return handlerCodeResult;
                 }
             }
         }

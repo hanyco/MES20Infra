@@ -16,8 +16,6 @@ using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
-using Library.CodeGeneration.v2;
-using Library.CodeGeneration.v2.Back;
 using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
@@ -36,9 +34,8 @@ using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
-internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine codeGeneratorEngine, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodingService, IBlazorPageCodingService
+internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodingService, IBlazorPageCodingService
 {
-    private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGeneratorEngine;
     private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
     private readonly ILogger _logger = logger;
 
@@ -394,9 +391,12 @@ internal sealed class BlazorCodingService(ILogger logger, ICodeGeneratorEngine c
     {
         while (this._conversionSubjects.TryDequeue(out var conversionSubject))
         {
-            var codes = mapperSourceGenerator.GenerateCodes(new(conversionSubject.ResultDto, conversionSubject.ResultDto, conversionSubject.DtoNameSpace));
+            var codes = mapperSourceGenerator.GenerateCodes(
+                new((conversionSubject.ResultDto, null), (conversionSubject.ResultDto, null), conversionSubject.DtoNameSpace));
             foreach (var code in codes.Value)
+            {
                 yield return code!;
+            }
 
             //var srcType = TypePath.New(conversionSubject.ResultDto.Name, conversionSubject.ResultDto.NameSpace); // CQRS Output
             //var dstType = TypePath.New($"{conversionSubject.ResultDto.DbObject.Name}Dto", conversionSubject.ResultDto.NameSpace); // Page ViewModel

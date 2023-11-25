@@ -15,12 +15,14 @@ namespace Contracts.ViewModels;
 /// </summary>
 public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
 {
-    private readonly Dictionary<string, Codes> _allCodes = new();
+    private readonly Dictionary<string, Codes> _allCodes = [];
 
     /// <summary>
     /// Gets or sets the codes for the BlazorDetailsComponentViewModel functionality.
     /// </summary>
     public Codes BlazorDetailsComponentCodes { get => this.Get(); set => this.Set(value); }
+
+    public Codes BlazorDetailsComponentMapperCodes { get => this.Get(); set => this.Set(value); }
 
     public Codes BlazorDetailsPageCodes { get => this.Get(); set => this.Set(value); }
 
@@ -34,6 +36,8 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     public Codes BlazorListPageCodes { get => this.Get(); set => this.Set(value); }
 
     public Codes BlazorListPageDataContextCodes { get => this.Get(); set => this.Set(value); }
+
+    public Codes ConverterCodes { get => this.Get(); set => this.Set(value); }
 
     /// <summary>
     /// Gets or sets the codes for the DeleteCommandCodes functionality.
@@ -56,8 +60,6 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     public Codes InsertCommandCodes { get => this.Get(); set => this.Set(value); }
 
     public Codes SourceDtoCodes { get => this.Get(); set => this.Set(value); }
-    
-    public Codes ConverterCodes { get => this.Get(); set => this.Set(value); }
 
     /// <summary>
     /// Gets or sets the codes for the UpdateCommandCodes functionality.
@@ -77,7 +79,8 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
         new(this.GetAllCodes());
 
     // Private method to get the codes associated with a functionality.
-    private Codes Get([CallerMemberName] string propName = null) => this._allCodes[propName];
+    private Codes Get([CallerMemberName] string propName = null) =>
+        this._allCodes[propName];
 
     // Private method to set the codes associated with a functionality.
     private void Set(Codes value, [CallerMemberName] string propName = null) =>

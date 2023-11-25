@@ -27,5 +27,8 @@
       <ProjectReference Include="..\..\src\Bcl\src\CoreLib\CoreLib.csproj" />
       <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Tests\" />
+    </ItemGroup>
 
 </Project>
