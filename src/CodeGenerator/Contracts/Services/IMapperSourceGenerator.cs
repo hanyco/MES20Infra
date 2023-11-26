@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using Contracts.ViewModels;
 
@@ -13,43 +14,40 @@ public interface IMapperSourceGenerator : IBusinessService, ICodeGenerator<Mappe
 {
 }
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed record MapperSourceGeneratorArguments(
     [DisallowNull] in (DtoViewModel Model, TypePath? Type) Source,
     [DisallowNull] in (DtoViewModel Model, TypePath? Type) Destination,
-    [DisallowNull] in string DtoNameSpace,
-    in string? FileName = null,
+    [DisallowNull] in string NameSpace,
 
     in string ClassName = "ModelConverter",
     in bool IsPartial = true,
 
     in string MethodName = "ToViewModel",
-    in string InputArgumentName = "model",
     in bool IsExtension = true,
+    in string InputArgumentName = "model",
+    bool GenerateListConverter = true,
 
-    bool GenerateListConverter = true)
+    in string? FileName = null)
 {
-    public static MapperSourceGeneratorArguments New(
-        [DisallowNull] in (DtoViewModel Model, TypePath? Type) source,
-        [DisallowNull] in (DtoViewModel Model, TypePath? Type) destination,
-        [DisallowNull] in string dtoNameSpace,
-        in string? fileName = null,
-        in string className = "ModelConverter",
-        in bool isPartial = true,
-        in string methodName = "ToViewModel",
-        in string inputArgumentName = "model",
-        in bool isExtension = true,
-        bool generateListConverter = true) =>
-        new(source, destination, dtoNameSpace, fileName, className, isPartial, methodName, inputArgumentName, isExtension, generateListConverter);
-    public static MapperSourceGeneratorArguments New(
+    public MapperSourceGeneratorArguments(
         [DisallowNull] in DtoViewModel sourceModel,
         [DisallowNull] in DtoViewModel destinationModel,
-        [DisallowNull] in string dtoNameSpace,
+        [DisallowNull] in string nameSpace,
         in string? fileName = null,
         in string className = "ModelConverter",
         in bool isPartial = true,
         in string methodName = "ToViewModel",
         in string inputArgumentName = "model",
         in bool isExtension = true,
-        bool generateListConverter = true) =>
-        New((sourceModel, null), (destinationModel, null), dtoNameSpace, fileName, className, isPartial, methodName, inputArgumentName, isExtension, generateListConverter);
+        bool generateListConverter = true)
+        : this((sourceModel, null), (destinationModel, null), nameSpace, className, isPartial, methodName, isExtension, inputArgumentName, generateListConverter, fileName)
+    {
+    }
+
+    public override string ToString() =>
+        $"Map `{this.Source.Type}` to `{this.Destination.Type}`";
+
+    private string GetDebuggerDisplay() =>
+        this.ToString();
 }

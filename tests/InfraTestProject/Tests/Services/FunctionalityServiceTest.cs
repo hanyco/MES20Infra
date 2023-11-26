@@ -10,7 +10,6 @@ namespace InfraTestProject.Tests.Services;
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
     [Fact]
-    [Trait("Category", "__ActiveTest")]
     public async Task GenerateModelTest()
     {
         // Assign
@@ -28,6 +27,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     }
 
     [Fact]
+    [Trait("Category", "__ActiveTest")]
     public async void GenerateCode()
     {
         // Assign

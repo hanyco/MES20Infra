@@ -261,14 +261,19 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         this.OnInitializingBehindCode(args);
 
         var mainUnit = new CodeCompileUnit();
-        mainUnit.Namespaces.AddRange(this.AdditionalUsings
-            .Compact().RemoveDuplicates()
-            .Select(x => new CodeNamespace(x))
-            .Except(mainUnit.Namespaces.Cast<CodeNamespace>())
-            .ToArray());
+        //mainUnit.Namespaces.AddRange(this.AdditionalUsings
+        //    .Compact().RemoveDuplicates()
+        //    .Select(x => new CodeNamespace(x))
+        //    .Except(mainUnit.Namespaces.Cast<CodeNamespace>())
+        //    .ToArray());
         var mainClassType = createMainClassType(mainUnit);
 
         var partUnit = new CodeCompileUnit();
+        //partUnit.Namespaces.AddRange(this.AdditionalUsings
+        //    .Compact().RemoveDuplicates()
+        //    .Select(x => new CodeNamespace(x))
+        //    .Except(partUnit.Namespaces.Cast<CodeNamespace>())
+        //    .ToArray());
         var (partNameSpace, partClassType) = createPartClassType(partUnit);
 
         var initializedAsyncMethodBody = new StringBuilder();
@@ -307,6 +312,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         CodeTypeDeclaration createMainClassType(in CodeCompileUnit mainUnit)
         {
             var mainNameSpace = mainUnit.AddNewNameSpace(this.NameSpace);
+            _ = mainNameSpace.UseNameSpace(this.AdditionalUsings);
             var mainClassType = createMainClass(mainNameSpace);
             foreach (var ns in this.MainCodeUsingNameSpaces)
             {
@@ -319,6 +325,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         (CodeNamespace, CodeTypeDeclaration) createPartClassType(in CodeCompileUnit partUnit)
         {
             var partNameSpace = partUnit.AddNewNameSpace(this.NameSpace);
+            _ = partNameSpace.UseNameSpace(this.AdditionalUsings);
+
             var partClassType = createPartialClass(partNameSpace);
             foreach (var ns in this.PartialCodeUsingNameSpaces)
             {

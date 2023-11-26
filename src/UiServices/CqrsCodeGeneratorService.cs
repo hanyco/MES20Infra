@@ -81,9 +81,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     Body = handlerMethodBody,
                     Parameters =
                     {
-                        (model.GetSegregateType(kind.ToString()).FullName, kind.ToString().ToLower())
+                        (model.GetSegregateType(kind.ToString()).FullPath, kind.ToString().ToLower())
                     },
-                    ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.GetSegregateResultType(kind.ToString()).FullName}>")
+                    ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.GetSegregateResultType(kind.ToString()).FullPath}>")
                 };
 
                 // Create `QueryHandler` class
@@ -147,8 +147,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var resultType = model.GetSegregateResultType(kind.ToString());
                 var baseType = kind switch
                 {
-                    CodeCategory.Query => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullName, resultType.FullName]),
-                    CodeCategory.Command => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullName, resultType.FullName]),
+                    CodeCategory.Query => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.Command => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
                     _ => throw new NotImplementedException()
                 };
 
@@ -178,8 +178,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             {
                 var resultClassType = model.GetSegregateResultType(kind.ToString());
                 var resultParamsType = TypePath.New(model.ResultDto.IsList
-                    ? $"List<{model.GetSegregateResultParamsType(kind.ToString()).FullName}>"
-                    : $"{model.GetSegregateResultParamsType(kind.ToString()).FullName}");
+                    ? $"List<{model.GetSegregateResultParamsType(kind.ToString()).FullPath}>"
+                    : $"{model.GetSegregateResultParamsType(kind.ToString()).FullPath}");
 
                 var prop = new CodeGenProperty($"{prp("Result")}", resultParamsType);
                 var ctor = new Method(resultClassType.Name)

@@ -4,14 +4,11 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;
-using Library.Data.SqlServer;
-using Library.Data.SqlServer.Builders.Bases;
 
 namespace Contracts.ViewModels;
 
 public abstract class CqrsViewModelBase : InfraViewModelBase
 {
-    private ISelectStatement _additionalWhereClause;
     private CqrsSegregateCategory _category;
     private string _comment;
     private string _cqrsNameSpace;
@@ -21,6 +18,7 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     private string _handleMethodBody;
     private bool _hasPartialHandler;
     private bool _hasPartialOnInitialize;
+    private string _mapperNameSpace;
     private ModuleViewModel _module;
     private DtoViewModel _paramDto;
     private DtoViewModel _resultDto;
@@ -67,6 +65,7 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         get => this._handleMethodBody;
         set => this.SetProperty(ref this._handleMethodBody, value);
     }
+
     public ISet<(TypePath Type, string Name)> HandleMethodParameters { get; } = new HashSet<(TypePath Type, string Name)>();
 
     public bool HasPartialHandler
@@ -79,6 +78,12 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     {
         get => this._hasPartialOnInitialize;
         set => this.SetProperty(ref this._hasPartialOnInitialize, value);
+    }
+
+    public string MapperNameSpace
+    {
+        get => this._mapperNameSpace;
+        set => this.SetProperty(ref this._mapperNameSpace, value);
     }
 
     public ModuleViewModel Module

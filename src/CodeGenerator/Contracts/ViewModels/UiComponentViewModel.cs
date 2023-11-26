@@ -41,7 +41,7 @@ public class UiComponentViewModel : UiComponentViewModelBase
     public ObservableCollection<(string Key, string Value)> Attributes { get; } = [];
 
     public ObservableCollection<UiPropertyViewModel> Properties { get; } = [];
+    public ObservableCollection<string> AdditionalUsingNameSpaces { get; } = [];
 
     public long? UiPageComponentId { get; set; }
-    public ISet<CqrsViewModelBase> ConversationSubjects { get; } = new HashSet<CqrsViewModelBase>();
 }

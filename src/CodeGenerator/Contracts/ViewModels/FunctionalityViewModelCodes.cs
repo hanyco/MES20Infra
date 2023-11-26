@@ -85,4 +85,7 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     // Private method to set the codes associated with a functionality.
     private void Set(Codes value, [CallerMemberName] string propName = null) =>
         this._allCodes[propName] = value;
+
+    public void Clear() =>
+        this._allCodes.Clear();
 }

@@ -91,6 +91,7 @@ internal sealed partial class FunctionalityService
         MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
         //?! ☠ Don't change the sequence of the steps ☠
             MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
+                .AddStep(this.InitializeWorkspace, getTitle("Initializing"))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
 
@@ -128,6 +129,9 @@ internal sealed partial class FunctionalityService
         data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
             ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
             : Enumerable.Empty<ClaimViewModel>();
+
+    private static string GetMapperNameSpace(CreationData data) =>
+        TypePath.Combine(GetNameSpace(data), "Mapper");
 
     [DebuggerStepThrough]
     private static string GetNameSpace(CreationData data) =>
@@ -195,6 +199,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorDetailsPageViewModel.DataContext;
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponentViewModel.Attributes.Add(new("@bind-EntityId", "this.Id"));
+            data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
         }
 
@@ -244,7 +249,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(onLoad);
-            //_ = data.ViewModel.BlazorDetailsComponentViewModel.ConversationSubjects.Add(data.ViewModel.GetByIdQueryViewModel);
         }
 
         static void addParameters(CreationData data)
@@ -255,24 +259,20 @@ internal sealed partial class FunctionalityService
 
         void createConverters(CreationData data)
         {
-            var codesList = new List<Codes>();
+            var mapperNameSpace = GetMapperNameSpace(data);
+            var dataContext = data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty.Dto;
 
-            {
-                var getByIdQueryViewModel = data.ViewModel.GetByIdQueryViewModel;
-                var dtoNameSpace = data.ViewModel.GetByIdQueryViewModel.DtoNameSpace;
-                var args = MapperSourceGeneratorArguments.New(getByIdQueryViewModel.ResultDto, getByIdQueryViewModel.ResultDto, dtoNameSpace);
-                var codes = mapperSourceGenerator.GenerateCodes(args);
-            }
+            var insert = data.ViewModel.InsertCommandViewModel;
+            var insertDstTypePath = insert.GetSegregateParamsType("Command");
+            var args = new MapperSourceGeneratorArguments((dataContext, null), (insert.ResultDto, insertDstTypePath), mapperNameSpace, MethodName: $"To{insertDstTypePath.Name}");
+            data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
 
-            {
-                var dataContext = data.ViewModel.BlazorDetailsPageViewModel.DataContext;
-                var insert = data.ViewModel.InsertCommandViewModel;
-                var dstTypePath = insert.GetSegregateParamsType("Command");
-                var args = MapperSourceGeneratorArguments.New((dataContext, null), (insert.ResultDto, dstTypePath), data.ViewModel.SourceDto.NameSpace, methodName: $"To{dstTypePath.Name}");
-                var mapper1 = this._mapperSourceGenerator.GenerateCodes(args);
-            }
+            var update = data.ViewModel.UpdateCommandViewModel;
+            var updateDstTypePath = update.GetSegregateParamsType("Command");
+            args = new MapperSourceGeneratorArguments((dataContext, null), (update.ResultDto, updateDstTypePath), mapperNameSpace, MethodName: $"To{updateDstTypePath.Name}");
+            data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
 
-            data.ViewModel.Codes.BlazorDetailsComponentMapperCodes = Codes.New(codesList);
+            data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
         }
     }
 
@@ -308,6 +308,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponentViewModel.IsGrid = true;
             data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.BlazorListPageViewModel.DataContext;
             data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorListPageViewModel.DataContext.Properties.First(x => x.IsList == true);
+            data.ViewModel.BlazorListComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             data.ViewModel.BlazorListPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
         }
 
@@ -391,6 +392,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel.FriendlyName = data.ViewModel.DeleteCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.DeleteCommandViewModel.Comment = data.COMMENT;
             data.ViewModel.DeleteCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token);
+            data.ViewModel.DeleteCommandViewModel.MapperNameSpace = GetMapperNameSpace(data);
         }
 
         void createParams(CreationData data)
@@ -436,6 +438,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
             data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.GetAllQueryViewModel.MapperNameSpace = GetMapperNameSpace(data);
         }
 
         void createParams(CreationData data)
@@ -468,6 +471,7 @@ internal sealed partial class FunctionalityService
             .Then(createResult)
             .Then(createHandleMethodBody)
             .Then(setupSecurity)
+            .Then(createConverters)
             .RunAsync(token);
 
         async Task createViewModel(CancellationToken token)
@@ -503,6 +507,14 @@ internal sealed partial class FunctionalityService
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetByIdQueryHandleMethodBody(data.ViewModel.GetByIdQueryViewModel);
+
+        void createConverters(CreationData data)
+        {
+            var mapperNameSpace = GetMapperNameSpace(data);
+            var getByIdQueryViewModel = data.ViewModel.GetByIdQueryViewModel;
+            var args = new MapperSourceGeneratorArguments(getByIdQueryViewModel.ResultDto, getByIdQueryViewModel.ResultDto, mapperNameSpace);
+            data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
+        }
     }
 
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
@@ -600,6 +612,13 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.UpdateCommandViewModel);
     }
 
+    private Task InitializeWorkspace(CreationData data, CancellationToken token)
+    {
+        data.ViewModel.MapperGeneratorViewModel.Arguments.Clear();
+        data.ViewModel.Codes.Clear();
+        return Task.CompletedTask;
+    }
+
     private class CodeSnippets
     {
         public static string BlazorDetailsComponent_SaveButton_OnClick_Body(CqrsCommandViewModel insert, CqrsCommandViewModel update) =>
@@ -607,14 +626,14 @@ internal sealed partial class FunctionalityService
                 .AppendLine($"if (DataContext.Id == default)")
                 .AppendLine($"{{")
                 .AppendLine($"    var @params = this.DataContext.To{insert.GetSegregateParamsType("Command").Name}();")
-                .AppendLine($"    var cqParams = new {insert.GetSegregateType("Command").FullName}(@params);")
-                .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{insert.GetSegregateType("Command").FullName}, {insert.GetSegregateResultType("Command").FullName}>(cqParams);")
+                .AppendLine($"    var cqParams = new {insert.GetSegregateType("Command").FullPath}(@params);")
+                .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{insert.GetSegregateType("Command").FullPath}, {insert.GetSegregateResultType("Command").FullPath}>(cqParams);")
                 .AppendLine($"}}")
                 .AppendLine($"else")
                 .AppendLine($"{{")
                 .AppendLine($"    var @params = this.DataContext.To{update.GetSegregateParamsType("Command").Name}();")
-                .AppendLine($"    var cqParams = new {update.GetSegregateType("Command").FullName}(@params);")
-                .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{update.GetSegregateType("Command").FullName}, {update.GetSegregateResultType("Command").FullName}>(cqParams);")
+                .AppendLine($"    var cqParams = new {update.GetSegregateType("Command").FullPath}(@params);")
+                .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{update.GetSegregateType("Command").FullPath}, {update.GetSegregateResultType("Command").FullPath}>(cqParams);")
                 .AppendLine($"}}")
                 .Build();
 
@@ -630,7 +649,7 @@ internal sealed partial class FunctionalityService
                 .AppendLine("if (this.EntityId is { } entityId)")
                 .AppendLine("{")
                 .AppendLine($"// Setup segregation parameters")
-                .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").FullName}()")
+                .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").FullPath}()")
                 .AppendLine("{")
                 .AppendLine("    Id = entityId,")
                 .AppendLine("};")
@@ -669,8 +688,8 @@ internal sealed partial class FunctionalityService
                 : (nameof(Sql.FirstOrDefault), string.Empty);
             var result = new StringBuilder()
                 .AppendLine($"var dbQuery = $@\"{bodyQuery}\";")
-                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetSegregateResultParamsType("Query").FullName}>(dbQuery){toListMethod};")
-                .AppendLine($"var result = new {model.GetSegregateResultType("Query").FullName}(dbResult);")
+                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetSegregateResultParamsType("Query").FullPath}>(dbQuery){toListMethod};")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Query").FullPath}(dbResult);")
                 .Append($"return Task.FromResult(result);")
                 .Build();
             return result;

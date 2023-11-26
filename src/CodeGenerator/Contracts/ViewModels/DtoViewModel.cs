@@ -4,9 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;
+using Library.Wpf.Markers;
 
 namespace Contracts.ViewModels;
 
+[ViewModel]
 public sealed class DtoViewModel : InfraViewModelBase
 {
     private string? _comment;

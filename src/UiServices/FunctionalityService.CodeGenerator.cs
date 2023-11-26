@@ -20,39 +20,44 @@ internal sealed partial class FunctionalityService
     public Result<Codes> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null)
     {
         Check.MustBeArgumentNotNull(viewModel);
+
         // Determine whether to update existing codes or generate new ones.
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : [];
 
         var scope = ActionScope.Begin(this.Logger, "Generating Functionality code.");
+        Result<Codes> result = default!;
         try
         {
             var results = generateCodes(viewModel, codeResult).ToImmutableArray();
-            scope.End("Generated Functionality code.");
-
             if (!results.Any())
             {
-                return Result<Codes>.CreateFailure("No codes generated. ViewModel has no parameter to generate any codes.", Codes.Empty)!;
-            };
-            if (results.Any(x => x.IsFailure))
+                result = Result<Codes>.CreateFailure("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
+            }
+            else if (results.Any(x => x.IsFailure))
             {
-                return Result<Codes>.From(results.First(x => x.IsFailure), new(results.Select(x => x.Value)));
-            };
-            return Result<Codes>.Combine(results, Codes.Combine);
+                result = Result<Codes>.From(results.First(x => x.IsFailure), new(results.Select(x => x.Value)));
+            }
+            else
+            {
+                result = Result<Codes>.Combine(results, Codes.Combine);
+            }
         }
         catch (Exception ex)
         {
-            var result = Result<Codes>.CreateFailure(ex, Codes.Empty);
-            scope.End(result);
-            return result;
+            result = Result<Codes>.CreateFailure(ex, Codes.Empty);
         }
+        finally
+        {
+            scope.End(result);
+        }
+        return result;
 
         IEnumerable<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes)
         {
             if (viewModel.SourceDto != null)
             {
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.SourceDto);
-                codes.SourceDtoCodes = codeGenRes;
-                yield return codes.SourceDtoCodes;
+                yield return codes.SourceDtoCodes = codeGenRes;
                 if (!codeGenRes)
                 {
                     yield break;
@@ -178,6 +183,22 @@ internal sealed partial class FunctionalityService
                 {
                     yield break;
                 }
+            }
+
+            if (viewModel.MapperGeneratorViewModel.Arguments.Count != 0)
+            {
+                var mapperCodes = new List<Codes>();
+                foreach (var argument in viewModel.MapperGeneratorViewModel.Arguments)
+                {
+                    var codeGenRes = this._mapperSourceGenerator.GenerateCodes(argument);
+                    mapperCodes.Add(codeGenRes);
+                    yield return codeGenRes;
+                    if (!codeGenRes)
+                    {
+                        yield break;
+                    }
+                }
+                codes.BlazorDetailsComponentMapperCodes = Codes.New(mapperCodes);
             }
 
             ImmutableArray<Result<Codes>> generateAllCodes(CqrsViewModelBase cqrsViewModel)

@@ -43,7 +43,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
         new StringBuilder()
             .AppendLine($"// Setup segregation parameters")
             .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").FullPath}();")
-            .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query")}(@params);")
+            .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query").FullPath}(@params);")
             .AppendLine($"")
             .AppendLine($"")
             .AppendLine($"// Invoke the query handler to retrieve all entities")
@@ -106,7 +106,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
             static (TypePath DataContextType, TypePath? DataContextPropType) createDataContext(UiViewModel model)
             {
-                var dataContextType = TypePath.New(model.PageDataContext?.Name, model.PageDataContext?.NameSpace);
+                var dataContextType = TypePath.New(model.PageDataContext!.Name, model.PageDataContext!.NameSpace);
                 var dataContextPropType = model.PageDataContextProperty is not null and { Name: not null }
                     ? TypePath.New(model.PageDataContextProperty.TypeFullName)
                     : null;
@@ -117,7 +117,8 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 BlazorComponent.New(model.Name!)
                     .With(x => x.NameSpace = model.NameSpace)
                     .With(x => x.IsGrid = model.IsGrid)
-                    .With(x => x.DataContextType = dataContextType);
+                    .With(x => x.DataContextType = dataContextType)
+                    .With(x => x.AdditionalUsings.AddRange(model.AdditionalUsingNameSpaces));
 
             static void setDataContext(UiViewModel model, TypePath? dataContextPropType, BlazorComponent result)
             {
@@ -279,7 +280,6 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
         void processBackendActions(in UiViewModel model, in BlazorComponent result)
         {
-            model.ConversationSubjects.ForEach(this._conversionSubjects.Enqueue);
             foreach (var action in model.Actions.OfType<BackElement>())
             {
                 switch (action)
@@ -289,6 +289,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                         result.Actions.Add(new(Keyword_AddToOnInitializedAsync, true, body: ExecuteCqrs_MethodBody(load.CqrsSegregate)));
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.CqrsNameSpace);
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.DtoNameSpace);
+                        _ = result.AdditionalUsings.Add(load.CqrsSegregate.MapperNameSpace);
                         break;
 
                     case CqrsLoadViewModel load:
@@ -391,63 +392,12 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
     {
         while (this._conversionSubjects.TryDequeue(out var conversionSubject))
         {
-            var codes = mapperSourceGenerator.GenerateCodes(
-                new((conversionSubject.ResultDto, null), (conversionSubject.ResultDto, null), conversionSubject.DtoNameSpace));
+            var args = new MapperSourceGeneratorArguments(conversionSubject.ResultDto, conversionSubject.ResultDto, conversionSubject.MapperNameSpace);
+            var codes = mapperSourceGenerator.GenerateCodes(args);
             foreach (var code in codes.Value)
             {
                 yield return code!;
             }
-
-            //var srcType = TypePath.New(conversionSubject.ResultDto.Name, conversionSubject.ResultDto.NameSpace); // CQRS Output
-            //var dstType = TypePath.New($"{conversionSubject.ResultDto.DbObject.Name}Dto", conversionSubject.ResultDto.NameSpace); // Page ViewModel
-            //var dtoNameSpace = conversionSubject.DtoNameSpace!;
-
-            //var nameSpace = INamespace.New(dtoNameSpace);
-            //var converterClass = new Class("ModelConverter")
-            //{
-            //    AccessModifier = AccessModifier.Public,
-            //    InheritanceModifier = InheritanceModifier.Static | InheritanceModifier.Partial
-            //};
-            //var singleConverterMethod = new Method("ToViewModel")
-            //{
-            //    IsExtension = true,
-            //    Body = convertSingle_MethodBody(dstType.Name, "model", conversionSubject.ResultDto.Properties.Select(x => x.Name)),
-            //    Parameters =
-            //    {
-            //        (srcType, "model")
-            //    },
-            //    ReturnType = dstType
-            //};
-            //var listConverterMethod = new Method(singleConverterMethod.Name)
-            //{
-            //    IsExtension = true,
-            //    Body = convertEnumerable_MethodBody(singleConverterMethod.Name, "models"),
-            //    Parameters =
-            //    {
-            //        (TypePath.New(typeof(IEnumerable<>), [srcType]), "models")
-            //    },
-            //    ReturnType = TypePath.New(typeof(List<>), [dstType])
-            //};
-            //_ = converterClass.AddMember(singleConverterMethod, listConverterMethod);
-            //_ = nameSpace.AddType(converterClass)
-            //    .UsingNamespaces.AddRange(srcType.GetNameSpaces()).AddRange(dstType.GetNameSpaces());
-
-            //var statement = this._codeGeneratorEngine.Generate(nameSpace);
-            //var fileName = $"{converterClass.Name}.{srcType.Name}.{dstType.Name}.partial.cs";
-            //var result = Code.New(converterClass.Name, Languages.CSharp, statement, true, fileName)
-            //    .With(x => x.props().Category = CodeCategory.Converter);
-            //yield return result;
         }
-
-        //static string convertSingle_MethodBody(string dstClassName, string argName, IEnumerable<string?> propNames) =>
-        //    new StringBuilder()
-        //        .AppendLine($"var result = new {dstClassName}")
-        //        .AppendLine($"{{")
-        //        .AppendAllLines(propNames, propName => $"{propName} = {argName}.{propName},")
-        //        .AppendLine($"}};")
-        //        .AppendLine($"return result;")
-        //        .ToString();
-        //static string convertEnumerable_MethodBody(string singleConverterMethodName, string argName) =>
-        //    $"return {argName}.Select({singleConverterMethodName}).ToList();";
     }
 }

@@ -30,14 +30,14 @@ public interface IAsyncCodeGenerator<in TViewModel, in TArgs>
 /// <summary>
 /// Represents an interface for asynchronously generating codes based on a view model.
 /// </summary>
-/// <typeparam name="TViewModel">The type of the view model.</typeparam>
+/// <typeparam name="TArguments">The type of the view model.</typeparam>
 [Obsolete("Violates the SRP rule in SOLD.", true)]
-public interface IAsyncCodeGenerator<in TViewModel>
+public interface IAsyncCodeGenerator<in TArguments>
 {
     /// <summary>
     /// Generates codes asynchronously based on the given view model and optional parameters.
     /// </summary>
-    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, CancellationToken token = default);
+    Task<Result<Codes>> GenerateCodesAsync([DisallowNull] TArguments args, CancellationToken token = default);
 }
 
 /// <summary>

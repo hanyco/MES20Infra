@@ -25,7 +25,7 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
             .NotNull(x => x.Destination)
             .NotNull(x => x.Source.Model)
             .NotNull(x => x.Destination.Model)
-            .NotNull(x => x.DtoNameSpace);
+            .NotNull(x => x.NameSpace);
         if (!validate.TryParse(out var vr))
         {
             return vr.WithValue(Codes.Empty);
@@ -44,16 +44,19 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
             var listConverterMethod = createListConverterMethod(args, srcType, dstType);
             _ = converterClass.AddMember(listConverterMethod);
         }
-        var nameSpace = INamespace.New(args.DtoNameSpace)
+        var nameSpace = INamespace.New(args.NameSpace)
             .AddUsingNameSpace(srcType.GetNameSpaces())
             .AddUsingNameSpace(dstType.GetNameSpaces())
+            .AddUsingNameSpace(args.Source.Model.Properties.Select(x => TypePath.New(x.TypeFullName).GetNameSpaces()).SelectAll())
+            .AddUsingNameSpace(args.Destination.Model.Properties.Select(x => TypePath.New(x.TypeFullName).GetNameSpaces()).SelectAll())
             .AddType(converterClass);
 
-        var fileName = args.FileName ?? $"{args.ClassName}.{srcType.Name}.{dstType.Name}{(args.IsPartial ? ".partial" : "")}.cs";
-        var code = codeGeneratorEngine.Generate(nameSpace, args.ClassName, Languages.CSharp, args.IsPartial, fileName)
-            .With(x => x.props().Category = CodeCategory.Converter);
+        var fileName = args.FileName ?? $"{args.ClassName}.{args.MethodName}.{srcType.Name}.{dstType.Name}{(args.IsPartial ? ".partial" : "")}.cs";
 
-        return code.ToCodesResult();
+        var statement = codeGeneratorEngine.Generate(nameSpace);
+        var code = new Code(args.ClassName, Languages.CSharp, RoslynHelper.ReformatCode(statement), args.IsPartial, fileName)
+            .With(x => x.props().Category = CodeCategory.Converter);
+        return Result<Codes>.From(statement, code.ToCodes());
 
         static Class createClass(string name) =>
             new(name)
@@ -65,7 +68,8 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
             new(args.MethodName)
             {
                 IsExtension = args.IsExtension,
-                Body = convertSingle_MethodBody(dstType.Name, args.InputArgumentName, args.Destination.Model.Properties.Select(x => x.Name)),
+                Body = convertSingle_MethodBody(dstType.Name, args.InputArgumentName,
+                    args.Destination.Model.Properties.Select(x => x.Name).Intersect(args.Source.Model.Properties.Select(x => x.Name))),
                 Parameters =
                 {
                     (srcType, args.InputArgumentName)
