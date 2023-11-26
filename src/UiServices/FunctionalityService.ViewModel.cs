@@ -264,12 +264,12 @@ internal sealed partial class FunctionalityService
 
             var insert = data.ViewModel.InsertCommandViewModel;
             var insertDstTypePath = insert.GetSegregateParamsType("Command");
-            var args = new MapperSourceGeneratorArguments((dataContext, null), (insert.ResultDto, insertDstTypePath), mapperNameSpace, MethodName: $"To{insertDstTypePath.Name}");
+            var args = new MapperSourceGeneratorArguments((dataContext, null), (insert.ParamsDto, insertDstTypePath), mapperNameSpace, MethodName: $"To{insertDstTypePath.Name}");
             data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
 
             var update = data.ViewModel.UpdateCommandViewModel;
             var updateDstTypePath = update.GetSegregateParamsType("Command");
-            args = new MapperSourceGeneratorArguments((dataContext, null), (update.ResultDto, updateDstTypePath), mapperNameSpace, MethodName: $"To{updateDstTypePath.Name}");
+            args = new MapperSourceGeneratorArguments((dataContext, null), (update.ParamsDto, updateDstTypePath), mapperNameSpace, MethodName: $"To{updateDstTypePath.Name}");
             data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
 
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
