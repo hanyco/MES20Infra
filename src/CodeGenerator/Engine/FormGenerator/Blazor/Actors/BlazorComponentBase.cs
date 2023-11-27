@@ -143,9 +143,9 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 .Select(methodActor =>
                 {
                     IUiCodeGenerator result = methodActor.Body.IsNullOrEmpty()
-                        ? new BlazorCqrsButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName)
+                        ? new BlazorCqrsButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName, onClickReturnType: methodActor.ReturnType)
                                 .With(x => x.Position.SetCol(1))
-                        : new BlazorCustomButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName)
+                        : new BlazorCustomButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName) { OnClickReturnType = methodActor.ReturnType ?? "void" }
                                 .With(x => x.Position.SetCol(1));
                     return result;
                 })

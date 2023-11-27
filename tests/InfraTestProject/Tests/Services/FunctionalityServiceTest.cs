@@ -10,23 +10,6 @@ namespace InfraTestProject.Tests.Services;
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
     [Fact]
-    public async Task GenerateModelTest()
-    {
-        // Assign
-        using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var model = CreateModel();
-
-        // Act
-        var actual = await service.GenerateViewModelAsync(model);
-
-        // Assert
-        if (!actual.IsSucceed)
-        {
-            Assert.Fail(actual.Message ?? $"{nameof(service.GenerateViewModelAsync)} failed.");
-        }
-    }
-
-    [Fact]
     [Trait("Category", "__ActiveTest")]
     public async void GenerateCode()
     {
@@ -52,7 +35,24 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
-    [Fact(Skip ="Not done yet.")]
+    [Fact]
+    public async Task GenerateModelTest()
+    {
+        // Assign
+        using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var model = CreateModel();
+
+        // Act
+        var actual = await service.GenerateViewModelAsync(model);
+
+        // Assert
+        if (!actual.IsSucceed)
+        {
+            Assert.Fail(actual.Message ?? $"{nameof(service.GenerateViewModelAsync)} failed.");
+        }
+    }
+
+    [Fact(Skip = "Not done yet.")]
     public async void SaveModelTest()
     {
         // Assign
@@ -70,14 +70,18 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var personTable = new DbTableViewModel("Person", -1, "dbo");
         var model = new FunctionalityViewModel
         {
-            SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "CodeGen.UnitTests" },
+            SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "UnitTests.CodeGen" },
             Name = "PersonDto"
         };
         model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
                 new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),
-                new("Name", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),
-                new("Age", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer),
+                new("FirstName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),
+                new("LastName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),
+                new("DateOfBirth", HanyCo.Infra.Internals.Data.DataSources.PropertyType.DateTime),
+                new("Height", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer),
+                new("IsMarried", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Boolean),
+                new("CountOfChild", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer),
         });
         return model;
     }

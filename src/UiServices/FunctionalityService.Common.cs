@@ -42,13 +42,13 @@ internal partial class FunctionalityService(
     private readonly IBlazorComponentCodingService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
     private readonly IBlazorPageCodingService _blazorPageCodeService = blazorPageCodeService;
-    private readonly IMapperSourceGenerator _mapperSourceGenerator = mapperSourceGenerator;
     private readonly IBlazorPageService _blazorPageService = blazorPageService;
     private readonly ICqrsCommandService _commandService = commandService;
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly ICqrsCodeGeneratorService _cqrsCodeService = cqrsCodeService;
     private readonly IDtoCodeService _dtoCodeService = dtoCodeService;
     private readonly IDtoService _dtoService = dtoService;
+    private readonly IMapperSourceGenerator _mapperSourceGenerator = mapperSourceGenerator;
     private readonly IModuleService _moduleService = moduleService;
     private readonly ICqrsQueryService _queryService = queryService;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
@@ -62,8 +62,8 @@ internal partial class FunctionalityService(
     Task<Result> IAsyncTransactional.CommitTransactionAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.CommitTransactionAsync(cancellationToken);
 
-    public async Task<FunctionalityViewModel> CreateAsync(CancellationToken token = default)
-        => new FunctionalityViewModel
+    public async Task<FunctionalityViewModel> CreateAsync(CancellationToken token = default) =>
+        new FunctionalityViewModel
         {
             SourceDto = await this._dtoService.CreateAsync(token)
         };

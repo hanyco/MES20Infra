@@ -30,6 +30,20 @@ namespace HumanResources
             this._navigationManager.NavigateTo($"/HumanResources/Person/details/{id.ToString()}");
         }
 
+        public async void Delete(Int64 id)
+        {
+            // Setup segregation parameters
+            var cmdParams = new HumanResources.Dtos.DeletePerson()
+            {
+                Id = id,
+            };
+            var cmd = new HumanResources.Dtos.DeletePersonCommand(cmdParams);
+            // Invoke the command handler to apply changes.
+            var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.DeletePersonCommand, HumanResources.Dtos.DeletePersonCommandResult>(cmd);
+            // Now, set let UI know that the state is changed
+            this.StateHasChanged();
+        }
+
         protected override async Task OnInitializedAsync()
         {
             // Setup segregation parameters

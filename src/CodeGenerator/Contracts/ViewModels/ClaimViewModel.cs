@@ -11,11 +11,11 @@ public sealed class ClaimViewModel : InfraViewModelBase<Guid>, IEquatable<ClaimV
     {
     }
 
-    public ClaimViewModel(string? key, Guid? guid = null) =>
-        (this.Guid, this.Key) = (guid ?? System.Guid.NewGuid(), key);
+    public ClaimViewModel(string? key, Guid? id = null) =>
+        (this.Guid, this.Key) = (id ?? System.Guid.NewGuid(), key);
 
-    public ClaimViewModel(string? key, Guid? guid, ClaimViewModel? parent)
-        : this(key, guid) => this.Parent = parent;
+    public ClaimViewModel(string? key, Guid? id, ClaimViewModel? parent)
+        : this(key, id) => this.Parent = parent;
 
     public string? Key { get; set; }
 

@@ -238,7 +238,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
             static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel customButtonViewModel)
             {
-                var button = new BlazorCustomButton(name: customButtonViewModel.Name, onClick: customButtonViewModel.EventHandlerName)
+                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.Caption, onClick: customButtonViewModel.EventHandlerName)
                 {
                     Position = customButtonViewModel.Position.ToBootstrapPosition(),
                     OnClickReturnType = customButtonViewModel.ReturnType,

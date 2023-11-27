@@ -30,8 +30,8 @@ public partial class SqlStatementBuilder
 
     private struct DeleteStatement : IDeleteStatement
     {
+        public string? Schema { get; set; }
         public string TableName { get; set; }
         public string? WhereClause { get; set; }
-        public string? Schema { get; set; }
     }
 }

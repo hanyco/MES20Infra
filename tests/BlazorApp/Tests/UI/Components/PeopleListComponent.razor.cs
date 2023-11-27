@@ -9,10 +9,6 @@ namespace HumanResources
 
     public sealed partial class PeopleListComponent
     {
-        public void Delete(Int64 id)
-        {
-        }
-
         protected override async Task OnLoadAsync()
         {
             await Task.CompletedTask;
