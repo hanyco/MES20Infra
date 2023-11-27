@@ -6,6 +6,9 @@ public sealed partial class UpdatePersonCommandHandler
 {
     public Task<UpdatePersonCommandResult> HandleAsync(UpdatePersonCommand command)
     {
-        throw new NotImplementedException();
+        var dbCommand = $"UPDATE Employees SET Name = @Name, Position = @Position WHERE ID = {command.Params.Id}";
+        this._sql.ExecuteNonQuery(dbCommand);
+        var result = new UpdatePersonCommandResult(new());
+        return Task.FromResult(result);
     }
 }
