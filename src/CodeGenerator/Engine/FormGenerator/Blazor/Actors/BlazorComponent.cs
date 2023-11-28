@@ -57,7 +57,9 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
             .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
             .AppendLine()
             .AppendLine($"@inherits {componentBaseTypePath.FullPath}")
-            .AppendLine();
+            .AppendLine()
+            .AppendLine()
+            .AppendLine(@"<MessageComponent @ref=""MessageComponent"" />");
         return codeStringBuilder;
     }
 

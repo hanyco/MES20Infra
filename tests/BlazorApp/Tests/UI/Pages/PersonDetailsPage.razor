@@ -1,13 +1,13 @@
 @page "/HumanResources/Person/details"
 @page "/HumanResources/Person/details/{Id:long}"
 
-@namespace Test.HumanResources.Pages
+@namespace HumanResources.Pages
 
 @using Library.Cqrs.Models.Queries
 @using Library.Cqrs.Models.Commands
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
-@using Test.HumanResources
+@using HumanResources
 
 @inject NavigationManager NavigationManager
 @inject IQueryProcessor _queryProcessor
@@ -15,7 +15,7 @@
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
 
-@inherits HanyCo.Infra.Blazor.PageBase<Test.HumanResources.PersonViewModel>
+@inherits HanyCo.Infra.Blazor.PageBase<HumanResources.PersonViewModel>
 
 
 <div class='row'>

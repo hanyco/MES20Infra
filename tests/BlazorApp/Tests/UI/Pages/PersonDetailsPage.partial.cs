@@ -6,7 +6,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace Test.HumanResources.Pages
+namespace HumanResources.Pages
 {
     using System;
     using System.Linq;
@@ -21,6 +21,8 @@ namespace Test.HumanResources.Pages
             // Call developer's method.
             await this.OnLoadAsync();
         }
+
+        public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
 
         [Microsoft.AspNetCore.Components.Parameter]
         public System.Int64? Id { get; set; }

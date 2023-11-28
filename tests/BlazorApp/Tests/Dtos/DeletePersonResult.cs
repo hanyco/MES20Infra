@@ -1,4 +1,4 @@
-namespace Test.HumanResources.Dtos;
+namespace HumanResources.Dtos;
 public sealed class DeletePersonResult
 {
 }

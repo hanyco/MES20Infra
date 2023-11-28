@@ -1,7 +1,7 @@
 using Library.Cqrs.Models.Queries;
-using Test.HumanResources.Dtos;
+using HumanResources.Dtos;
 
-namespace Test.HumanResources.Dtos;
+namespace HumanResources.Dtos;
 public sealed class GetAllPeopleQuery : IQuery<GetAllPeopleQueryResult>
 {
     public GetAllPeopleQuery(GetAllPeople @params)

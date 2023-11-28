@@ -37,6 +37,7 @@ internal partial class FunctionalityService
                 .AppendLine($"    var cqParams = new {update.GetSegregateType("Command").FullPath}(@params);")
                 .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{update.GetSegregateType("Command").FullPath}, {update.GetSegregateResultType("Command").FullPath}>(cqParams);")
                 .AppendLine($"}}")
+                .AppendLine($"MessageComponent.Show(\"Save Data\", \"Date saved.\");")
                 .Build();
 
         internal static string BlazorListComponent_DeleteButton_OnClick_Body(CqrsCommandViewModel model)
@@ -51,6 +52,7 @@ internal partial class FunctionalityService
                 .AppendLine($"// Invoke the command handler to apply changes.")
                 .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{model.GetSegregateType("Command").FullPath}, {model.GetSegregateResultType("Command").FullPath}>(cmd);")
                 .AppendLine($"// Now, set let UI know that the state is changed")
+                .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
                 .AppendLine($"this.StateHasChanged();");
 
             return result.Build();

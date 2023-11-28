@@ -1,9 +1,9 @@
 using Library.Cqrs.Models.Queries;
-using Test.HumanResources.Dtos;
+using HumanResources.Dtos;
 using Library.Cqrs.Models.Commands;
 using Library.Data.SqlServer;
 
-namespace Test.HumanResources.Queries;
+namespace HumanResources.Queries;
 public sealed partial class GetAllPeopleQueryHandler : IQueryHandler<GetAllPeopleQuery, GetAllPeopleQueryResult>
 {
     private readonly ICommandProcessor _commandProcessor;

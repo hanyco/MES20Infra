@@ -1,7 +1,7 @@
 using Library.Cqrs.Models.Commands;
-using Test.HumanResources.Dtos;
+using HumanResources.Dtos;
 
-namespace Test.HumanResources.Dtos;
+namespace HumanResources.Dtos;
 public sealed class UpdatePersonCommand : ICommand
 {
     public UpdatePersonCommand(UpdatePerson @params)

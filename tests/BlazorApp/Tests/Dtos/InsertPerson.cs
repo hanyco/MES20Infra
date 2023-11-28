@@ -1,6 +1,6 @@
 using System;
 
-namespace Test.HumanResources.Dtos;
+namespace HumanResources.Dtos;
 public sealed class InsertPerson
 {
     public String FirstName { get; set; }

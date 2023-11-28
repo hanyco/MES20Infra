@@ -1,6 +1,6 @@
-using Test.HumanResources.Dtos;
+using HumanResources.Dtos;
 
-namespace Test.HumanResources.Dtos;
+namespace HumanResources.Dtos;
 public sealed class InsertPersonCommandResult
 {
     public InsertPersonCommandResult(InsertPersonResult result)

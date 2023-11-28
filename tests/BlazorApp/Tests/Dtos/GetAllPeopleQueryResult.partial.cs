@@ -1,6 +1,6 @@
-using Test.HumanResources.Dtos;
+using HumanResources.Dtos;
 
-namespace Test.HumanResources.Dtos;
+namespace HumanResources.Dtos;
 public sealed class GetAllPeopleQueryResult
 {
     public GetAllPeopleQueryResult(List<GetAllPeopleResult> result)

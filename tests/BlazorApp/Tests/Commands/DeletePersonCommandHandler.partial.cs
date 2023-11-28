@@ -1,9 +1,9 @@
 using Library.Cqrs.Models.Commands;
-using Test.HumanResources.Dtos;
+using HumanResources.Dtos;
 using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
 
-namespace Test.HumanResources.Commands;
+namespace HumanResources.Commands;
 public sealed partial class DeletePersonCommandHandler : ICommandHandler<DeletePersonCommand, DeletePersonCommandResult>
 {
     private readonly ICommandProcessor _commandProcessor;

@@ -1,9 +1,9 @@
-using Test.HumanResources.Dtos;
-using Test.HumanResources;
+using HumanResources.Dtos;
+using HumanResources;
 using System.Collections.Generic;
 using System;
 
-namespace Test.HumanResources.Mapper;
+namespace HumanResources.Mapper;
 public static partial class ModelConverter
 {
     public static UpdatePerson ToUpdatePerson(this PersonDto model)

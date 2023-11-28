@@ -430,6 +430,10 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addParametersToPartClass(in CodeTypeDeclaration partClassType)
         {
+            _ = partClassType.AddProperty("BlazorApp.Shared.MessageComponent",
+                                          "MessageComponent",
+                                          getter: new(true, false),
+                                          setter: new(true, false));
             foreach (var parameter in this.Parameters)
             {
                 _ = partClassType.AddProperty(parameter.Type.FullPath,

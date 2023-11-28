@@ -1,8 +1,8 @@
-namespace Test.HumanResources
+namespace HumanResources
 {
-    using Test.HumanResources.Mapper;
-    using Test.HumanResources.Queries;
-    using Test.HumanResources.Dtos;
+    using HumanResources.Mapper;
+    using HumanResources.Queries;
+    using HumanResources.Dtos;
     using System;
     using System.Linq;
     using System.Threading.Tasks;

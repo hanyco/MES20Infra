@@ -1,11 +1,11 @@
-@namespace Test.HumanResources
+@namespace HumanResources
 
 @using HanyCo.Infra.Blazor
 @using Library.Cqrs.Models.Queries
 @using Library.Cqrs.Models.Commands
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
-@using Test.HumanResources
+@using HumanResources
 
 @inject IQueryProcessor _queryProcessor
 @inject ICommandProcessor _commandProcessor
@@ -14,6 +14,8 @@
 
 @inherits HanyCo.Infra.Blazor.ComponentBase<PersonDto, PersonViewModel>
 
+
+<MessageComponent @ref="MessageComponent" />
 <div class='row'>
 </div>
 <div class='row'>
