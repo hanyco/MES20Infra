@@ -8,7 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\ISecurityDescriptorService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\..\.globalSuppressions.cs" Link=".globalSuppressions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Services\ISecurityDescriptorService.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,8 +7,6 @@ using Library.Results;
 namespace Contracts.ViewModels;
 
 [Immutable]
-[StackTraceHidden]
-[DebuggerStepThrough]
 public readonly record struct CodeGeneratorResult(Result<Codes> Result)
 {
     public Codes Codes => this.Result.Value;

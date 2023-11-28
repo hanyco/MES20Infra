@@ -20,9 +20,9 @@ namespace Services;
 
 internal partial class FunctionalityService
 {
+    [DebuggerStepThrough]
     private class CodeSnippets
     {
-        [DebuggerStepThrough]
         internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(CqrsCommandViewModel insert, CqrsCommandViewModel update) =>
             new StringBuilder()
                 .AppendLine($"if (DataContext.Id == default)")
@@ -52,6 +52,7 @@ internal partial class FunctionalityService
                 .AppendLine($"// Invoke the command handler to apply changes.")
                 .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{model.GetSegregateType("Command").FullPath}, {model.GetSegregateResultType("Command").FullPath}>(cmd);")
                 .AppendLine($"// Now, set let UI know that the state is changed")
+                .AppendLine($"await OnInitializedAsync();")
                 .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
                 .AppendLine($"this.StateHasChanged();");
 
@@ -74,15 +75,12 @@ internal partial class FunctionalityService
                 .Build();
         }
 
-        [DebuggerStepThrough]
         internal static string CreateGetAllQueryHandleMethodBody(CqrsQueryViewModel model) =>
             CreateQueryHandleMethodBody(model);
 
-        [DebuggerStepThrough]
         internal static string CreateGetByIdQueryHandleMethodBody(CqrsQueryViewModel model) =>
             CreateQueryHandleMethodBody(model, "[ID] = %Id%");
 
-        [DebuggerStepThrough]
         internal static string CreateInsertCommandHandleMethodBody(CqrsCommandViewModel model)
         {
             var values = GetValues(model.ParamsDto.Properties).ToImmutableArray();
@@ -121,7 +119,6 @@ internal partial class FunctionalityService
             return result;
         }
 
-        [DebuggerStepThrough]
         internal static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
             new StringBuilder()
                 .AppendLine("if (this.EntityId is { } entityId)")
@@ -146,11 +143,9 @@ internal partial class FunctionalityService
                 .AppendLine("}")
                 .Build();
 
-        [DebuggerStepThrough]
         internal static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
 
-        [DebuggerStepThrough]
         private static string CreateQueryHandleMethodBody(CqrsQueryViewModel model, string? additionalWhereClause = null)
         {
             // Create query to be used inside the body code.

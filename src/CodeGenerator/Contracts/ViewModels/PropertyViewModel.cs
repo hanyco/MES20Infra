@@ -2,6 +2,7 @@
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Coding;
+using Library.Validations;
 
 namespace Contracts.ViewModels;
 
@@ -21,7 +22,7 @@ public sealed class PropertyViewModel : InfraViewModelBase
     }
 
     public PropertyViewModel(PropertyViewModel original)
-        : base(original.Id, original.Name)
+        : base(original.ArgumentNotNull().Id, original.Name)
     {
         this._type = original._type;
         this._comment = original._comment;

@@ -3,6 +3,7 @@
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Interfaces;
+using Library.Results;
 
 namespace Contracts.Services;
 
@@ -16,5 +17,5 @@ public interface IPropertyService : IBusinessService, IAsyncCrud<PropertyViewMod
 
     Task<IReadOnlyList<Property>> GetDbPropertiesByParentIdAsync(long parentId, CancellationToken token = default);
 
-    Task InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default);
+    Task<Result> InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default);
 }

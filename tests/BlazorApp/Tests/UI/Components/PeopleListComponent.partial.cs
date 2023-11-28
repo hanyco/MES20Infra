@@ -41,6 +41,7 @@ namespace HumanResources
             // Invoke the command handler to apply changes.
             var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.DeletePersonCommand, HumanResources.Dtos.DeletePersonCommandResult>(cmd);
             // Now, set let UI know that the state is changed
+            await OnInitializedAsync();
             MessageComponent.Show("Delete Entity", "Entity deleted.");
             this.StateHasChanged();
         }
