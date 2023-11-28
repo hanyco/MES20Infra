@@ -36,23 +36,23 @@ internal sealed class PropertyService : IPropertyService
         Check.MustBeArgumentNotNull(model?.Id);
 
         _ = this._writeDbContext.RemoveById<Property>(model.Id.Value);
-        _ = await this.SubmitChangesAsync(persist: persist, token: cancellationToken).ConfigureAwait(false);
+        _ = await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
 
         return Result.Success;
     }
 
     public async Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true, CancellationToken cancellationToken = default)
     {
-        var dbProperties = await queryProperties(parentId, cancellationToken).ConfigureAwait(false);
-        await removeProperties(dbProperties, cancellationToken).ConfigureAwait(false);
-        return await this.SubmitChangesAsync(persist: persist, token: cancellationToken).ConfigureAwait(false) > 0;
+        var dbProperties = await queryProperties(parentId, cancellationToken);
+        await removeProperties(dbProperties, cancellationToken);
+        return await this.SubmitChangesAsync(persist: persist, token: cancellationToken) > 0;
 
         async Task<IEnumerable<Property>> queryProperties(long parentId, CancellationToken cancellationToken = default)
         {
             var query = from x in this._writeDbContext.Properties
                         where x.ParentEntityId == parentId
                         select new Property() { Id = x.Id, Guid = x.Guid };
-            var dbResult = await query.ToListAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
             return dbResult;
         }
 
@@ -60,7 +60,7 @@ internal sealed class PropertyService : IPropertyService
         {
             foreach (var prop in dbProperties)
             {
-                _ = await this.DeleteAsync(new() { Id = prop.Id, Guid = prop.Guid }, cancellationToken: cancellationToken).ConfigureAwait(false);
+                _ = await this.DeleteAsync(new() { Id = prop.Id, Guid = prop.Guid }, cancellationToken: cancellationToken);
             }
         }
     }
@@ -69,7 +69,7 @@ internal sealed class PropertyService : IPropertyService
     {
         var query = from x in this._readDbContext.Properties
                     select x;
-        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
         var result = this._converter.ToViewModel(dbResult).Compact().ToReadOnlyList();
         return result;
     }
@@ -79,8 +79,8 @@ internal sealed class PropertyService : IPropertyService
         var dtoIdQuery = from x in this._readDbContext.Properties
                          where x.Id == dtoId
                          select x.DtoId;
-        var parentId = await dtoIdQuery.FirstAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        return await this.GetByParentIdAsync(parentId.Value, cancellationToken).ConfigureAwait(false);
+        var parentId = await dtoIdQuery.FirstAsync(cancellationToken: cancellationToken);
+        return await this.GetByParentIdAsync(parentId.Value, cancellationToken);
     }
 
     public async Task<PropertyViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
@@ -88,7 +88,7 @@ internal sealed class PropertyService : IPropertyService
         var query = from x in this._readDbContext.Properties.Include(x => x.Dto)
                     where x.Id == id
                     select x;
-        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         var result = this._converter.ToViewModel(dbResult);
         return result;
     }
@@ -98,7 +98,7 @@ internal sealed class PropertyService : IPropertyService
         var query = from x in this._readDbContext.Properties.Include(x => x.Dto)
                     where x.ParentEntityId == parentId
                     select x;
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock).ConfigureAwait(false);
+        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
         var viewModels = this._converter.ToViewModel(dbResult).Compact().ToReadOnlyList();
         return viewModels;
     }
@@ -108,39 +108,44 @@ internal sealed class PropertyService : IPropertyService
         var query = from d in this._readDbContext.Properties
                     where d.ParentEntityId == parentId
                     select d;
-        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
         return dbResult;
     }
 
     public async Task<Result<PropertyViewModel>> InsertAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken);
         void manipulate(Property property) => this._writeDbContext.Properties.Add(property);
     }
 
-    public async Task InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default)
+    public async Task<Result> InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default)
     {
         foreach (var property in properties)
         {
             if (token.IsCancellationRequested)
             {
-                break;
+                return Result.CreateFailure(new OperationCanceledException());
             }
 
             property.ParentEntityId = parentEntityId;
-            _ = await this.InsertAsync(property, false, token).ConfigureAwait(false);
+            var insertResult = await this.InsertAsync(property, false, token);
+            if (!insertResult)
+            {
+                return insertResult;
+            }
         }
+        return Result.Success;
     }
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
 
     public async Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => await this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        => await this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
     public async Task<Result<PropertyViewModel>> UpdateAsync(long id, PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken);
         void manipulate(Property property) =>
             this._writeDbContext.Properties.Attach(property)
                                            .SetModified(x => x.Name)
@@ -166,17 +171,17 @@ internal sealed class PropertyService : IPropertyService
             errors.Add((ValidationExceptionBase.ErrorCode, "Parent entity Id cannot be null or 0"));
         }
         var result = Result<PropertyViewModel>.New(item, errors: errors);
-        return await Task.FromResult(result).ConfigureAwait(false);
+        return await Task.FromResult(result);
     }
 
     private async Task<Result<PropertyViewModel>> SaveChangesAsync(PropertyViewModel model, bool persist, Action<Property> manipulate, CancellationToken cancellationToken = default)
     {
-        _ = await this.CheckValidatorAsync(model).ConfigureAwait(false);
+        _ = await this.CheckValidatorAsync(model);
         var property = this._converter.ToDbEntity(model)!;
         manipulate(property);
         if (persist)
         {
-            _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: cancellationToken);
         }
 
         return Result<PropertyViewModel>.CreateSuccess(model);

@@ -122,7 +122,6 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    [DebuggerStepThrough]
     private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) =>
         data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
             ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
@@ -136,7 +135,6 @@ internal sealed partial class FunctionalityService
     private static string GetNameSpace(CreationData data) =>
         data.ViewModel.SourceDto.NameSpace;
 
-    [DebuggerStepThrough]
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
         // Create an initial DTO based on the input data
@@ -178,7 +176,6 @@ internal sealed partial class FunctionalityService
         return result;
     }
 
-    [DebuggerStepThrough]
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.SourceDtoName);
@@ -275,7 +272,6 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    [DebuggerStepThrough]
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("DetailsPage");
@@ -358,7 +354,6 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    [DebuggerStepThrough]
     private Task CreateBlazorListPage(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("ListPage");
@@ -372,7 +367,6 @@ internal sealed partial class FunctionalityService
                 .With(x => x.ClassName = name);
     }
 
-    [DebuggerStepThrough]
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)
     {
         var name = $"Delete{CommonHelpers.Purify(data.SourceDtoName)}";
@@ -424,7 +418,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel.HandleMethodBody = CodeSnippets.CreateDeleteCommandHandleMethodBody(data.ViewModel.DeleteCommandViewModel);
     }
 
-    [DebuggerStepThrough]
     private async Task CreateGetAllQuery(CreationData data, CancellationToken token)
     {
         var name = $"GetAll{StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName))}";
@@ -471,7 +464,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetAllQueryViewModel);
     }
 
-    [DebuggerStepThrough]
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
         var name = $"GetById{CommonHelpers.Purify(data.SourceDtoName)}";

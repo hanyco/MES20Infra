@@ -3,8 +3,6 @@ using Contracts.ViewModels;
 
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.BusinessServices;
-
 namespace InfraTestProject.Tests.Services;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
@@ -14,10 +12,11 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     public async void GenerateCode()
     {
         // Assign
-        var model = await service.GenerateViewModelAsync(CreateModel());
+        using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var model = await service.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
 
         // Act
-        var actual = codeService.GenerateCodes(model!);
+        var actual = codeService.GenerateCodes(model!, new(true, tokenSource.Token));
 
         // Assert
         if (!actual.IsSucceed)
@@ -43,7 +42,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var model = CreateModel();
 
         // Act
-        var actual = await service.GenerateViewModelAsync(model);
+        var actual = await service.GenerateViewModelAsync(model, tokenSource.Token);
 
         // Assert
         if (!actual.IsSucceed)
@@ -52,14 +51,15 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
-    [Fact(Skip = "Not done yet.")]
-    public async void SaveModelTest()
+    [Fact]
+    public async void InsertViewModel()
     {
         // Assign
-        var model = await service.GenerateViewModelAsync(CreateModel());
+        using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3600));
+        var model = await service.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
 
         // Act
-        var result = await service.SaveViewModelAsync(model!);
+        var result = await service.InsertAsync(model!, token: tokenSource.Token);
 
         // Assert
         Assert.True(result);
@@ -75,13 +75,13 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         };
         model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
-                new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long),
-                new("FirstName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),
-                new("LastName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String),
-                new("DateOfBirth", HanyCo.Infra.Internals.Data.DataSources.PropertyType.DateTime),
-                new("Height", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer),
-                new("IsMarried", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Boolean),
-                new("CountOfChild", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer),
+            new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long){ DbObject = new DbColumnViewModel("Id", -8){ DbType ="bigint" } },
+            new("FirstName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String){ DbObject = new DbColumnViewModel("FirstName", -2){ DbType ="nvarchar" } },
+            new("LastName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String){ DbObject = new DbColumnViewModel("LastName", -3){ DbType ="nvarchar" } },
+            new("DateOfBirth", HanyCo.Infra.Internals.Data.DataSources.PropertyType.DateTime){ DbObject = new DbColumnViewModel("DateOfBirth", -4){ DbType ="nvarchar" } },
+            new("Height", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer){ DbObject = new DbColumnViewModel("Height", -5){ DbType ="int" } },
+            new("IsMarried", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Boolean){ DbObject = new DbColumnViewModel("IsMarried", -6){ DbType ="bit" } },
+            new("CountOfChild", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer){ DbObject = new DbColumnViewModel("CountOfChild", -7){ DbType ="int" } },
         });
         return model;
     }
