@@ -90,9 +90,7 @@ internal partial class FunctionalityService
                 .Values(values)
                 .ReturnId()
                 .ForceFormatValues(false)
-                .Build()
-                .Replace(Environment.NewLine, " ").Replace("  ", " ")
-                ;
+                .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
                 .AppendLine($"var dbCommand = $@\"{bodyCommand}\";")
                 .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
@@ -109,16 +107,13 @@ internal partial class FunctionalityService
             var bodyCommand = SqlStatementBuilder
                 .Update(model.ParamsDto.DbObject.Name!)
                 .Set(values)
-                .ForceFormatValues(false)
                 .Where(ReplaceVariables(model.ParamsDto, "[ID] = %Id%", "command.Params"))
-                .Build()
-                .Replace(Environment.NewLine, " ").Replace("  ", " ")
-                ;
+                .ForceFormatValues(false)
+                .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
                 .AppendLine($"var dbCommand = $@\"{bodyCommand}\";")
                 .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
-                .AppendLine("int id = Convert.ToInt32(dbResult);")
-                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new() {{ Id = id }});")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new());")
                 .AppendLine("return Task.FromResult(result);")
                 .Build();
             return result;
@@ -197,7 +192,7 @@ internal partial class FunctionalityService
                     or PropertyType.Float
                     or PropertyType.Byte => stat,
                     PropertyType.Boolean => stat,
-                    PropertyType.DateTime => $"N'SqlTypeHelper.FormatDateForSql({stat})'",
+                    PropertyType.DateTime => $"N'{{SqlTypeHelper.FormatDate(command.Params.{dbColumn.Name})}}'",
                     _ => $"N'{stat}'",
                 };
                 yield return (dbColumn.Name, value);

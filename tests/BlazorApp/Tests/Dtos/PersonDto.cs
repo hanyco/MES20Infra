@@ -1,6 +1,6 @@
 using System;
 
-namespace HumanResources;
+namespace Test.HumanResources;
 public sealed class PersonDto
 {
     public Int64 Id { get; set; }

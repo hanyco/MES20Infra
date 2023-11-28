@@ -6,11 +6,11 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace HumanResources
+namespace Test.HumanResources
 {
-    using HumanResources.Mapper;
-    using HumanResources.Queries;
-    using HumanResources.Dtos;
+    using Test.HumanResources.Mapper;
+    using Test.HumanResources.Queries;
+    using Test.HumanResources.Dtos;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -33,13 +33,13 @@ namespace HumanResources
         public async void Delete(Int64 id)
         {
             // Setup segregation parameters
-            var cmdParams = new HumanResources.Dtos.DeletePerson()
+            var cmdParams = new Test.HumanResources.Dtos.DeletePerson()
             {
                 Id = id,
             };
-            var cmd = new HumanResources.Dtos.DeletePersonCommand(cmdParams);
+            var cmd = new Test.HumanResources.Dtos.DeletePersonCommand(cmdParams);
             // Invoke the command handler to apply changes.
-            var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.DeletePersonCommand, HumanResources.Dtos.DeletePersonCommandResult>(cmd);
+            var cqResult = await this._commandProcessor.ExecuteAsync<Test.HumanResources.Dtos.DeletePersonCommand, Test.HumanResources.Dtos.DeletePersonCommandResult>(cmd);
             // Now, set let UI know that the state is changed
             this.StateHasChanged();
         }
@@ -47,10 +47,10 @@ namespace HumanResources
         protected override async Task OnInitializedAsync()
         {
             // Setup segregation parameters
-            var @params = new HumanResources.Dtos.GetAllPeople();
-            var cqParams = new HumanResources.Dtos.GetAllPeopleQuery(@params);
+            var @params = new Test.HumanResources.Dtos.GetAllPeople();
+            var cqParams = new Test.HumanResources.Dtos.GetAllPeopleQuery(@params);
             // Invoke the query handler to retrieve all entities
-            var cqResult = await this._queryProcessor.ExecuteAsync<HumanResources.Dtos.GetAllPeopleQueryResult>(cqParams);
+            var cqResult = await this._queryProcessor.ExecuteAsync<Test.HumanResources.Dtos.GetAllPeopleQueryResult>(cqParams);
             // Now, set the data context.
             this.DataContext = cqResult.Result.ToViewModel();
             // Call developer's method.

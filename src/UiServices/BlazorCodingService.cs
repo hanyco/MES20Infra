@@ -265,7 +265,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                             button.Caption,
                             arguments: args,
                             eventHandlerName: button.EventHandlerName,
-                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement));
+                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement,returnType: button.ReturnType));
                         break;
                 }
             }

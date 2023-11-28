@@ -6,7 +6,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace HumanResources.Pages
+namespace Test.HumanResources.Pages
 {
     using System;
     using System.Linq;

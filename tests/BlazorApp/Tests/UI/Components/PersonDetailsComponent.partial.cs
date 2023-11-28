@@ -6,9 +6,9 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace HumanResources
+namespace Test.HumanResources
 {
-    using HumanResources.Mapper;
+    using Test.HumanResources.Mapper;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -35,14 +35,14 @@ namespace HumanResources
             if (DataContext.Id == default)
             {
                 var @params = this.DataContext.ToInsertPerson();
-                var cqParams = new HumanResources.Dtos.InsertPersonCommand(@params);
-                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.InsertPersonCommand, HumanResources.Dtos.InsertPersonCommandResult>(cqParams);
+                var cqParams = new Test.HumanResources.Dtos.InsertPersonCommand(@params);
+                var cqResult = await this._commandProcessor.ExecuteAsync<Test.HumanResources.Dtos.InsertPersonCommand, Test.HumanResources.Dtos.InsertPersonCommandResult>(cqParams);
             }
             else
             {
                 var @params = this.DataContext.ToUpdatePerson();
-                var cqParams = new HumanResources.Dtos.UpdatePersonCommand(@params);
-                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.UpdatePersonCommand, HumanResources.Dtos.UpdatePersonCommandResult>(cqParams);
+                var cqParams = new Test.HumanResources.Dtos.UpdatePersonCommand(@params);
+                var cqResult = await this._commandProcessor.ExecuteAsync<Test.HumanResources.Dtos.UpdatePersonCommand, Test.HumanResources.Dtos.UpdatePersonCommandResult>(cqParams);
             }
         }
 

@@ -11,5 +11,5 @@ public abstract class UiComponentButtonViewModelBase : UiComponentContentViewMod
 
     public Placement Placement { get => this._placement; set => this.SetProperty(ref this._placement, value); }
 
-    public string ReturnType { get => this._returnType ??= "void"; set => this.SetProperty(ref this._returnType, value); }
+    public string ReturnType { get => this._returnType == "void" ? string.Empty : _returnType; set => this.SetProperty(ref this._returnType, value); }
 }

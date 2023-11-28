@@ -1,7 +1,7 @@
 using Library.Cqrs.Models.Commands;
-using HumanResources.Dtos;
+using Test.HumanResources.Dtos;
 
-namespace HumanResources.Dtos;
+namespace Test.HumanResources.Dtos;
 public sealed class InsertPersonCommand : ICommand
 {
     public InsertPersonCommand(InsertPerson @params)
