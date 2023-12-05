@@ -139,9 +139,22 @@ public sealed class SelectStatementBuilderTest
     [Fact]
     public void CreateSelectGeneric()
     {
-        var specQueryActual = SqlStatementBuilder.CreateSelect<Person>().Build();
+        var specQueryActual = SqlStatementBuilder.Select<Person>().Build();
         var specQueryExpected = @"SELECT [Id], [Name], [Age]
     FROM [Person]";
+        Assert.Equal(specQueryExpected, specQueryActual);
+
+
+    }
+    [Fact]
+    public void CreateSelectGenericWithNoLock()
+    {
+        var specQueryActual = SqlStatementBuilder
+            .Select<Person>()
+            .WithNoLock()
+            .Build();
+        var specQueryExpected = @"SELECT [Id], [Name], [Age]
+    FROM [Person] WITH (NOLOCK)";
         Assert.Equal(specQueryExpected, specQueryActual);
 
 

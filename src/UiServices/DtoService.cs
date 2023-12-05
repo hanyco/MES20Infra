@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-using Contracts;
 using Contracts.Services;
 using Contracts.ViewModels;
 
@@ -121,7 +120,8 @@ internal sealed class DtoService(
 
         static IProperty toProperty(PropertyViewModel pvm)
         {
-            var typeFullName = PropertyTypeHelper.ToFullTypeName(pvm.Type, pvm.TypeFullName).NotNull();
+            var typeFullName = pvm.TypeFullName.NotNull();
+
             var type = ((pvm.IsList ?? false)
                 ? TypePath.New(typeof(List<>).FullName, null, generics: typeFullName)
                 : TypePath.New(typeFullName))

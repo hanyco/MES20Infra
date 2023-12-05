@@ -11,82 +11,15 @@ using Xunit.Abstractions;
 
 namespace InfraTestProject.Tests.Services;
 
-public sealed class DtoServiceTest
+public sealed class DtoServiceTest(IDtoService service, IModuleService moduleService, IDtoCodeService codeService)
 {
-    private readonly IDtoCodeService _codeService;
-    private readonly IModuleService _moduleService;
-    private readonly ITestOutputHelper _output;
-    private readonly IDtoService _service;
-
-    public DtoServiceTest(ITestOutputHelper output, IDtoService service, IModuleService moduleService, IDtoCodeService codeService)
-    {
-        this._output = output;
-        this._service = service;
-        this._moduleService = moduleService;
-        this._codeService = codeService;
-    }
-
-    [Fact]
-    [Trait(nameof(DtoServiceTest), "CRUD Test")]
-    public async Task _20_GetByIdTestAsync()
-    {
-        var model1 = await this.InsertDtoAsync("DTO 1");
-        var model2 = await this.InsertDtoAsync("DTO 2");
-        var model3 = await this.InsertDtoAsync("DTO 3");
-
-        var actual1 = await this._service.GetByIdAsync(model1.Value.Id!.Value);
-        Assert.NotNull(actual1);
-        Assert.NotNull(actual1.Id);
-        Assert.Equal(model1.Value.Name, actual1.Name);
-
-        var actual2 = await this._service.GetByIdAsync(model2.Value.Id!.Value);
-        Assert.NotNull(actual2);
-        Assert.NotNull(actual2.Id);
-        Assert.Equal(model2.Value.Name, actual2.Name);
-
-        var actual3 = await this._service.GetByIdAsync(model3.Value.Id!.Value);
-        Assert.NotNull(actual3);
-        Assert.NotNull(actual3.Id);
-        Assert.Equal(model3.Value.Name, actual3.Name);
-    }
-
-    [Fact]
-    [Trait(nameof(DtoServiceTest), "CRUD Test")]
-    public async void _30_InsertDtoTest()
-    {
-        var actual = await this.InsertDtoAsync("Test DTO");
-        Assert.True(actual);
-        Assert.NotNull(actual.Value);
-        Assert.NotEqual(0, actual.Value.Id);
-    }
-
-    [Fact]
-    [Trait(nameof(DtoServiceTest), "CRUD Test")]
-    public async Task _40_UpdateDtoTestAsync()
-    {
-        var model = (await this.InsertDtoAsync("Test DTO")).Value;
-        model.Name = "Update Test";
-        _ = await this._service.UpdateAsync(model.Id!.Value, model);
-        var actual = await this._service.GetByIdAsync(model.Id!.Value);
-        Assert.NotNull(actual);
-        Assert.NotNull(actual.Id);
-        Assert.Equal(model.Name, actual.Name);
-    }
-
-    [Fact]
-    [Trait(nameof(DtoServiceTest), "CRUD Test")]
-    public async Task _50_DeleteDtoTestAsync()
-    {
-        var model = (await this.InsertDtoAsync("Test DTO")).Value;
-        model.Name = "Delete Test";
-        this._service.DeleteAsync(model).Wait();
-        var actual = await this._service.GetByIdAsync(model.Id!.Value);
-        Assert.Null(actual);
-    }
+    private readonly IDtoCodeService _codeService = codeService;
+    private readonly IModuleService _moduleService = moduleService;
+    private readonly IDtoService _service = service;
 
     [Fact]
     [Trait(nameof(DtoServiceTest), "Operational Test")]
-    public async Task _60_CreateDtoTestAsync()
+    public async Task CreateDtoTestAsync()
     {
         var model = await this._service.CreateAsync();
         Assert.NotNull(model);
@@ -94,7 +27,43 @@ public sealed class DtoServiceTest
 
     [Fact]
     [Trait(nameof(DtoServiceTest), "CRUD Test")]
-    public async Task _70_GetAllByCategoryAsyncTest()
+    public async Task DeleteDtoTestAsync()
+    {
+        var model = (await this.InsertDtoAsync("Test DTO")).Value;
+        model.Name = "Delete Test";
+        _ = await this._service.DeleteAsync(model);
+        var actual = await this._service.GetByIdAsync(model.Id!.Value);
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    [Trait(nameof(DtoServiceTest), "Operational Test")]
+    public void GenerateCodeFromScratch()
+    {
+        // Assign
+        var dtoModel = this.CreateByDbTable();
+
+        // Act
+        var codes = this._codeService.GenerateCodes(dtoModel);
+
+        // Assert
+        if (!codes.IsSucceed)
+        {
+            Assert.Fail(codes.ToString());
+        }
+        else if (codes.Value.Count != 1)
+        {
+            Assert.Fail("No code generated.");
+        }
+        else if (codes.Value?[0]?.Statement is null)
+        {
+            Assert.Fail("Code statement is empty");
+        }
+    }
+
+    [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
+    public async Task GetAllByCategoryAsyncTest()
     {
         _ = await insertDtoAsync(x =>
         {
@@ -142,32 +111,41 @@ public sealed class DtoServiceTest
     }
 
     [Fact]
-    [Trait(nameof(DtoServiceTest), "Operational Test")]
-    public void _80_Generate_Code_From_Scratch()
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
+    public async Task GetByIdAsync()
     {
-        // Assign
-        var dtoModel = this.CreateByDbTable();
+        var model1 = await this.InsertDtoAsync("DTO 1");
+        var model2 = await this.InsertDtoAsync("DTO 2");
+        var model3 = await this.InsertDtoAsync("DTO 3");
 
-        // Act
-        var codes = this._codeService.GenerateCodes(dtoModel);
+        var actual1 = await this._service.GetByIdAsync(model1.Value.Id!.Value);
+        Assert.NotNull(actual1);
+        Assert.NotNull(actual1.Id);
+        Assert.Equal(model1.Value.Name, actual1.Name);
 
-        // Assert
-        if (!codes.IsSucceed)
-        {
-            Assert.Fail(codes.ToString());
-        }
-        else if (codes.Value.Count != 1)
-        {
-            Assert.Fail("No code generated.");
-        }
-        else if (codes.Value?[0]?.Statement is null)
-        {
-            Assert.Fail("Code statement is empty");
-        }
+        var actual2 = await this._service.GetByIdAsync(model2.Value.Id!.Value);
+        Assert.NotNull(actual2);
+        Assert.NotNull(actual2.Id);
+        Assert.Equal(model2.Value.Name, actual2.Name);
+
+        var actual3 = await this._service.GetByIdAsync(model3.Value.Id!.Value);
+        Assert.NotNull(actual3);
+        Assert.NotNull(actual3.Id);
+        Assert.Equal(model3.Value.Name, actual3.Name);
     }
 
     [Fact]
-    public async Task _81_Load_DTO_And_Generate_CodeAsync()
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
+    public async void InsertDtoTest()
+    {
+        var actual = await this.InsertDtoAsync("Test DTO");
+        Assert.True(actual);
+        Assert.NotNull(actual.Value);
+        Assert.NotEqual(0, actual.Value.Id);
+    }
+
+    [Fact]
+    public async Task LoadDtoAndGenerateCodeAsync()
     {
         var dtoToSave = this.CreateByDbTable();
         var saveResult = await this._service.InsertAsync(dtoToSave);
@@ -188,19 +166,33 @@ public sealed class DtoServiceTest
         }
     }
 
+    [Fact]
+    [Trait(nameof(DtoServiceTest), "CRUD Test")]
+    public async Task UpdateDtoTestAsync()
+    {
+        var model = (await this.InsertDtoAsync("Test DTO")).Value;
+        model.Name = "Update Test";
+        _ = await this._service.UpdateAsync(model.Id!.Value, model);
+        var actual = await this._service.GetByIdAsync(model.Id!.Value);
+        Assert.NotNull(actual);
+        Assert.NotNull(actual.Id);
+        Assert.Equal(model.Name, actual.Name);
+    }
+
     private DtoViewModel CreateByDbTable()
         => this._service.CreateByDbTable(new("Person", NumberHelper.RandomNumber(10000), "unit_test"),
                 new DbColumnViewModel[] {
-                    new("Name", NumberHelper.RandomNumber(10000), "nvarchar", false),
-                    new("Age", NumberHelper.RandomNumber(10000),"int", false)
+                    new("FirstName", NumberHelper.RandomNumber(10000), "nvarchar", false),
+                    new("LastName", NumberHelper.RandomNumber(10000), "nvarchar", true),
+                    new("Age", NumberHelper.RandomNumber(10000),"int", false),
+                    new("Gender", NumberHelper.RandomNumber(10000),"int", true)
                 }
             )
         .With(x => x.NameSpace = "unittest")
-        .With(x => x.Module = _moduleService.GetByIdAsync(1).Result!);
+        .With(x => x.Module = this._moduleService.GetByIdAsync(1).Result!);
 
     private async Task<Result<DtoViewModel>> InsertDtoAsync(string dtoName)
     {
-
         var module = await this._moduleService.GetByIdAsync(1);
         var model = new DtoViewModel { Name = dtoName, Module = module! };
         return await this._service.InsertAsync(model);

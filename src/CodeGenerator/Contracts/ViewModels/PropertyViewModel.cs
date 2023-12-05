@@ -1,7 +1,6 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.Coding;
 using Library.Validations;
 
 namespace Contracts.ViewModels;
@@ -45,7 +44,7 @@ public sealed class PropertyViewModel : InfraViewModelBase
 
     public DbObjectViewModel? DbObject
     {
-        get => this._dbObject ?? (DbObject = new(this.Name, type: PropertyTypeHelper.ToDbTypeName(this.Type)));
+        get => this._dbObject ?? (this.DbObject = new(this.Name, type: PropertyTypeHelper.ToDbTypeName(this.Type)));
         set => this.SetProperty(ref this._dbObject, value);
     }
 
@@ -95,10 +94,25 @@ public sealed class PropertyViewModel : InfraViewModelBase
 
     public string TypeFullName
     {
-        get => this.Type is not PropertyType.Dto || !this._typeFullName.IsNullOrEmpty()
-            ? this.Type.ToFullTypeName(this._typeFullName)
-            : this.Type.ToFullTypeName(this.Dto?.FullName);
+        get
+        {
+            string result;
+            if (this.Type is not PropertyType.Dto || !this._typeFullName.IsNullOrEmpty())
+            {
+                result = this.Type.ToFullTypeName(this._typeFullName);
+            }
+            else
+            {
+                result = this.Type.ToFullTypeName(this.Dto?.FullName);
+            }
+            if (this.IsNullable ?? false)
+            {
+                result += "?";
+            }
+
+            return result;
+        }
+
         set => this.SetProperty(ref this._typeFullName, value);
     }
-
 }
