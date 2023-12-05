@@ -60,7 +60,7 @@ public static class SourceCodeHelper
             using var dlg = new FolderBrowserDialog();
             if (dlg.ShowDialog() is not DialogResult.OK)
             {
-                return Result<string?>.Failure;
+                return Result<string?>.CreateFailure();
             }
             var result = dlg.SelectedPath;
             var meaningfulCodes = codes.Compact();

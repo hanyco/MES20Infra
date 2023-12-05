@@ -39,7 +39,7 @@ internal sealed partial class FunctionalityService
             }
             else
             {
-                result = Result<Codes>.Combine(results, Codes.Combine);
+                result = results.Combine();
             }
         }
         catch (Exception ex)

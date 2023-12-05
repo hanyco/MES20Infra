@@ -170,7 +170,7 @@ internal sealed class PropertyService : IPropertyService
         {
             errors.Add((ValidationExceptionBase.ErrorCode, "Parent entity Id cannot be null or 0"));
         }
-        var result = Result<PropertyViewModel>.New(item, errors: errors);
+        var result = new Result<PropertyViewModel>(item, errors: errors);
         return await Task.FromResult(result);
     }
 
