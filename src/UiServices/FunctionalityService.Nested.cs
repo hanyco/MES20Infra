@@ -101,6 +101,19 @@ internal partial class FunctionalityService
             return result;
         }
 
+        internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model)
+        {
+            var checks = model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.Params.{x.Name})").ToImmutableArray();
+            return !checks.Any()
+                ? string.Empty
+                : new StringBuilder("_ = command.Check()")
+                    .AppendAllLines(checks)
+                    .AppendLine(".ThrowOnFail();")
+                    .AppendLine()
+                    .AppendLine("return ValueTask.CompletedTask;")
+                    .Build();
+        }
+
         internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model)
         {
             var values = GetValues(model.ParamsDto.Properties).Where(x => !x.Column.EqualsTo("Id")).ToImmutableArray();
@@ -118,6 +131,15 @@ internal partial class FunctionalityService
                 .Build();
             return result;
         }
+
+        internal static string CreateUpdateCommandValidatorMethodBody(CqrsCommandViewModel model) =>
+            new StringBuilder("_ = command.Check()")
+                .AppendLine(".RuleFor(x => x.Params.Id <= 0, () => \"Id cannot be null, zero or less than zero.\")")
+                .AppendAllLines(model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.Params.{x.Name})"))
+                .AppendLine(".ThrowOnFail();")
+                .AppendLine()
+                .AppendLine("return ValueTask.CompletedTask;")
+                .Build();
 
         internal static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
             new StringBuilder()

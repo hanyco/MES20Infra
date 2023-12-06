@@ -276,7 +276,7 @@ internal sealed class DtoService(
             {
                 result = null;
             }
-            //xawait this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
+            //x await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
             return result;
         }
         async Task insertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, CancellationToken token = default) =>
@@ -352,7 +352,7 @@ internal sealed class DtoService(
         var validation = viewModel.Check()
             .ArgumentNotNull()
             .NotNullOrEmpty(x => x!.Name, () => "DTO name cannot be null.")
-            .RuleFor(x => x!.Module?.Id is not null and not 0, () => "Module name cannot be null.")
+            .RuleFor(x => x!.Module?.Id is not null and not 0, () => "Module name cannot be null or zero.")
             .Build();
         if (!validation.IsSucceed)
         {

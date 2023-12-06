@@ -17,4 +17,5 @@ public sealed record CqrsCodeGenerateCodesConfig(
     bool ShouldGenerateGetById = true,
     bool ShouldGenerateCreate = true,
     bool ShouldGenerateUpdate = true,
-    bool ShouldGenerateDelete = true);
+    bool ShouldGenerateDelete = true,
+    bool ShouldGenerateValidators = true);

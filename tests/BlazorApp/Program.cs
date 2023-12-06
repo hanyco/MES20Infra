@@ -1,7 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
-
 using HanyCo.Infra;
 
 using Library.Cqrs;

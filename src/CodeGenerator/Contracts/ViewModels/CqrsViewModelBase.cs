@@ -23,6 +23,7 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     private DtoViewModel _paramDto;
     private DtoViewModel _resultDto;
     private IEnumerable<ClaimViewModel> _securityClaims;
+    private string _validatorBody;
 
     public CqrsSegregateCategory Category
     {
@@ -66,8 +67,6 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         set => this.SetProperty(ref this._handleMethodBody, value);
     }
 
-    public ISet<(TypePath Type, string Name)> HandleMethodParameters { get; } = new HashSet<(TypePath Type, string Name)>();
-
     public bool HasPartialHandler
     {
         get => this._hasPartialHandler;
@@ -109,6 +108,13 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         get => this._securityClaims;
         set => this.SetProperty(ref this._securityClaims, value);
     }
+
+    public string ValidatorBody
+    {
+        get => this._validatorBody;
+        set => this.SetProperty(ref this._validatorBody, value);
+    }
+    public ISet<string> ValidatorAdditionalUsings { get; } = new HashSet<string>();
 
     protected abstract CqrsSegregateType SegregateType { get; }
 }

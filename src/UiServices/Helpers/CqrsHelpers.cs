@@ -15,6 +15,8 @@ internal static class CqrsHelpers
     // GetAllPeopleQuery
     public static TypePath GetSegregateType(this CqrsViewModelBase model, string kind) =>
         TypePath.New($"{Purify(model.Name)}{kind}", model.DtoNameSpace);
+    public static TypePath GetSegregateValidatorType(this CqrsViewModelBase model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}Validator", model.DtoNameSpace);
 
     // GetAllPeople
     public static TypePath GetSegregateParamsType(this CqrsViewModelBase model, string? kind) =>

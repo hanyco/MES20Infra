@@ -408,8 +408,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel.ResultDto.IsResultDto = true;
         }
 
-        Task createValidator(CancellationToken token) =>
-            Task.CompletedTask;
+        void createValidator(CreationData data)
+        {
+        }
 
         void setupSecurity(CreationData data) =>
             data.ViewModel.DeleteCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.DeleteCommandViewModel);
@@ -531,7 +532,11 @@ internal sealed partial class FunctionalityService
             .Then(setupSecurity)
             .RunAsync(token);
 
-        static Task createValidator(CreationData data, CancellationToken token) => Task.CompletedTask;
+        static void createValidator(CreationData data)
+        {
+            data.ViewModel.InsertCommandViewModel.ValidatorBody = CodeSnippets.CreateInsertCommandValidatorMethodBody(data.ViewModel.InsertCommandViewModel);
+            _ = data.ViewModel.InsertCommandViewModel.ValidatorAdditionalUsings.Add(typeof(ValidationExtensions).Namespace);
+        }
 
         async Task createHandler(CreationData data, CancellationToken token)
         {
@@ -585,7 +590,11 @@ internal sealed partial class FunctionalityService
             .Then(setupSecurity)
             .RunAsync(token);
 
-        static Task createValidator(CreationData data, CancellationToken token) => Task.CompletedTask;
+        static void createValidator(CreationData data)
+        {
+            data.ViewModel.UpdateCommandViewModel.ValidatorBody = CodeSnippets.CreateUpdateCommandValidatorMethodBody(data.ViewModel.UpdateCommandViewModel);
+            _ = data.ViewModel.UpdateCommandViewModel.ValidatorAdditionalUsings.Add(typeof(ValidationExtensions).Namespace);
+        }
 
         async Task createHandler(CreationData data, CancellationToken token)
         {

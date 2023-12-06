@@ -49,6 +49,27 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
     private static Code toCode(in string? modelName, in string? codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
         Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
 
+    private Result<string> CreateValidator(in CqrsViewModelBase model)
+    {
+        var validatorMethod = new Method(nameof(ICommandValidator<ICommand>.ValidateAsync))
+        {
+            Body = model.ValidatorBody ?? "return ValueTask.CompletedTask;",
+            ReturnType = TypePath.New<ValueTask>(),
+        }.AddParameter(model.GetSegregateType("Command").Name, "command");
+
+        var commandValidatorBaseType = TypePath.New(typeof(ICommandValidator<>), [model.GetSegregateType("Command").FullPath]);
+        var validatorType = new Class(model.GetSegregateValidatorType("Command").Name)
+            .AddBaseType(commandValidatorBaseType)
+            .AddMember(validatorMethod);
+        var ns = INamespace.New(model.CqrsNameSpace)
+            .AddUsingNameSpace(model.DtoNameSpace)
+            .AddUsingNameSpace(commandValidatorBaseType.GetNameSpaces())
+            .AddUsingNameSpace(model.ValidatorAdditionalUsings)
+            .AddType(validatorType);
+
+        return codeGeneratorEngine.Generate(ns);
+    }
+
     private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind)
     {
         //return Codes.Empty;
@@ -64,7 +85,11 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind)
         {
             yield return toCode(model.Name, "Handler", createHandler(model, kind), false, kind);
-            
+            if (kind == CodeCategory.Command && model.ValidatorBody.IsNullOrEmpty())
+            {
+                yield return toCode(model.Name, "Validator", this.CreateValidator(model), false, kind);
+            }
+
             Result<string> createHandler(in CqrsViewModelBase model, CodeCategory kind)
             {
                 // Create `HandleAsync` method
@@ -108,6 +133,11 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind)
         {
+            if (kind == CodeCategory.Command && !model.ValidatorBody.IsNullOrEmpty())
+            {
+                yield return toCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
+            }
+
             yield return toCode(model.Name, "Handler", createQueryHandler(model, kind), true, kind);
             yield return toCode(model.Name, null, createSegregation(model, kind), true, CodeCategory.Dto);
             yield return toCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
