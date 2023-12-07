@@ -29,9 +29,9 @@ internal partial class FunctionalityService(
     IProgressReport reporter,
     ILogger logger,
     IBlazorComponentService blazorComponentService,
-    IBlazorComponentCodingService blazorComponentCodeService,
+    IBlazorComponentCodeService blazorComponentCodeService,
     IBlazorPageService blazorPageService,
-    IBlazorPageCodingService blazorPageCodeService,
+    IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator)
     : IFunctionalityService
     , IFunctionalityCodeService
@@ -39,9 +39,9 @@ internal partial class FunctionalityService(
     , IAsyncTransactionSave
     , ILoggerContainer
 {
-    private readonly IBlazorComponentCodingService _blazorComponentCodeService = blazorComponentCodeService;
+    private readonly IBlazorComponentCodeService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
-    private readonly IBlazorPageCodingService _blazorPageCodeService = blazorPageCodeService;
+    private readonly IBlazorPageCodeService _blazorPageCodeService = blazorPageCodeService;
     private readonly IBlazorPageService _blazorPageService = blazorPageService;
     private readonly ICqrsCommandService _commandService = commandService;
     private readonly IEntityViewModelConverter _converter = converter;

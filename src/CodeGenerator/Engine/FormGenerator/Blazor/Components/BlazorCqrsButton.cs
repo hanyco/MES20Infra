@@ -24,7 +24,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         string? name = null,
         string? onClick = null,
         string? body = null,
-        ButtonType type = ButtonType.FormButton,
+        ButtonType type = ButtonType.None,
         string? prefix = null)
         : base("button", id, name, body, prefix)
     {
@@ -103,7 +103,7 @@ public sealed class BlazorCqrsButton(
     string? name = null,
     string? onClick = null,
     string? body = null,
-    ButtonType type = ButtonType.FormButton,
+    ButtonType type = ButtonType.None,
     string? prefix = null,
     string? onClickReturnType = null) : BlazorButtonBase<BlazorCqrsButton, ISegregationAction>(id, name, onClick, body, type, prefix), IHasSegregationAction
 {
@@ -203,34 +203,41 @@ public sealed class BlazorCustomButton(
     string? name = null,
     string? onClick = null,
     string? body = null,
-    ButtonType type = ButtonType.FormButton,
+    ButtonType type = ButtonType.None,
     string? prefix = null) : BlazorButtonBase<BlazorCustomButton, ICustomAction>(id, name, onClick, body, type, prefix), IHasCustomAction
 {
     public string OnClickReturnType { get; set; }
+
     public IEnumerable<CodeTypeMembers>? GenerateCodeTypeMembers()
     {
         if (this.Action is null)
         {
             yield break;
         }
-        Check.MutBeNotNull(this.Action.CodeStatement);
-
-        var dataContextValidatorMethod = CodeDomHelper.NewMethod("ValidateForm", accessModifiers: DEFAULT_ACCESS_MODIFIER);
-        yield return new(dataContextValidatorMethod, null);
-
-        var body = this.Action.CodeStatement;
-        var returnValue = OnClickReturnType =="void"?null:OnClickReturnType;
-        var method = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick)), body, returnType: returnValue);
-        yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
+        if (!this.Action.CodeStatement.IsNullOrEmpty() && !this.OnClick.IsNullOrEmpty())
+        {
+            var body = this.Action.CodeStatement;
+            var returnValue = this.OnClickReturnType == "void" ? null : this.OnClickReturnType;
+            var method = CodeDomHelper.NewMethod(this.OnClick, body, returnType: returnValue);
+            yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
+        }
     }
 
     public BlazorCustomButton SetAction(string name, string? codeStatement) =>
         this.Fluent(() => this.Action = new CustomAction(name, codeStatement));
 }
 
+//public enum ButtonType
+//{
+//    RowButton,
+//    FormButton,
+//    Reset
+//}
+
 public enum ButtonType
 {
-    RowButton,
-    FormButton,
+    None,
+    Button,
+    Submit,
     Reset
 }

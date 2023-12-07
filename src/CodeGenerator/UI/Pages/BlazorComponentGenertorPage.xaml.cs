@@ -37,7 +37,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
     public static readonly DependencyProperty SelectedComponentProperty =
         DependencyProperty.Register("SelectedComponent", typeof(UiComponentViewModel), typeof(BlazorComponentGenertorPage), new PropertyMetadata(null));
 
-    private readonly IBlazorComponentCodingService _codeService;
+    private readonly IBlazorComponentCodeService _codeService;
     private readonly ICqrsCommandService _commandService;
     private readonly ICqrsQueryService _cqrsQueryService;
     private readonly IDtoService _dtoService;
@@ -48,7 +48,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
 
     public BlazorComponentGenertorPage(
         IBlazorComponentService service,
-        IBlazorComponentCodingService codeService,
+        IBlazorComponentCodeService codeService,
         IModuleService moduleService,
         ICqrsCommandService commandService,
         ICqrsQueryService cqrsQueryService,

@@ -44,14 +44,14 @@ public partial class BlazorPageGeneratorPage
     public static readonly DependencyProperty SelectedComponentInAllProperty =
         ControlHelper.GetDependencyProperty<UiComponentViewModel, BlazorPageGeneratorPage>(nameof(SelectedComponentInAll));
 
-    private readonly IBlazorPageCodingService _codingService;
+    private readonly IBlazorPageCodeService _codingService;
     private readonly IBlazorComponentService _componentService;
     private readonly IModuleService _moduleService;
     private readonly IBlazorPageService _service;
 
     #endregion Fields
 
-    public BlazorPageGeneratorPage(IBlazorPageService service, IModuleService moduleService, IBlazorComponentService componentService, ILogger logger, IBlazorPageCodingService codingService)
+    public BlazorPageGeneratorPage(IBlazorPageService service, IModuleService moduleService, IBlazorComponentService componentService, ILogger logger, IBlazorPageCodeService codingService)
         : base(logger)
     {
         this._service = service;

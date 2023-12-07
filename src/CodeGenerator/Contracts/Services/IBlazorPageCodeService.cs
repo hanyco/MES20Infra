@@ -9,6 +9,6 @@ using Library.Validations;
 
 namespace Contracts.Services;
 
-public interface IBlazorPageCodingService : IBusinessService, ICodeGenerator<UiPageViewModel, GenerateCodesParameters>, IValidator<UiPageViewModel>
+public interface IBlazorPageCodeService : IBusinessService, ICodeGenerator<UiPageViewModel, GenerateCodesParameters>, IValidator<UiPageViewModel>
 {
 }

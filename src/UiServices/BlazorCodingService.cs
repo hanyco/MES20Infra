@@ -34,7 +34,7 @@ using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
-internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodingService, IBlazorPageCodingService
+internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodeService, IBlazorPageCodeService
 {
     private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
     private readonly ILogger _logger = logger;
@@ -265,7 +265,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                             button.Caption,
                             arguments: args,
                             eventHandlerName: button.EventHandlerName,
-                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement,returnType: button.ReturnType));
+                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement, returnType: button.ReturnType));
                         break;
                 }
             }
@@ -301,6 +301,14 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
                     case CstmLoadViewModel load:
                         throw new InvalidOperationValidationException("`OnCustomLoad` method has not required fields.");
+                }
+            }
+            if (model.EditFormInfo.IsEditForm == true || (!model.IsGrid && model.EditFormInfo.IsEditForm != false))
+            {
+                foreach (var evt in model.EditFormInfo.Events)
+                {
+                    result.Actions.Add(new FormActor(evt.Handler.Name, evt.IsPartial, evt.Handler.Body, evt.Handler.ReturnType?.FullPath ?? "void",
+                        arguments: evt.Handler.Parameters.Select(x => new MethodArgument(x.Type, x.Name)).ToArray()));
                 }
             }
         }

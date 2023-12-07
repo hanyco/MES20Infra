@@ -6,6 +6,7 @@ using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
+using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
@@ -14,6 +15,8 @@ using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
+
+using Microsoft.AspNetCore.Components.Forms;
 
 using Services.Helpers;
 
@@ -174,6 +177,7 @@ internal sealed partial class FunctionalityService
         var name = CommonHelpers.Purify(data.SourceDtoName);
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
+            .Then(setupEditForm)
             .Then(addActions)
             .Then(addParameters)
             .Then(createConverters)
@@ -189,7 +193,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponentViewModel.Attributes.Add(new("@bind-EntityId", "this.Id"));
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
-            data.ViewModel.BlazorDetailsComponentViewModel.IsEditForm = true;
             data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
         }
 
@@ -201,14 +204,12 @@ internal sealed partial class FunctionalityService
             var saveButton = new UiComponentCustomButton()
             {
                 Caption = "Save",
-                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel),
-                EventHandlerName = "SaveButton_OnClick",
-                ReturnType = "async void",
+                ButtonType = ButtonType.Submit,
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
                 Name = "SaveButton",
                 Placement = Placement.FormButton,
-                Description = "Save the data to database",
+                Description = "Saves the data to database",
                 Position = new()
                 {
                     Col = 2,
@@ -263,6 +264,16 @@ internal sealed partial class FunctionalityService
             data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
 
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+        }
+
+        void setupEditForm(CreationData data)
+        {
+            var info = data.ViewModel.BlazorDetailsComponentViewModel.EditFormInfo;
+            info.IsEditForm = true;
+            _ = info.Events.Add(new(nameof(EditForm.OnValidSubmit), new Library.CodeGeneration.v2.Back.Method("SaveData")
+            {
+                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel)
+            }));
         }
     }
 
