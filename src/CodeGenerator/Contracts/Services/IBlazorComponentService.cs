@@ -18,7 +18,7 @@ public interface IBlazorComponentService
 
     UiComponentViewModel CreateViewModel(DtoViewModel dto);
 
-    UiComponentCustomButtonViewModel CreateUnboundAction();
+    UiComponentCustomButton CreateUnboundAction();
 
     UiPropertyViewModel CreateUnboundProperty();
 

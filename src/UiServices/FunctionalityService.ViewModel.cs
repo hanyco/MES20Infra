@@ -31,38 +31,31 @@ internal sealed partial class FunctionalityService
 
         // Report the initialization progress
         this._reporter.Report(description: getTitle("Initializing..."));
-
         // Initialize the viewModel and check if it fails
         var initResult = initialize(viewModel, token);
         if (!initResult.IsSucceed)
         {
             return Result<FunctionalityViewModel>.From(initResult, viewModel)!;
         }
-
         // Get the initialized data and token source
         var (data, tokenSource) = initResult.Value;
-
         // Perform the initialization steps
         var process = initSteps(data);
 
         // Report the running progress
         this._reporter.Report(description: getTitle("Running..."));
-
         // Run the process asynchronously
         var processResult = await process.RunAsync(tokenSource.Token);
-
         // Get the result message based on the process result and cancellation token
         var message = getResultMessage(processResult, tokenSource.Token);
 
         // Report the result message
         this._reporter.Report(description: getTitle(message));
-
         // Get the final result
         var result = processResult.Value.Result;
 
         // Dispose the token source
         tokenSource.Dispose();
-
         // Return the final result
         return result!;
 
@@ -196,6 +189,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponentViewModel.Attributes.Add(new("@bind-EntityId", "this.Id"));
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            data.ViewModel.BlazorDetailsComponentViewModel.IsEditForm = true;
             data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
         }
 
@@ -204,7 +198,7 @@ internal sealed partial class FunctionalityService
             var pageRoute = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
             data.ViewModel.BlazorListPageViewModel.Routes.Add(pageRoute);
             // The Save button
-            var saveButton = new UiComponentCustomButtonViewModel()
+            var saveButton = new UiComponentCustomButton()
             {
                 Caption = "Save",
                 CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel),
@@ -223,7 +217,7 @@ internal sealed partial class FunctionalityService
                 }
             };
             // The Back button. Same as the cancel button.
-            var cancelButton = new UiComponentCustomButtonViewModel()
+            var cancelButton = new UiComponentCustomButton()
             {
                 Caption = "Back",
                 CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart("@page").Trim()),
@@ -238,7 +232,7 @@ internal sealed partial class FunctionalityService
                     Offset = 1
                 }
             };
-            var onLoad = new UiComponentCustomLoadViewModel
+            var onLoad = new UiComponentCustomLoad
             {
                 CodeStatement = CodeSnippets.GetById_LoadMethodBody(data.ViewModel.GetByIdQueryViewModel),
             };
@@ -315,7 +309,7 @@ internal sealed partial class FunctionalityService
             var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null, "{Id:long}");
             data.ViewModel.BlazorDetailsPageViewModel.Routes.AddRange(pureRoute, routeWithId);
 
-            var newButton = new UiComponentCustomButtonViewModel
+            var newButton = new UiComponentCustomButton
             {
                 CodeStatement = CodeSnippets.NavigateTo(pureRoute.TrimStart("@page").Trim()),
                 Caption = "New",
@@ -325,7 +319,7 @@ internal sealed partial class FunctionalityService
                 Placement = Placement.FormButton,
                 Description = $"Creates new {name}"
             };
-            var editButton = new UiComponentCustomButtonViewModel
+            var editButton = new UiComponentCustomButton
             {
                 CodeStatement = CodeSnippets.NavigateTo($"${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\""), //$"this._navigationManager.NavigateTo(${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\");",
                 Caption = "Edit",
@@ -335,7 +329,7 @@ internal sealed partial class FunctionalityService
                 Placement = Placement.RowButton,
                 Description = $"Edits selected {name}"
             };
-            var deleteButton = new UiComponentCustomButtonViewModel
+            var deleteButton = new UiComponentCustomButton
             {
                 CodeStatement = CodeSnippets.BlazorListComponent_DeleteButton_OnClick_Body(data.ViewModel.DeleteCommandViewModel),
                 Caption = "Delete",

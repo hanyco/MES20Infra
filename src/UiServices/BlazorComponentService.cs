@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Services.Helpers;
 
-using CustomButtonViewModel = Contracts.ViewModels.UiComponentCustomButtonViewModel;
+using CustomButtonViewModel = Contracts.ViewModels.UiComponentCustomButton;
 using UiPropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
 using UiComponentViewModel = Contracts.ViewModels.UiComponentViewModel;
 

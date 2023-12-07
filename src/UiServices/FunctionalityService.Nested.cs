@@ -103,10 +103,10 @@ internal partial class FunctionalityService
 
         internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model)
         {
-            var checks = model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.Params.{x.Name})").ToImmutableArray();
+            var checks = model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
             return !checks.Any()
                 ? string.Empty
-                : new StringBuilder("_ = command.Check()")
+                : new StringBuilder("_ = command.ArgumentNotNull().Params.Check()")
                     .AppendAllLines(checks)
                     .AppendLine(".ThrowOnFail();")
                     .AppendLine()
@@ -133,9 +133,9 @@ internal partial class FunctionalityService
         }
 
         internal static string CreateUpdateCommandValidatorMethodBody(CqrsCommandViewModel model) =>
-            new StringBuilder("_ = command.Check()")
-                .AppendLine(".RuleFor(x => x.Params.Id <= 0, () => \"Id cannot be null, zero or less than zero.\")")
-                .AppendAllLines(model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.Params.{x.Name})"))
+            new StringBuilder("_ = command.ArgumentNotNull().Params.Check()")
+                .AppendLine(".RuleFor(x => x.Id <= 0, () => \"Id cannot be null, zero or less than zero.\")")
+                .AppendAllLines(model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})"))
                 .AppendLine(".ThrowOnFail();")
                 .AppendLine()
                 .AppendLine("return ValueTask.CompletedTask;")

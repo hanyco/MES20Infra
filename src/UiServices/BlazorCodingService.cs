@@ -27,8 +27,8 @@ using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
 using ButtonViewModelBase = Contracts.ViewModels.UiComponentButtonViewModelBase;
 using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
 using CqrsLoadViewModel = Contracts.ViewModels.UiComponentCqrsLoadViewModel;
-using CstmButtonViewModel = Contracts.ViewModels.UiComponentCustomButtonViewModel;
-using CstmLoadViewModel = Contracts.ViewModels.UiComponentCustomLoadViewModel;
+using CstmButtonViewModel = Contracts.ViewModels.UiComponentCustomButton;
+using CstmLoadViewModel = Contracts.ViewModels.UiComponentCustomLoad;
 using PropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
 using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 

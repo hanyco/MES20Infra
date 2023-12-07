@@ -1,10 +1,10 @@
 ﻿namespace Contracts.ViewModels;
 
-public sealed class UiComponentCustomLoadViewModel : InfraViewModelBase, IUiComponentCustomContent, BackElement
+public sealed class UiComponentCustomLoad : InfraViewModelBase, IUiComponentCustomContent, BackElement
 {
     private string? _codeStatement;
 
-    public UiComponentCustomLoadViewModel()
+    public UiComponentCustomLoad()
         : base(null, name: "OnCustomLoad")
     {
     }

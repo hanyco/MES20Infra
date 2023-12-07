@@ -1,6 +1,6 @@
 ﻿namespace Contracts.ViewModels;
 
-public sealed class UiComponentCustomButtonViewModel : UiComponentButtonViewModelBase, IUiComponentCustomContent, FrontElement
+public sealed class UiComponentCustomButton : UiComponentButtonViewModelBase, IUiComponentCustomContent, FrontElement
 {
     private string? _codeStatement;
 

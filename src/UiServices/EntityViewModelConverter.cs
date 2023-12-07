@@ -190,7 +190,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             Name = propertyViewModel.Name.NotNull(),
             Property = propertyViewModel,
             ControlType = propertyViewModel.Type.ToControlType(propertyViewModel.IsList, propertyViewModel.IsNullable, propertyViewModel.Dto).Control,
-            Caption = string.Equals(propertyViewModel.Name, "id")
+            Caption = string.Equals(propertyViewModel.Name, "id", global::System.StringComparison.Ordinal)
                 ? propertyViewModel.Name
                 : propertyViewModel.Name.SeparateCamelCase(),
             IsEnabled = !propertyViewModel.Name.EqualsTo("id")
@@ -245,7 +245,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                 .ForMember(x => x.Placement = EnumHelper.ToEnum<Placement>(entity.TriggerTypeId));
         };
 
-        return this._mapper.Map<UiComponentCustomButtonViewModel>(entity)
+        return this._mapper.Map<UiComponentCustomButton>(entity)
             .ForMember(x => x.Position = this.ToViewModel(entity.Position) ?? new())
             .ForMember(x => x.Placement = EnumHelper.ToEnum<Placement>(entity.TriggerTypeId));
     }

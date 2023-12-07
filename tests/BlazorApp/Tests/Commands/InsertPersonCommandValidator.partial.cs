@@ -8,7 +8,7 @@ public sealed class InsertPersonCommandValidator : ICommandValidator<InsertPerso
 {
     public ValueTask ValidateAsync(InsertPersonCommand command)
     {
-        _ = command.Check().NotNull(x => x.Params.LastName).NotNull(x => x.Params.DateOfBirth).ThrowOnFail();
+        _ = command.ArgumentNotNull().Params.Check().NotNull(x => x.LastName).NotNull(x => x.DateOfBirth).ThrowOnFail();
         return ValueTask.CompletedTask;
     }
 }

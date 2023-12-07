@@ -8,7 +8,7 @@ public sealed class UpdatePersonCommandValidator : ICommandValidator<UpdatePerso
 {
     public ValueTask ValidateAsync(UpdatePersonCommand command)
     {
-        _ = command.Check().RuleFor(x => x.Params.Id <= 0, () => "Id cannot be null, zero or less than zero.").NotNull(x => x.Params.Id).NotNull(x => x.Params.LastName).NotNull(x => x.Params.DateOfBirth).ThrowOnFail();
+        _ = command.ArgumentNotNull().Params.Check().RuleFor(x => x.Id <= 0, () => "Id cannot be null, zero or less than zero.").NotNull(x => x.Id).NotNull(x => x.LastName).NotNull(x => x.DateOfBirth).ThrowOnFail();
         return ValueTask.CompletedTask;
     }
 }
