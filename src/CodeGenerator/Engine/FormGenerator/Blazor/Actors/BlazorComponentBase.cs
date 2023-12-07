@@ -140,12 +140,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         StringBuilder generateGridCode(StringBuilder sb)
         {
             var buttonsCode = this.Actions.OfType<ButtonActor>().Where(x => !x.ShowOnGrid)
-                .Select(methodActor =>
+                .Select(method =>
                 {
-                    IUiCodeGenerator result = methodActor.Body.IsNullOrEmpty()
-                        ? new BlazorCqrsButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName, onClickReturnType: methodActor.ReturnType)
+                    IUiCodeGenerator result = method.Body.IsNullOrEmpty()
+                        ? new BlazorCqrsButton(name: method.Name, body: method.Caption, onClick: method.EventHandlerName, onClickReturnType: returnType(method.ReturnType))
                                 .With(x => x.Position.SetCol(1))
-                        : new BlazorCustomButton(name: methodActor.Name, body: methodActor.Caption, onClick: methodActor.EventHandlerName) { OnClickReturnType = methodActor.ReturnType ?? "void" }
+                        : new BlazorCustomButton(name: method.Name, body: method.Caption, onClick: method.EventHandlerName) { OnClickReturnType = returnType(method.ReturnType) }
                                 .With(x => x.Position.SetCol(1));
                     return result;
                 })
@@ -367,20 +367,28 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
             {
-                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
+                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, returnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
             var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == true))?.Body);
             _ = partClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
+            foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is null or true))
+            {
+                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, returnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
+            }
+            
         }
-
         void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
             {
-                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, method.ReturnType, method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
+                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, returnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
             var onInitializedAsyncBody = this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == false))?.Body;
             _ = mainClassType.AddMethod("OnLoadAsync", body: onInitializedAsyncBody ?? DefaultTaskMethodBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
+            foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is not true))
+            {
+                
+            }
         }
 
         void addChildren(in GenerateCodesParameters arguments, in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType)
@@ -472,6 +480,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                         .UseNameSpace(typeof(Task).Namespace!)
                         .AddNewType(this.Name, isPartial: true);
     }
+    static string? returnType(string? type) => type?.EqualsTo("void") ?? false ? null : type;
 
     private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {

@@ -78,7 +78,7 @@ public partial class ComponentPropertiesUserControl
         }
         this.ViewModel.Properties.Clear();
         var propertyService = DI.GetService<IPropertyService>();
-        var codingService = DI.GetService<IBlazorComponentCodingService>();
+        var codingService = DI.GetService<IBlazorComponentCodeService>();
         var properties = this.ViewModel.PageDataContextProperty is null
             ? await propertyService.GetByParentIdAsync(this.ViewModel.PageDataContext.Id!.Value)
             : await propertyService.GetByDtoIdAsync(this.ViewModel.PageDataContextProperty.Id!.Value);

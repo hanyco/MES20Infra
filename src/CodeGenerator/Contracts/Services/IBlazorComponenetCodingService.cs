@@ -8,7 +8,7 @@ using Library.Interfaces;
 
 namespace Contracts.Services;
 
-public interface IBlazorComponentCodingService : IBusinessService, ICodeGenerator<UiComponentViewModel, GenerateCodesParameters>
+public interface IBlazorComponentCodeService : IBusinessService, ICodeGenerator<UiComponentViewModel, GenerateCodesParameters>
 {
     bool ControlTypeHasPropertiesPage(ControlType controlType);
 
