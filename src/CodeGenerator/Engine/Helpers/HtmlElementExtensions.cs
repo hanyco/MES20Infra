@@ -41,14 +41,14 @@ public static class HtmlElementExtensions
         return element;
     }
 
-    public static StringBuilder GenerateChildrenCode(this IEnumerable<IHtmlElement> children, StringBuilder statementBuilder, bool manageRow = true)
+    public static StringBuilder GenerateChildrenCode(this IEnumerable<IHtmlElement> children, StringBuilder statementBuilder, bool manageRow = true, bool isEditForm = false)
     {
         if (children?.Any() is not true)
         {
             return statementBuilder;
         }
-        var childs = validatePositions(children);
-        var orderedData = sortData(childs);
+        var kids = validatePositions(children);
+        var orderedData = sortData(kids);
         createDetails(statementBuilder, manageRow, orderedData);
 
         return statementBuilder;
@@ -158,9 +158,9 @@ public static class HtmlElementExtensions
         return element;
     }
 
-    public static TElement SetBind<TElement>(this TElement element, string? value)
+    public static TElement SetBind<TElement>(this TElement element, string? value, string bindAttributeName = "bind")
         where TElement : IBlazorComponent
-        => Fluent(element, () => _ = value is not null ? element.SetAttribute("bind", value, true) : element.RemoveAttribute("bind"));
+        => Fluent(element, () => _ = value is not null ? element.SetAttribute(bindAttributeName, value, true) : element.RemoveAttribute(bindAttributeName));
 
     public static TElement SetElementAttribute<TElement, TPropType>([DisallowNull] this TElement element, [DisallowNull] string key, TPropType? value)
         where TElement : notnull, IHtmlElement

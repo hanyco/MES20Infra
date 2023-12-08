@@ -5,7 +5,7 @@ namespace Contracts.ViewModels;
 public sealed class EditFormInfo
 {
     public HashSet<EditFormEventInfo> Events { get; } = [];
-    public bool? IsEditForm { get; set; }
+    public bool IsEditForm { get; set; }
     public string Model { get; set; } = "DataContext";
 }
 

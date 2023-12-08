@@ -123,19 +123,41 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
     protected virtual Code OnGeneratingUiCode(in GenerateCodesParameters? arguments = null)
     {
-        Func<StringBuilder, StringBuilder> generate = this.IsGrid ? generateGridCode : generateDetailsCode;
-        var statement = this.OnGeneratingHtmlCode(new()).With(x => generate(x)).ToString();
+        var args = arguments ?? GenerateCodesParameters.FullCode();
+        var buffer = new StringBuilder();
 
+        _ = this.OnGeneratingHtmlCode(buffer);
+
+        if (args.IsEditForm)
+        {
+            _ = buffer.AppendLine($"<EditForm {args.EditFormAttributes?.Select(x=> $"{x.Key}='{x.Value}' ").Merge().Trim()}>");
+            _ = buffer.AppendLine($"{INDENT}<DataAnnotationsValidator />");
+            _ = buffer.AppendLine($"{INDENT}<ValidationSummary />");
+        }
+        if (this.IsGrid)
+        {
+            _ = generateGridCode(buffer);
+        }
+        else
+        {
+            _ = generateDetailsCode(buffer);
+        }
+
+        if (args.IsEditForm)
+        {
+            _ = buffer.AppendLine("</EditForm>");
+        }
+
+        var statement = buffer.Build();
         if (statement.IsNullOrEmpty())
         {
             return Code.Empty;
         }
-
         var htmlFileName = Path.ChangeExtension($"{this.Name}.tmp", this.HtmlFileExtension);
         return Code.New(this.Name, Languages.BlazorFront, statement, false, htmlFileName);
 
         StringBuilder generateDetailsCode(StringBuilder sb) =>
-            this.Children.GenerateChildrenCode(sb);
+            this.Children.GenerateChildrenCode(sb, isEditForm: args.IsEditForm);
 
         StringBuilder generateGridCode(StringBuilder sb)
         {
@@ -255,47 +277,36 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
     }
 
+    private static string? returnType(string? type) => type?.EqualsTo("void") ?? false ? null : type;
+
     private GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments)
     {
         var args = arguments ?? GenerateCodesParameters.FullCode();
         this.OnInitializingBehindCode(args);
 
         var mainUnit = new CodeCompileUnit();
-        //mainUnit.Namespaces.AddRange(this.AdditionalUsings
-        //    .Compact().RemoveDuplicates()
-        //    .Select(x => new CodeNamespace(x))
-        //    .Except(mainUnit.Namespaces.Cast<CodeNamespace>())
-        //    .ToArray());
         var mainClassType = createMainClassType(mainUnit);
 
         var partUnit = new CodeCompileUnit();
-        //partUnit.Namespaces.AddRange(this.AdditionalUsings
-        //    .Compact().RemoveDuplicates()
-        //    .Select(x => new CodeNamespace(x))
-        //    .Except(partUnit.Namespaces.Cast<CodeNamespace>())
-        //    .ToArray());
         var (partNameSpace, partClassType) = createPartClassType(partUnit);
 
-        var initializedAsyncMethodBody = new StringBuilder();
+        addFieldsToMainClass(mainClassType);
+        addFieldsToPartClass(partClassType);
 
-        //initializeDataContext(initializedAsyncMethodBody);
+        var initializedAsyncMethodBody = new StringBuilder();
         if (initializedAsyncMethodBody.Length > 0)
         {
             addPageInitializedMethod(mainClassType, partClassType, initializedAsyncMethodBody);
         }
+        addConstructor(partClassType, partNameSpace);
 
         addMethodsToMainClass(mainClassType);
         addMethodsToPartClass(partClassType);
-
-        addFieldsToMainClass(mainClassType);
-        addFieldsToPartClass(partClassType);
 
         addPropertiesToPartClass(partClassType);
         addParametersToPartClass(partClassType);
 
         addChildren(args, mainClassType, partClassType);
-
-        addConstructor(partClassType, partNameSpace);
 
         var mainCodeFileName = Path.ChangeExtension($"{this.Name}.tmp", this.MainCodeFileExtension);
         var mainClass = args.GenerateMainCode
@@ -375,7 +386,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             {
                 _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, returnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
-            
         }
         void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
         {
@@ -387,7 +397,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             _ = mainClassType.AddMethod("OnLoadAsync", body: onInitializedAsyncBody ?? DefaultTaskMethodBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
             foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is not true))
             {
-                
             }
         }
 
@@ -480,7 +489,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                         .UseNameSpace(typeof(Task).Namespace!)
                         .AddNewType(this.Name, isPartial: true);
     }
-    static string? returnType(string? type) => type?.EqualsTo("void") ?? false ? null : type;
 
     private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {

@@ -15,7 +15,7 @@
 @inherits HanyCo.Infra.Blazor.ComponentBase<PersonDto, PersonViewModel>
 
 <MessageComponent @ref="MessageComponent" />
-<EditForm Model="@DataContext" OnValidSubmit="SaveButton_OnClick">
+<EditForm Model='@DataContext' OnValidSubmit='SaveButton_OnClick'>
     <DataAnnotationsValidator />
     <ValidationSummary />
 

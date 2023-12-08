@@ -206,7 +206,7 @@ public sealed class BlazorCustomButton(
     ButtonType type = ButtonType.None,
     string? prefix = null) : BlazorButtonBase<BlazorCustomButton, ICustomAction>(id, name, onClick, body, type, prefix), IHasCustomAction
 {
-    public string OnClickReturnType { get; set; }
+    public string? OnClickReturnType { get; set; }
 
     public IEnumerable<CodeTypeMembers>? GenerateCodeTypeMembers()
     {

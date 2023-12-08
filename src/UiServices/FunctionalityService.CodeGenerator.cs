@@ -3,6 +3,7 @@
 using Contracts.Services;
 using Contracts.ViewModels;
 
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration.Models;
@@ -176,7 +177,12 @@ internal sealed partial class FunctionalityService
 
             if (viewModel.BlazorDetailsComponentViewModel != null)
             {
-                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel);
+                var editForm = viewModel.BlazorDetailsComponentViewModel.EditFormInfo;
+                var args = new GenerateCodesParameters(
+                    IsEditForm: editForm.IsEditForm,
+                    EditFormAttributes: editForm.Events.Select(x => (x.Name, x.Handler.Name)).AddImmuted(("Model", editForm.Model))
+                    );
+                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel, args);
                 codes.BlazorDetailsComponentCodes = codeGenRes;
                 yield return codes.BlazorDetailsComponentCodes;
                 if (!codeGenRes)
