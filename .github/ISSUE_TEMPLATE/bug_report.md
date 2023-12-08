@@ -1,9 +1,12 @@
 ---
 name: Bug Report
-about: 'Hello'
+about: "This is a test"
 description: File a bug report
 title: "[Bug]: "
 labels: ["bug", "triage"]
+projects: ["MES 2.0 Infrastructure", "mirmostafa/projects/22/"]
+assignees:
+ - octocat
 body:
  - type: markdown
    attributes:
