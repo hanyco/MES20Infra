@@ -4,7 +4,7 @@ about: "This is a test"
 description: File a bug report
 title: "[Bug]: "
 labels: ["bug", "triage"]
-projects: ["mirmostafa/22"]
+projects: ["MES 2.0 Infrastructure", "mirmostafa/22"]
 assignees:
  - mirmostafa
 work item type: 🐛Bug
