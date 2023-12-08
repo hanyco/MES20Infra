@@ -1,5 +1,4 @@
 ---
-<div dir="rtl">
 name: Bug
 title: "[باگ]: "
 description: "گزارش یک باگ"
@@ -55,5 +54,4 @@ body:
         - label: I agree to follow this project's Code of Conduct
           required: true
 
-</div>
 ---
