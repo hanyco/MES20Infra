@@ -1,20 +1,20 @@
 ---
 name: Bug
 title: "[باگ]: "
-description: "گزارش یک باگ"
+description: "File a Bug"
 assignees: mirmostafa
 projects: ["MES 2.0 Infrastructure"]
 body:
   - type: markdown
     attributes:
       value: |
-        این یک test است.
+        Thank you for reporting this bug
   - type: textarea
     id: what-happened
     attributes:
-      label: چی شده؟
-      description: همینطور لطفا به ما بگید انتظار داشتید چی بشه؟
-      placeholder: به ما بگید چی میبینید
+      label: What happened?
+      description: Also, tell us what you expected to see.
+      placeholder: What you see
       value: "A bug happened!"
     validations:
       required: true
