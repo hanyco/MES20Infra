@@ -18,12 +18,6 @@ body:
       value: "A bug happened!"
     validations:
       required: true
-  - type: input
-    id: effort
-    attributes:
-      label: Effort
-      description: Please enter the effort in hours.
-    type: number
   - type: textarea
     id: logs
     attributes:
