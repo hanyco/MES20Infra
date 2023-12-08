@@ -5,6 +5,7 @@ description: File a bug report
 title: "[Bug]: "
 labels: ["bug", "triage"]
 projects: ["MES 2.0 Infrastructure"]
+milestone: "پایان پروژه"
 assignees:
  - mirmostafa
 work item type: 🐛Bug
