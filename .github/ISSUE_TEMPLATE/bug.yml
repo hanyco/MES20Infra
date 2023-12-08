@@ -1,7 +1,7 @@
 ---
 name: Bug
 title: "[Bug]: "
-decription : "This is a test"
+description: "File a bug report"
 assignees: mirmostafa
 projects: ["MES 2.0 Infrastructure"]
 body:
