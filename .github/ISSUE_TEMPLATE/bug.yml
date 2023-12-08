@@ -1,5 +1,5 @@
-<div dir="rtl">
 ---
+<div dir="rtl">
 name: باگ
 title: "[باگ]: "
 description: "گزارش یک باگ"
@@ -54,5 +54,6 @@ body:
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
----
+
 </div>
+---
