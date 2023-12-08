@@ -1,28 +1,21 @@
+<div dir="rtl">
 ---
-name: Bug
-title: "[Bug]: "
-description: "File a bug report"
+name: باگ
+title: "[باگ]: "
+description: "گزارش یک باگ"
 assignees: mirmostafa
 projects: ["MES 2.0 Infrastructure"]
 body:
   - type: markdown
     attributes:
       value: |
-        <div dir="rtl">این یک test است.</div>
-  - type: input
-    id: contact
-    attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false
+        این یک test است.
   - type: textarea
     id: what-happened
     attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
+      label: چی شده؟
+      description: همینطور لطفا به ما بگید انتظار داشتید چی بشه؟
+      placeholder: به ما بگید چی میبینید
       value: "A bug happened!"
     validations:
       required: true
@@ -62,4 +55,4 @@ body:
         - label: I agree to follow this project's Code of Conduct
           required: true
 ---
-
+</div>
