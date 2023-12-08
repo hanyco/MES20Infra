@@ -8,7 +8,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        <div dir="rtl">
+       از اینکه این خطا را برای ما گزارش میکنید، از شما متشکریم
+       </div>
   - type: input
     id: contact
     attributes:
