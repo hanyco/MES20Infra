@@ -1,32 +1,21 @@
 ---
 name: Bug
-title: "[باگ]: "
+title: "[BUG]: "
 description: "File a Bug"
 assignees: mirmostafa
-projects: ["MES 2.0 Infrastructure"]
+projects: []
 body:
   - type: markdown
     attributes:
       value: |
         Thank you for reporting this bug
   - type: textarea
-    id: what-happened
+    id: repro-steps
     attributes:
-      label: What happened?
-      description: Also, tell us what you expected to see.
-      placeholder: What you see
+      label: Repro Steps
+      description: How do you see this bug?
+      placeholder: Click to add Repro Steps.
       value: "A bug happened!"
-    validations:
-      required: true
-  - type: dropdown
-    id: version
-    attributes:
-      label: Version
-      description: What version of our software are you running?
-      options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
-      default: 0
     validations:
       required: true
   - type: dropdown
