@@ -5,6 +5,7 @@ title: "[Bug]: "
 labels: ''
 assignees: mirmostafa
 projects: ["MES 2.0 Infrastructure"]
+milestone: "پایان پروژه"
 body:
   - type: markdown
     attributes:
