@@ -3,7 +3,6 @@ name: Bug Report
 about: "This is a test"
 description: File a bug report
 title: "[Bug]: "
-labels: ["bug", "triage"]
 projects: ["MES 2.0 Infrastructure"]
 milestone: "پایان پروژه"
 assignees:
@@ -14,6 +13,11 @@ body:
    attributes:
      value: |
        Thanks for taking the time to fill out this bug report!
+ - type: textarea
+   id: how-to-see-the-bug
+   attributes:
+      label: How to see the bug
+      description: Please describe the steps to reproduce the bug.  
  - type: input
    id: contact
    attributes:
