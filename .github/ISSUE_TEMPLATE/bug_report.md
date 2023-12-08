@@ -7,6 +7,7 @@ labels: ["bug", "triage"]
 projects: ["MES 2.0 Infrastructure", "mirmostafa/22/"]
 assignees:
  - mirmostafa
+work item type: 🐛Bug
 body:
  - type: markdown
    attributes:
