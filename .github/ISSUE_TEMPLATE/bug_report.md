@@ -6,7 +6,7 @@ title: "[Bug]: "
 labels: ["bug", "triage"]
 projects: ["MES 2.0 Infrastructure", "mirmostafa/projects/22/"]
 assignees:
- - octocat
+ - mirmostafa
 body:
  - type: markdown
    attributes:
