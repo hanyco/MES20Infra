@@ -4,6 +4,7 @@ about: This is a test
 title: "[Bug]: "
 labels: ''
 assignees: mirmostafa
+projects: ["MES 2.0 Infrastructure"]
 body:
   - type: markdown
     attributes:
