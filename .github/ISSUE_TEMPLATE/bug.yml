@@ -1,4 +1,5 @@
 ---
+
 name: Bug
 title: "[BUG]: "
 description: "File a Bug"
@@ -9,37 +10,37 @@ body:
     attributes:
       value: |
         ## Bug Report Information
-  - type: textarea
-    id: repro-steps
-    attributes:
-      label: Repro Steps
-      description: How do you see this bug?
-      placeholder: Click to add Repro Steps.
-      value: "A bug happened!"
-    validations:
-      required: true
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
+   - type: textarea
+     id: repro-steps
+     attributes:
+       label: Repro Steps
+       description: How do you see this bug?
+       placeholder: Click to add Repro Steps.
+       value: "A bug happened!"
+     validations:
+       required: true
+   - type: textarea
+     id: logs
+     attributes:
+       label: Relevant log output
+       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+       render: shell
   - type: markdown
     attributes:
       value: |
         ## Bug Fixing Information
-- type: input
-    id: effort
-    attributes:
-      label: Completed Work %
-      description: The percentage of complered work
-      placeholder: 0 to 100
-      validations:
-        required: true
-        min: 0
-        max: 100
-  - type: textarea
-    id: tasks
-    attributes:
-      label: Tasks List
+   - type: input
+       id: effort
+       attributes:
+         label: Completed Work %
+         description: The percentage of complered work
+         placeholder: 0 to 100
+         validations:
+           required: true
+           min: 0
+           max: 100
+     - type: textarea
+       id: tasks
+       attributes:
+         label: Tasks List
 ---
