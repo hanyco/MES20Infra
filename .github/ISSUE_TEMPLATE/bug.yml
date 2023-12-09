@@ -15,9 +15,13 @@ body:
       label: Repro Steps
       description: How do you see this bug?
       placeholder: Click to add Repro Steps.
-      value: "A bug happened!"
     validations:
       required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Acceptance criteria define the specific conditions that need to be met for a piece of work to be considered complete and accepted.
   - type: textarea
     id: logs
     attributes:
