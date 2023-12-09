@@ -16,7 +16,7 @@
 
 
 <MessageComponent @ref="MessageComponent" />
-<EditForm OnValidSubmit='SaveData' Model='@DataContext'>
+<EditForm OnValidSubmit='SaveData' Model='@this.DataContext'>
     <DataAnnotationsValidator />
     <ValidationSummary />
 <div class='row'>
@@ -47,7 +47,7 @@
     <ValidationMessage For="@(() => this.DataContext.Height)" Class="error-message" />
 </div>
 <div class='row'>
-    <Button name='SaveButton' class='col-2 offset-2 btn btn-success'>Save</Button>
-    <Button name='BackButton' class='col-2 offset-1 btn btn-success'>Back</Button>
+    <Button id='SaveButton' name='SaveButton' class='col-2 offset-2 btn btn-success'>Save</Button>
+    <Button id='BackButton' name='BackButton' class='col-2 offset-1 btn btn-success' @onclick='BackButton_OnClick'>Back</Button>
 </div>
 </EditForm>

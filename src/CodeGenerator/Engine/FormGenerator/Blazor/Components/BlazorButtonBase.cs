@@ -35,6 +35,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         }
 
         this.SetCssClasses();
+        this.OnClick = onClick;
     }
 
     public TAction? Action { get; set; }
@@ -67,7 +68,23 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
 
     public string? NameSpace { get; }
 
-    public virtual string? OnClick { get => this.GetAttribute("@onclick"); set => this.SetAttribute("@onclick", value); }
+    public virtual string? OnClick
+    {
+        get => this.GetAttribute("onclick", isBlazorAttribute: true);
+        set
+        {
+            if (!value.IsNullOrEmpty())
+            {
+                _ = this.SetAttribute("onclick", value, isBlazorAttribute: true);
+            }
+            else
+            {
+                _ = this.Attributes.Remove("onclick");
+                _ = this.BlazorAttributes.Remove("onclick");
+            }
+        }
+    }
+
     public string Type { get; }
 
     //public ButtonType Type { get; set; }

@@ -21,12 +21,6 @@ public sealed class BlazorCqrsButton(
 {
     private readonly string? _onClickReturnType = onClickReturnType;
 
-    public override string? OnClick
-    {
-        get => this.GetAttribute("onclick", isBlazorAttribute: true);
-        set => this.SetAttribute("onclick", value, isBlazorAttribute: true);
-    }
-
     public IEnumerable<CodeTypeMembers> GenerateCodeTypeMembers()
     {
         if (this.Action is null)

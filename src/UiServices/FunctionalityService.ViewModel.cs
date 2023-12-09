@@ -60,7 +60,7 @@ internal sealed partial class FunctionalityService
         // Dispose the token source
         tokenSource.Dispose();
 
-        _reporter.End();
+        this._reporter.End();
         // Return the final result
         return result!;
 
@@ -338,7 +338,7 @@ internal sealed partial class FunctionalityService
             {
                 CodeStatement = CodeSnippets.NavigateTo($"${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\""), //$"this._navigationManager.NavigateTo(${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\");",
                 Caption = "Edit",
-                EventHandlerName = "Edit",
+                EventHandlerName = "EditButton_OnClick",
                 Guid = Guid.NewGuid(),
                 Name = "EditButton",
                 Placement = Placement.RowButton,
@@ -348,7 +348,7 @@ internal sealed partial class FunctionalityService
             {
                 CodeStatement = CodeSnippets.BlazorListComponent_DeleteButton_OnClick_Body(data.ViewModel.DeleteCommandViewModel),
                 Caption = "Delete",
-                EventHandlerName = "Delete",
+                EventHandlerName = "DeleteButton_OnClick",
                 Guid = Guid.NewGuid(),
                 Name = "DeleteButton",
                 Placement = Placement.RowButton,

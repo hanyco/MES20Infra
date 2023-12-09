@@ -6,7 +6,7 @@ public sealed class EditFormInfo
 {
     public HashSet<EditFormEventInfo> Events { get; } = [];
     public bool IsEditForm { get; set; }
-    public string Model { get; set; } = "DataContext";
+    public string Model { get; set; } = "@this.DataContext";
 }
 
 public readonly struct EditFormEventInfo(string eventName, Method eventHandler, bool isPartial = true) : IEquatable<EditFormEventInfo>

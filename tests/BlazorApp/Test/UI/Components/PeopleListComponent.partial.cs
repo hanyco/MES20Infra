@@ -29,12 +29,12 @@ namespace HumanResources
             this._navigationManager.NavigateTo("/HumanResources/Person/details");
         }
 
-        public void Edit(Int64 id)
+        public void EditButton_OnClick(Int64 id)
         {
             this._navigationManager.NavigateTo($"/HumanResources/Person/details/{id.ToString()}");
         }
 
-        public async void Delete(Int64 id)
+        public async void DeleteButton_OnClick(Int64 id)
         {
             // Setup segregation parameters
             var cmdParams = new HumanResources.Dtos.DeletePerson()

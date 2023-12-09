@@ -53,5 +53,10 @@ namespace HumanResources
 
         [Microsoft.AspNetCore.Components.Parameter]
         public Microsoft.AspNetCore.Components.EventCallback<System.Int64?>? EntityIdChanged { get; set; }
+
+        public void BackButton_OnClick()
+        {
+            this._navigationManager.NavigateTo("/HumanResources/Person");
+        }
     }
 }
