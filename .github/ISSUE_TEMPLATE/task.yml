@@ -1,9 +1,13 @@
 ---
 name: Task
-about: Describe this issue template's purpose here.
 title: '[TASK]: '
 assignees: 'mirmostafa'
 projects: ["MES 2.0 Infrastructure"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
 ---
 
 
