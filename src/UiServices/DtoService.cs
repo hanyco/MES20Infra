@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using Contracts.Services;
@@ -118,7 +119,7 @@ internal sealed class DtoService(
         var result = Result.From(statement, code.ToCodes());
         return result;
 
-        static IProperty toProperty(PropertyViewModel pvm)
+        static CodeGenProperty toProperty(PropertyViewModel pvm)
         {
             var typeFullName = pvm.TypeFullName.NotNull();
 
@@ -126,8 +127,13 @@ internal sealed class DtoService(
                 ? TypePath.New(typeof(List<>).FullName, null, generics: typeFullName)
                 : TypePath.New(typeFullName))
                 .WithNullable(pvm.IsNullable ?? false);
+            var result = new CodeGenProperty(pvm.Name!, type);
+            if (pvm.Name != "Id" && !(pvm.IsNullable ?? false))
+            {
+                result.Attributes.Add(ICodeGenAttribute.New(TypePath.New<RequiredAttribute>()));
+            }
 
-            return IProperty.New(pvm.Name!, type);
+            return result;
         }
 
         static Result<DtoViewModel> validate(in DtoViewModel? viewModel, in CancellationToken token = default)
@@ -291,7 +297,7 @@ internal sealed class DtoService(
 
     public async Task<Result<DtoViewModel>> UpdateAsync(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
-        _ = await this.CheckValidatorAsync(viewModel);
+        _ = await this.ValidateAsync(viewModel, token).ThrowOnFailAsync();
         _ = InitializeViewModel(viewModel);
         var entity = this.ToDbEntity(viewModel);
         this.ResetChanges();
@@ -370,7 +376,7 @@ internal sealed class DtoService(
         var duplicates = viewModel!.Properties.FindDuplicates().Select(x => x?.Name).Compact().ToList();
         if (duplicates.Any())
         {
-            return Result<DtoViewModel>.CreateFailure(new ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
+            return Result<DtoViewModel>.CreateFailure(new Library.Exceptions.Validations.ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
         };
         return Result<DtoViewModel>.CreateSuccess(viewModel)!;
     }

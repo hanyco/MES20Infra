@@ -77,14 +77,14 @@ internal partial class FunctionalityService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public Result<FunctionalityViewModel> Validate(in FunctionalityViewModel item) =>
+    public Result<FunctionalityViewModel?> Validate(in FunctionalityViewModel? item) =>
         BasicChecks(item);
 
-    private static ValidationResultSet<FunctionalityViewModel> BasicChecks(FunctionalityViewModel? model) =>
+    private static ValidationResultSet<FunctionalityViewModel?> BasicChecks(FunctionalityViewModel? model) =>
         model.Check()
             .ArgumentNotNull()
             .NotNull(x => x!.Name)
             .NotNull(x => x!.SourceDto)
             .NotNull(x => x!.SourceDto.NameSpace, paramName: "namespace")
-            .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)))!;
+            .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
 }

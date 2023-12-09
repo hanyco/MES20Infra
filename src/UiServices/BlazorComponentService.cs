@@ -205,7 +205,7 @@ public sealed class BlazorComponentService(
     {
         Check.MustBeArgumentNotNull(model);
         model.Id = id;
-        _ = await this.CheckValidatorAsync(model);
+        _ = await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync();
         var entity = this._converter.ToDbEntity(model)!;
         var entry = this._writeDbContext.Attach(entity);
 

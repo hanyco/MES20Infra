@@ -139,6 +139,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 {
                     _ = position.SetCol(5);
                 }
+                var cssClass = "error-message";
                 switch (prop.ControlType)
                 {
                     case ControlType.None:
@@ -150,21 +151,25 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                     case ControlType.CheckBox:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorCheckBox($"{prop.Name}CheckBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.TextBox:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.DateTimePicker:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.NumericTextBox:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorNumericTextBox($"{prop.Name}NumericTextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.CurrencyBox:

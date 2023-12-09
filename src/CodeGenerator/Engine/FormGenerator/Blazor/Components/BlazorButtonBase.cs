@@ -23,7 +23,7 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         string? body = null,
         ButtonType type = ButtonType.None,
         string? prefix = null)
-        : base("button", id, name, body, prefix)
+        : base("Button", id, name, body, prefix)
     {
         if (type != ButtonType.None)
         {

@@ -18,7 +18,7 @@
 <MessageComponent @ref="MessageComponent" />
 
 <div class="row">
-<button name='NewButton' class='col-1 btn btn-success' @onclick='NewButton_OnClick'>New</button>
+<Button name='NewButton' class='col-1 btn btn-success' @onclick="NewButton_OnClick">New</Button>
 </div>
 <div class="row">
 <table class="table">
@@ -43,8 +43,8 @@
             <td>@item.LastName</td>
             <td>@item.DateOfBirth</td>
             <td>@item.Height</td>
-            <td><button id="" name="" @onclick="@(() => Edit(item.Id))">Edit</button></td>
-            <td><button id="" name="" @onclick="@(() => Delete(item.Id))">Delete</button></td>
+            <td><Button id="" name=""  class='col-1 btn btn-success' @onclick="()=>Edit(item.Id)">Edit</Button></td>
+            <td><Button id="" name=""  class='col-1 btn btn-success' @onclick="()=>Delete(item.Id)">Delete</Button></td>
 
         </tr>
             }

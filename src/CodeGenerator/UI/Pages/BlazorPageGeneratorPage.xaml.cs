@@ -182,7 +182,7 @@ public partial class BlazorPageGeneratorPage
     {
         var scope = this.ActionScopeBegin("Generating code…");
         var model = this.ViewModel!;
-        _ = this._service.CheckValidator(model);
+        _ = this._service.Validate(model).ThrowOnFail();
         this.ComponentCodeResultUserControl.Codes = this._codingService.GenerateCodes(model, new(model.GenerateMainCode, model.GeneratePartialCode, model.GenerateUiCode));
         this.ResultsTabItem.IsSelected = true;
         this.Debug("Code generated.");

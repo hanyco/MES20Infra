@@ -176,7 +176,7 @@ internal sealed class PropertyService : IPropertyService
 
     private async Task<Result<PropertyViewModel>> SaveChangesAsync(PropertyViewModel model, bool persist, Action<Property> manipulate, CancellationToken cancellationToken = default)
     {
-        _ = await this.CheckValidatorAsync(model);
+        _ = await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync();
         var property = this._converter.ToDbEntity(model)!;
         manipulate(property);
         if (persist)

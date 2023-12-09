@@ -61,24 +61,6 @@ public static class HtmlElementExtensions
 
         static IEnumerable<IHtmlElement> sortData(IEnumerable<IHtmlElement> children)
         {
-            //IOrderedEnumerable<IHtmlElement>? result = null;
-            //if (!children.Any(x => x?.Position.Order is not null and not 0) && !children.Any(x => x?.Position.Row is not null and not 0))
-            //{
-            //    result = children.OrderBy(x => 1);
-            //}
-            //else if (children.Any(x => x.Position.Order is not null and not 0))
-            //{
-            //    result = children.Where(x => x.Position.Order is not null and not 0)
-            //        .OrderBy(x => x.Position.Order)
-            //        .AddRangeImmuted(children.Where(x => x.Position.Order is null or 0))
-            //        .OrderBy(x => 1);
-            //}
-            //else if (children.Any(x => x.Position.Row is not null))
-            //{
-            //    result = children.OrderBy(x => x.Position.Row);
-            //}
-
-            //return result.Compact();
             return children;
         }
 
