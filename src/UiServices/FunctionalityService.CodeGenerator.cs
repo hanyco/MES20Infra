@@ -22,42 +22,36 @@ internal sealed partial class FunctionalityService
     {
         Check.MustBeArgumentNotNull(viewModel);
 
+        Result<Codes> result;
         // Determine whether to update existing codes or generate new ones.
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : [];
-
         var scope = ActionScope.Begin(this.Logger, "Generating Functionality code.");
-        Result<Codes> result = default!;
-        try
+        
+        var results = generateCodes(viewModel, codeResult).ToImmutableArray();
+        if (!results.Any())
         {
-            var results = generateCodes(viewModel, codeResult).ToImmutableArray();
-            if (!results.Any())
-            {
-                result = Result<Codes>.CreateFailure("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
-            }
-            else if (results.Any(x => x.IsFailure))
-            {
-                result = Result<Codes>.From(results.First(x => x.IsFailure), new(results.Select(x => x.Value)));
-            }
-            else
-            {
-                result = Result<Codes>.From(results.Combine(), results.Select(x => x.Value).ToCodes());
-            }
+            result = Result<Codes>.CreateFailure("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
         }
-        catch (Exception ex)
+        else if (results.Any(x => x.IsFailure))
         {
-            result = Result<Codes>.CreateFailure(ex, Codes.Empty);
+            result = Result<Codes>.From(results.First(x => x.IsFailure), new(results.Select(x => x.Value)));
         }
-        finally
+        else
         {
-            scope.End(result);
+            result = Result<Codes>.From(results.Combine(), results.Select(x => x.Value).ToCodes());
         }
+        this._reporter.End();
+        scope.End(result);
         return result;
 
         IEnumerable<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes)
         {
+            var max = 13;
+            var index = 0;
             if (viewModel.SourceDto != null)
             {
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.SourceDto);
+                this._reporter.Report(max, ++index, null);
                 yield return codes.SourceDtoCodes = codeGenRes;
                 if (!codeGenRes)
                 {
@@ -69,6 +63,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = generateAllCodes(viewModel.GetAllQueryViewModel);
                 codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
+                this._reporter.Report(max, ++index, null);
                 yield return codes.GetAllQueryCodes;
                 if (codeGenRes.Any(x => !x))
                 {
@@ -80,6 +75,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = generateAllCodes(viewModel.GetByIdQueryViewModel);
                 codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
+                this._reporter.Report(max, ++index, null);
                 yield return codes.GetByIdQueryCodes;
                 if (codeGenRes.Any(x => !x))
                 {
@@ -91,6 +87,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = generateAllCodes(viewModel.InsertCommandViewModel);
                 codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
+                this._reporter.Report(max, ++index, null);
                 yield return codes.InsertCommandCodes;
                 if (codeGenRes.Any(x => !x))
                 {
@@ -102,6 +99,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = generateAllCodes(viewModel.UpdateCommandViewModel);
                 codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
+                this._reporter.Report(max, ++index, null);
                 yield return codes.UpdateCommandCodes;
                 if (codeGenRes.Any(x => !x))
                 {
@@ -112,7 +110,8 @@ internal sealed partial class FunctionalityService
             if (viewModel.DeleteCommandViewModel != null)
             {
                 var codeGenRes = generateAllCodes(viewModel.DeleteCommandViewModel);
-                codes.DeleteCommandCodes = new(codeGenRes.Select(x => x.Value));
+                codes.DeleteCommandCodes = codeGenRes.Select(x => x.Value).ToCodes();
+                this._reporter.Report(max, ++index, null);
                 yield return codes.DeleteCommandCodes;
                 if (codeGenRes.Any(x => !x))
                 {
@@ -124,6 +123,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel);
                 codes.BlazorListPageCodes = codeGenRes;
+                this._reporter.Report(max, ++index, null);
                 yield return codes.BlazorListPageCodes;
                 if (!codeGenRes)
                 {
@@ -135,6 +135,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext);
                 codes.BlazorListPageDataContextCodes = codeGenRes;
+                this._reporter.Report(max, ++index, null);
                 yield return codes.BlazorListPageDataContextCodes;
                 if (!codeGenRes)
                 {
@@ -146,6 +147,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel);
                 codes.BlazorDetailsPageCodes = codeGenRes;
+                this._reporter.Report(max, ++index, null);
                 yield return codes.BlazorDetailsPageCodes;
                 if (!codeGenRes)
                 {
@@ -157,6 +159,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext);
                 codes.BlazorListPageDataContextCodes = codeGenRes;
+                this._reporter.Report(max, ++index, null);
                 yield return codes.BlazorListPageDataContextCodes;
                 if (!codeGenRes)
                 {
@@ -168,6 +171,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel);
                 codes.BlazorListComponentCodes = codeGenRes;
+                this._reporter.Report(max, ++index, null);
                 yield return codes.BlazorListComponentCodes;
                 if (!codeGenRes)
                 {
@@ -184,6 +188,7 @@ internal sealed partial class FunctionalityService
                     );
                 var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel, args);
                 codes.BlazorDetailsComponentCodes = codeGenRes;
+                this._reporter.Report(max, ++index, null);
                 yield return codes.BlazorDetailsComponentCodes;
                 if (!codeGenRes)
                 {
@@ -204,6 +209,7 @@ internal sealed partial class FunctionalityService
                         yield break;
                     }
                 }
+                this._reporter.Report(max, ++index, null);
                 codes.BlazorDetailsComponentMapperCodes = Codes.New(mapperCodes);
             }
 

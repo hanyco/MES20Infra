@@ -27,9 +27,5 @@ namespace HumanResources
                 this.DataContext = new();
             }
         }
-
-        private void ValidateForm()
-        {
-        }
     }
 }

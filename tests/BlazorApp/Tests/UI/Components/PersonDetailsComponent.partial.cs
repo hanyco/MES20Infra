@@ -18,21 +18,17 @@ namespace HumanResources
 
     public sealed partial class PersonDetailsComponent
     {
+        public PersonDetailsComponent()
+        {
+        }
+
         protected override async Task OnInitializedAsync()
         {
             // Call developer's method.
             await this.OnLoadAsync();
         }
 
-        public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
-
-        [Microsoft.AspNetCore.Components.Parameter]
-        public System.Int64? EntityId { get; set; }
-
-        [Microsoft.AspNetCore.Components.Parameter]
-        public Microsoft.AspNetCore.Components.EventCallback<System.Int64?>? EntityIdChanged { get; set; }
-
-        public async void SaveButton_OnClick()
+        void SaveData()
         {
             if (DataContext.Id == default)
             {
@@ -50,13 +46,17 @@ namespace HumanResources
             MessageComponent.Show("Save Data", "Date saved.");
         }
 
+        public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
+
+        [Microsoft.AspNetCore.Components.Parameter]
+        public System.Int64? EntityId { get; set; }
+
+        [Microsoft.AspNetCore.Components.Parameter]
+        public Microsoft.AspNetCore.Components.EventCallback<System.Int64?>? EntityIdChanged { get; set; }
+
         public void BackButton_OnClick()
         {
             this._navigationManager.NavigateTo("/HumanResources/Person");
-        }
-
-        public PersonDetailsComponent()
-        {
         }
     }
 }

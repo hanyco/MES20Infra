@@ -59,6 +59,8 @@ internal sealed partial class FunctionalityService
 
         // Dispose the token source
         tokenSource.Dispose();
+
+        _reporter.End();
         // Return the final result
         return result!;
 
@@ -70,17 +72,18 @@ internal sealed partial class FunctionalityService
         // Initialize the viewModel with the connection string
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)
         {
-            // Create a linked tokenSource from the token
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
             // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
             var result = new CreationData(viewModel, (viewModel.Name ?? viewModel.SourceDto.Name).NotNull(), tokenSource);
-            result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "));
+            if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
+            {
+                result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "));
+            }
 
             // Return a success result with the result and cancellationTokenSource
             return Result<(CreationData, CancellationTokenSource)>.CreateSuccess((result, tokenSource));
         }
 
-        // Initialize the steps for the process
         [DebuggerStepThrough]
         MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
         //?! ☠ Don't change the sequence of the steps ☠

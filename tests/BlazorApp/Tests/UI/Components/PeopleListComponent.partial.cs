@@ -20,6 +20,10 @@ namespace HumanResources
 
     public sealed partial class PeopleListComponent
     {
+        public PeopleListComponent()
+        {
+        }
+
         public void NewButton_OnClick()
         {
             this._navigationManager.NavigateTo("/HumanResources/Person/details");
@@ -60,9 +64,5 @@ namespace HumanResources
         }
 
         public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
-
-        public PeopleListComponent()
-        {
-        }
     }
 }
