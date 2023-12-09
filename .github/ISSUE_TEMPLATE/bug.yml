@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## Thank you for reporting this bug
+        ## Bug Report Information
   - type: textarea
     id: repro-steps
     attributes:
@@ -24,13 +24,22 @@ body:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
-  - type: checkboxes
-    id: terms
+  - type: markdown
     attributes:
-      label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
-      options:
-        - label: I agree to follow this project's Code of Conduct
-          required: true
-
+      value: |
+        ## Bug Fixing Information
+- type: input
+    id: effort
+    attributes:
+      label: Completed Work %
+      description: The percentage of complered work
+      placeholder: 0 to 100
+      validations:
+        required: true
+        min: 0
+        max: 100
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks List
 ---
