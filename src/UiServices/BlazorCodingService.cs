@@ -241,14 +241,14 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 return button;
             }
 
-            static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel customButtonViewModel)
+            static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel button)
             {
-                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.Caption, onClick: customButtonViewModel.EventHandlerName)
+                var btn = new BlazorCustomButton(name: button.Name, body: button.Caption, onClick: button.EventHandlerName, type:button.ButtonType)
                 {
-                    Position = customButtonViewModel.Position.ToBootstrapPosition(),
-                    OnClickReturnType = customButtonViewModel.ReturnType,
+                    Position = button.Position.ToBootstrapPosition(),
+                    OnClickReturnType = button.ReturnType,
                 };
-                return button.SetAction(model.Name!, customButtonViewModel.CodeStatement);
+                return btn.SetAction(model.Name!, button.CodeStatement);
             }
             static string InstanceDataContextProperty(string? name) =>
                 $"this.DataContext.{name}";

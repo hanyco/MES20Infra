@@ -116,3 +116,12 @@ public sealed class PropertyViewModel : InfraViewModelBase
         set => this.SetProperty(ref this._typeFullName, value);
     }
 }
+
+public static class PropertyViewModelHelper
+{
+    public static PropertyViewModel? FindId(this IEnumerable<PropertyViewModel> properties)
+        => properties.FirstOrDefault(p => p.Name.EqualsTo("Id"));
+
+    public static IEnumerable<PropertyViewModel> ExcludeId(this IEnumerable<PropertyViewModel> properties)
+        => properties.Where(x => !x.Name.EqualsTo("Id"));
+}

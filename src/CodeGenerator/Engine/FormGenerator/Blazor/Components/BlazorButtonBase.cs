@@ -85,7 +85,22 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         }
     }
 
-    public string Type { get; }
+    public string? Type
+    {
+        get => this.GetAttribute("type");
+        set
+        {
+            if (!value.IsNullOrEmpty())
+            {
+                _ = this.SetAttribute("type", value);
+            }
+            else
+            {
+                _ = this.Attributes.Remove("type");
+                _ = this.BlazorAttributes.Remove("type");
+            }
+        }
+    }
 
     //public ButtonType Type { get; set; }
 
@@ -99,6 +114,8 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: DEFAULT_ACCESS_MODIFIER);
         return EnumerableHelper.Iterate(new CodeTypeMembers(main, null));
     }
+
+    protected override TSelf CodeGenAddAttributes(in StringBuilder statement) => base.CodeGenAddAttributes(statement);
 
     private void SetCssClasses()
     {

@@ -120,17 +120,19 @@ public static class HtmlElementExtensions
         {
             _ = element.Attributes.Remove(key);
         }
+
         return element;
     }
 
     public static TElement SetAttribute<TElement>(this TElement element, string key, string? value)
         where TElement : IHtmlElement
     {
-        _ = element.ArgumentNotNull(nameof(element)).Attributes.SetByKey(key.ArgumentNotNull(nameof(key)), value);
+        Check.MustBeArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(key);
+        _ = element.Attributes.SetByKey(key.ArgumentNotNull(nameof(key)), value);
         return element;
     }
-
-    public static TElement SetAttribute<TElement>(this TElement element, string key, string? value, bool isBlazorAttribute = true)
+    public static TElement SetAttribute<TElement>(this TElement element, string key, string? value, bool isBlazorAttribute = false)
         where TElement : IBlazorComponent
     {
         Check.MustBeArgumentNotNull(element);

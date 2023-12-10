@@ -225,6 +225,7 @@ internal sealed partial class FunctionalityService
             {
                 Caption = "Back",
                 CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart("@page").Trim()),
+                ButtonType = ButtonType.Button,
                 EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
@@ -233,7 +234,7 @@ internal sealed partial class FunctionalityService
                 Position = new()
                 {
                     Col = 2,
-                    Offset = 1
+                    Offset = 2
                 }
             };
             var onLoad = new UiComponentCustomLoad
