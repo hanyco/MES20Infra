@@ -41,14 +41,14 @@ public static class HtmlElementExtensions
         return element;
     }
 
-    public static StringBuilder GenerateChildrenCode(this IEnumerable<IHtmlElement> children, StringBuilder statementBuilder, bool manageRow = true)
+    public static StringBuilder GenerateChildrenCode(this IEnumerable<IHtmlElement> children, StringBuilder statementBuilder, bool manageRow = true, bool isEditForm = false)
     {
         if (children?.Any() is not true)
         {
             return statementBuilder;
         }
-        var childs = validatePositions(children);
-        var orderedData = sortData(childs);
+        var kids = validatePositions(children);
+        var orderedData = sortData(kids);
         createDetails(statementBuilder, manageRow, orderedData);
 
         return statementBuilder;
@@ -61,24 +61,6 @@ public static class HtmlElementExtensions
 
         static IEnumerable<IHtmlElement> sortData(IEnumerable<IHtmlElement> children)
         {
-            //IOrderedEnumerable<IHtmlElement>? result = null;
-            //if (!children.Any(x => x?.Position.Order is not null and not 0) && !children.Any(x => x?.Position.Row is not null and not 0))
-            //{
-            //    result = children.OrderBy(x => 1);
-            //}
-            //else if (children.Any(x => x.Position.Order is not null and not 0))
-            //{
-            //    result = children.Where(x => x.Position.Order is not null and not 0)
-            //        .OrderBy(x => x.Position.Order)
-            //        .AddRangeImmuted(children.Where(x => x.Position.Order is null or 0))
-            //        .OrderBy(x => 1);
-            //}
-            //else if (children.Any(x => x.Position.Row is not null))
-            //{
-            //    result = children.OrderBy(x => x.Position.Row);
-            //}
-
-            //return result.Compact();
             return children;
         }
 
@@ -138,17 +120,19 @@ public static class HtmlElementExtensions
         {
             _ = element.Attributes.Remove(key);
         }
+
         return element;
     }
 
     public static TElement SetAttribute<TElement>(this TElement element, string key, string? value)
         where TElement : IHtmlElement
     {
-        _ = element.ArgumentNotNull(nameof(element)).Attributes.SetByKey(key.ArgumentNotNull(nameof(key)), value);
+        Check.MustBeArgumentNotNull(element);
+        Check.MustBeArgumentNotNull(key);
+        _ = element.Attributes.SetByKey(key.ArgumentNotNull(nameof(key)), value);
         return element;
     }
-
-    public static TElement SetAttribute<TElement>(this TElement element, string key, string? value, bool isBlazorAttribute = true)
+    public static TElement SetAttribute<TElement>(this TElement element, string key, string? value, bool isBlazorAttribute = false)
         where TElement : IBlazorComponent
     {
         Check.MustBeArgumentNotNull(element);
@@ -158,9 +142,9 @@ public static class HtmlElementExtensions
         return element;
     }
 
-    public static TElement SetBind<TElement>(this TElement element, string? value)
+    public static TElement SetBind<TElement>(this TElement element, string? value, string bindAttributeName = "bind")
         where TElement : IBlazorComponent
-        => Fluent(element, () => _ = value is not null ? element.SetAttribute("bind", value, true) : element.RemoveAttribute("bind"));
+        => Fluent(element, () => _ = value is not null ? element.SetAttribute(bindAttributeName, value, true) : element.RemoveAttribute(bindAttributeName));
 
     public static TElement SetElementAttribute<TElement, TPropType>([DisallowNull] this TElement element, [DisallowNull] string key, TPropType? value)
         where TElement : notnull, IHtmlElement

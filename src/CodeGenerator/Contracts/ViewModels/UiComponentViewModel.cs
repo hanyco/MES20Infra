@@ -19,10 +19,10 @@ public class UiComponentViewModel : UiComponentViewModelBase
     public ObservableCollection<string> AdditionalUsingNameSpaces { get; } = [];
     public ObservableCollection<(string Key, string Value)> Attributes { get; } = [];
     public string ClassName { get => this._className; set => this.SetProperty(ref this._className, value); }
+    public EditFormInfo EditFormInfo { get; } = new();
     public bool GenerateMainCode { get => this._generateMainCode; set => this.SetProperty(ref this._generateMainCode, value); }
     public bool GeneratePartialCode { get => this._generatePartialCode; set => this.SetProperty(ref this._generatePartialCode, value); }
     public bool GenerateUiCode { get => this._generateUiCode; set => this.SetProperty(ref this._generateUiCode, value); }
-    public bool IsEditForm { get; set; }
     public bool IsGrid { get => this._isGrid; set => this.SetProperty(ref this._isGrid, value); }
     public string? NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
     public long? PageComponentId { get; set; }

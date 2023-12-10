@@ -4,11 +4,14 @@ using HanyCo.Infra.CodeGeneration.Helpers;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components
 {
-    public sealed class BlazorDatePicker : HtmlInput, IBlazorComponent
+    public sealed class BlazorDatePicker : HtmlElementBase<BlazorDatePicker>, IBlazorComponent
     {
-        public BlazorDatePicker(string? id = null, string? name = null, string? bind = null, string? prefix = null)
-            : base(InputType.DateTime, id, name, null, prefix)
-            => this.SetBind(bind);
+        public BlazorDatePicker(string? id = null, string? name = null, string? body = null, string? prefix = null, string? bind = null)
+            : base("InputDate", id, name, body, prefix)
+        {
+            this.SetBind(bind, "@bind-Value");
+            Attributes.Add("Type", "InputDateType.DateTimeLocal");
+        }
 
         public string? NameSpace { get; }
     }

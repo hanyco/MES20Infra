@@ -16,6 +16,10 @@ namespace HumanResources.Pages
 
     public sealed partial class PersonDetailsPage
     {
+        public PersonDetailsPage()
+        {
+        }
+
         protected override async Task OnInitializedAsync()
         {
             // Call developer's method.
@@ -26,9 +30,5 @@ namespace HumanResources.Pages
 
         [Microsoft.AspNetCore.Components.Parameter]
         public System.Int64? Id { get; set; }
-
-        public PersonDetailsPage()
-        {
-        }
     }
 }

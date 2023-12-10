@@ -1,8 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
-using BlazorApp.Tests.Commands;
-
 using HanyCo.Infra;
 
 using Library.Cqrs;
@@ -31,7 +29,6 @@ public sealed class Program
                 .AddSingleton(new Sql("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True"))
                 .AddSingleton<IMapper, Mapper>()
                 .AddMesInfraServices<Program>("connection string", Library.Logging.ILogger.Empty)
-                .AddScoped(typeof(ICommandHandler<,>), typeof(ErrorHandlingDecorator<,>))
                 ;
 
         _ = builder.Services.AddControllersWithViews(options =>

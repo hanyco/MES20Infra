@@ -20,7 +20,7 @@ namespace Services;
 
 internal partial class FunctionalityService
 {
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     private class CodeSnippets
     {
         internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(CqrsCommandViewModel insert, CqrsCommandViewModel update) =>
@@ -84,7 +84,7 @@ internal partial class FunctionalityService
         internal static string CreateInsertCommandHandleMethodBody(CqrsCommandViewModel model)
         {
             var values = GetValues(model.ParamsDto.Properties).ToImmutableArray();
-            var bodyCommand = SqlStatementBuilder
+            var insertStatement = SqlStatementBuilder
                 .Insert()
                 .Into(model.ParamsDto.DbObject.Name!)
                 .Values(values)
@@ -92,7 +92,7 @@ internal partial class FunctionalityService
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
-                .AppendLine($"var dbCommand = $@\"{bodyCommand}\";")
+                .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
                 .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
                 .AppendLine("int id = Convert.ToInt32(dbResult);")
                 .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new() {{ Id = id }});")
@@ -103,7 +103,7 @@ internal partial class FunctionalityService
 
         internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model)
         {
-            var checks = model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
+            var checks = model.ParamsDto.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
             return !checks.Any()
                 ? string.Empty
                 : new StringBuilder("_ = command.ArgumentNotNull().Params.Check()")
@@ -116,7 +116,7 @@ internal partial class FunctionalityService
 
         internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model)
         {
-            var values = GetValues(model.ParamsDto.Properties).Where(x => !x.Column.EqualsTo("Id")).ToImmutableArray();
+            var values = GetValues(model.ParamsDto.Properties.ExcludeId()).ToImmutableArray();
             var bodyCommand = SqlStatementBuilder
                 .Update(model.ParamsDto.DbObject.Name!)
                 .Set(values)
@@ -134,8 +134,8 @@ internal partial class FunctionalityService
 
         internal static string CreateUpdateCommandValidatorMethodBody(CqrsCommandViewModel model) =>
             new StringBuilder("_ = command.ArgumentNotNull().Params.Check()")
-                .AppendLine(".RuleFor(x => x.Id <= 0, () => \"Id cannot be null, zero or less than zero.\")")
-                .AppendAllLines(model.ParamsDto.Properties.Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})"))
+                .AppendLine(".RuleFor(x => x.Id > 0, () => \"Id cannot be null, zero or less than zero.\")")
+                .AppendAllLines(model.ParamsDto.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})"))
                 .AppendLine(".ThrowOnFail();")
                 .AppendLine()
                 .AppendLine("return ValueTask.CompletedTask;")
@@ -202,7 +202,9 @@ internal partial class FunctionalityService
                 }
 
                 var type = PropertyTypeHelper.FromDbType(dbColumn.DbType);
-                var stat = $"{{command.Params.{dbColumn.Name}}}";
+                var stat = dbColumn.IsNullable
+                    ? $"{{command.Params.{dbColumn.Name}?.ToString() ?? DBNull.Value.ToString()}}"
+                    : $"{{command.Params.{dbColumn.Name}}}";
                 var value = type switch
                 {
                     PropertyType.Integer

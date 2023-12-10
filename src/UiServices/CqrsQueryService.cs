@@ -188,7 +188,7 @@ internal sealed class CqrsQueryService(
         CqrsSegregate? segregate = null;
         try
         {
-            _ = this.CheckValidator(model);
+            _ = this.Validate(model).ThrowOnFail();
 
             segregate = this._converter.ToDbEntity(model)!;
 

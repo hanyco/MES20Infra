@@ -34,7 +34,7 @@ using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
-internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodingService, IBlazorPageCodingService
+internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodeService, IBlazorPageCodeService
 {
     private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
     private readonly ILogger _logger = logger;
@@ -139,6 +139,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 {
                     _ = position.SetCol(5);
                 }
+                var cssClass = "error-message";
                 switch (prop.ControlType)
                 {
                     case ControlType.None:
@@ -150,21 +151,25 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                     case ControlType.CheckBox:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorCheckBox($"{prop.Name}CheckBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.TextBox:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorTextBox($"{prop.Name}TextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.DateTimePicker:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorDatePicker($"{prop.Name}DatePicker", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.NumericTextBox:
                         result.Children.Add(createLabel(prop));
                         result.Children.Add(new BlazorNumericTextBox($"{prop.Name}NumericTextBox", bind: bindPropName) { Position = position, IsEnabled = prop.IsEnabled });
+                        result.Children.Add(new ValidationMessage(bindPropName, cssClass));
                         break;
 
                     case ControlType.CurrencyBox:
@@ -236,14 +241,14 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 return button;
             }
 
-            static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel customButtonViewModel)
+            static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel button)
             {
-                var button = new BlazorCustomButton(name: customButtonViewModel.Name, body: customButtonViewModel.Caption, onClick: customButtonViewModel.EventHandlerName)
+                var btn = new BlazorCustomButton(name: button.Name, body: button.Caption, onClick: button.EventHandlerName, type:button.ButtonType)
                 {
-                    Position = customButtonViewModel.Position.ToBootstrapPosition(),
-                    OnClickReturnType = customButtonViewModel.ReturnType,
+                    Position = button.Position.ToBootstrapPosition(),
+                    OnClickReturnType = button.ReturnType,
                 };
-                return button.SetAction(model.Name!, customButtonViewModel.CodeStatement);
+                return btn.SetAction(model.Name!, button.CodeStatement);
             }
             static string InstanceDataContextProperty(string? name) =>
                 $"this.DataContext.{name}";
@@ -265,7 +270,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                             button.Caption,
                             arguments: args,
                             eventHandlerName: button.EventHandlerName,
-                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement,returnType: button.ReturnType));
+                            body: button.Cast().As<CstmButtonViewModel>()?.CodeStatement, returnType: button.ReturnType));
                         break;
                 }
             }
@@ -301,6 +306,14 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
                     case CstmLoadViewModel load:
                         throw new InvalidOperationValidationException("`OnCustomLoad` method has not required fields.");
+                }
+            }
+            if (model.EditFormInfo.IsEditForm == true || (!model.IsGrid && model.EditFormInfo.IsEditForm != false))
+            {
+                foreach (var evt in model.EditFormInfo.Events)
+                {
+                    result.Actions.Add(new FormActor(evt.Handler.Name, evt.IsPartial, evt.Handler.Body, evt.Handler.ReturnType?.FullPath ?? "void",
+                        arguments: evt.Handler.Parameters.Select(x => new MethodArgument(x.Type, x.Name)).ToArray()));
                 }
             }
         }

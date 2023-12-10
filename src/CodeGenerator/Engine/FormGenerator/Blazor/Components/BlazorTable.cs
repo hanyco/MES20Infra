@@ -47,12 +47,23 @@ public sealed class BlazorTable : HtmlTableBase<BlazorTable>, IBlazorComponent
             }
             foreach (var action in this.Actions)
             {
-                var onClick = !action.OnClick.IsNullOrEmpty()
-                    ? $"\"@(() => {action.OnClick}(item.Id))\""
-                    : $"\"@(() => this.{action.Name}_OnClick(item.Id))\"";
+                //var onClick = !action.OnClick.IsNullOrEmpty()
+                //    ? $"\"@(() => {action.OnClick}(item.Id))\""
+                //    : $"\"@(() => this.{action.Name}_OnClick(item.Id))\"";
+                //_ = buffer.Append($"{CodeConstants.INDENT.Repeat(3)}<td>")
+                //    .Append($"<button id=\"{this.Id}\" name=\"{this.Name}\" ")
+                //    .Append($"@onclick={onClick}>{action.Title}")
+                //    .Append("</button>")
+                //    .Append("</td>")
+                //    .AppendLine();
+
                 _ = buffer.Append($"{CodeConstants.INDENT.Repeat(3)}<td>")
-                    .Append($"<button id=\"{this.Name}\" name=\"{this.Name}\" ")
-                    .Append($"@onclick={onClick}>{action.Title}")
+                    .Append($"<button id=\"{action.Name}\" name=\"{action.Name}\" ");
+                if (!action.OnClick.IsNullOrEmpty())
+                {
+                    _ = buffer.Append($"@onclick=\"@(() => {action.OnClick}(item.Id))\"");
+                }
+                _ = buffer.Append($">{action.Title}")
                     .Append("</button>")
                     .Append("</td>")
                     .AppendLine();

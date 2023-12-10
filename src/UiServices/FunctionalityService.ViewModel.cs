@@ -6,6 +6,7 @@ using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
+using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
@@ -14,6 +15,8 @@ using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
+
+using Microsoft.AspNetCore.Components.Forms;
 
 using Services.Helpers;
 
@@ -56,6 +59,8 @@ internal sealed partial class FunctionalityService
 
         // Dispose the token source
         tokenSource.Dispose();
+
+        this._reporter.End();
         // Return the final result
         return result!;
 
@@ -67,17 +72,18 @@ internal sealed partial class FunctionalityService
         // Initialize the viewModel with the connection string
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)
         {
-            // Create a linked tokenSource from the token
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
             // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
             var result = new CreationData(viewModel, (viewModel.Name ?? viewModel.SourceDto.Name).NotNull(), tokenSource);
-            result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "));
+            if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
+            {
+                result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "));
+            }
 
             // Return a success result with the result and cancellationTokenSource
             return Result<(CreationData, CancellationTokenSource)>.CreateSuccess((result, tokenSource));
         }
 
-        // Initialize the steps for the process
         [DebuggerStepThrough]
         MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
         //?! ☠ Don't change the sequence of the steps ☠
@@ -174,6 +180,7 @@ internal sealed partial class FunctionalityService
         var name = CommonHelpers.Purify(data.SourceDtoName);
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
+            .Then(setupEditForm)
             .Then(addActions)
             .Then(addParameters)
             .Then(createConverters)
@@ -189,7 +196,6 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponentViewModel.Attributes.Add(new("@bind-EntityId", "this.Id"));
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
-            data.ViewModel.BlazorDetailsComponentViewModel.IsEditForm = true;
             data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
         }
 
@@ -201,14 +207,12 @@ internal sealed partial class FunctionalityService
             var saveButton = new UiComponentCustomButton()
             {
                 Caption = "Save",
-                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel),
-                EventHandlerName = "SaveButton_OnClick",
-                ReturnType = "async void",
+                ButtonType = ButtonType.Submit,
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
                 Name = "SaveButton",
                 Placement = Placement.FormButton,
-                Description = "Save the data to database",
+                Description = "Saves the data to database",
                 Position = new()
                 {
                     Col = 2,
@@ -221,6 +225,7 @@ internal sealed partial class FunctionalityService
             {
                 Caption = "Back",
                 CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart("@page").Trim()),
+                ButtonType = ButtonType.Button,
                 EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
                 IsEnabled = true,
@@ -229,7 +234,7 @@ internal sealed partial class FunctionalityService
                 Position = new()
                 {
                     Col = 2,
-                    Offset = 1
+                    Offset = 2
                 }
             };
             var onLoad = new UiComponentCustomLoad
@@ -263,6 +268,17 @@ internal sealed partial class FunctionalityService
             data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
 
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+        }
+
+        void setupEditForm(CreationData data)
+        {
+            var info = data.ViewModel.BlazorDetailsComponentViewModel.EditFormInfo;
+            info.IsEditForm = true;
+            _ = info.Events.Add(new(nameof(EditForm.OnValidSubmit), new Library.CodeGeneration.v2.Back.Method("SaveData")
+            {
+                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel),
+                ReturnType = "async Task"
+            }));
         }
     }
 
@@ -323,7 +339,7 @@ internal sealed partial class FunctionalityService
             {
                 CodeStatement = CodeSnippets.NavigateTo($"${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\""), //$"this._navigationManager.NavigateTo(${pureRoute.TrimStart("@page").TrimEnd("\"").Trim()}/{{id.ToString()}}\");",
                 Caption = "Edit",
-                EventHandlerName = "Edit",
+                EventHandlerName = "EditButton_OnClick",
                 Guid = Guid.NewGuid(),
                 Name = "EditButton",
                 Placement = Placement.RowButton,
@@ -333,7 +349,7 @@ internal sealed partial class FunctionalityService
             {
                 CodeStatement = CodeSnippets.BlazorListComponent_DeleteButton_OnClick_Body(data.ViewModel.DeleteCommandViewModel),
                 Caption = "Delete",
-                EventHandlerName = "Delete",
+                EventHandlerName = "DeleteButton_OnClick",
                 Guid = Guid.NewGuid(),
                 Name = "DeleteButton",
                 Placement = Placement.RowButton,

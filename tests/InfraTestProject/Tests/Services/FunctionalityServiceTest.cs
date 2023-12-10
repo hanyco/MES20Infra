@@ -75,13 +75,13 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         };
         model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
-            new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long){ DbObject = new DbColumnViewModel("Id", -8){ DbType ="bigint" } },
-            new("FirstName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String){ DbObject = new DbColumnViewModel("FirstName", -2){ DbType ="nvarchar" } },
-            new("LastName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String){ DbObject = new DbColumnViewModel("LastName", -3){ DbType ="nvarchar" } },
-            new("DateOfBirth", HanyCo.Infra.Internals.Data.DataSources.PropertyType.DateTime){ DbObject = new DbColumnViewModel("DateOfBirth", -4){ DbType ="nvarchar" } },
-            new("Height", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer){ DbObject = new DbColumnViewModel("Height", -5){ DbType ="int" } },
-            new("IsMarried", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Boolean){ DbObject = new DbColumnViewModel("IsMarried", -6){ DbType ="bit" } },
-            new("CountOfChild", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer){ DbObject = new DbColumnViewModel("CountOfChild", -7){ DbType ="int" } },
+            new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long){ DbObject = new DbColumnViewModel("Id", -8){ DbType ="bigint", IsNullable = false }, IsNullable = false },
+            new("FirstName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String){ DbObject = new DbColumnViewModel("FirstName", -2){ DbType ="nvarchar", IsNullable = true }, IsNullable = true },
+            new("LastName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String){ DbObject = new DbColumnViewModel("LastName", -3){ DbType ="nvarchar", IsNullable = false }, IsNullable = false },
+            new("DateOfBirth", HanyCo.Infra.Internals.Data.DataSources.PropertyType.DateTime){ DbObject = new DbColumnViewModel("DateOfBirth", -4){ DbType ="nvarchar", IsNullable = false }, IsNullable = false },
+            new("Height", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer){ DbObject = new DbColumnViewModel("Height", -5){ DbType ="int", IsNullable = true }, IsNullable = true },
+            new("IsMarried", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Boolean){ DbObject = new DbColumnViewModel("IsMarried", -6){ DbType ="bit", IsNullable = false }, IsNullable = false },
+            new("CountOfChild", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Integer){ DbObject = new DbColumnViewModel("CountOfChild", -7){ DbType ="int", IsNullable = true }, IsNullable = true },
         });
         return model;
     }

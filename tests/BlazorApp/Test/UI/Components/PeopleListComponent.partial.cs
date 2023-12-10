@@ -20,17 +20,21 @@ namespace HumanResources
 
     public sealed partial class PeopleListComponent
     {
+        public PeopleListComponent()
+        {
+        }
+
         public void NewButton_OnClick()
         {
             this._navigationManager.NavigateTo("/HumanResources/Person/details");
         }
 
-        public void Edit(Int64 id)
+        public void EditButton_OnClick(Int64 id)
         {
             this._navigationManager.NavigateTo($"/HumanResources/Person/details/{id.ToString()}");
         }
 
-        public async void Delete(Int64 id)
+        public async void DeleteButton_OnClick(Int64 id)
         {
             // Setup segregation parameters
             var cmdParams = new HumanResources.Dtos.DeletePerson()
@@ -60,9 +64,5 @@ namespace HumanResources
         }
 
         public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
-
-        public PeopleListComponent()
-        {
-        }
     }
 }

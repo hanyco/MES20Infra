@@ -29,9 +29,9 @@ internal partial class FunctionalityService(
     IProgressReport reporter,
     ILogger logger,
     IBlazorComponentService blazorComponentService,
-    IBlazorComponentCodingService blazorComponentCodeService,
+    IBlazorComponentCodeService blazorComponentCodeService,
     IBlazorPageService blazorPageService,
-    IBlazorPageCodingService blazorPageCodeService,
+    IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator)
     : IFunctionalityService
     , IFunctionalityCodeService
@@ -39,9 +39,9 @@ internal partial class FunctionalityService(
     , IAsyncTransactionSave
     , ILoggerContainer
 {
-    private readonly IBlazorComponentCodingService _blazorComponentCodeService = blazorComponentCodeService;
+    private readonly IBlazorComponentCodeService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
-    private readonly IBlazorPageCodingService _blazorPageCodeService = blazorPageCodeService;
+    private readonly IBlazorPageCodeService _blazorPageCodeService = blazorPageCodeService;
     private readonly IBlazorPageService _blazorPageService = blazorPageService;
     private readonly ICqrsCommandService _commandService = commandService;
     private readonly IEntityViewModelConverter _converter = converter;
@@ -77,14 +77,14 @@ internal partial class FunctionalityService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public Result<FunctionalityViewModel> Validate(in FunctionalityViewModel item) =>
+    public Result<FunctionalityViewModel?> Validate(in FunctionalityViewModel? item) =>
         BasicChecks(item);
 
-    private static ValidationResultSet<FunctionalityViewModel> BasicChecks(FunctionalityViewModel? model) =>
+    private static ValidationResultSet<FunctionalityViewModel?> BasicChecks(FunctionalityViewModel? model) =>
         model.Check()
             .ArgumentNotNull()
             .NotNull(x => x!.Name)
             .NotNull(x => x!.SourceDto)
             .NotNull(x => x!.SourceDto.NameSpace, paramName: "namespace")
-            .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)))!;
+            .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
 }

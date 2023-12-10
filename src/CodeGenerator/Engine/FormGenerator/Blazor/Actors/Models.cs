@@ -26,6 +26,24 @@ public record PropertyActor(in string Type,
     }
 }
 
+[Immutable]
+public sealed class ButtonActor(
+    string? name,
+    bool showOnGrid = false,
+    string? caption = null,
+    bool isPartial = false,
+    string? body = null,
+    string? returnType = null,
+    MemberAttributes? accessModifier = null,
+    MethodArgument[]? arguments = null,
+    string? eventHandlerName = null) : MethodActor(name, isPartial, body, returnType, accessModifier, arguments)
+{
+    public string? Caption { get; } = caption;
+    public string? EventHandlerName { get; } = eventHandlerName;
+    public bool ShowOnGrid { get; } = showOnGrid;
+}
+
+[Immutable]
 public class MethodActor(
     string? name,
     bool? isPartial = null,
@@ -42,10 +60,9 @@ public class MethodActor(
     public string? ReturnType { get; } = returnType;
 }
 
-public class ButtonActor(
+[Immutable]
+public sealed class FormActor(
     string? name,
-    bool showOnGrid = false,
-    string? caption = null,
     bool isPartial = false,
     string? body = null,
     string? returnType = null,
@@ -53,7 +70,5 @@ public class ButtonActor(
     MethodArgument[]? arguments = null,
     string? eventHandlerName = null) : MethodActor(name, isPartial, body, returnType, accessModifier, arguments)
 {
-    public string? Caption { get; } = caption;
     public string? EventHandlerName { get; } = eventHandlerName;
-    public bool ShowOnGrid { get; } = showOnGrid;
 }

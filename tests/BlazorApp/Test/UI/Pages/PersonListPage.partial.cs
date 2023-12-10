@@ -16,6 +16,10 @@ namespace HumanResources.Pages
 
     public sealed partial class PersonListPage
     {
+        public PersonListPage()
+        {
+        }
+
         protected override async Task OnInitializedAsync()
         {
             // Call developer's method.
@@ -23,9 +27,5 @@ namespace HumanResources.Pages
         }
 
         public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
-
-        public PersonListPage()
-        {
-        }
     }
 }

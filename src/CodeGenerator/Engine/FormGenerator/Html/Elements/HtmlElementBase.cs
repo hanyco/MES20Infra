@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+﻿using System.Collections.ObjectModel;
+
+using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
@@ -17,15 +19,15 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
     protected HtmlElementBase(string tagName, string? id = null, string? name = null, string? body = null, string? labelPrefix = null)
     {
         this.TagName = tagName;
-        this.Id = id;
+        this.Id = id ?? name;
         this.Name = name ?? id;
         this.Body = body;
         this.LabelPrefix = labelPrefix;
     }
 
-    public Dictionary<string, string?> Attributes { get; } = new();
+    public Dictionary<string, string?> Attributes { get; } = [];
 
-    public Dictionary<string, string?> BlazorAttributes { get; } = new();
+    public Dictionary<string, string?> BlazorAttributes { get; } = [];
 
     public int? BootStrapCol
     {
@@ -44,7 +46,7 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
 
     public IList<IHtmlElement> Children { get; } = new List<IHtmlElement>();
 
-    public List<string> CssClasses { get; } = new();
+    public Collection<string> CssClasses { get; } = [];
 
     public string? Id { get; init; }
 
@@ -244,10 +246,7 @@ public abstract class HtmlElementBase<TSelf> : IEquatable<TSelf>, IUiCodeGenerat
 
     protected virtual TSelf OnCodeGenAddChildren(in StringBuilder statement)
     {
-        if (statement is null)
-        {
-            throw new ArgumentNullException(nameof(statement));
-        }
+        ArgumentNullException.ThrowIfNull(statement);
 
         _ = this.Children.GenerateChildrenCode(statement, manageRow: this.AddRowDiv);
 
