@@ -9,6 +9,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Data.SqlServer;
+using Library.Helpers.CodeGen;
 using Library.Results;
 
 using Library.Validations;
@@ -86,11 +87,12 @@ internal partial class FunctionalityService
             var insertStatement = SqlStatementBuilder
                 .Insert()
                 .Into(model.ParamsDto.DbObject.Name!)
-                .Values(values)
+                .Values(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
                 .ReturnId()
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
+                .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
                 .AppendLine($"var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
                 .AppendLine($"int id = Convert.ToInt32(dbResult);")
@@ -118,7 +120,7 @@ internal partial class FunctionalityService
             var values = GetValues(model.ParamsDto.Properties.ExcludeId()).ToImmutableArray();
             var updateStatement = SqlStatementBuilder
                 .Update(model.ParamsDto.DbObject.Name!)
-                .Set(values)
+                .Set(values.Select(x => (x.ColumnName, x.VariableName)))
                 .Where(ReplaceVariables(model.ParamsDto, "[ID] = %Id%", "command.Params"))
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
@@ -190,7 +192,7 @@ internal partial class FunctionalityService
             return result;
         }
 
-        private static IEnumerable<(string Column, object Value)> GetValues(IEnumerable<PropertyViewModel> properties)
+        private static IEnumerable<(string ColumnName, object VariableName, string VariableStatement)> GetValues(IEnumerable<PropertyViewModel> properties)
         {
             foreach (var p in properties.Compact())
             {
@@ -201,7 +203,7 @@ internal partial class FunctionalityService
                 }
 
                 var type = PropertyTypeHelper.FromDbType(dbColumn.DbType);
-                var value = type switch
+                var statement = type switch
                 {
                     PropertyType.Integer
                     or PropertyType.Long
@@ -212,7 +214,7 @@ internal partial class FunctionalityService
                     PropertyType.DateTime => dateColumn(dbColumn),
                     _ => commonColumn(dbColumn),
                 };
-                yield return (dbColumn.Name, value);
+                yield return (dbColumn.Name, TypeMemberNameHelper.ToArgName(dbColumn.Name), statement);
             }
 
             static string commonColumn(DbColumnViewModel dbColumn) =>
