@@ -110,7 +110,7 @@ public partial class DtoEditUserControl : UserControl,
     private IEnumerable<ClaimViewModel> DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim() =>
         this.ViewModel?.Name.IsNullOrEmpty() ?? true
             ? Enumerable.Empty<ClaimViewModel>()
-            : EnumerableHelper.Iterate(new ClaimViewModel { Key = this.ViewModel.Name });
+            : EnumerableHelper.AsEnumerable(new ClaimViewModel { Key = this.ViewModel.Name });
 
     private void Me_Loaded(object sender, RoutedEventArgs e) =>
         this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);

@@ -28,18 +28,7 @@ internal sealed partial class FunctionalityService
         var scope = ActionScope.Begin(this.Logger, "Generating Functionality code.");
 
         var results = generateCodes(viewModel, codeResult).ToImmutableArray();
-        if (!results.Any())
-        {
-            result = Result<Codes>.CreateFailure("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
-        }
-        else if (results.Any(x => x.IsFailure))
-        {
-            result = Result<Codes>.From(results.First(x => x.IsFailure), new(results.Select(x => x.Value)));
-        }
-        else
-        {
-            result = Result<Codes>.From(results.Combine(), results.Select(x => x.Value).ToCodes());
-        }
+        result = aggregatedResults(results);
         this._reporter.End(result.ToString());
         scope.End(result);
         return result;
@@ -237,6 +226,25 @@ internal sealed partial class FunctionalityService
                     yield return handlerCodeResult;
                 }
             }
+        }
+
+        static Result<Codes> aggregatedResults(IReadOnlyList<Result<Codes>> results)
+        {
+            Result<Codes> result;
+            if (!results.Any())
+            {
+                result = Result<Codes>.CreateFailure("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
+            }
+            else if (results.FirstOrDefault(x => x.IsFailure) is { } failure)
+            {
+                result = failure;
+            }
+            else
+            {
+                result = Result<Codes>.From(results.Combine(), results.Select(x => x.Value).ToCodes());
+            }
+
+            return result;
         }
     }
 }
