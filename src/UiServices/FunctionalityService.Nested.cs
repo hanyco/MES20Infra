@@ -120,11 +120,12 @@ internal partial class FunctionalityService
             var values = GetValues(model.ParamsDto.Properties.ExcludeId()).ToImmutableArray();
             var updateStatement = SqlStatementBuilder
                 .Update(model.ParamsDto.DbObject.Name!)
-                .Set(values.Select(x => (x.ColumnName, x.VariableName)))
+                .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
                 .Where(ReplaceVariables(model.ParamsDto, "[ID] = %Id%", "command.Params"))
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
+                .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{updateStatement}\";")
                 .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
                 .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new());")
