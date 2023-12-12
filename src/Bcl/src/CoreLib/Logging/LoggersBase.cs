@@ -18,9 +18,10 @@ public abstract class LoggersBase<TMessage>(IEnumerable<ILogger<TMessage>> logge
     public bool IsEnabled { get; set; } = true;
     bool ILogger<TMessage>.IsEnabled { get; set; }
     public IEnumerable<ILogger<TMessage>> Loggers => this.AsEnumerable();
-    IEnumerable<ILogger<TMessage>> ILoggers<TMessage>.Loggers { get; }
+    IEnumerable<ILogger<TMessage>> ILoggers<TMessage>.Loggers { get; } = [];
     public LogLevel LogLevel { get; set; } = LogLevel.Normal;
     LogLevel ILogger<TMessage>.LogLevel { get; set; }
+    public virtual bool IsReadOnly => throw new NotSupportedException();
 
     public new void Add(ILogger<TMessage> item)
         => base.Add(item);
@@ -47,5 +48,8 @@ public abstract class LoggersBase<TMessage>(IEnumerable<ILogger<TMessage>> logge
     }
 
     public new bool Remove(ILogger<TMessage> item)
-        => base.Remove(item).Result;
+    {
+        base.Remove(item);
+        return true;
+    }
 }

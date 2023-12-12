@@ -40,12 +40,6 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
 
     public TAction? Action { get; set; }
 
-    /// <summary>
-    /// Gets the bootstrap button type class.
-    /// </summary>
-    /// <value>The bootstrap button type class.</value>
-    public string BootstrapButtonTypeClass => this.IsDefaultButton ? "btn-primary" : this.IsCancelButton ? "btn-secondary" : "btn-success";
-
     public bool IsCancelButton
     {
         get => this._isCancelButton;
@@ -102,8 +96,6 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         }
     }
 
-    //public ButtonType Type { get; set; }
-
     public IEnumerable<CodeTypeMembers> GenerateTypeMembers(GenerateCodesParameters arguments)
     {
         if (this.OnClick.IsNullOrEmpty() || this.Action is not null)
@@ -112,18 +104,14 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         }
 
         var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: DEFAULT_ACCESS_MODIFIER);
-        return EnumerableHelper.Iterate(new CodeTypeMembers(main, null));
+        return EnumerableHelper.AsEnumerable(new CodeTypeMembers(main, null));
     }
 
-    protected override TSelf CodeGenAddAttributes(in StringBuilder statement) => base.CodeGenAddAttributes(statement);
+    protected override TSelf CodeGenAddAttributes(in StringBuilder statement) =>
+        base.CodeGenAddAttributes(statement);
 
-    private void SetCssClasses()
-    {
-        _ = this.CssClasses.Remove("btn");
-        _ = this.CssClasses.Remove("btn-primary");
-        _ = this.CssClasses.Remove("btn-secondary");
-        _ = this.CssClasses.Remove("btn-success");
-        this.CssClasses.Add("btn");
-        this.CssClasses.Add(this.BootstrapButtonTypeClass);
-    }
+    private void SetCssClasses() =>
+        this.CssClasses
+            .RemoveRange("btn", "btn-primary", "btn-secondary", "btn-success")
+            .AddRange("btn", this.IsDefaultButton ? "btn-primary" : this.IsCancelButton ? "btn-secondary" : "btn-success");
 }

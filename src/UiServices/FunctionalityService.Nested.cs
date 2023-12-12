@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -10,6 +9,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.Data.SqlServer;
+using Library.Helpers.CodeGen;
 using Library.Results;
 
 using Library.Validations;
@@ -62,13 +62,13 @@ internal partial class FunctionalityService
         internal static string CreateDeleteCommandHandleMethodBody(CqrsCommandViewModel model)
         {
             var additionalWhereClause = "[ID] = %Id%";
-            var bodyCommand = SqlStatementBuilder
+            var deleteStatement = SqlStatementBuilder
                 .Delete(model.ParamsDto.DbObject.Name!)
                 .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "command.Params"))
                 .Build()
                 .Replace(Environment.NewLine, " ").Replace("  ", " ");
             return new StringBuilder()
-                .AppendLine($"var dbCommand = $@\"{bodyCommand}\";")
+                .AppendLine($"var dbCommand = $@\"{deleteStatement}\";")
                 .AppendLine($"this._sql.ExecuteNonQuery(dbCommand);")
                 .AppendLine($"var result = new DeletePersonCommandResult(new());")
                 .AppendLine($"return Task.FromResult(result);")
@@ -87,16 +87,17 @@ internal partial class FunctionalityService
             var insertStatement = SqlStatementBuilder
                 .Insert()
                 .Into(model.ParamsDto.DbObject.Name!)
-                .Values(values)
+                .Values(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
                 .ReturnId()
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
+                .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
-                .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
-                .AppendLine("int id = Convert.ToInt32(dbResult);")
+                .AppendLine($"var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
+                .AppendLine($"int id = Convert.ToInt32(dbResult);")
                 .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new() {{ Id = id }});")
-                .AppendLine("return Task.FromResult(result);")
+                .AppendLine($"return Task.FromResult(result);")
                 .Build();
             return result;
         }
@@ -117,14 +118,15 @@ internal partial class FunctionalityService
         internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model)
         {
             var values = GetValues(model.ParamsDto.Properties.ExcludeId()).ToImmutableArray();
-            var bodyCommand = SqlStatementBuilder
+            var updateStatement = SqlStatementBuilder
                 .Update(model.ParamsDto.DbObject.Name!)
-                .Set(values)
+                .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
                 .Where(ReplaceVariables(model.ParamsDto, "[ID] = %Id%", "command.Params"))
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
-                .AppendLine($"var dbCommand = $@\"{bodyCommand}\";")
+                .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
+                .AppendLine($"var dbCommand = $@\"{updateStatement}\";")
                 .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
                 .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new());")
                 .AppendLine("return Task.FromResult(result);")
@@ -191,7 +193,7 @@ internal partial class FunctionalityService
             return result;
         }
 
-        private static IEnumerable<(string Column, object Value)> GetValues(IEnumerable<PropertyViewModel> properties)
+        private static IEnumerable<(string ColumnName, object VariableName, string VariableStatement)> GetValues(IEnumerable<PropertyViewModel> properties)
         {
             foreach (var p in properties.Compact())
             {
@@ -202,22 +204,32 @@ internal partial class FunctionalityService
                 }
 
                 var type = PropertyTypeHelper.FromDbType(dbColumn.DbType);
-                var stat = dbColumn.IsNullable
-                    ? $"{{command.Params.{dbColumn.Name}?.ToString() ?? DBNull.Value.ToString()}}"
-                    : $"{{command.Params.{dbColumn.Name}}}";
-                var value = type switch
+                var statement = type switch
                 {
                     PropertyType.Integer
                     or PropertyType.Long
                     or PropertyType.Short
                     or PropertyType.Float
-                    or PropertyType.Byte => stat,
-                    PropertyType.Boolean => stat,
-                    PropertyType.DateTime => $"N'{{SqlTypeHelper.FormatDate(command.Params.{dbColumn.Name})}}'",
-                    _ => $"N'{stat}'",
+                    or PropertyType.Byte => numericColumn(dbColumn),
+                    PropertyType.Boolean => commonColumn(dbColumn),
+                    PropertyType.DateTime => dateColumn(dbColumn),
+                    _ => commonColumn(dbColumn),
                 };
-                yield return (dbColumn.Name, value);
+                yield return (dbColumn.Name, TypeMemberNameHelper.ToArgName(dbColumn.Name), statement);
             }
+
+            static string commonColumn(DbColumnViewModel dbColumn) =>
+                dbColumn.IsNullable
+                    ? $"command.Params.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N'{{command.Params.{dbColumn.Name}.ToString()}}'\""
+                    : $"$\"N'{{command.Params.{dbColumn.Name}.ToString()}}'\"";
+            static string dateColumn(DbColumnViewModel dbColumn) =>
+                dbColumn.IsNullable
+                    ? $"command.Params.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N'{{SqlTypeHelper.FormatDate(command.Params.{dbColumn.Name})}}'\";"
+                    : $"$\"N'{{SqlTypeHelper.FormatDate(command.Params.{dbColumn.Name})}}'\"";
+            static string numericColumn(DbColumnViewModel dbColumn) =>
+                dbColumn.IsNullable
+                    ? $"command.Params.{dbColumn.Name}?.ToString() ?? \"null\""
+                    : $"command.Params.{dbColumn.Name}.ToString()";
         }
     }
 
