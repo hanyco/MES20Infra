@@ -1,9 +1,16 @@
-﻿using Contracts.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Autofac.Core;
+
+using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.BusinessServices;
+using Library.CodeGeneration.Models;
 using Library.Results;
+using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -15,16 +22,17 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
     private readonly InfraWriteDbContext _infraWriteDb = infraWriteDb;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
 
-    public Task<Result> DeleteAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
-        throw new NotImplementedException();
+    public Task<Result> DeleteAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) => throw new NotImplementedException();
+
+    public Result<Codes> GenerateCodes([DisallowNull] SecurityCodeGeneratorArgs args) => throw new NotImplementedException();
 
     public async Task<IReadOnlyList<ClaimViewModel>> GetAllAsync(CancellationToken token = default)
     {
         var query = from x in this._readDbContext.SecurityClaims
                     select x;
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.ToViewModel(dbResult);
-        return result.Compact().ToReadOnlyList();
+        var result = this._converter.ToViewModel(dbResult).Compact();
+        return result.ToReadOnlyList();
     }
 
     public async Task<ClaimViewModel?> GetByIdAsync(Guid id, CancellationToken token = default)
@@ -33,6 +41,7 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
                     where x.Id == id
                     select x;
         var dbResult = await query.FirstOrDefaultAsync(token);
+        Check.MustBeNotNull(dbResult);
         var result = this._converter.ToViewModel(dbResult);
         return result;
     }
@@ -50,10 +59,13 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
     public Task<Result<ClaimViewModel>> InsertAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
         throw new NotImplementedException();
 
-    public Task<Result> RemoveEntityClaimsAsync(Guid value, bool persist, CancellationToken token)
+    public async Task<Result> RemoveEntityClaimsByEntityIdAsync(Guid entityId, bool persist, CancellationToken token)
     {
-        var result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == value).ForEach(x => this._infraWriteDb.EntityClaims.Remove(x)));
-        return Task.FromResult(result);
+        Result result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == entityId)
+            .ForEach(x => this._infraWriteDb.EntityClaims.Remove(x)));
+        if (result.IsSucceed && persist)
+            result = await this.SaveChangesAsync(token);
+        return result;
     }
 
     public void ResetChanges() =>

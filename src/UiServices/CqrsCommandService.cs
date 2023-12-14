@@ -40,7 +40,7 @@ internal sealed class CqrsCommandService(
         Check.MustBeArgumentNotNull(model?.Id);
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
         _ = this._writeDbContext.Remove(entry.Entity);
-        _ = await this._securityService.RemoveEntityClaimsAsync(model.Guid!.Value, persist, token);
+        _ = await this._securityService.RemoveEntityClaimsByEntityIdAsync(model.Guid!.Value, persist, token);
         return await this.SubmitChangesAsync(persist: persist, token: token);
     }
 
