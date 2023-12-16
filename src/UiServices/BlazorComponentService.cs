@@ -24,7 +24,7 @@ using UiComponentViewModel = Contracts.ViewModels.UiComponentViewModel;
 namespace Services;
 
 [Service]
-public sealed class BlazorComponentService(
+internal sealed class BlazorComponentService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IDtoService dtoService,

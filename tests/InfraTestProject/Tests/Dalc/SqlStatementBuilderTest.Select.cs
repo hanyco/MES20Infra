@@ -161,7 +161,7 @@ public sealed class SelectStatementBuilderTest
     }
 }
 
-internal sealed class Person(long id, string name, int age)
+file sealed class Person(long id, string name, int age)
 {
     public int Age { get; } = age;
     public long Id { get; } = id;
