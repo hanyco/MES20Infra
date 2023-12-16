@@ -7,13 +7,13 @@ using Contracts.ViewModels;
 using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration.Models;
+using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
 
 namespace Services;
 
-[Service]
-internal sealed class AdvancedSearchService : IAdvancedSearchService
+internal sealed class AdvancedSearchService : IBusinessService, IAdvancedSearchService
 {
     public Result<Codes> GenerateCodes([DisallowNull] AdvancedSearchViewModel args)
     {
