@@ -34,7 +34,6 @@ internal sealed class DtoService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
-    ISecurityService securityDescriptor,
     IPropertyService propertyService,
     ICodeGeneratorEngine codeGeneratorEngine)
     : IDtoService, IDtoCodeService, IAsyncValidator<DtoViewModel>, IAsyncSaveChanges, IResetChanges

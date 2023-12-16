@@ -12,11 +12,11 @@ namespace HanyCo.Infra.UI.UserControls;
 /// </summary>
 public partial class SecurityClaimExplorer : UserControl, IAsyncInitialzable
 {
-    private readonly ISecurityService _securityService;
+    private readonly ISecurityCrudService _crudService;
 
     public SecurityClaimExplorer()
     {
-        this._securityService = DI.GetService<ISecurityService>();
+        this._crudService = DI.GetService<ISecurityCrudService>();
         this.InitializeComponent();
     }
 
@@ -24,7 +24,7 @@ public partial class SecurityClaimExplorer : UserControl, IAsyncInitialzable
 
     public async Task InitializeAsync()
     {
-        var claims = await this._securityService.GetAllAsync();
+        var claims = await this._crudService.GetAllAsync();
         var rootNode = new TreeViewItem { Header = "Security Claims" };
         EnumerableHelper.BuildTree(
             claims.Where(x => x.Parent == null),

@@ -7,7 +7,7 @@ using Library.Results;
 
 namespace Contracts.Services;
 
-public interface ISecurityService : IBusinessService, IAsyncCrud<ClaimViewModel, Guid>, IAsyncSaveChanges, IResetChanges, ICodeGenerator<SecurityCodeGeneratorArgs>
+public partial interface ISecurityCrudService : IBusinessService, IAsyncCrud<ClaimViewModel, Guid>, IAsyncSaveChanges, IResetChanges
 {
     Task<Result<IEnumerable<ClaimViewModel>>> GetEntityClaimsAsync(Guid entity, CancellationToken token = default);
 
@@ -17,5 +17,9 @@ public interface ISecurityService : IBusinessService, IAsyncCrud<ClaimViewModel,
 }
 
 public readonly struct SecurityCodeGeneratorArgs
+{
+}
+
+public interface ISecurityCodeGeneratorService : IBusinessService, ICodeGenerator<SecurityCodeGeneratorArgs>
 {
 }

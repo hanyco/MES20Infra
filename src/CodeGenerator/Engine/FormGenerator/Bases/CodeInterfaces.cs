@@ -8,47 +8,6 @@ using Library.Results;
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 /// <summary>
-/// Represents an interface for asynchronously generating codes based on a view model and arguments.
-/// </summary>
-/// <typeparam name="TViewModel">The type of the view model.</typeparam>
-/// <typeparam name="TArgs">The type of the arguments.</typeparam>
-[Obsolete("Violates the SRP rule in SOLD.", true)]
-public interface IAsyncCodeGenerator<in TViewModel, in TArgs>
-{
-    /// <summary>
-    /// Generates codes asynchronously based on the given view model and optional parameters.
-    /// </summary>
-    /// <param name="viewModel">The ViewModel instance.</param>
-    /// <param name="args">Optional arguments for code generation.</param>
-    /// <param name="token">Cancellation token to cancel the code generation process.</param>
-    /// <returns>
-    /// A Result containing the generated codes or a failure message if no codes were generated.
-    /// </returns>
-    Task<Result<Codes>> GenerateCodesAsync(TViewModel viewModel, TArgs? arguments = default, CancellationToken token = default);
-}
-
-/// <summary>
-/// Represents an interface for asynchronously generating codes based on a view model.
-/// </summary>
-/// <typeparam name="TArguments">The type of the view model.</typeparam>
-[Obsolete("Violates the SRP rule in SOLD.", true)]
-public interface IAsyncCodeGenerator<in TArguments>
-{
-    /// <summary>
-    /// Generates codes asynchronously based on the given view model and optional parameters.
-    /// </summary>
-    Task<Result<Codes>> GenerateCodesAsync([DisallowNull] TArguments args, CancellationToken token = default);
-}
-
-/// <summary>
-/// Represents an interface for generating code based on provided parameters.
-/// </summary>
-public interface IBehindCodeGenerator
-{
-    GenerateCodeResult GenerateBehindCode(in GenerateCodesParameters? arguments);
-}
-
-/// <summary>
 /// Represents an interface for generating codes based on a specific parameter.
 /// </summary>
 /// <typeparam name="TArguments">The type of the parameter.</typeparam>
@@ -84,13 +43,6 @@ public interface ICodeGeneratorUnit
 /// Represents an interface for Command-specific CQRS segregation.
 /// </summary>
 public interface ICommandCqrsSegregation : ICqrsSegregation
-{
-}
-
-/// <summary>
-/// Represents an interface for generating component code units with UI and behind code.
-/// </summary>
-public interface IComponentCodeUnit : IUiCodeGenerator, IBehindCodeGenerator
 {
 }
 

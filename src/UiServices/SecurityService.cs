@@ -1,13 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using Autofac.Core;
-
 using Contracts.Services;
 using Contracts.ViewModels;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.BusinessServices;
 using Library.CodeGeneration.Models;
 using Library.Results;
 using Library.Validations;
@@ -16,7 +13,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbContext infraWriteDb, IEntityViewModelConverter converter) : ISecurityService
+internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbContext infraWriteDb, IEntityViewModelConverter converter) :
+    ISecurityCrudService, ISecurityCodeGeneratorService
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraWriteDbContext _infraWriteDb = infraWriteDb;
@@ -61,10 +59,13 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
 
     public async Task<Result> RemoveEntityClaimsByEntityIdAsync(Guid entityId, bool persist, CancellationToken token)
     {
-        Result result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == entityId)
+        var result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == entityId)
             .ForEach(x => this._infraWriteDb.EntityClaims.Remove(x)));
         if (result.IsSucceed && persist)
+        {
             result = await this.SaveChangesAsync(token);
+        }
+
         return result;
     }
 
@@ -75,6 +76,5 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
 
     public Task<Result> SetEntityClaimsAsync(Guid entity, IEnumerable<ClaimViewModel> claims, bool persist, CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<Result<ClaimViewModel>> UpdateAsync(Guid id, ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
-        throw new NotImplementedException();
+    public Task<Result<ClaimViewModel>> UpdateAsync(Guid id, ClaimViewModel model, bool persist = true, CancellationToken token = default) => throw new NotImplementedException();
 }

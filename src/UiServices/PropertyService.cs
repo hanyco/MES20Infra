@@ -13,23 +13,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal sealed class PropertyService : IPropertyService
+internal sealed class PropertyService(InfraReadDbContext readDbContext, InfraWriteDbContext writeDbContext, IEntityViewModelConverter converter)
+    : IPropertyService
     , IAsyncValidator<PropertyViewModel>
     , IAsyncSaveChanges
     , IResetChanges
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly InfraReadDbContext _readDbContext;
-    private readonly ISecurityService _securityService;
-    private readonly InfraWriteDbContext _writeDbContext;
-
-    public PropertyService(InfraReadDbContext readDbContext, InfraWriteDbContext writeDbContext, IEntityViewModelConverter converter, ISecurityService securityService)
-    {
-        this._readDbContext = readDbContext;
-        this._writeDbContext = writeDbContext;
-        this._converter = converter;
-        this._securityService = securityService;
-    }
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     public async Task<Result> DeleteAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {

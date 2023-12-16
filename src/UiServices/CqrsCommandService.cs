@@ -19,7 +19,7 @@ internal sealed class CqrsCommandService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
-    ISecurityService securityService) : CqrsSegregationServiceBase,
+    ISecurityCrudService securityService) : CqrsSegregationServiceBase,
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
     IResetChanges,
@@ -27,7 +27,7 @@ internal sealed class CqrsCommandService(
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
-    private readonly ISecurityService _securityService = securityService;
+    private readonly ISecurityCrudService _securityService = securityService;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Command;
@@ -127,12 +127,12 @@ internal sealed class CqrsCommandService(
         return Result<CqrsCommandViewModel>.CreateSuccess(model);
     }
 
-    public Task<Result<CqrsCommandViewModel>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)
+    public Task<Result<CqrsCommandViewModel?>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)
         => item.ArgumentNotNull().Check()
             .NotNull(x => x.Name)
             .NotNull(x => x.ParamsDto)
             .NotNull(x => x.ResultDto)
-            .Build().ToAsync();
+            .Build().ToAsync()!;
 
     private IQueryable<CqrsSegregate> GetAllQuery()
     {
