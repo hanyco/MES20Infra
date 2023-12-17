@@ -65,7 +65,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var result = await service.InsertAsync(model!, token: tokenSource.Token);
 
         // Assert
-        Assert.True(result);
+        Assert.True(result.IsSucceed);
     }
 
     private static FunctionalityViewModel CreateModel()

@@ -9,6 +9,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Bcl\src\CoreLib\CoreLib.csproj" />
+    <ProjectReference Include="..\..\src\CodeGenerator\Engine\Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AdvancedSearch\" />
   </ItemGroup>
 
 </Project>

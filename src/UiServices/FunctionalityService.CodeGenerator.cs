@@ -42,7 +42,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.SourceDto);
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.SourceDto)}");
                 yield return codes.SourceDtoCodes = codeGenRes;
-                if (!codeGenRes)
+                if (!codeGenRes.IsSucceed)
                 {
                     yield break;
                 }
@@ -54,7 +54,7 @@ internal sealed partial class FunctionalityService
                 codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetAllQueryViewModel)}");
                 yield return codes.GetAllQueryCodes;
-                if (codeGenRes.Any(x => !x))
+                if (codeGenRes.Any(x => !x.IsSucceed))
                 {
                     yield break;
                 }
@@ -66,7 +66,7 @@ internal sealed partial class FunctionalityService
                 codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetByIdQueryViewModel)}");
                 yield return codes.GetByIdQueryCodes;
-                if (codeGenRes.Any(x => !x))
+                if (codeGenRes.Any(x => !x.IsSucceed))
                 {
                     yield break;
                 }
@@ -78,7 +78,7 @@ internal sealed partial class FunctionalityService
                 codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, null);
                 yield return codes.InsertCommandCodes;
-                if (codeGenRes.Any(x => !x))
+                if (codeGenRes.Any(x => !x.IsSucceed))
                 {
                     yield break;
                 }
@@ -90,7 +90,7 @@ internal sealed partial class FunctionalityService
                 codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.UpdateCommandViewModel)}");
                 yield return codes.UpdateCommandCodes;
-                if (codeGenRes.Any(x => !x))
+                if (codeGenRes.Any(x => !x.IsSucceed))
                 {
                     yield break;
                 }
@@ -102,7 +102,7 @@ internal sealed partial class FunctionalityService
                 codes.DeleteCommandCodes = codeGenRes.Select(x => x.Value).ToCodes();
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.DeleteCommandViewModel)}");
                 yield return codes.DeleteCommandCodes;
-                if (codeGenRes.Any(x => !x))
+                if (codeGenRes.Any(x => !x.IsSucceed))
                 {
                     yield break;
                 }
@@ -114,7 +114,7 @@ internal sealed partial class FunctionalityService
                 codes.BlazorListPageCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPageViewModel)}");
                 yield return codes.BlazorListPageCodes;
-                if (!codeGenRes)
+                if (!codeGenRes.IsSucceed)
                 {
                     yield break;
                 }
@@ -126,7 +126,7 @@ internal sealed partial class FunctionalityService
                 codes.BlazorListPageDataContextCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPageViewModel.DataContext)}");
                 yield return codes.BlazorListPageDataContextCodes;
-                if (!codeGenRes)
+                if (!codeGenRes.IsSucceed)
                 {
                     yield break;
                 }
@@ -138,7 +138,7 @@ internal sealed partial class FunctionalityService
                 codes.BlazorDetailsPageCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPageViewModel)}");
                 yield return codes.BlazorDetailsPageCodes;
-                if (!codeGenRes)
+                if (!codeGenRes.IsSucceed)
                 {
                     yield break;
                 }
@@ -150,7 +150,7 @@ internal sealed partial class FunctionalityService
                 codes.BlazorListPageDataContextCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPageViewModel.DataContext)}");
                 yield return codes.BlazorListPageDataContextCodes;
-                if (!codeGenRes)
+                if (!codeGenRes.IsSucceed)
                 {
                     yield break;
                 }
@@ -162,7 +162,7 @@ internal sealed partial class FunctionalityService
                 codes.BlazorListComponentCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListComponentViewModel)}");
                 yield return codes.BlazorListComponentCodes;
-                if (!codeGenRes)
+                if (!codeGenRes.IsSucceed)
                 {
                     yield break;
                 }
@@ -179,7 +179,7 @@ internal sealed partial class FunctionalityService
                 codes.BlazorDetailsComponentCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsComponentViewModel)}");
                 yield return codes.BlazorDetailsComponentCodes;
-                if (!codeGenRes)
+                if (!codeGenRes.IsSucceed)
                 {
                     yield break;
                 }
@@ -193,7 +193,7 @@ internal sealed partial class FunctionalityService
                     var codeGenRes = this._mapperSourceGenerator.GenerateCodes(argument);
                     mapperCodes.Add(codeGenRes);
                     yield return codeGenRes;
-                    if (!codeGenRes)
+                    if (!codeGenRes.IsSucceed)
                     {
                         yield break;
                     }
