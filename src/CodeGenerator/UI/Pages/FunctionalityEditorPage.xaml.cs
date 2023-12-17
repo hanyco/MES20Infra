@@ -82,7 +82,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         }
 
         var result = await this._service.SaveViewModelAsync(this.ViewModel);
-        if (result)
+        if (result.IsSucceed)
         {
             _ = this.SetIsViewModelChanged(false);
         }

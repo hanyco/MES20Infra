@@ -61,7 +61,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         {
             var result = await this._service.SaveViewModelAsync(this.ViewModel);
 
-            if (result)
+            if (result.IsSucceed)
             {
                 this.IsViewModelChanged = false;
                 this.Logger.Debug("CQRS Query saved.");
@@ -126,7 +126,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task LoadQueryViewModelAsync()
     {
-        if (await this.AskToSaveIfChangedAsync() != true)
+        if ((await this.AskToSaveIfChangedAsync()).IsSucceed != true)
         {
             return;
         }
@@ -147,7 +147,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task NewQueryViewModelAsync()
     {
-        if (await this.AskToSaveIfChangedAsync() != true)
+        if ((await this.AskToSaveIfChangedAsync()).IsSucceed != true)
         {
             return;
         }

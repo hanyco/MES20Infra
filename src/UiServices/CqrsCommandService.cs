@@ -90,7 +90,7 @@ internal sealed class CqrsCommandService(
             onCommitted: (m, e) => m.Id = e.Id,
             cancellationToken: token);
         var result = await man.ModelResult();
-        if (result)
+        if (result.IsSucceed)
         {
             var buffer = result.Value;
             _ = await this._securityService.SetEntityClaimsAsync(buffer.Guid!.Value, buffer.SecurityClaims, persist, token);

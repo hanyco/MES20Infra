@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 
+using Contracts.Services;
+
 using HanyCo.Infra.Markers;
 
 using Library.Interfaces;
@@ -8,22 +10,23 @@ using UiServices;
 
 namespace InfraTestProject.Tests;
 
+[Trait("Category", nameof(ArchitecturalTests))]
 public sealed class ArchitecturalTests
 {
     [Fact]
-    public void _01_ServiceClassesMustImplementIServiceInterface()
+    public void ServiceClassesMustImplementIServiceInterface()
     {
         var asm = typeof(ServicesModule).Assembly;
         var serviceClasses = asm.GetTypes().Where(x => ObjectHelper.HasAttribute<ServiceAttribute>(x, true));
         var badGuys = serviceClasses.Where(x => !ObjectHelper.IsInheritedOrImplemented(x, typeof(IService)));
         foreach (var serviceClass in badGuys)
         {
-            Assert.Fail($"{serviceClass} must be inherited from `IService`. Because it's a service");
+            Assert.Fail($"{serviceClass} must be inherited from `{typeof(IService).FullName}`. Because it's a service");
         }
     }
 
     [Fact]
-    public void _02_ServiceClassMustBeDecoratedByServiceAttribute()
+    public void ServiceClassMustBeDecoratedByServiceAttribute()
     {
         var asm = typeof(ServicesModule).Assembly;
         var serviceClasses = asm.GetTypes().Where(x => ObjectHelper.IsInheritedOrImplemented(x, typeof(IService)));
@@ -36,7 +39,7 @@ public sealed class ArchitecturalTests
     }
 
     [Fact]
-    public void _03_ServiceClassesMustBeInternal()
+    public void ServiceClassesMustBeInternal()
     {
         var asm = typeof(ServicesModule).Assembly;
         var servicesByServiceAttr = asm.GetTypes().Where(x => x.GetCustomAttribute<ServiceAttribute>() != null);

@@ -37,7 +37,7 @@ internal sealed class SqlStatementCodeGenerator : IBusinessService, ISqlStatemen
             Result vr = dto.ArgumentNotNull().Check()
                 .NotNull(x => x.DbObject)
                 .NotNull(x => x.DbObject.Name).Build();
-            if (!vr)
+            if (!vr.IsSucceed)
             {
                 return vr;
             }
@@ -45,7 +45,7 @@ internal sealed class SqlStatementCodeGenerator : IBusinessService, ISqlStatemen
             vr = dto.Properties.Check()
                 .RuleFor(x => x.Any(), () => new NoItemValidationException())
                 .RuleFor(x => x.All(y => y.DbObject != null), () => new ValidationException()).Build();
-            return !vr ? vr : Result.Success;
+            return !vr.IsSucceed ? vr : Result.Success;
         }
 
         static string generateStatement(string tableName, string? schema, IEnumerable<string?> columns) =>

@@ -61,7 +61,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         {
             this.ViewModel.SecurityClaims = this.SecurityClaimCollectorUserControl.ClaimViewModels;
             var result = await this._service.SaveViewModelAsync(this.ViewModel);
-            if (result)
+            if (result.IsSucceed)
             {
                 this.IsViewModelChanged = false;
                 this.Logger.Debug("CQRS Command saved.");
@@ -136,7 +136,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task LoadCommandViewModelAsync()
     {
-        if (await this.AskToSaveIfChangedAsync() != true)
+        if ((await this.AskToSaveIfChangedAsync()).IsSucceed != true)
         {
             return;
         }
@@ -158,7 +158,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async Task NewCommandViewModelAsync()
     {
-        if (await this.AskToSaveIfChangedAsync() != true)
+        if ((await this.AskToSaveIfChangedAsync()).IsSucceed != true)
         {
             return;
         }
@@ -184,7 +184,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     private async void ResetFormButton_Click(object sender, RoutedEventArgs e)
     {
-        if (await this.AskToSaveIfChangedAsync() != true)
+        if ((await this.AskToSaveIfChangedAsync()).IsSucceed != true)
         {
             return;
         }

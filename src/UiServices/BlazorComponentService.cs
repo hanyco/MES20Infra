@@ -24,7 +24,7 @@ using UiComponentViewModel = Contracts.ViewModels.UiComponentViewModel;
 namespace Services;
 
 [Service]
-public sealed class BlazorComponentService(
+internal sealed class BlazorComponentService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IDtoService dtoService,
@@ -286,6 +286,6 @@ public sealed class BlazorComponentService(
                         select c.Id;
         var duplicate = await nameQuery.AnyAsync(cancellationToken: cancellationToken);
         var isDuplicated = Check.If(duplicate, () => new ObjectDuplicateValidationException(model.Name));
-        return isDuplicated ? isDuplicated.WithValue(model) : Result<UiComponentViewModel>.CreateSuccess(model);
+        return isDuplicated.IsSucceed ? isDuplicated.WithValue(model) : Result<UiComponentViewModel>.CreateSuccess(model);
     }
 }

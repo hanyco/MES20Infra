@@ -7,8 +7,9 @@ namespace InfraTestProject.Tests.Services;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
 {
-    [Fact]
     [Trait("Category", "__ActiveTest")]
+    [Trait("Category", nameof(IFunctionalityCodeService))]
+    [Fact]
     public async void GenerateCode()
     {
         // Assign
@@ -34,6 +35,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
+    [Trait("Category", nameof(IFunctionalityService))]
     [Fact]
     public async Task GenerateModelTest()
     {
@@ -51,6 +53,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
+    [Trait("Category", nameof(IFunctionalityService))]
     [Fact]
     public async void InsertViewModel()
     {
@@ -62,7 +65,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var result = await service.InsertAsync(model!, token: tokenSource.Token);
 
         // Assert
-        Assert.True(result);
+        Assert.True(result.IsSucceed);
     }
 
     private static FunctionalityViewModel CreateModel()
@@ -73,7 +76,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
             SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "UnitTests.CodeGen" },
             Name = "PersonDto"
         };
-        model.SourceDto.Properties.AddRange(new PropertyViewModel[]
+        _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
             new("Id", HanyCo.Infra.Internals.Data.DataSources.PropertyType.Long){ DbObject = new DbColumnViewModel("Id", -8){ DbType ="bigint", IsNullable = false }, IsNullable = false },
             new("FirstName", HanyCo.Infra.Internals.Data.DataSources.PropertyType.String){ DbObject = new DbColumnViewModel("FirstName", -2){ DbType ="nvarchar", IsNullable = true }, IsNullable = true },
