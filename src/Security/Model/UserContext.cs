@@ -1,44 +1,45 @@
-﻿using HanyCo.Infra.Security.Exceptions;
-using Microsoft.AspNetCore.Http;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+
+using HanyCo.Infra.Security.Exceptions;
+
+using Microsoft.AspNetCore.Http;
 
 namespace HanyCo.Infra.Security.Model;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal sealed class UserContext : IUserContext
+internal sealed class UserContext(IHttpContextAccessor httpContextAccessor) : IUserContext
 {
     #region static
-    public const string USER_NAME = "UserName";
-    public const string USER_ID = "UserId";
-    public const string PRINCIPAL_ID = "PrincipalId";
+
     public const string COMPANY_ID = "CompanyId";
+    public const string PRINCIPAL_ID = "PrincipalId";
     public const string SIGNIN_TIME = "SignInTime";
-    #endregion
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    public const string USER_ID = "UserId";
+    public const string USER_NAME = "UserName";
 
-    public UserContext(IHttpContextAccessor httpContextAccessor) =>
-        this._httpContextAccessor = httpContextAccessor;
+    #endregion static
 
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+
+    public long CompanyId => this.GetClaimValue(nameof(this.CompanyId)).Cast().ToLong();
     public bool IsLoggedIn => this._httpContextAccessor.HttpContext?.User?.Claims?.Any() ?? false;
 
-    public string UserName => this.GetClaimValue(nameof(this.UserName)).ToString()!;
-    public long UserId => this.GetClaimValue(nameof(this.UserId)).Cast().ToLong();
-    public long CompanyId => this.GetClaimValue(nameof(this.CompanyId)).Cast().ToLong();
     public DateTime LastSignedInTime => Convert.ToDateTime(this.GetClaimValue(nameof(this.LastSignedInTime)));
-
-    public long PrinicipalId => this.GetClaimValue(nameof(this.PrinicipalId)).Cast().ToLong();
-
-    [return: NotNull]
-    private object GetClaimValue(string claimType) =>
-        this.LogginGuard(() => this._httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == claimType)?.Value);
-
-    [return: NotNull]
-    private T LogginGuard<T>(Func<T> func) =>
-        this.IsLoggedIn ? func()! : throw new NotLoggedInException();
-
-    private string GetDebuggerDisplay() => this.ToString();
+    public long PrincipalId => this.GetClaimValue(nameof(this.PrincipalId)).Cast().ToLong();
+    public long UserId => this.GetClaimValue(nameof(this.UserId)).Cast().ToLong();
+    public string UserName => this.GetClaimValue(nameof(this.UserName)).ToString()!;
 
     public override string ToString() =>
         this.IsLoggedIn ? this.UserName : "(User not logged in)";
+
+    [return: NotNull]
+    private string GetClaimValue(string claimType) =>
+        this.LoginGuard(() => this._httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == claimType)?.Value);
+
+    private string GetDebuggerDisplay() => this.ToString();
+
+    [return: NotNull]
+    private T LoginGuard<T>(Func<T> func) =>
+        this.IsLoggedIn ? func()! : throw new NotLoggedInException();
 }

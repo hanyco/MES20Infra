@@ -22,6 +22,6 @@ public static class MesInfraConfiguration
         => app.UseMiddleware<ExceptionHandlerMiddleware>()
               .UseMiddleware<LicenseManagerMiddleware>()
               .UseMiddleware<InterceptorMiddleware>()
-              //.UseMesSecurityInfraMiddleware()
+              .UseMesSecurityInfraMiddleware()
         ;
 }

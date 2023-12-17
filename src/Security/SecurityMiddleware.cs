@@ -5,12 +5,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace HanyCo.Infra.Security;
 
-internal class SecurityMiddleware : MiddlewareBase
+internal class SecurityMiddleware(RequestDelegate next) : MiddlewareBase(next)
 {
-    public SecurityMiddleware(RequestDelegate next) : base(next)
-    {
-    }
-
     protected override Task OnExecutingAsync(ItemActingEventArgs<HttpContext?> e)
         => Task.CompletedTask;
 }

@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics;
+using System.Security.Claims;
+
 using Library.Coding;
 using Library.EventsArgs;
 
@@ -13,12 +15,11 @@ public abstract class MiddlewareBase
 
     protected ClaimsPrincipal? User { get; private set; }
 
-    [System.Diagnostics.DebuggerStepThrough]
+    [DebuggerStepThrough]
     public async Task Invoke(HttpContext httpContext)
     {
-        await CodeHelper.CatchResultAsync(() => initialize(httpContext));
+        _ = await CodeHelper.CatchResultAsync(() => initialize(httpContext));
         await executing(httpContext);
-        await executed(httpContext);
         return;
 
         async Task executing(HttpContext httpContext)
@@ -31,12 +32,6 @@ public abstract class MiddlewareBase
             }
         }
 
-        async Task executed(HttpContext httpContext)
-        {
-            var onExecutedEventArgs = new ItemActedEventArgs<HttpContext?>(httpContext);
-            await this.OnExecutedAsync(onExecutedEventArgs);
-        }
-
         async Task initialize(HttpContext httpContext)
         {
             this.User = httpContext?.User;
@@ -44,11 +39,8 @@ public abstract class MiddlewareBase
         }
     }
 
+    protected abstract Task OnExecutingAsync(ItemActingEventArgs<HttpContext?> e);
+
     protected virtual async Task OnInitializeAsync(HttpContext? httpContext)
         => await Task.CompletedTask;
-
-    protected virtual async Task OnExecutedAsync(ItemActedEventArgs<HttpContext?> e)
-        => await Task.CompletedTask;
-
-    protected abstract Task OnExecutingAsync(ItemActingEventArgs<HttpContext?> e);
 }
