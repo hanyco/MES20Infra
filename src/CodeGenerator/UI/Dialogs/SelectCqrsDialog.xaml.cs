@@ -50,7 +50,7 @@ public partial class SelectCqrsDialog
     {
         var showResult = Show<TViewModel>(args);
         result = showResult;
-        return showResult;
+        return showResult.IsSucceed;
     }
 
     public static TryMethodResult<TViewModel?> Show<TViewModel>(in ShowArgs args)

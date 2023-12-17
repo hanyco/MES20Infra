@@ -129,7 +129,7 @@ internal sealed class PropertyService : IPropertyService
 
             property.ParentEntityId = parentEntityId;
             var insertResult = await this.InsertAsync(property, false, token);
-            if (!insertResult)
+            if (!insertResult.IsSucceed)
             {
                 return insertResult;
             }
@@ -157,7 +157,7 @@ internal sealed class PropertyService : IPropertyService
                                            .SetModified(x => x.TypeFullName);
     }
 
-    public async Task<Result<PropertyViewModel>> ValidateAsync(PropertyViewModel item, CancellationToken cancellationToken = default)
+    public async Task<Result<PropertyViewModel?>> ValidateAsync(PropertyViewModel? item, CancellationToken cancellationToken = default)
     {
         Check.MutBeNotNull(item);
 
@@ -170,7 +170,7 @@ internal sealed class PropertyService : IPropertyService
         {
             errors.Add((ValidationExceptionBase.ErrorCode, "Parent entity Id cannot be null or 0"));
         }
-        var result = new Result<PropertyViewModel>(item, errors: errors);
+        var result = new Result<PropertyViewModel?>(item, errors: errors);
         return await Task.FromResult(result);
     }
 

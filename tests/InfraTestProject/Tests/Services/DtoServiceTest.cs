@@ -139,7 +139,7 @@ public sealed class DtoServiceTest(IDtoService service, IModuleService moduleSer
     public async void InsertDtoTest()
     {
         var actual = await this.InsertDtoAsync("Test DTO");
-        Assert.True(actual);
+        Assert.True(actual.IsSucceed);
         Assert.NotNull(actual.Value);
         Assert.NotEqual(0, actual.Value.Id);
     }

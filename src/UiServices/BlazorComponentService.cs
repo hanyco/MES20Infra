@@ -286,6 +286,6 @@ internal sealed class BlazorComponentService(
                         select c.Id;
         var duplicate = await nameQuery.AnyAsync(cancellationToken: cancellationToken);
         var isDuplicated = Check.If(duplicate, () => new ObjectDuplicateValidationException(model.Name));
-        return isDuplicated ? isDuplicated.WithValue(model) : Result<UiComponentViewModel>.CreateSuccess(model);
+        return isDuplicated.IsSucceed ? isDuplicated.WithValue(model) : Result<UiComponentViewModel>.CreateSuccess(model);
     }
 }
