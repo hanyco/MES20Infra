@@ -34,62 +34,60 @@ public static class MesSecurityConfiguration
         return services;
 
         static void addIdentity(IServiceCollection services) =>
-            _ = services.AddIdentity<InfraIdentityUser, InfraIdentityRole>(options =>
-                {
-                    // موارد مربوط به تنظیمات آیدنتیتی، ایجاد قابل تغییر است. مثال:
-                    //options.Password = new() { RequiredLength = 8 };
-                    options.User.RequireUniqueEmail = true;
-                }).AddEntityFrameworkStores<InfraSecDbContext>()
-                  //.AddDefaultTokenProviders()
-                  .AddErrorDescriber<PersianIdentityErrorDescriber>();
+            services.AddIdentity<InfraIdentityUser, InfraIdentityRole>(options =>
+            {
+                //options.Password = new() { RequiredLength = 8 };
+                options.User.RequireUniqueEmail = true;
+            }).AddEntityFrameworkStores<InfraSecDbContext>()
+              .AddDefaultTokenProviders()
+              .AddErrorDescriber<PersianIdentityErrorDescriber>();
 
         static void addAuthorization(IServiceCollection services) =>
-            _ = services.AddAuthorization(options =>
-                        {
-                            options.FallbackPolicy = new AuthorizationPolicyBuilder().AddAuthenticationSchemes("Bearer")
-                                                                                     .RequireAuthenticatedUser()
-                                                                                     .RequireClaim("scope", "read").Build();
-                            _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
-                                   .AddCrudRequirementPolicies();
-                        });
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder().AddAuthenticationSchemes("Bearer")
+                    .RequireAuthenticatedUser()
+                    .RequireClaim("scope", "read").Build();
+                _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
+                    .AddCrudRequirementPolicies();
+            });
 
         static void addAuthentication(IServiceCollection services) =>
-            _ = services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                        .AddJwtBearer(o =>
-                        {
-                            o.Authority = "http://localhost:5000/openid";
-                            o.Audience = "embedded";
-                            o.RequireHttpsMetadata = false;
-                        });
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
+            {
+                o.Authority = "http://localhost:5000/openid";
+                o.Audience = "embedded";
+                o.RequireHttpsMetadata = false;
+            });
 
         static void addDbContextPool(IServiceCollection services, ISecurityConfigOptions options) =>
-            _ = services.AddDbContextPool<InfraSecDbContext>(o =>
-                {
-                    _ = o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-                    _ = o.UseSqlServer(options.ConnectionString);
-                    _ = o.EnableSensitiveDataLogging();
-                });
+            services.AddDbContextPool<InfraSecDbContext>(o =>
+            {
+                _ = o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                _ = o.UseSqlServer(options.ConnectionString);
+                _ = o.EnableSensitiveDataLogging();
+            });
 
         static void addServices(IServiceCollection services)
         {
-            _ = services//.AddScoped<IInfraUserService, InfraIdentityService>()
-                        //.AddScoped<IInfraRoleService, InfraIdentityService>()
-                        //.AddScoped<IInfraClaimService, InfraIdentityService>()
-                        //.AddScoped<ISecurityService, InfraIdentityService>()
-                        .AddScoped<System.Security.Claims.ClaimsIdentity>()
-                        ;
-            _ = services.AddScoped<IAuthorizationHandler, DynamicRoleHandler>()
-                        .AddSingleton<IAuthorizationHandler, ClaimRequirementHandler>();
+            _ = services
+                //.AddScoped<IInfraUserService, InfraIdentityService>()
+                //.AddScoped<IInfraRoleService, InfraIdentityService>()
+                //.AddScoped<IInfraClaimService, InfraIdentityService>()
+                //.AddScoped<ISecurityService, InfraIdentityService>()
+                .AddScoped<System.Security.Claims.ClaimsIdentity>()
+                ;
+            _ = services
+                .AddScoped<IAuthorizationHandler, DynamicRoleHandler>()
+                .AddSingleton<IAuthorizationHandler, ClaimRequirementHandler>();
         }
         static void addUserContext(IServiceCollection services) =>
-            _ = services.AddScoped<IUserContext, UserContext>();
+            services.AddScoped<IUserContext, UserContext>();
 
         static void addLoggers(IServiceCollection services, ILogger logger) =>
-            _ = services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger))
-                .AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger))
-                .AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
+            services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
     }
 
-    public static IApplicationBuilder UseMesSecurityInfraMiddleware(this IApplicationBuilder app)
-        => app.UseMiddleware<SecurityMiddleware>();
+    public static IApplicationBuilder UseMesSecurityInfraMiddleware(this IApplicationBuilder app) =>
+        app.UseMiddleware<SecurityMiddleware>();
 }

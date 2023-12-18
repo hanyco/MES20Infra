@@ -24,7 +24,7 @@ public abstract class MiddlewareBase
 
         async Task executing(HttpContext httpContext)
         {
-            var onExecutingEventArgs = new ItemActingEventArgs<HttpContext?>(httpContext);
+            var onExecutingEventArgs = new ItemActingEventArgs<HttpContext>(httpContext);
             await this.OnExecutingAsync(onExecutingEventArgs);
             if (!onExecutingEventArgs.Handled)
             {
@@ -34,13 +34,13 @@ public abstract class MiddlewareBase
 
         async Task initialize(HttpContext httpContext)
         {
-            this.User = httpContext?.User;
+            this.User = httpContext.User;
             await this.OnInitializeAsync(httpContext);
         }
     }
 
-    protected abstract Task OnExecutingAsync(ItemActingEventArgs<HttpContext?> e);
+    protected abstract Task OnExecutingAsync(ItemActingEventArgs<HttpContext> e);
 
-    protected virtual async Task OnInitializeAsync(HttpContext? httpContext)
+    protected virtual async Task OnInitializeAsync(HttpContext httpContext)
         => await Task.CompletedTask;
 }

@@ -1,9 +1,8 @@
 ﻿using HanyCo.Infra.Security;
+using HanyCo.Infra.Web.Middlewares;
 
 using Library.Coding;
 using Library.Logging;
-using Library.Web.Middlewares;
-using Library.Web.Middlewares.Infra;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
