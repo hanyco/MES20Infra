@@ -3,8 +3,6 @@
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.ViewModels;
 
-using Library.CodeGeneration;
-
 namespace Contracts.ViewModels;
 
 public abstract class CqrsViewModelBase : InfraViewModelBase
@@ -22,7 +20,6 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
     private ModuleViewModel _module;
     private DtoViewModel _paramDto;
     private DtoViewModel _resultDto;
-    private IEnumerable<ClaimViewModel> _securityClaims;
     private string _validatorBody;
 
     public CqrsSegregateCategory Category
@@ -103,18 +100,13 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         set => this.SetProperty(ref this._resultDto, value);
     }
 
-    public IEnumerable<ClaimViewModel> SecurityClaims
-    {
-        get => this._securityClaims;
-        set => this.SetProperty(ref this._securityClaims, value);
-    }
+    public ISet<string> ValidatorAdditionalUsings { get; } = new HashSet<string>();
 
     public string ValidatorBody
     {
         get => this._validatorBody;
         set => this.SetProperty(ref this._validatorBody, value);
     }
-    public ISet<string> ValidatorAdditionalUsings { get; } = new HashSet<string>();
 
     protected abstract CqrsSegregateType SegregateType { get; }
 }

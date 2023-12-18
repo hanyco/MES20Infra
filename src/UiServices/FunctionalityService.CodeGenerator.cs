@@ -215,15 +215,15 @@ internal sealed partial class FunctionalityService
                         _ => throw new NotImplementedException()
                     };
                     // Generate the codes of CQRS parameters.
-                    var paramsDtoCodeResult = this._dtoCodeService.GenerateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
+                    var paramsDtoCode = this._dtoCodeService.GenerateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
                     // Generate the codes of CQRS result.
-                    var resultDtoCodeResult = this._dtoCodeService.GenerateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
+                    var resultDtoCode = this._dtoCodeService.GenerateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
                     // Generate the codes of CQRS handler.
-                    var handlerCodeResult = this._cqrsCodeService.GenerateCodes(model);
+                    var handlerCode = this._cqrsCodeService.GenerateCodes(model);
 
-                    yield return paramsDtoCodeResult;
-                    yield return resultDtoCodeResult;
-                    yield return handlerCodeResult;
+                    yield return paramsDtoCode;
+                    yield return resultDtoCode;
+                    yield return handlerCode;
                 }
             }
         }

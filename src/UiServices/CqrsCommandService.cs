@@ -64,7 +64,7 @@ internal sealed class CqrsCommandService(
                        .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
         if (result?.Guid is { } guid)
         {
-            result.SecurityClaims = await this._securityService.GetEntityClaimsAsync(guid, token).GetValueAsync();
+            result.SecurityClaims.AddRange( await this._securityService.GetEntityClaimsAsync(guid, token).GetValueAsync());
         }
 
         return result;

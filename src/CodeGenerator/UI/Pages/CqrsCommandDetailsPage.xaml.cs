@@ -59,7 +59,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         Check.MutBeNotNull(this.ViewModel);
         try
         {
-            this.ViewModel.SecurityClaims = this.SecurityClaimCollectorUserControl.ClaimViewModels;
+            this.ViewModel.SecurityClaims.AddRange(this.SecurityClaimCollectorUserControl.ClaimViewModels);
             var result = await this._service.SaveViewModelAsync(this.ViewModel);
             if (result.IsSucceed)
             {
@@ -142,15 +142,15 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         }
         var selectedViewModel = this.CommandsTreeView.GetSelectedModel<CqrsCommandViewModel>();
         Check.MustBe(selectedViewModel?.Id is not null, () => new ValidationException("Please select a Command."));
-        
+
         var viewModel = await this._service.FillByDbEntity(selectedViewModel, selectedViewModel.Id.Value);
         Check.MustBeNotNull(viewModel, () => "ID not found");
-        
+
         this.ViewModel = viewModel.HandlePropertyChanges(this.ViewModel_PropertyChanged);
         this.SecurityClaimCollectorUserControl.ClaimViewModels = this.ViewModel.SecurityClaims;
     }
 
-    private void Me_Loaded(object sender, RoutedEventArgs e) => 
+    private void Me_Loaded(object sender, RoutedEventArgs e) =>
         this.SecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.SecurityClaimCollectorUserControl_OnAutoGenerateClaim);
 
     private async void NewCommandButton_Click(object sender, RoutedEventArgs e)

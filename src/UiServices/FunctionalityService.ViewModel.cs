@@ -108,35 +108,23 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, ClaimViewModel parent)
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, ClaimViewModel? parent)
     {
         var claim = new ClaimViewModel(key ?? viewModel.Name, value, parent);
         _ = viewModel.SecurityClaims.Add(claim);
     }
 
-    [DebuggerStepThrough]
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, InfraViewModelBase parent) =>
-        AddClaimViewModel(viewModel, key, value, parent.SecurityClaims.First());
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, InfraViewModelBase? parent) =>
+        AddClaimViewModel(viewModel, key, value, parent?.SecurityClaims.FirstOrDefault());
 
-    [DebuggerStepThrough]
     private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, InfraViewModelBase parent) =>
-        AddClaimViewModel(viewModel, key, null, parent.SecurityClaims.First());
+        AddClaimViewModel(viewModel, key, null, parent.SecurityClaims.FirstOrDefault());
 
-    [DebuggerStepThrough]
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, CreationData data) =>
-        AddClaimViewModel(viewModel, key, value, data.ViewModel.SourceDto);
-
-    [DebuggerStepThrough]
     private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, CreationData data) =>
         AddClaimViewModel(viewModel, key, null, data.ViewModel.SourceDto);
 
-    [DebuggerStepThrough]
     private static void AddClaimViewModel(InfraViewModelBase viewModel, CreationData data) =>
         AddClaimViewModel(viewModel, viewModel.Name, null, data.ViewModel.SourceDto);
-
-    [DebuggerStepThrough]
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, InfraViewModelBase parent) =>
-        AddClaimViewModel(viewModel, viewModel.Name, null, parent.SecurityClaims.First());
 
     [DebuggerStepThrough]
     private static string GetMapperNameSpace(CreationData data) =>
