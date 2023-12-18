@@ -26,54 +26,41 @@ internal sealed partial class FunctionalityService
 {
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        // Validate the input viewModel
         if (!this.Validate(viewModel).TryParse(out var validationResult))
         {
             return validationResult!;
         }
 
-        // Report the initialization progress
         this._reporter.Report(description: getTitle("Initializing..."));
-        // Initialize the viewModel and check if it fails
         var initResult = initialize(viewModel, token);
         if (!initResult.IsSucceed)
         {
             return Result<FunctionalityViewModel>.From(initResult, viewModel)!;
         }
-        // Get the initialized data and token source
+
         var (data, tokenSource) = initResult.Value;
-        // Perform the initialization steps
         var process = initSteps(data);
 
-        // Report the running progress
         this._reporter.Report(description: getTitle("Running..."));
-        // Run the process asynchronously
         var processResult = await process.RunAsync(tokenSource.Token);
-        // Get the result message based on the process result and cancellation token
         var message = getResultMessage(processResult, tokenSource.Token);
 
-        // Report the result message
         this._reporter.Report(description: getTitle(message));
-        // Get the final result
         var result = processResult.Value.Result;
 
-        // Dispose the token source
         tokenSource.Dispose();
 
         this._reporter.End();
-        // Return the final result
         return result!;
 
-        // Get the title for the description
         [DebuggerStepThrough]
-        ProgressData getTitle(in string description) =>
-            new(Description: description, Sender: nameof(FunctionalityService));
+        ProgressData getTitle(in string description)
+            => new(Description: description, Sender: nameof(FunctionalityService));
 
-        // Initialize the viewModel with the connection string
+        [DebuggerStepThrough]
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)
         {
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            // Create a new CreationData with the dataResult, dbTable, and cancellationTokenSource
             var result = new CreationData(viewModel, (viewModel.Name ?? viewModel.SourceDto.Name).NotNull(), tokenSource);
             if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
             {
@@ -85,9 +72,9 @@ internal sealed partial class FunctionalityService
         }
 
         [DebuggerStepThrough]
-        MultistepProcessRunner<CreationData> initSteps(in CreationData data) =>
+        MultistepProcessRunner<CreationData> initSteps(in CreationData data)
         //?! ☠ Don't change the sequence of the steps ☠
-            MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
+             => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.InitializeWorkspace, getTitle("Initializing…"))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
@@ -121,10 +108,35 @@ internal sealed partial class FunctionalityService
         }
     }
 
-    private static IEnumerable<ClaimViewModel> GetClaimViewModels(CreationData data, InfraViewModelBase model) =>
-        data.ViewModel.SourceDto.SecurityClaims?.Any() ?? false
-            ? data.ViewModel.SourceDto.SecurityClaims.Select(x => new ClaimViewModel(model.Name, null, x))
-            : Enumerable.Empty<ClaimViewModel>();
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, ClaimViewModel parent)
+    {
+        var claim = new ClaimViewModel(key ?? viewModel.Name, value, parent);
+        _ = viewModel.SecurityClaims.Add(claim);
+    }
+
+    [DebuggerStepThrough]
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, InfraViewModelBase parent) =>
+        AddClaimViewModel(viewModel, key, value, parent.SecurityClaims.First());
+
+    [DebuggerStepThrough]
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, InfraViewModelBase parent) =>
+        AddClaimViewModel(viewModel, key, null, parent.SecurityClaims.First());
+
+    [DebuggerStepThrough]
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, CreationData data) =>
+        AddClaimViewModel(viewModel, key, value, data.ViewModel.SourceDto);
+
+    [DebuggerStepThrough]
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, CreationData data) =>
+        AddClaimViewModel(viewModel, key, null, data.ViewModel.SourceDto);
+
+    [DebuggerStepThrough]
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, CreationData data) =>
+        AddClaimViewModel(viewModel, viewModel.Name, null, data.ViewModel.SourceDto);
+
+    [DebuggerStepThrough]
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, InfraViewModelBase parent) =>
+        AddClaimViewModel(viewModel, viewModel.Name, null, parent.SecurityClaims.First());
 
     [DebuggerStepThrough]
     private static string GetMapperNameSpace(CreationData data) =>
@@ -184,6 +196,7 @@ internal sealed partial class FunctionalityService
             .Then(addActions)
             .Then(addParameters)
             .Then(createConverters)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         void createViewModel(CreationData data)
@@ -220,6 +233,8 @@ internal sealed partial class FunctionalityService
                     Row = 1,
                 }
             };
+            AddClaimViewModel(saveButton, "Save", data.ViewModel.BlazorDetailsComponentViewModel);
+
             // The Back button. Same as the cancel button.
             var cancelButton = new UiComponentCustomButton()
             {
@@ -252,10 +267,21 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("Microsoft.AspNetCore.Components.EventCallback<long?>"), "EntityIdChanged"));
         }
 
+        void setupEditForm(CreationData data)
+        {
+            var info = data.ViewModel.BlazorDetailsComponentViewModel.EditFormInfo;
+            info.IsEditForm = true;
+            _ = info.Events.Add(new(nameof(EditForm.OnValidSubmit), new Library.CodeGeneration.v2.Back.Method("SaveData")
+            {
+                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel),
+                ReturnType = "async Task"
+            }));
+        }
+
         void createConverters(CreationData data)
         {
             var mapperNameSpace = GetMapperNameSpace(data);
-            var dataContext = data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty.Dto;
+            var dataContext = data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty!.Dto!;
 
             var insert = data.ViewModel.InsertCommandViewModel;
             var insertDstTypePath = insert.GetSegregateParamsType("Command");
@@ -270,16 +296,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
         }
 
-        void setupEditForm(CreationData data)
-        {
-            var info = data.ViewModel.BlazorDetailsComponentViewModel.EditFormInfo;
-            info.IsEditForm = true;
-            _ = info.Events.Add(new(nameof(EditForm.OnValidSubmit), new Library.CodeGeneration.v2.Back.Method("SaveData")
-            {
-                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommandViewModel, data.ViewModel.UpdateCommandViewModel),
-                ReturnType = "async Task"
-            }));
-        }
+        void setupSecurity(CreationData data) =>
+            AddClaimViewModel(data.ViewModel.BlazorDetailsComponentViewModel, $"{name}Details", data);
     }
 
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
@@ -323,7 +341,7 @@ internal sealed partial class FunctionalityService
             var pageName = $"{CommonHelpers.Purify(data.ViewModel.SourceDto.Name!)}/details";
             var pureRoute = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null);
             var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null, "{Id:long}");
-            data.ViewModel.BlazorDetailsPageViewModel.Routes.AddRange(pureRoute, routeWithId);
+            _ = data.ViewModel.BlazorDetailsPageViewModel.Routes.AddRange(pureRoute, routeWithId);
 
             var newButton = new UiComponentCustomButton
             {
@@ -360,7 +378,7 @@ internal sealed partial class FunctionalityService
             {
                 CqrsSegregate = data.ViewModel.GetAllQueryViewModel
             };
-            data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
+            _ = data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
         }
     }
 
@@ -423,7 +441,7 @@ internal sealed partial class FunctionalityService
         }
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.DeleteCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.DeleteCommandViewModel);
+            data.ViewModel.DeleteCommandViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.DeleteCommandViewModel);
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.DeleteCommandViewModel.HandleMethodBody = CodeSnippets.CreateDeleteCommandHandleMethodBody(data.ViewModel.DeleteCommandViewModel);
@@ -472,7 +490,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetAllQueryHandleMethodBody(data.ViewModel.GetAllQueryViewModel);
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetAllQueryViewModel);
+            data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.GetAllQueryViewModel);
     }
 
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
@@ -516,7 +534,7 @@ internal sealed partial class FunctionalityService
         }
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.GetByIdQueryViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.GetByIdQueryViewModel);
+            data.ViewModel.GetByIdQueryViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.GetByIdQueryViewModel);
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetByIdQueryHandleMethodBody(data.ViewModel.GetByIdQueryViewModel);
@@ -582,7 +600,7 @@ internal sealed partial class FunctionalityService
         }
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.InsertCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.InsertCommandViewModel);
+            data.ViewModel.InsertCommandViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.InsertCommandViewModel);
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.InsertCommandViewModel.HandleMethodBody = CodeSnippets.CreateInsertCommandHandleMethodBody(data.ViewModel.InsertCommandViewModel);
@@ -635,7 +653,7 @@ internal sealed partial class FunctionalityService
         }
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.UpdateCommandViewModel.SecurityClaims = GetClaimViewModels(data, data.ViewModel.UpdateCommandViewModel);
+            data.ViewModel.UpdateCommandViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.UpdateCommandViewModel);
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.UpdateCommandViewModel.HandleMethodBody = CodeSnippets.CreateUpdateCommandHandleMethodBody(data.ViewModel.UpdateCommandViewModel);

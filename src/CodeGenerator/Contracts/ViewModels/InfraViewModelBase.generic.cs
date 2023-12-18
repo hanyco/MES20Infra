@@ -11,9 +11,21 @@ namespace Contracts.ViewModels;
 public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraViewModelBase<TId>>, ICanSetKey<TId>, IEntity
 {
     protected string? _name;
+
     private string? _description;
+
     private Guid? _guid;
+
     private TId? _id;
+
+    protected InfraViewModelBase()
+    {
+    }
+
+    protected InfraViewModelBase(TId id) => this.Id = id;
+
+    protected InfraViewModelBase(string name, TId id)
+        : this(id) => this.Name = name;
 
     public virtual string? Description
     {
@@ -39,8 +51,10 @@ public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraV
         set => this.SetProperty(ref this._name, value);
     }
 
+    public ISet<ClaimViewModel> SecurityClaims { get; } = new HashSet<ClaimViewModel>();
+
     public static bool operator !=(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right) =>
-        !(left == right);
+            !(left == right);
 
     public static bool operator ==(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right) =>
         (left is null && right is null) || (left is not null && right is not null && left.Equals(right));
