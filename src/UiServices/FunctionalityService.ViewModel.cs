@@ -306,6 +306,7 @@ internal sealed partial class FunctionalityService
         return TaskRunner.StartWith(data)
             .Then(createPageViewModel)
             .Then(addParameters)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         void createPageViewModel(CreationData data) =>
@@ -314,6 +315,9 @@ internal sealed partial class FunctionalityService
                 .With(x => x.ClassName = name);
         static void addParameters(CreationData data) =>
             data.ViewModel.BlazorDetailsPageViewModel.Parameters.Add(new(TypePath.New<long>(), "Id"));
+
+        void setupSecurity(CreationData data) =>
+            AddClaimViewModel(data.ViewModel.BlazorDetailsPageViewModel, $"{name}Details", data);
     }
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
@@ -322,6 +326,7 @@ internal sealed partial class FunctionalityService
         return TaskRunner.StartWith(data)
             .Then(createViewModel)
             .Then(addActions)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         void createViewModel(CreationData data)
@@ -380,6 +385,9 @@ internal sealed partial class FunctionalityService
             };
             _ = data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
         }
+
+        void setupSecurity(CreationData data) =>
+            AddClaimViewModel(data.ViewModel.BlazorListComponentViewModel, $"{name}List", data);
     }
 
     private Task CreateBlazorListPage(CreationData data, CancellationToken token)
@@ -387,12 +395,16 @@ internal sealed partial class FunctionalityService
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("ListPage");
         return TaskRunner.StartWith(data)
             .Then(createPageViewModel)
+            .Then(setupSecurity)
             .RunAsync(token);
 
         void createPageViewModel(CreationData data) =>
             data.ViewModel.BlazorListPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
                 .With(x => x.Name = name)
                 .With(x => x.ClassName = name);
+
+        void setupSecurity(CreationData data) =>
+            AddClaimViewModel(data.ViewModel.BlazorListPageViewModel, $"{name}List", data);
     }
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)
@@ -440,11 +452,11 @@ internal sealed partial class FunctionalityService
         {
         }
 
-        void setupSecurity(CreationData data) =>
-            data.ViewModel.DeleteCommandViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.DeleteCommandViewModel);
-
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.DeleteCommandViewModel.HandleMethodBody = CodeSnippets.CreateDeleteCommandHandleMethodBody(data.ViewModel.DeleteCommandViewModel);
+
+        void setupSecurity(CreationData data) =>
+            AddClaimViewModel(data.ViewModel.DeleteCommandViewModel, data);
     }
 
     private async Task CreateGetAllQuery(CreationData data, CancellationToken token)
@@ -490,7 +502,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetAllQueryHandleMethodBody(data.ViewModel.GetAllQueryViewModel);
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.GetAllQueryViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.GetAllQueryViewModel);
+            AddClaimViewModel(data.ViewModel.GetAllQueryViewModel, data);
     }
 
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
@@ -534,7 +546,7 @@ internal sealed partial class FunctionalityService
         }
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.GetByIdQueryViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.GetByIdQueryViewModel);
+            AddClaimViewModel(data.ViewModel.GetAllQueryViewModel, data);
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.GetByIdQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetByIdQueryHandleMethodBody(data.ViewModel.GetByIdQueryViewModel);
@@ -600,7 +612,7 @@ internal sealed partial class FunctionalityService
         }
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.InsertCommandViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.InsertCommandViewModel);
+            AddClaimViewModel(data.ViewModel.InsertCommandViewModel, data);
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.InsertCommandViewModel.HandleMethodBody = CodeSnippets.CreateInsertCommandHandleMethodBody(data.ViewModel.InsertCommandViewModel);
@@ -653,7 +665,7 @@ internal sealed partial class FunctionalityService
         }
 
         void setupSecurity(CreationData data) =>
-            data.ViewModel.UpdateCommandViewModel.SecurityClaims = GetClaimViewModel(data, data.ViewModel.UpdateCommandViewModel);
+            AddClaimViewModel(data.ViewModel.UpdateCommandViewModel, data);
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.UpdateCommandViewModel.HandleMethodBody = CodeSnippets.CreateUpdateCommandHandleMethodBody(data.ViewModel.UpdateCommandViewModel);
