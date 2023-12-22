@@ -6,6 +6,7 @@ using HanyCo.Infra.UI.Services.Imp;
 using HanyCo.Infra.UI.ViewModels;
 
 using Library.BusinessServices;
+using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
@@ -15,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Services;
 
 [Service]
+[Stateless]
 internal sealed class CqrsCommandService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,

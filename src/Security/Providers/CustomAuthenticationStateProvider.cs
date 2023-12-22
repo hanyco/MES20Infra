@@ -9,8 +9,13 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var identity = new ClaimsIdentity();
-        // Anonymous user
+        // Anonymous user (not logged in)
+        
+        //var identity = new ClaimsIdentity(authenticationType: "MES - Default Authentication Default Type");
+        //// Anonymous user (logged in)
+        
         var user = new ClaimsPrincipal(identity);
+
         var result = new AuthenticationState(user);
         return Task.FromResult(result);
     }

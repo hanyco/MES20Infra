@@ -13,6 +13,7 @@ using Library.CodeGeneration.v2.Back;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
+using Library.DesignPatterns.Markers;
 using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
@@ -24,6 +25,7 @@ using ICommand = Library.Cqrs.Models.Commands.ICommand;
 namespace Services;
 
 [Service]
+[Stateless]
 internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGeneratorEngine, IDtoCodeService dtoCodeService) : ICqrsCodeGeneratorService
 {
     public Result<Codes> GenerateCodes(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
