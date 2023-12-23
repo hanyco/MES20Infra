@@ -16,6 +16,10 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         
         var user = new ClaimsPrincipal(identity);
 
+        var claimList = new List<Claim>();
+        var usernameClaim = new Claim(ClaimTypes.Name, "AnonymousUser");
+        claimList.Add(usernameClaim);
+
         var result = new AuthenticationState(user);
         return Task.FromResult(result);
     }
