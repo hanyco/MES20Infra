@@ -1,15 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
-
-using Library.Results;
-using Library.Validations;
+﻿using System.Security.Claims;
 
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.IdentityModel.Tokens;
 
-using Newtonsoft.Json;
-
-namespace HanyCo.Infra.Security.Providers;
+namespace HanyCo.Infra.Security.Client.Providers;
 
 public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
@@ -31,11 +24,4 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         var result = new AuthenticationState(user);
         return Task.FromResult(result);
     }
-
-    //public static IEnumerable<Claim> DecodeJwt(string jwtToken)
-    //{
-    //    var handler = new JwtSecurityTokenHandler();
-    //    var tokenS = handler.ReadJwtToken(jwtToken);
-    //    return tokenS.Claims;
-    //}
 }
