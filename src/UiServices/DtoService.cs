@@ -7,6 +7,7 @@ using Contracts.ViewModels;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services;
 using HanyCo.Infra.UI.ViewModels;
 
@@ -110,6 +111,11 @@ internal sealed class DtoService(
 
         var properties = viewModel.Properties.Select(toProperty);
         var type = new Class(arguments?.TypeName ?? viewModel.Name!).AddMember(properties);
+        foreach (var claim in viewModel.SecurityClaims)
+        {
+            type.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
+        }
+
         var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
 
         var statement = this._codeGeneratorEngine.Generate(nameSpace);
@@ -130,9 +136,12 @@ internal sealed class DtoService(
             var result = new CodeGenProperty(pvm.Name!, type);
             if (pvm.Name != "Id" && !(pvm.IsNullable ?? false))
             {
-                result.Attributes.Add(ICodeGenAttribute.New(TypePath.New<RequiredAttribute>()));
+                result.AddAttribute<RequiredAttribute>();
             }
-
+            foreach (var claim in pvm.SecurityClaims)
+            {
+                result.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
+            }
             return result;
         }
 

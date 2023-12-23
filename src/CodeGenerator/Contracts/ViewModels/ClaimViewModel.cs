@@ -4,25 +4,35 @@ using System.Diagnostics.CodeAnalysis;
 namespace Contracts.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed class ClaimViewModel : InfraViewModelBase<Guid>, IEquatable<ClaimViewModel>
+public sealed class ClaimViewModel(string? key, object? value, Guid? id, ClaimViewModel? parent)
+    : InfraViewModelBase<Guid>(id ?? System.Guid.NewGuid()), IEquatable<ClaimViewModel>
 {
     public ClaimViewModel()
-        : this(null, null)
-    {
-    }
+        : this(null, null, null, null) { }
 
-    public ClaimViewModel(string? key, Guid? id = null) =>
-        (this.Guid, this.Key) = (id ?? System.Guid.NewGuid(), key);
+    public ClaimViewModel(string? key, object? value)
+        : this(key, value, null, null) { }
 
-    public ClaimViewModel(string? key, Guid? id, ClaimViewModel? parent)
-        : this(key, id) => this.Parent = parent;
+    public ClaimViewModel(string? key, object? value, Guid? id)
+        : this(key, value, id, null) { }
 
-    public string? Key { get; set; }
+    public ClaimViewModel(string? key, object? value, ClaimViewModel? parent)
+        : this(key, value, null, parent) { }
 
-    public ClaimViewModel? Parent { get; set; }
+    public string? Key { get; set; } = key;
+
+    public ClaimViewModel? Parent { get; set; } = parent;
+
+    public object? Value { get; set; } = value;
+
+    public static bool operator !=(ClaimViewModel left, ClaimViewModel right) =>
+        !Equals(left, right);
+
+    public static bool operator ==(ClaimViewModel left, ClaimViewModel right) =>
+        Equals(left, right);
 
     public bool Equals(ClaimViewModel? other) =>
-        other?.Key == this.Key;
+        (other?.GetHashCode() ?? 0) == this.GetHashCode();
 
     public override bool Equals(object? obj) =>
         this.Equals(obj as ClaimViewModel);
@@ -31,7 +41,7 @@ public sealed class ClaimViewModel : InfraViewModelBase<Guid>, IEquatable<ClaimV
         this.Key?.GetHashCode() ?? 0;
 
     public override string ToString() =>
-        $"{this.Guid} - {this.Key}";
+        $"{this.Guid} - {this.Key}=\"{this.Value ?? "(null)"}\"";
 
     private string GetDebuggerDisplay() =>
         this.ToString();

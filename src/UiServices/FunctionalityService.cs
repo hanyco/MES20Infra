@@ -5,6 +5,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services;
 
+using Library.DesignPatterns.Markers;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
 using Library.Results;
@@ -16,6 +17,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace Services;
 
 [Service]
+[Stateless]
 internal partial class FunctionalityService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,

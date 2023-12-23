@@ -47,7 +47,7 @@ public partial class DtoEditUserControl : UserControl,
     }
 
     public DtoViewModel? ViewModel => 
-        this.DataContext.Cast().As<DtoViewModel>()?.With(x => x.SecurityClaims = this.DtoSecurityClaimCollectorUserControl.ClaimViewModels);
+        this.DataContext.Cast().As<DtoViewModel>()?.With(x => x.SecurityClaims.AddRange(this.DtoSecurityClaimCollectorUserControl.ClaimViewModels));
 
     public async Task BindAsync()
     {

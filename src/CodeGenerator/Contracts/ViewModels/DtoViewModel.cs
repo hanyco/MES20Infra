@@ -70,10 +70,4 @@ public sealed class DtoViewModel : InfraViewModelBase
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
 
     public ObservableCollection<PropertyViewModel> Properties { get; } = [];
-
-    public IEnumerable<ClaimViewModel> SecurityClaims
-    {
-        get => this._securityClaims;
-        set => this.SetProperty(ref this._securityClaims, value);
-    }
 }

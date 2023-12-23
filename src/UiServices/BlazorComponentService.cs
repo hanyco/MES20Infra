@@ -7,6 +7,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
 using Library.BusinessServices;
+using Library.DesignPatterns.Markers;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
 using Library.Results;
@@ -18,12 +19,13 @@ using Microsoft.EntityFrameworkCore;
 using Services.Helpers;
 
 using CustomButtonViewModel = Contracts.ViewModels.UiComponentCustomButton;
-using UiPropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
 using UiComponentViewModel = Contracts.ViewModels.UiComponentViewModel;
+using UiPropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
 
 namespace Services;
 
 [Service]
+[Stateless]
 internal sealed class BlazorComponentService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,

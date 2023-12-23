@@ -4,7 +4,6 @@ using Autofac.Extensions.DependencyInjection;
 using HanyCo.Infra;
 
 using Library.Cqrs;
-using Library.Cqrs.Models.Commands;
 using Library.Data.SqlServer;
 using Library.Mapping;
 
@@ -14,6 +13,7 @@ public sealed class Program
 {
     public static void Main(string[] args)
     {
+        const string CONNECTION_STRING = "Data Source=.;Initial Catalog=MesInfra;Integrated Security=True";
         var builder = WebApplication.CreateBuilder(args);
 
         _ = builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
@@ -26,9 +26,9 @@ public sealed class Program
         _ = builder.Services.AddServerSideBlazor();
 
         _ = builder.Services
-                .AddSingleton(new Sql("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True"))
+                .AddSingleton(new Sql(CONNECTION_STRING))
                 .AddSingleton<IMapper, Mapper>()
-                .AddMesInfraServices<Program>("connection string", Library.Logging.ILogger.Empty)
+                .AddMesInfraServices<Program>(CONNECTION_STRING, Library.Logging.ILogger.Empty)
                 ;
 
         _ = builder.Services.AddControllersWithViews(options =>

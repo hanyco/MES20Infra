@@ -6,7 +6,10 @@ using Library.Exceptions;
 using Library.Web.Middlewares.Markers;
 using Library.Web.Results;
 
-namespace Library.Web.Middlewares.Infra;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+
+namespace HanyCo.Infra.Web.Middlewares;
 
 [MonitoringMiddleware]
 public sealed class ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionHandlerMiddleware> logger) : IInfraMiddleware

@@ -10,5 +10,5 @@ public abstract class UiComponentContentViewModelBase : InfraViewModelBase, IUiC
 
     public bool IsEnabled { get => this._isEnabled; set => this.SetProperty(ref this._isEnabled, value); }
 
-    public UiBootstrapPositionViewModel Position { get => this._position ??= new(); set => this._position = value; }
+    public UiBootstrapPositionViewModel Position { get => this._position ??= new(); set => this.SetProperty(ref this._position, value); }
 }
