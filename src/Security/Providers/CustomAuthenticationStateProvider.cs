@@ -1,6 +1,13 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
+
+using Library.Results;
+using Library.Validations;
 
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.IdentityModel.Tokens;
+
+using Newtonsoft.Json;
 
 namespace HanyCo.Infra.Security.Providers;
 
@@ -8,19 +15,27 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
 {
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var identity = new ClaimsIdentity();
         // Anonymous user (not logged in)
-        
-        //var identity = new ClaimsIdentity(authenticationType: "MES - Default Authentication Default Type");
+        var identity = new ClaimsIdentity();
         //// Anonymous user (logged in)
-        
-        var user = new ClaimsPrincipal(identity);
+        //var identity = new ClaimsIdentity(authenticationType: "MES - Default Authentication Default Type");
+        identity.AddClaims([
+            new Claim(ClaimTypes.Name, "AnonymousUser"),
+            new Claim(ClaimTypes.Role, "Anonymous User"),
+            new Claim("FirstName", "Anonymous"),
+            new Claim("LastName", "User"),
+            ]);
 
-        var claimList = new List<Claim>();
-        var usernameClaim = new Claim(ClaimTypes.Name, "AnonymousUser");
-        claimList.Add(usernameClaim);
+        var user = new ClaimsPrincipal(identity);
 
         var result = new AuthenticationState(user);
         return Task.FromResult(result);
     }
+
+    //public static IEnumerable<Claim> DecodeJwt(string jwtToken)
+    //{
+    //    var handler = new JwtSecurityTokenHandler();
+    //    var tokenS = handler.ReadJwtToken(jwtToken);
+    //    return tokenS.Claims;
+    //}
 }
