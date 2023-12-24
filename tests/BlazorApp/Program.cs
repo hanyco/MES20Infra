@@ -1,25 +1,60 @@
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+
+using HanyCo.Infra;
+
+using Library.Cqrs;
+using Library.Data.SqlServer;
+using Library.Mapping;
 
 namespace BlazorApp;
-public class Program
+
+public sealed class Program
 {
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
         const string CONNECTION_STRING = "Data Source=.;Initial Catalog=MesInfra;Integrated Security=True";
-        var builder = WebAssemblyHostBuilder.CreateDefault(args);
-        builder.RootComponents.Add<App>("#app");
-        builder.RootComponents.Add<HeadOutlet>("head::after");
+        var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+        _ = builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+        _ = builder.Services
+            .AddRazorPages()
+            .AddMvcOptions(options =>
+            {
+                options.Filters.Add(new SampleAsyncPageFilter());
+            });
+        _ = builder.Services.AddServerSideBlazor();
 
-        MesConfig(builder);
+        _ = builder.Services
+                .AddSingleton(new Sql(CONNECTION_STRING))
+                .AddSingleton<IMapper, Mapper>()
+                .AddMesInfraServices<Program>(CONNECTION_STRING, Library.Logging.ILogger.Empty)
+                ;
 
-        await builder.Build().RunAsync();
-    }
+        _ = builder.Services.AddControllersWithViews(options =>
+        {
+            _ = options.Filters.Add<SampleActionFilter>();
+        });
 
-    private static void MesConfig(WebAssemblyHostBuilder builder)
-    {
-        
+        _ = builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.AddCqrs(typeof(Program).Assembly));
+
+        var app = builder.Build();
+
+        //! Configure the HTTP request pipeline.
+        if (!app.Environment.IsDevelopment())
+        {
+            _ = app.UseExceptionHandler("/Error");
+        }
+
+        _ = app.UseStaticFiles();
+
+        _ = app.UseRouting();
+
+        _ = app.UseMesInfraMiddleware();
+
+        _ = app.MapBlazorHub();
+        _ = app.MapFallbackToPage("/_Host");
+
+        app.Run();
     }
 }

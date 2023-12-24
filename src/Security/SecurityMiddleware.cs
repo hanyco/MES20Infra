@@ -16,45 +16,45 @@ internal class SecurityMiddleware(RequestDelegate next, IAuthorizationService au
 {
     protected override Task OnExecutingAsync(ItemActingEventArgs<HttpContext> e)
     {
-        if (e.Item == default)
-        {
-            return Task.CompletedTask;
-        }
-        if (this.User != default)
-        {
-            if (this.IsAdminUser(this.User))
-            {
-                return Task.CompletedTask;
-            }
-        }
-
-        var route = GetRoute(e.Item);
-
-        //if (localPath.IsNullOrEmpty() || localPath == "\\" || localPath == "/" || localPath.StartsWith("/_blazor"))
+        //if (e.Item == default)
         //{
         //    return Task.CompletedTask;
         //}
+        //if (this.User != default)
+        //{
+        //    if (this.IsAdminUser(this.User))
+        //    {
+        //        return Task.CompletedTask;
+        //    }
+        //}
 
-        var claims = PolicyManager.GetClaimsByRoute(route.LocalPath.ToString()).ToImmutableArray();
-        if (!claims.Any())
-        {
-            return Task.CompletedTask;
-        }
-        if (this.User == default)
-        {
-            e.Item.Abort();
-            e.Handled = true;
-            return Task.CompletedTask;
-        }
-        var violations = claims.Where(x => !this.User.HasClaim(x.ClaimType, x.ClaimValue));
-        //var authorizationResult = await authorization.AuthorizeAsync(this.User, claims);
-        //if (!authorizationResult.Succeeded)
-        if (violations.Any())
-        {
-            e.Item.Abort();
-            e.Handled = true;
-            return Task.CompletedTask;
-        }
+        //var route = GetRoute(e.Item);
+
+        ////if (localPath.IsNullOrEmpty() || localPath == "\\" || localPath == "/" || localPath.StartsWith("/_blazor"))
+        ////{
+        ////    return Task.CompletedTask;
+        ////}
+
+        //var claims = PolicyManager.GetClaimsByRoute(route.LocalPath.ToString()).ToImmutableArray();
+        //if (!claims.Any())
+        //{
+        //    return Task.CompletedTask;
+        //}
+        //if (this.User == default)
+        //{
+        //    e.Item.Abort();
+        //    e.Handled = true;
+        //    return Task.CompletedTask;
+        //}
+        //var violations = claims.Where(x => !this.User.HasClaim(x.ClaimType, x.ClaimValue));
+        ////var authorizationResult = await authorization.AuthorizeAsync(this.User, claims);
+        ////if (!authorizationResult.Succeeded)
+        //if (violations.Any())
+        //{
+        //    e.Item.Abort();
+        //    e.Handled = true;
+        //    return Task.CompletedTask;
+        //}
         return Task.CompletedTask;
     }
 
