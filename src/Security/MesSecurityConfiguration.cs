@@ -64,8 +64,8 @@ public static class MesSecurityConfiguration
                 options.AddPolicy("CanViewList", policy => policy.RequireClaim("Administrators"));
                 options.AddPolicy("CanViewDetail", policy => policy.RequireClaim("Administrators"));
                 options.AddPolicy("CanCreate", policy => policy.RequireClaim("Administrators"));
-                options.AddPolicy("CanUpdate", policy => policy.RequireClaim("Administrators"));
                 options.AddPolicy("CanDelete", policy => policy.RequireClaim("Administrators"));
+                options.AddPolicy("CanSave", policy => policy.RequireClaim("Administrators"));
             });
 
         static void addAuthentication(IServiceCollection services) =>
