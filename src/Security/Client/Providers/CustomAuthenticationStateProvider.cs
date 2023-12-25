@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace HanyCo.Infra.Security.Client.Providers;
 
@@ -9,17 +10,18 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         // Anonymous user (not logged in)
-        var identity = new ClaimsIdentity();
-        //// Anonymous user (logged in)
-        //var identity = new ClaimsIdentity(authenticationType: "MES - Default Authentication Default Type");
+        //var identity = new ClaimsIdentity();
+        // Anonymous user (logged in)
+        var identity = new ClaimsIdentity(authenticationType: "MES Infra Authentication Type");
         identity.AddClaims([
-            new Claim(ClaimTypes.Name, "AnonymousUser"),
-            new Claim(ClaimTypes.Role, "Anonymous User"),
-            new Claim("FirstName", "Anonymous"),
-            new Claim("LastName", "User"),
+            new Claim(ClaimTypes.Name, "Administrator"),
+            new Claim(ClaimTypes.Role, "Administrators"),
+            new Claim("FirstName", "Mohammad"),
+            new Claim("LastName", "Mirmostafa"),
             ]);
 
         var user = new ClaimsPrincipal(identity);
+        
 
         var result = new AuthenticationState(user);
         return Task.FromResult(result);

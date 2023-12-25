@@ -1,0 +1,64 @@
+﻿@attribute [Authorize(Policy = "CanViewSystemList")]
+@page "/authentication/users"
+@layout MainLayout
+
+@using Microsoft.AspNetCore.Identity;
+
+@inject InfraUserManager _UserManager;
+
+<PageTitle>MES User Management - List</PageTitle>
+<MyGrid Items="@DataContext">
+    <GridHeader>
+        <th>Id</th>
+        <th>Mail</th>
+        <th>User Name</th>
+        <th></th>
+        <th></th>
+    </GridHeader>
+    <GridRow>
+        <td>@context.Id</td>
+        <td>@context.Email</td>
+        <td>@context.UserName</td>
+        <td>
+            <AuthorizeView Policy="CanSystemSave">
+                <Authorized Context="AuthorizedToEdit">
+                    <button class="btn btn-primary" @onclick="@(() => EditUser(context.Id))">Edit</button>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Policy="CanSystemDelete">
+                <Authorized Context="AuthorizedToEdit">
+                    <button class="btn btn-primary" @onclick="@(() => DeleteUser(context.Id))">Delete</button>
+                </Authorized>
+            </AuthorizeView>
+        </td>
+    </GridRow>
+</MyGrid>
+
+@code {
+    private readonly List<UserInfo> DataContext = new List<UserInfo>();
+    protected override Task OnInitializedAsync()
+    {
+        var users = _UserManager.Users.Select(x => new UserInfo
+            {
+                Id = x.Id,
+                Email = x.Email,
+                UserName= x.UserName
+            });
+        DataContext.AddRange(users);
+        return Task.CompletedTask;
+    }
+    private void EditUser(string userId)
+    {
+
+    }
+    private void DeleteUser(string userId)
+    {
+
+    }
+    public class UserInfo
+    {
+        public string Id { get; set; }
+        public string Email { get; set; }
+        public string UserName { get; set; }
+    }
+}

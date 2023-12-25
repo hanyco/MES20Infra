@@ -32,6 +32,7 @@
       <Using Include="Library.Helpers" />
     </ItemGroup>
     <ItemGroup>
+      <Folder Include="Authentication\Components\" />
       <Folder Include="wwwroot\lib\" />
     </ItemGroup>
 

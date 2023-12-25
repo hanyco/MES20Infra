@@ -36,7 +36,7 @@ public static class MesSecurityConfiguration
         addServices(services);
         addUserContext(services);
         addTools(services);
-
+        services.AddScoped<InfraUserManager, InfraUserManager>();
         //MvcHelper.Initialize();
 
         return services;
@@ -61,11 +61,11 @@ public static class MesSecurityConfiguration
                 _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
                     .AddCrudRequirementPolicies();
 
-                options.AddPolicy("CanViewList", policy => policy.RequireClaim("Administrators"));
-                options.AddPolicy("CanViewDetail", policy => policy.RequireClaim("Administrators"));
-                options.AddPolicy("CanCreate", policy => policy.RequireClaim("Administrators"));
-                options.AddPolicy("CanDelete", policy => policy.RequireClaim("Administrators"));
-                options.AddPolicy("CanSave", policy => policy.RequireClaim("Administrators"));
+                options.AddPolicy("CanViewSystemList", policy => policy.RequireRole("Administrators"));
+                options.AddPolicy("CanViewSystemDetail", policy => policy.RequireRole("Administrators"));
+                options.AddPolicy("CanSystemCreate", policy => policy.RequireRole("Administrators"));
+                options.AddPolicy("CanSystemDelete", policy => policy.RequireRole("Administrators"));
+                options.AddPolicy("CanSystemSave", policy => policy.RequireRole("Administrators"));
             });
 
         static void addAuthentication(IServiceCollection services) =>

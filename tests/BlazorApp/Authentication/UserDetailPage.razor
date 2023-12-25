@@ -1,0 +1,10 @@
+﻿@page "/authentication/users/{Id}"
+@page "/authentication/user"
+
+@layout MainLayout
+
+<PageTitle>MES User Management</PageTitle>
+
+@code {
+    [Parameter] public string Id { get; set; }
+}

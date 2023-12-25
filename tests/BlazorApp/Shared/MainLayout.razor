@@ -8,18 +8,8 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <span class="left"><a href="/">Home</a>&nbsp;&nbsp;</span>
-            <AuthorizeView>
-                <NotAuthorized>
-                    <span>Hello, @(context.User.Identity?.Name ?? "dear user")&nbsp;&nbsp;</span>
-                    <a href="/authentication/login">Login</a>
-                </NotAuthorized>
-                <Authorized>
-                    <span>Hello, @(context.User.Identity?.Name ?? "dear user")&nbsp;&nbsp;</span>
-                    <a href="/authentication/logout">Logout</a>
-                </Authorized>
-            </AuthorizeView>
+        <div class="top-row px-4 auth">
+            <LoginDisplay />
         </div>
 
         <article class="content px-4">
