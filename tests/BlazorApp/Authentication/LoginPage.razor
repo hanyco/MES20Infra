@@ -1,4 +1,17 @@
 ﻿@page "/authentication/login"
-@layout MainLayout
+@* @layout MainLayout *@
+@inject NavigationManager Nav;
 
 <PageTitle>@("MES") - Login</PageTitle>
+
+<button type="button" class="btn btn-primary" @onclick="LoginAsync">Login</button>
+
+@code
+{
+    async Task LoginAsync()
+    {
+        Nav.NavigateTo("/");
+
+        await Task.CompletedTask;
+    }
+}

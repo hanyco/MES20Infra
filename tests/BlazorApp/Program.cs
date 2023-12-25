@@ -26,8 +26,7 @@ public sealed class Program
         _ = builder.Services.AddServerSideBlazor();
 
         _ = builder.Services
-                .AddSingleton(new Sql(CONNECTION_STRING))
-                .AddSingleton<IMapper, Mapper>()
+                .AddOptions()
                 .AddMesInfraServices<Program>(CONNECTION_STRING, Library.Logging.ILogger.Empty)
                 ;
 

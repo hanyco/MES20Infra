@@ -1,4 +1,7 @@
-﻿using HanyCo.Infra.Security.DataSources;
+﻿#nullable disable
+
+using HanyCo.Infra.Security.Client.Providers;
+using HanyCo.Infra.Security.DataSources;
 using HanyCo.Infra.Security.Identity;
 using HanyCo.Infra.Security.Identity.Model;
 using HanyCo.Infra.Security.Model;
@@ -11,6 +14,7 @@ using Library.Validations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,27 +24,33 @@ public static class MesSecurityConfiguration
 {
     public static IServiceCollection AddMesInfraSecurityServices<TStartup>(this IServiceCollection services, ISecurityConfigOptions options)
     {
-        Check.MustBeArgumentNotNull(options);
+        _ = options.Check(CheckBehavior.ThrowOnFail)
+            .ArgumentNotNull()
+            .NotNull(x => x.ConnectionString);
 
         addLoggers(services, options.Logger);
         addIdentity(services);
         addAuthorization(services);
         addAuthentication(services);
-        addDbContextPool(services, options);
+        addDbContextPool(services, options.ConnectionString);
         addServices(services);
         addUserContext(services);
+        addTools(services);
+
         //MvcHelper.Initialize();
 
         return services;
 
         static void addIdentity(IServiceCollection services) =>
-            services.AddIdentity<InfraIdentityUser, InfraIdentityRole>(options =>
+            services
+            .AddIdentity<InfraIdentityUser, InfraIdentityRole>(options =>
             {
                 //options.Password = new() { RequiredLength = 8 };
                 options.User.RequireUniqueEmail = true;
-            }).AddEntityFrameworkStores<InfraSecDbContext>()
-              .AddDefaultTokenProviders()
-              .AddErrorDescriber<PersianIdentityErrorDescriber>();
+            })
+            .AddEntityFrameworkStores<InfraSecDbContext>()
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<PersianIdentityErrorDescriber>();
 
         static void addAuthorization(IServiceCollection services) =>
             services.AddAuthorization(options =>
@@ -50,6 +60,12 @@ public static class MesSecurityConfiguration
                     .RequireClaim("scope", "read").Build();
                 _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
                     .AddCrudRequirementPolicies();
+
+                options.AddPolicy("CanViewList", policy => policy.RequireClaim("Administrators"));
+                options.AddPolicy("CanViewDetail", policy => policy.RequireClaim("Administrators"));
+                options.AddPolicy("CanCreate", policy => policy.RequireClaim("Administrators"));
+                options.AddPolicy("CanUpdate", policy => policy.RequireClaim("Administrators"));
+                options.AddPolicy("CanDelete", policy => policy.RequireClaim("Administrators"));
             });
 
         static void addAuthentication(IServiceCollection services) =>
@@ -60,11 +76,11 @@ public static class MesSecurityConfiguration
                 o.RequireHttpsMetadata = false;
             });
 
-        static void addDbContextPool(IServiceCollection services, ISecurityConfigOptions options) =>
+        static void addDbContextPool(IServiceCollection services, string connectionString) =>
             services.AddDbContextPool<InfraSecDbContext>(o =>
             {
                 _ = o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-                _ = o.UseSqlServer(options.ConnectionString);
+                _ = o.UseSqlServer(connectionString);
                 _ = o.EnableSensitiveDataLogging();
             });
 
@@ -86,6 +102,8 @@ public static class MesSecurityConfiguration
 
         static void addLoggers(IServiceCollection services, ILogger logger) =>
             services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
+
+        static void addTools(IServiceCollection services) => services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
     }
 
     public static IApplicationBuilder UseMesSecurityInfraMiddleware(this IApplicationBuilder app) =>

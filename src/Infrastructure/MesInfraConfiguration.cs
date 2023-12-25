@@ -2,7 +2,9 @@
 using HanyCo.Infra.Security.Model;
 using HanyCo.Infra.Web.Middlewares;
 
+using Library.Data.SqlServer;
 using Library.Logging;
+using Library.Mapping;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,8 @@ public static class MesInfraConfiguration
 {
     public static IServiceCollection AddMesInfraServices<TStartup>(this IServiceCollection services, string connectionString, ILogger logger)
         => services.AddMemoryCache()
+            .AddSingleton(new Sql(connectionString))
+            .AddSingleton<IMapper, Mapper>()
             .AddHttpContextAccessor()
             .AddMesInfraSecurityServices<TStartup>(ISecurityConfigOptions.New(connectionString, logger))
             ;
