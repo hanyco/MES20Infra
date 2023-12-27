@@ -2,7 +2,7 @@
 
 namespace HanyCo.Infra.Security.Identity;
 
-public sealed class InfraIdentityUserToken : IdentityUserToken<Id>
+public sealed class InfraIdentityUserToken : IdentityUserToken<Guid>
 {
 
 }

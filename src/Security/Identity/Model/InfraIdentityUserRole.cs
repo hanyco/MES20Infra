@@ -2,7 +2,7 @@
 
 namespace HanyCo.Infra.Security.Identity;
 
-public sealed class InfraIdentityUserRole : IdentityUserRole<Id>
+public sealed class InfraIdentityUserRole : IdentityUserRole<Guid>
 {
 
 }

@@ -10,41 +10,46 @@
 
 <PageTitle>MES User Management - List</PageTitle>
 
-<div class="container">
+<div class="container-fluid">
     <div class="row">
-        <AuthorizeView Policy="CanSystemSave">
-            <Authorized Context="AuthorizedToCreate">
-                <button class="btn btn-primary" @onclick="@NewUser">New</button>
-            </Authorized>
-        </AuthorizeView>
+        <div class="div">
+            <AuthorizeView Policy="CanSystemSave">
+                <Authorized Context="AuthorizedToCreate">
+                    <button type="button" class="btn btn-primary" @onclick="@NewUser">New</button>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+        
     </div>
     <div class="row">
-        <MyGrid Items="@DataContext">
-            <GridHeader>
-                <th>Id</th>
-                <th>User Name</th>
-                <th>Mail</th>
-                <th></th>
-                <th></th>
-            </GridHeader>
-            <GridRow>
-                <td>@context.Id</td>
-                <td>@context.UserName</td>
-                <td>@context.Email</td>
-                <td>
-                    <AuthorizeView Policy="CanSystemSave">
-                        <Authorized Context="AuthorizedToEdit">
-                            <button class="btn btn-primary" @onclick="@(() => EditUser(context.Id))">Edit</button>
-                        </Authorized>
-                    </AuthorizeView>
-                    <AuthorizeView Policy="CanSystemDelete">
-                        <Authorized Context="AuthorizedToEdit">
-                            <button class="btn btn-primary" @onclick="@(() => DeleteUser(context.Id))">Delete</button>
-                        </Authorized>
-                    </AuthorizeView>
-                </td>
-            </GridRow>
-        </MyGrid>
+        <div class="col">
+            <MyGrid Items="@DataContext">
+                <GridHeader>
+                    <th>Id</th>
+                    <th>User Name</th>
+                    <th>Mail</th>
+                    <th></th>
+                    <th></th>
+                </GridHeader>
+                <GridRow>
+                    <td>@context.Id</td>
+                    <td>@context.UserName</td>
+                    <td>@context.Email</td>
+                    <td>
+                        <AuthorizeView Policy="CanSystemSave">
+                            <Authorized Context="AuthorizedToEdit">
+                                <button class="btn btn-primary" @onclick="@(() => EditUser(context.Id))">Edit</button>
+                            </Authorized>
+                        </AuthorizeView>
+                        <AuthorizeView Policy="CanSystemDelete">
+                            <Authorized Context="AuthorizedToEdit">
+                                <button class="btn btn-primary" @onclick="@(() => DeleteUser(context.Id))">Delete</button>
+                            </Authorized>
+                        </AuthorizeView>
+                    </td>
+                </GridRow>
+            </MyGrid>
+        </div>
     </div>
 </div>
 

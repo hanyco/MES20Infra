@@ -3,7 +3,7 @@ using Library.Types;
 
 namespace HanyCo.Infra.Security.Identity;
 
-public sealed class InfraIdentityUserClaim : IdentityUserClaim<Id>
+public sealed class InfraIdentityUserClaim : IdentityUserClaim<Guid>
 {
 
 }

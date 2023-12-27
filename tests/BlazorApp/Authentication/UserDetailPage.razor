@@ -3,8 +3,57 @@
 
 @layout MainLayout
 
+@inject NavigationManager _Navigation
+
 <PageTitle>MES User Management</PageTitle>
 
+<div class="container-fluid">
+    <div class="row gap-1 mb-3">
+        <button type="button" class="col-1 mr-10 btn btn-secondary" @onclick="@(()=>_Navigation.NavigateTo("/authentication/users"))">Back</button>
+        <button type="button" class="col-1 btn btn-info">Roles</button>
+        <button type="button" class="col-1 btn btn-primary" @onclick="@Save">Save</button>
+    </div>
+    <div class="row mb-3">
+        <label for="inputFirstName" class="col-sm-2 col-form-label">First Name</label>
+        <div class="col-sm-10">
+            <input type="email" class="form-control" id="inputFirstName">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="inputLastName" class="col-sm-2 col-form-label">Last Name</label>
+        <div class="col-sm-10">
+            <input type="email" class="form-control" id="inputLastName">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="inputUserName" class="col-sm-2 col-form-label">User Name</label>
+        <div class="col-sm-10">
+            <input type="email" class="form-control" id="inputUserName">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+        <div class="col-sm-10">
+            <input type="password" class="form-control" id="inputPassword">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="inputConfirm" class="col-sm-2 col-form-label">Confirm</label>
+        <div class="col-sm-10">
+            <input type="password" class="form-control" id="inputConfirm">
+        </div>
+    </div>
+    <hr />
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="IsLockedCheckBox" checked>
+        <label class="form-check-label" for="IsLockedCheckBox">Is Locked    </label>
+    </div>
+</div>
 @code {
     [Parameter] public string Id { get; set; }
+
+    private void Save()
+    {
+
+    }
 }
