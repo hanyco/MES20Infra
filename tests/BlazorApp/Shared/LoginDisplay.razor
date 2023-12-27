@@ -2,7 +2,7 @@
 
 <AuthorizeView>
     <Authorized>
-        Hello, @context.User.Identity?.Name!
+        Hello, @(context.User.Claims.FirstOrDefault(x => x.Type == "FirstName")?.Value ?? context.User.Identity?.Name)
         <a href="/authentication/logout">Logout</a>
     </Authorized>
     <NotAuthorized>

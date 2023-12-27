@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace HanyCo.Infra.Security.Identity;
 
-internal sealed class InfraUserManager(IUserStore<InfraIdentityUser> store,
+public sealed class InfraUserManager(IUserStore<InfraIdentityUser> store,
                         IOptions<IdentityOptions> optionsAccessor,
                         IPasswordHasher<InfraIdentityUser> passwordHasher,
                         IEnumerable<IUserValidator<InfraIdentityUser>> userValidators,

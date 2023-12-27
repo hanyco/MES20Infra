@@ -3,53 +3,71 @@
 @layout MainLayout
 
 @using Microsoft.AspNetCore.Identity;
+@using HanyCo.Infra.Security.Identity;
 
+@inject NavigationManager _Navigator;
 @inject InfraUserManager _UserManager;
 
 <PageTitle>MES User Management - List</PageTitle>
-<MyGrid Items="@DataContext">
-    <GridHeader>
-        <th>Id</th>
-        <th>Mail</th>
-        <th>User Name</th>
-        <th></th>
-        <th></th>
-    </GridHeader>
-    <GridRow>
-        <td>@context.Id</td>
-        <td>@context.Email</td>
-        <td>@context.UserName</td>
-        <td>
-            <AuthorizeView Policy="CanSystemSave">
-                <Authorized Context="AuthorizedToEdit">
-                    <button class="btn btn-primary" @onclick="@(() => EditUser(context.Id))">Edit</button>
-                </Authorized>
-            </AuthorizeView>
-            <AuthorizeView Policy="CanSystemDelete">
-                <Authorized Context="AuthorizedToEdit">
-                    <button class="btn btn-primary" @onclick="@(() => DeleteUser(context.Id))">Delete</button>
-                </Authorized>
-            </AuthorizeView>
-        </td>
-    </GridRow>
-</MyGrid>
+
+<div class="container">
+    <div class="row">
+        <AuthorizeView Policy="CanSystemSave">
+            <Authorized Context="AuthorizedToCreate">
+                <button class="btn btn-primary" @onclick="@NewUser">New</button>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+    <div class="row">
+        <MyGrid Items="@DataContext">
+            <GridHeader>
+                <th>Id</th>
+                <th>User Name</th>
+                <th>Mail</th>
+                <th></th>
+                <th></th>
+            </GridHeader>
+            <GridRow>
+                <td>@context.Id</td>
+                <td>@context.UserName</td>
+                <td>@context.Email</td>
+                <td>
+                    <AuthorizeView Policy="CanSystemSave">
+                        <Authorized Context="AuthorizedToEdit">
+                            <button class="btn btn-primary" @onclick="@(() => EditUser(context.Id))">Edit</button>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="CanSystemDelete">
+                        <Authorized Context="AuthorizedToEdit">
+                            <button class="btn btn-primary" @onclick="@(() => DeleteUser(context.Id))">Delete</button>
+                        </Authorized>
+                    </AuthorizeView>
+                </td>
+            </GridRow>
+        </MyGrid>
+    </div>
+</div>
 
 @code {
     private readonly List<UserInfo> DataContext = new List<UserInfo>();
     protected override Task OnInitializedAsync()
     {
-        var users = _UserManager.Users.Select(x => new UserInfo
+        var users = _UserManager.Users.Select(user => new UserInfo
             {
-                Id = x.Id,
-                Email = x.Email,
-                UserName= x.UserName
+                Id = user.Id.ToString(),
+                Email = user.Email,
+                UserName = user.UserName
             });
         DataContext.AddRange(users);
         return Task.CompletedTask;
     }
+    private void NewUser()
+    {
+        _Navigator.NavigateTo("/authentication/user");
+    }
     private void EditUser(string userId)
     {
-
+        _Navigator.NavigateTo($"/authentication/users/{userId}");
     }
     private void DeleteUser(string userId)
     {
