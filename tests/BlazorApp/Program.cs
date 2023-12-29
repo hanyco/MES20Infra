@@ -4,8 +4,6 @@ using Autofac.Extensions.DependencyInjection;
 using HanyCo.Infra;
 
 using Library.Cqrs;
-using Library.Data.SqlServer;
-using Library.Mapping;
 
 namespace BlazorApp;
 
@@ -34,7 +32,6 @@ public sealed class Program
         {
             _ = options.Filters.Add<SampleActionFilter>();
         });
-
         _ = builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.AddCqrs(typeof(Program).Assembly));
 
         var app = builder.Build();
@@ -53,6 +50,8 @@ public sealed class Program
 
         _ = app.MapBlazorHub();
         _ = app.MapFallbackToPage("/_Host");
+
+        DI.Initialize(app.Services);
 
         app.Run();
     }
