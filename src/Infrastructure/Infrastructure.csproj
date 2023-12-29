@@ -25,6 +25,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\BlazorLib\BlazorLib.csproj" />
 		<ProjectReference Include="..\Contracts\Contracts.csproj" />
 		<ProjectReference Include="..\Security\Security.csproj" />
 	</ItemGroup>

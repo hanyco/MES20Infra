@@ -16,6 +16,5 @@ public sealed class InfraIdentityUser : IdentityUser<Guid>, IEntity
     }
 
     public long CompanyId { get; set; }
-    public DateTime RegisterDate { get; set; }
     public DateTime? LastSignedIn { get; set; }
 }

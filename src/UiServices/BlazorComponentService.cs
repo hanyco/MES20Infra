@@ -281,7 +281,7 @@ internal sealed class BlazorComponentService(
 
     public async Task<Result<UiComponentViewModel>> ValidateAsync(UiComponentViewModel model, CancellationToken cancellationToken = default)
     {
-        Check.MutBeNotNull(model?.Name);
+        Check.MustBeNotNull(model?.Name);
 
         var nameQuery = from c in this._readDbContext.UiComponents
                         where c.Name == model.Name && c.Id != model.Id

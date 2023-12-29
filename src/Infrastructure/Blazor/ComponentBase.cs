@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace HanyCo.Infra.Blazor;
 
-public abstract class ComponentBase<TDataContextType, TPageDataContextType> : ComponentBase
+public abstract class ComponentBase<TDataContextType, TPageDataContextType> : BlazorLib.Components.LibComponentBase
     where TDataContextType : new()
 {
     public ComponentBase()
