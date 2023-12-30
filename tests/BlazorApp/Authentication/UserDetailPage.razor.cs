@@ -56,12 +56,12 @@ public partial class UserDetailPage : ComponentBase
             saveResultBuffer = await this._UserManager.SetClaimAsync(user, nameof(UserDetailPageViewModel.FirstName), this.DataContext.FirstName);
             if (!saveResultBuffer.Succeeded)
             {
-                return Result.CreateFailure("Error on updating the userError on setting user's claims", errors: saveResultBuffer.Errors.ToResultErrors());
+                return Result.CreateFailure("Error on setting user's claims", errors: saveResultBuffer.Errors.ToResultErrors());
             }
             saveResultBuffer = await this._UserManager.SetClaimAsync(user, nameof(UserDetailPageViewModel.LastName), this.DataContext.LastName);
             if (!saveResultBuffer.Succeeded)
             {
-                return Result.CreateFailure("Error on updating the userError on setting user's claims", errors: saveResultBuffer.Errors.ToResultErrors());
+                return Result.CreateFailure("Error on setting user's claims", errors: saveResultBuffer.Errors.ToResultErrors());
             };
             return Result.Success;
         }

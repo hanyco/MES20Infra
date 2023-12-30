@@ -13,7 +13,7 @@ public static class JwtHelpers
     [return: NotNull]
     public static Result<IEnumerable<Claim>> DecodeJwt(string jwtToken)
     {
-        return TryResult(operate, jwtToken);
+        return CatchResult(operate, jwtToken);
 
         static IEnumerable<Claim> operate(string token)
         {
