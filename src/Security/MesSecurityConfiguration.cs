@@ -36,7 +36,7 @@ public static class MesSecurityConfiguration
         addServices(services);
         addUserContext(services);
         addTools(services);
-        services.AddScoped<InfraUserManager, InfraUserManager>();
+        _ = services.AddScoped<InfraUserManager, InfraUserManager>();
         //MvcHelper.Initialize();
 
         return services;
@@ -61,11 +61,11 @@ public static class MesSecurityConfiguration
                 _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
                     .AddCrudRequirementPolicies();
 
-                options.AddPolicy("CanViewSystemList", policy => policy.RequireRole("Administrators"));
-                options.AddPolicy("CanViewSystemDetail", policy => policy.RequireRole("Administrators"));
-                options.AddPolicy("CanSystemCreate", policy => policy.RequireRole("Administrators"));
-                options.AddPolicy("CanSystemDelete", policy => policy.RequireRole("Administrators"));
-                options.AddPolicy("CanSystemSave", policy => policy.RequireRole("Administrators"));
+                options.AddPolicy(InfraAuthenticationValues.CanViewSystemListPolicyName, policy => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue));
+                options.AddPolicy(InfraAuthenticationValues.CanViewSystemDetailPolicyName, policy => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue));
+                options.AddPolicy(InfraAuthenticationValues.CanSystemCreatePolicyName, policy => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue));
+                options.AddPolicy(InfraAuthenticationValues.CanSystemDeletePolicyName, policy => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue));
+                options.AddPolicy(InfraAuthenticationValues.CanSystemSavePolicyName, policy => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue));
             });
 
         static void addAuthentication(IServiceCollection services) =>
@@ -103,7 +103,8 @@ public static class MesSecurityConfiguration
         static void addLoggers(IServiceCollection services, ILogger logger) =>
             services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
 
-        static void addTools(IServiceCollection services) => services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+        static void addTools(IServiceCollection services) => 
+            services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
     }
 
     public static IApplicationBuilder UseMesSecurityInfraMiddleware(this IApplicationBuilder app) =>

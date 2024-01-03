@@ -1,6 +1,8 @@
 ﻿@page "/authentication/users/{Id}"
 @page "/authentication/user"
 
+@attribute [Authorize]
+
 @using HanyCo.Infra.Blazor
 @using Microsoft.AspNetCore.Identity;
 @using HanyCo.Infra.Security.Identity;

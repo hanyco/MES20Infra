@@ -1,11 +1,23 @@
-﻿@inject NavigationManager Navigation
+﻿@using Microsoft.AspNetCore.WebUtilities;
+@inject NavigationManager Navigation
 
 <AuthorizeView>
     <Authorized>
         Hello, @(context.User.Claims.FirstOrDefault(x => x.Type == "FirstName")?.Value ?? context.User.Identity?.Name)
-        <a href="/authentication/logout">Logout</a>
+        <button type="button" class="btn btn-link" @onclick="@(() => this.NavigateTo("/authentication/logout"))">Logout</button>
     </Authorized>
     <NotAuthorized>
-        <a href="/authentication/login">Login</a>
+        <button type="button" class="btn btn-link" @onclick="@(() => this.NavigateTo("/authentication/login"))">Login</button>
     </NotAuthorized>
 </AuthorizeView>
+
+@code {
+
+    [Parameter]
+    public string ReturnUrl { get; set; }
+    private void NavigateTo(string url)
+    {
+        var uri = url.IsNullOrEmpty() ? url : QueryHelpers.AddQueryString(url, "returnUrl", ReturnUrl);
+        this.Navigation.NavigateTo(uri);
+    }
+}

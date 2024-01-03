@@ -1,8 +1,14 @@
 ﻿@page "/authentication/login"
-@layout MainLayout 
+
+@layout MainLayout
 @inject NavigationManager Nav;
+@inject AuthenticationStateProvider authenticator
 
 <PageTitle>@("MES") - Login</PageTitle>
+
+<h1>
+    Login
+</h1>
 
 <button type="button" class="btn btn-primary" @onclick="LoginAsync">Login</button>
 
@@ -10,7 +16,9 @@
 {
     async Task LoginAsync()
     {
-        Nav.NavigateTo("/");
+        //await authenticator.Login(jwtToken);
+
+        Nav.NavigateTo(string.Empty, forceLoad: false);
 
         await Task.CompletedTask;
     }

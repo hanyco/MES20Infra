@@ -3,4 +3,25 @@
 @attribute [Authorize]
 @layout MainLayout
 
+@inject NavigationManager Nav;
+@inject AuthenticationStateProvider authenticator
+
 <PageTitle>@("MES") - Logout</PageTitle>
+
+<h1>
+    Logout
+</h1>
+
+<button type="button" class="btn btn-primary" @onclick="LoginAsync">Logout</button>
+
+@code
+{
+    async Task LoginAsync()
+    {
+        //await authenticator.Logout(jwtToken);
+
+        Nav.NavigateTo(string.Empty, forceLoad: false);
+
+        await Task.CompletedTask;
+    }
+}
