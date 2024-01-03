@@ -17,7 +17,7 @@
     public string ReturnUrl { get; set; }
     private void NavigateTo(string url)
     {
-        var uri = url.IsNullOrEmpty() ? url : QueryHelpers.AddQueryString(url, "returnUrl", ReturnUrl);
+        var uri = this.ReturnUrl.IsNullOrEmpty() ? url : QueryHelpers.AddQueryString(url, "returnUrl", this.ReturnUrl);
         this.Navigation.NavigateTo(uri);
     }
 }
