@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 
+using HanyCo.Infra.Security.Helpers;
 using HanyCo.Infra.Security.Identity;
 
 using Microsoft.AspNetCore.Components.Authorization;
@@ -10,6 +11,7 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
 {
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        var test = JwtHelpers.Encode(getSampleAdminIdentity().Claims);
         var identity = getSampleSupervisorIdentity();
         var principal = new ClaimsPrincipal(identity);
         var result = new AuthenticationState(principal);

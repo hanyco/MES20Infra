@@ -2,8 +2,11 @@
 using System.Diagnostics.Contracts;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 using Library.Results;
+
+using Microsoft.IdentityModel.Tokens;
 
 namespace HanyCo.Infra.Security.Helpers;
 
@@ -11,7 +14,7 @@ public static class JwtHelpers
 {
     [Pure]
     [return: NotNull]
-    public static Result<IEnumerable<Claim>> DecodeJwt(string jwtToken)
+    public static Result<IEnumerable<Claim>> Decode(string jwtToken)
     {
         return CatchResult(operate, jwtToken);
 
@@ -21,5 +24,21 @@ public static class JwtHelpers
             var tokenS = handler.ReadJwtToken(token);
             return tokenS.Claims;
         }
+    }
+
+    public static string Encode(IEnumerable<Claim> claims, string issuer = "MES Infra", string audience = "MES", string secretKey = "MES Infra JWT Token Secrect Key", DateTime? expiresOn = null)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            expires: expiresOn ?? DateTime.Now.AddMinutes(30),
+            signingCredentials: creds);
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        return tokenHandler.WriteToken(token);
     }
 }
