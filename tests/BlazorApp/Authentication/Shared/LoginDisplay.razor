@@ -17,6 +17,7 @@
     public string ReturnUrl { get; set; }
     private void NavigateTo(string url)
     {
+        var a = Uri.EscapeDataString(Navigation.Uri);
         var uri = this.ReturnUrl.IsNullOrEmpty() ? url : QueryHelpers.AddQueryString(url, "returnUrl", this.ReturnUrl);
         this.Navigation.NavigateTo(uri);
     }

@@ -1,4 +1,5 @@
 ﻿using BlazorApp.Data;
+using BlazorApp.Shared;
 
 using Library.Exceptions;
 using Library.Results;
@@ -17,7 +18,7 @@ public partial class UserDetailPage : ComponentBase
     [Parameter]
     public EventCallback<long?>? IdChanged { get; set; }
 
-    public Shared.MessageComponent MessageComponent { get; set; }
+    public MessageComponent MessageComponent { get; set; }
 
     private UserDetailPageViewModel DataContext { get; set; }
 

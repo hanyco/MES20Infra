@@ -1,13 +1,14 @@
 ﻿@page "/authentication/users/{Id}"
 @page "/authentication/user"
 
-@attribute [Authorize]
-
 @using HanyCo.Infra.Blazor
 @using Microsoft.AspNetCore.Identity;
 @using HanyCo.Infra.Security.Identity;
 @using Microsoft.AspNetCore.Components;
 @using BlazorApp.Data;
+@using HanyCo.Infra.Security.Identity.Model;
+
+@attribute [Authorize(Policy = InfraAuthenticationValues.PolicyCanViewSystemEntities)]
 
 @inject NavigationManager _Navigator;
 @inject InfraUserManager _UserManager;
@@ -22,10 +23,14 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <div class="container-fluid">
+        <button type="button" class="col-1 btn btn-secondary" @onclick="@(() => _Navigator.NavigateTo("/authentication/users"))">Back</button>
+        <button type="button" class="col-1 btn btn-info">Roles</button>
         <div class="row gap-1 mb-3">
-            <button type="button" class="col-1 btn btn-secondary" @onclick="@(() => _Navigator.NavigateTo("/authentication/users"))">Back</button>
-            <button type="button" class="col-1 btn btn-info">Roles</button>
-            <button id='SaveButton' name='SaveButton' class='col-1 btn btn-success' type='submit'>Save</button>
+            <AuthorizeView Context="ToolbarContext" Policy=@InfraAuthenticationValues.PolicyCanCrudSystemEntities>
+                <Authorized>
+                    <button id='SaveButton' name='SaveButton' class='col-1 btn btn-success' type='submit'>Save</button>
+                </Authorized>
+            </AuthorizeView>
         </div>
         <hr />
         <div class="row mb-3">
