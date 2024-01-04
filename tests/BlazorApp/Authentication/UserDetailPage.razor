@@ -8,7 +8,7 @@
 @using BlazorApp.Data;
 @using HanyCo.Infra.Security.Identity.Model;
 
-@attribute [Authorize(Policy = InfraAuthenticationValues.PolicyCanViewSystemEntities)]
+@attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)]
 
 @inject NavigationManager _Navigator;
 @inject InfraUserManager _UserManager;
@@ -26,7 +26,7 @@
         <button type="button" class="col-1 btn btn-secondary" @onclick="@(() => _Navigator.NavigateTo("/authentication/users"))">Back</button>
         <button type="button" class="col-1 btn btn-info">Roles</button>
         <div class="row gap-1 mb-3">
-            <AuthorizeView Context="ToolbarContext" Policy=@InfraAuthenticationValues.PolicyCanCrudSystemEntities>
+            <AuthorizeView Context="ToolbarContext" Policy=@InfraIdentityValues.PolicyCanCrudSystemEntities>
                 <Authorized>
                     <button id='SaveButton' name='SaveButton' class='col-1 btn btn-success' type='submit'>Save</button>
                 </Authorized>

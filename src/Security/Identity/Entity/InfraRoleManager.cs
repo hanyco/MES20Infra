@@ -1,7 +1,7 @@
 ﻿//using HanyCo.Infra.Security.Identity.Model;
 //using Microsoft.Extensions.Logging;
 
-//namespace HanyCo.Infra.Security.Identity;
+//namespace HanyCo.Infra.Security;
 
 //internal sealed class InfraRoleManager : RoleManager<InfraIdentityRole>
 //{

@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-using HanyCo.Infra.Security.Identity.Model;
+using HanyCo.Infra.Security.Identity;
 
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -25,10 +25,10 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         var identity = new ClaimsIdentity(
         [
             new Claim(ClaimTypes.Name, "Administrator"),
-            new Claim(ClaimTypes.Role, InfraAuthenticationValues.RoleAdminValue),
-            new Claim(InfraAuthenticationValues.ClaimFirstName, "Mohammad-Admin"),
-            new Claim(InfraAuthenticationValues.ClaimLastName, "Mirmostafa"),
-        ], InfraAuthenticationValues.LoggedInAuthenticationType);
+            new Claim(ClaimTypes.Role, InfraIdentityValues.RoleAdminValue),
+            new Claim(InfraIdentityValues.ClaimFirstName, "Mohammad-Admin"),
+            new Claim(InfraIdentityValues.ClaimLastName, "Mirmostafa"),
+        ], InfraIdentityValues.LoggedInAuthenticationType);
         return identity;
     }
 
@@ -37,10 +37,10 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         var identity = new ClaimsIdentity(
         [
             new Claim(ClaimTypes.Name, "User"),
-            new Claim(ClaimTypes.Role, InfraAuthenticationValues.RoleSupervisor),
-            new Claim(InfraAuthenticationValues.ClaimFirstName, "Mohammad-Supervisor"),
-            new Claim(InfraAuthenticationValues.ClaimLastName, "Mirmostafa"),
-        ], InfraAuthenticationValues.LoggedInAuthenticationType);
+            new Claim(ClaimTypes.Role, InfraIdentityValues.RoleSupervisor),
+            new Claim(InfraIdentityValues.ClaimFirstName, "Mohammad-Supervisor"),
+            new Claim(InfraIdentityValues.ClaimLastName, "Mirmostafa"),
+        ], InfraIdentityValues.LoggedInAuthenticationType);
         return identity;
     }
 
@@ -49,10 +49,10 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         var identity = new ClaimsIdentity(
         [
             new Claim(ClaimTypes.Name, "User"),
-            new Claim(ClaimTypes.Role, InfraAuthenticationValues.RoleUser),
-            new Claim(InfraAuthenticationValues.ClaimFirstName, "Mohammad-User"),
-            new Claim(InfraAuthenticationValues.ClaimLastName, "Mirmostafa"),
-        ], InfraAuthenticationValues.LoggedInAuthenticationType);
+            new Claim(ClaimTypes.Role, InfraIdentityValues.RoleUser),
+            new Claim(InfraIdentityValues.ClaimFirstName, "Mohammad-User"),
+            new Claim(InfraIdentityValues.ClaimLastName, "Mirmostafa"),
+        ], InfraIdentityValues.LoggedInAuthenticationType);
         return identity;
     }
 }

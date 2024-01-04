@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace HanyCo.Infra.Security.Identity.Entity;
+namespace HanyCo.Infra.Security.Identity;
 
-internal sealed class InfraSignInManager(UserManager<InfraIdentityUser> userManager,
+public sealed class InfraSignInManager(UserManager<InfraIdentityUser> userManager,
                           IHttpContextAccessor contextAccessor,
                           IUserClaimsPrincipalFactory<InfraIdentityUser> claimsFactory,
                           IOptions<IdentityOptions> optionsAccessor,

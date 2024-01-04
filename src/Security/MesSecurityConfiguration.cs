@@ -36,7 +36,9 @@ public static class MesSecurityConfiguration
         addServices(services);
         addUserContext(services);
         addTools(services);
-        _ = services.AddScoped<InfraUserManager, InfraUserManager>();
+        _ = services
+            .AddScoped<InfraUserManager, InfraUserManager>()
+            .AddScoped<InfraSignInManager, InfraSignInManager>();
         //MvcHelper.Initialize();
 
         return services;
@@ -61,12 +63,12 @@ public static class MesSecurityConfiguration
                 _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
                     .AddCrudRequirementPolicies();
 
-                options.AddPolicy(InfraAuthenticationValues.PolicyCanViewSystemEntities, policy
-                    => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue, InfraAuthenticationValues.RoleSupervisor));
-                options.AddPolicy(InfraAuthenticationValues.PolicyCanCrudSystemEntities, policy
-                    => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue));
-                options.AddPolicy(InfraAuthenticationValues.PolicyIsAdmin, policy
-                    => policy.RequireRole(InfraAuthenticationValues.RoleAdminValue));
+                options.AddPolicy(InfraIdentityValues.PolicyCanViewSystemEntities, policy
+                    => policy.RequireRole(InfraIdentityValues.RoleAdminValue, InfraIdentityValues.RoleSupervisor));
+                options.AddPolicy(InfraIdentityValues.PolicyCanCrudSystemEntities, policy
+                    => policy.RequireRole(InfraIdentityValues.RoleAdminValue));
+                options.AddPolicy(InfraIdentityValues.PolicyIsAdmin, policy
+                    => policy.RequireRole(InfraIdentityValues.RoleAdminValue));
             });
 
         static void addAuthentication(IServiceCollection services) =>

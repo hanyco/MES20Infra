@@ -1,25 +1,39 @@
 ﻿@page "/authentication/login"
+@using HanyCo.Infra.Security.Identity;
 
 @layout MainLayout
 @inject NavigationManager Nav;
-@inject AuthenticationStateProvider authenticator
+@inject AuthenticationStateProvider _authenticator;
+@inject InfraSignInManager _signInManager;
 
 <PageTitle>@("MES") - Login</PageTitle>
 
 <h1>
     Login
 </h1>
+<EditForm OnValidSubmit='SaveDataAsync' Model='@this.DataContext'>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <button type="submit" class="btn btn-primary">Login</button>
+    <button class="btn btn-secondary">Back</button>
 
-<button type="button" class="btn btn-primary" @onclick="LoginAsync">Login</button>
-
+</EditForm>
 @code
 {
-    async Task LoginAsync()
+    LoginPageViewModel DataContext { get; set; }
+    async Task SaveDataAsync()
     {
-        //await authenticator.Login(jwtToken);
+        await _signInManager.SignInAsync(new InfraIdentityUser(this.DataContext.UserName), this.DataContext.IsPersist, InfraIdentityValues.LoggedInAuthenticationType);
 
         Nav.NavigateTo(string.Empty, forceLoad: false);
 
         await Task.CompletedTask;
+    }
+
+    sealed class LoginPageViewModel
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public bool IsPersist { get; set; }
     }
 }

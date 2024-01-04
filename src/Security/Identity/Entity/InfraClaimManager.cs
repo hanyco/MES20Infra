@@ -5,7 +5,7 @@
 //using System.Text;
 //using System.Threading.Tasks;
 
-//namespace HanyCo.Infra.Security.Identity.Entity;
+//namespace HanyCo.Infra.Security.Identity;
 
 //internal sealed class InfraClaimManager: ClaimsIdentity
 //{

@@ -1,6 +1,6 @@
-﻿namespace HanyCo.Infra.Security.Identity.Model;
+﻿namespace HanyCo.Infra.Security.Identity;
 
-public static class InfraAuthenticationValues
+public static class InfraIdentityValues
 {
     public const string ClaimFirstName = "FirstName";
     public const string ClaimLastName = "LastName";

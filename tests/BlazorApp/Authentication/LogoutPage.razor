@@ -1,24 +1,29 @@
 ﻿@page "/authentication/logout"
 
+@using HanyCo.Infra.Security.Identity;
+
 @attribute [Authorize]
 @layout MainLayout
 
 @inject NavigationManager Nav;
-@inject AuthenticationStateProvider authenticator
+@inject InfraSignInManager _signInManage
 
 <PageTitle>@("MES") - Logout</PageTitle>
 
-<h1>
-    Logout
-</h1>
-
-<button type="button" class="btn btn-primary" @onclick="LoginAsync">Logout</button>
+<div class="container alert alert-warning">
+    <h1 class="text-center display-6">
+        Are you sure you want to logout?
+    </h1>
+    <div class="gap-2 d-md-flex justify-content-md-end">
+        <button type="button" class="btn btn-danger me-md-2" @onclick="LogoutAsync">Logout</button>
+    </div>
+</div>
 
 @code
 {
-    async Task LoginAsync()
+    async Task LogoutAsync()
     {
-        //await authenticator.Logout(jwtToken);
+        await _signInManage.SignOutAsync();
 
         Nav.NavigateTo(string.Empty, forceLoad: false);
 
