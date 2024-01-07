@@ -33,12 +33,10 @@ public static class MesSecurityConfiguration
         addAuthorization(services);
         addAuthentication(services);
         addDbContextPool(services, options.ConnectionString);
-        addServices(services);
+        addIdentityServices(services);
         addUserContext(services);
         addTools(services);
-        _ = services
-            .AddScoped<InfraUserManager, InfraUserManager>()
-            .AddScoped<InfraSignInManager, InfraSignInManager>();
+        _ = services.AddSingleton(options);
         //MvcHelper.Initialize();
 
         return services;
@@ -87,27 +85,28 @@ public static class MesSecurityConfiguration
                 _ = o.EnableSensitiveDataLogging();
             });
 
-        static void addServices(IServiceCollection services)
+        static void addIdentityServices(IServiceCollection services)
         {
             _ = services
-                //.AddScoped<IInfraUserService, InfraIdentityService>()
-                //.AddScoped<IInfraRoleService, InfraIdentityService>()
-                //.AddScoped<IInfraClaimService, InfraIdentityService>()
-                //.AddScoped<ISecurityService, InfraIdentityService>()
                 .AddScoped<System.Security.Claims.ClaimsIdentity>()
-                ;
+                .AddScoped<InfraUserManager, InfraUserManager>()
+                .AddScoped<InfraSignInManager, InfraSignInManager>()
+                .AddScoped<SignInManager<InfraIdentityUser>>(x => x.GetRequiredService<InfraSignInManager>());
+
             _ = services
                 .AddScoped<IAuthorizationHandler, DynamicRoleHandler>()
                 .AddSingleton<IAuthorizationHandler, ClaimRequirementHandler>();
         }
+
         static void addUserContext(IServiceCollection services) =>
-            services.AddScoped<IUserContext, UserContext>();
+            services.AddScoped<UserContext, UserContext>()
+                    .AddScoped<IUserContext>(x => x.GetRequiredService<UserContext>());
 
         static void addLoggers(IServiceCollection services, ILogger logger) =>
             services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
 
         static void addTools(IServiceCollection services) =>
-            services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            services.AddScoped<CustomAuthenticationStateProvider>().AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>());
     }
 
     public static IApplicationBuilder UseMesSecurityInfraMiddleware(this IApplicationBuilder app) =>

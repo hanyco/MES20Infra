@@ -3,6 +3,8 @@
 using HanyCo.Infra.Security.Helpers;
 using HanyCo.Infra.Security.Identity;
 
+using Library.Results;
+
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace HanyCo.Infra.Security.Client.Providers;
@@ -11,7 +13,7 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
 {
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var test = JwtHelpers.Encode(getSampleAdminIdentity().Claims);
+        _ = JwtHelpers.Encode(getSampleAdminIdentity().Claims);
         var identity = getSampleSupervisorIdentity();
         var principal = new ClaimsPrincipal(identity);
         var result = new AuthenticationState(principal);
@@ -19,8 +21,20 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
         return Task.FromResult(result);
     }
 
+    public Task<Result> LogInAsync(string username, string password)
+    {
+        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
+        return Task.FromResult(Result.Success);
+    }
+
+    public Task<Result> LogOutAsync(string username, string password)
+    {
+        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
+        return Task.FromResult(Result.Success);
+    }
+
     private static ClaimsIdentity getNotLoggedInIdentity() =>
-        new();
+            new();
 
     private static ClaimsIdentity getSampleAdminIdentity()
     {

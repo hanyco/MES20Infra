@@ -15,6 +15,12 @@ public sealed class Program
         var builder = WebApplication.CreateBuilder(args);
 
         _ = builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+
+        //builder.Services.AddScoped(x => new HttpClient()
+        //{
+        //    BaseAddress = new Uri(builder.Host.add)
+        //});
+
         _ = builder.Services
             .AddRazorPages()
             .AddMvcOptions(options =>
