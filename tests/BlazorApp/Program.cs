@@ -1,6 +1,10 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 
+using BlazorApp.Services;
+
+using Blazored.SessionStorage;
+
 using HanyCo.Infra;
 
 using Library.Cqrs;
@@ -30,6 +34,8 @@ public sealed class Program
         _ = builder.Services.AddServerSideBlazor();
 
         _ = builder.Services
+                .AddBlazoredSessionStorageAsSingleton()
+                .AddScoped<IStorage, SessionStorage>()
                 .AddOptions()
                 .AddMesInfraServices<Program>(CONNECTION_STRING, Library.Logging.ILogger.Empty)
                 ;
