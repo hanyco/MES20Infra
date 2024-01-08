@@ -13,7 +13,7 @@ public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvi
 {
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        _ = JwtHelpers.Encode(getSampleAdminIdentity().Claims);
+        var test = JwtHelpers.Encode(getSampleAdminIdentity().Claims);
         var identity = getSampleSupervisorIdentity();
         var principal = new ClaimsPrincipal(identity);
         var result = new AuthenticationState(principal);

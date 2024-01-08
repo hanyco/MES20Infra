@@ -26,7 +26,7 @@ public static class JwtHelpers
         }
     }
 
-    public static string Encode(IEnumerable<Claim> claims, string issuer = "MES Infra", string audience = "MES", string secretKey = "MES Infra JWT Token Secrect Key", DateTime? expiresOn = null)
+    public static string Encode(IEnumerable<Claim> claims, string issuer = "MES Infra", string audience = "MES", string secretKey = "HanyCo MES Infra JWT Token Secret Key", DateTime? expiresOn = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

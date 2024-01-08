@@ -1,36 +1,37 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>disable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Configurations>Debug;Release;Debug Unit Test</Configurations>
-  </PropertyGroup>
-    <PropertyGroup>
-        <EnablePreviewFeatures>true</EnablePreviewFeatures>
-    </PropertyGroup>
-    <ItemGroup>
-      <None Include="Pages\Error.cshtml" />
-      <None Include="Pages\Index.razor" />
-      <None Include="Pages\_Host.cshtml" />
-      <None Include="Pages\_Layout.cshtml" />
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="Autofac" Version="6.4.0" />
-      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
-      <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
-      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.7" />
-    </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\..\src\Bcl\src\CoreLib\CoreLib.csproj" />
-      <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-      <Using Include="Library.Helpers" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="wwwroot\lib\" />
-    </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Configurations>Debug;Release;Debug Unit Test</Configurations>
+	</PropertyGroup>
+	<PropertyGroup>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="Pages\Error.cshtml" />
+		<None Include="Pages\Index.razor" />
+		<None Include="Pages\_Host.cshtml" />
+		<None Include="Pages\_Layout.cshtml" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Autofac" Version="6.4.0" />
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.7" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Bcl\src\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Using Include="Library.Helpers" />
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="wwwroot\lib\" />
+	</ItemGroup>
 
 </Project>
