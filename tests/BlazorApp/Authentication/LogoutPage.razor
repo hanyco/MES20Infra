@@ -1,12 +1,13 @@
 ﻿@page "/authentication/logout"
 
 @using HanyCo.Infra.Security.Identity;
+@using HanyCo.Infra.Security.Client.Providers;
 
 @attribute [Authorize]
 @layout MainLayout
 
 @inject NavigationManager Nav;
-@inject InfraSignInManager _signInManage
+@inject CustomAuthenticationStateProvider _authenticator;
 
 <PageTitle>@("MES") - Logout</PageTitle>
 
@@ -23,7 +24,7 @@
 {
     async Task LogoutAsync()
     {
-        await _signInManage.SignOutAsync();
+        await _authenticator.LogOutAsync();
 
         Nav.NavigateTo(string.Empty, forceLoad: false);
 

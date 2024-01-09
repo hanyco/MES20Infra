@@ -38,7 +38,7 @@ public sealed class CustomAuthenticationStateProvider(InfraUserManager userManag
         return Result.Success;
     }
 
-    public Task<Result> LogOutAsync(string username, string password)
+    public Task<Result> LogOutAsync()
     {
         this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
         return Task.FromResult(Result.Success);
