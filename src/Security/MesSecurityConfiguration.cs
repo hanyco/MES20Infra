@@ -2,6 +2,7 @@
 
 using HanyCo.Infra.Security.Client.Providers;
 using HanyCo.Infra.Security.DataSources;
+using HanyCo.Infra.Security.Helpers;
 using HanyCo.Infra.Security.Identity;
 using HanyCo.Infra.Security.Identity.Model;
 using HanyCo.Infra.Security.Model;
@@ -37,6 +38,7 @@ public static class MesSecurityConfiguration
         addUserContext(services);
         addTools(services);
         _ = services.AddSingleton(options);
+
         //MvcHelper.Initialize();
 
         return services;
@@ -69,13 +71,39 @@ public static class MesSecurityConfiguration
                     => policy.RequireRole(InfraIdentityValues.RoleAdminValue));
             });
 
-        static void addAuthentication(IServiceCollection services) =>
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
+        static void addAuthentication(IServiceCollection services)
+        {
+            var defaultOptions = new JwtOptions
             {
-                o.Authority = "http://localhost:5000/openid";
-                o.Audience = "embedded";
-                o.RequireHttpsMetadata = false;
+                Issuer = "MES",
+                Audience = "MES Infra",
+                SecretKey = "MES Infra JWT Secret Key",
+                ExpirationDate = DateTime.Now.AddDays(1),
+            };
+
+            _ = services.Configure<JwtOptions>(options =>
+            {
+                options.Issuer = defaultOptions.Issuer;
+                options.Audience = defaultOptions.Audience;
+                options.SecretKey = defaultOptions.SecretKey;
+                options.ExpirationDate = defaultOptions.ExpirationDate;
             });
+            _ = services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.Authority = "http://localhost:5000/openid";
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = defaultOptions.Issuer,
+                    ValidAudience = defaultOptions.Audience,
+                    IssuerSigningKey = JwtHelpers.GetIssuerSigningKey(defaultOptions.SecretKey),
+                };
+            });
+        }
 
         static void addDbContextPool(IServiceCollection services, string connectionString) =>
             services.AddDbContextPool<InfraSecDbContext>(o =>

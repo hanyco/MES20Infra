@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 
 using Library.Results;
+using Library.Validations;
 
 using Microsoft.IdentityModel.Tokens;
 
@@ -28,7 +29,7 @@ public static class JwtHelpers
 
     public static string Encode(IEnumerable<Claim> claims, string issuer = "MES Infra", string audience = "MES", string secretKey = "HanyCo MES Infra JWT Token Secret Key", DateTime? expiresOn = null)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var key = GetIssuerSigningKey(secretKey);
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -41,4 +42,10 @@ public static class JwtHelpers
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
     }
+
+    public static string Encode(ClaimsIdentity identity, string issuer = "MES Infra", string audience = "MES", string secretKey = "HanyCo MES Infra JWT Token Secret Key", DateTime? expiresOn = null) =>
+        Encode(identity.ArgumentNotNull().Claims, issuer, audience, secretKey, expiresOn);
+
+    public static SymmetricSecurityKey GetIssuerSigningKey(string secretKey) =>
+            new(Encoding.UTF8.GetBytes(secretKey));
 }
