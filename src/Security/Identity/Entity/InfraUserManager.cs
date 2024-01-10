@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using HanyCo.Infra.Security.Model;
+
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace HanyCo.Infra.Security.Identity;

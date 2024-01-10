@@ -6,7 +6,6 @@ using Library.Results;
 using Library.Validations;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp.Authentication;
 
@@ -30,7 +29,7 @@ public partial class UserDetailPage : ComponentBase
 
         async Task<UserDetailPageViewModel> initializeUser()
         {
-            var user = await this._UserManager.Users.Where(user => user.Id == Guid.Parse(this.Id)).FirstOrDefaultAsync();
+            var user = await this._securityService.GetUserByIdAsync(Guid.Parse(this.Id));
             Check.MustBeNotNull(user, () => new ObjectNotFoundException("User"));
             return await UserDetailPageViewModel.FromInfraIdentityUserAsync(user);
         }
@@ -46,23 +45,28 @@ public partial class UserDetailPage : ComponentBase
         {
             var (user, isNew) = this.DataContext.ToInfraIdentityUser();
 
-            var saveResultBuffer = isNew
-                ? await this._UserManager.CreateAsync(user, this.DataContext.Password)
-                : await this._UserManager.UpdateAsync(user);
-            if (!saveResultBuffer.Succeeded)
+            Result saveResultBuffer;
+            if (isNew)
             {
-                return Result.CreateFailure("Error on saving the user", errors: saveResultBuffer.Errors.ToResultErrors());
+                saveResultBuffer = await this._securityService.CreateAsync(user, this.DataContext.Password);
             }
-
-            saveResultBuffer = await this._UserManager.SetClaimAsync(user, nameof(UserDetailPageViewModel.FirstName), this.DataContext.FirstName);
-            if (!saveResultBuffer.Succeeded)
+            else
             {
-                return Result.CreateFailure("Error on setting user's claims", errors: saveResultBuffer.Errors.ToResultErrors());
+                saveResultBuffer = await this._securityService.UpdateAsync(user);
             }
-            saveResultBuffer = await this._UserManager.SetClaimAsync(user, nameof(UserDetailPageViewModel.LastName), this.DataContext.LastName);
-            if (!saveResultBuffer.Succeeded)
+            if (!saveResultBuffer.IsSucceed)
             {
-                return Result.CreateFailure("Error on setting user's claims", errors: saveResultBuffer.Errors.ToResultErrors());
+                return saveResultBuffer;
+            }
+            saveResultBuffer = await this._securityService.SetClaimAsync(user, nameof(UserDetailPageViewModel.FirstName), this.DataContext.FirstName);
+            if (!saveResultBuffer.IsSucceed)
+            {
+                return saveResultBuffer;
+            }
+            saveResultBuffer = await this._securityService.SetClaimAsync(user, nameof(UserDetailPageViewModel.LastName), this.DataContext.LastName);
+            if (!saveResultBuffer.IsSucceed)
+            {
+                return saveResultBuffer;
             };
             return Result.Success;
         }

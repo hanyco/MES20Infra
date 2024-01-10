@@ -1,13 +1,12 @@
 ﻿@page "/authentication/logout"
 
-@using HanyCo.Infra.Security.Identity;
-@using HanyCo.Infra.Security.Client.Providers;
+@using HanyCo.Infra.Services;
 
 @attribute [Authorize]
 @layout MainLayout
 
 @inject NavigationManager Nav;
-@inject CustomAuthenticationStateProvider _authenticator;
+@inject ISecurityService _authenticator;
 
 <PageTitle>@("MES") - Logout</PageTitle>
 

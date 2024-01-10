@@ -3,11 +3,11 @@
 @page "/authentication/users"
 @layout MainLayout
 
-@using Microsoft.AspNetCore.Identity;
 @using HanyCo.Infra.Security.Identity;
+@using HanyCo.Infra.Services;
 
 @inject NavigationManager _Navigator;
-@inject InfraUserManager _UserManager;
+@inject ISecurityService _UserManager;
 
 <PageTitle>MES User Management - List</PageTitle>
 
@@ -63,7 +63,7 @@
     private readonly List<UserInfo> DataContext = new List<UserInfo>();
     protected override Task OnInitializedAsync()
     {
-        var users = _UserManager.Users.Select(user => new UserInfo
+        var users = _UserManager.GetUsers().Select(user => new UserInfo
             {
                 Id = user.Id.ToString(),
                 Email = user.Email,

@@ -16,8 +16,15 @@ public sealed class SessionStorage(Blazored.SessionStorage.ISessionStorageServic
 
     public async Task<Result<string>> LoadAsync([DisallowNull] string key, CancellationToken cancellationToken = default)
     {
-        var result = await sessionStorage.GetItemAsStringAsync(key, cancellationToken);
-        return Result<string>.CreateSuccess(result);
+        try
+        {
+            var result = await sessionStorage.GetItemAsStringAsync(key, cancellationToken);
+            return Result<string>.CreateSuccess(result);
+        }
+        catch (Exception ex)
+        {
+            return Result<string>.CreateFailure(ex);
+        }
     }
 
     public async Task<Result> SaveAsync([DisallowNull] string key, string value, CancellationToken cancellationToken = default)

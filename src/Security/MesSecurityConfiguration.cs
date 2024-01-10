@@ -6,6 +6,8 @@ using HanyCo.Infra.Security.Helpers;
 using HanyCo.Infra.Security.Identity;
 using HanyCo.Infra.Security.Identity.Model;
 using HanyCo.Infra.Security.Model;
+using HanyCo.Infra.Security.Services;
+using HanyCo.Infra.Services;
 
 using Library.Logging;
 using Library.Security.Authorization;
@@ -134,7 +136,10 @@ public static class MesSecurityConfiguration
             services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
 
         static void addTools(IServiceCollection services) =>
-            services.AddScoped<CustomAuthenticationStateProvider>().AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>());
+            services.AddScoped<ISecurityService, SecurityService>()
+                    //.AddScoped<CustomAuthenticationStateProvider>()
+                    //.AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>())
+                    ;
     }
 
     public static IApplicationBuilder UseMesSecurityInfraMiddleware(this IApplicationBuilder app) =>

@@ -7,11 +7,12 @@
 @using Microsoft.AspNetCore.Components;
 @using BlazorApp.Data;
 @using HanyCo.Infra.Security.Identity.Model;
+@using HanyCo.Infra.Services;
 
 @attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)]
 
 @inject NavigationManager _Navigator;
-@inject InfraUserManager _UserManager;
+@inject ISecurityService _securityService
 
 @layout MainLayout
 

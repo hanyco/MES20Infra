@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using HanyCo.Infra.Security.Model;
+
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
