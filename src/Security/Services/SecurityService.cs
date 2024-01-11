@@ -14,6 +14,9 @@ namespace HanyCo.Infra.Security.Services;
 
 internal class SecurityService(InfraSignInManager signInManager, IStorage storage, IOptions<JwtOptions> jwtOptions, AuthenticationStateProvider stateProvider) : ISecurityService
 {
+    private const string JWT_KEY = "MesIdentityJwtToken";
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+
     public Task<Result> CreateAsync(InfraIdentityUser user, string password) => throw new NotImplementedException();
 
     public Task<InfraIdentityUser> GetUserByIdAsync(Guid id) => throw new NotImplementedException();
