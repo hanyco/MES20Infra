@@ -20,19 +20,6 @@ public sealed class Program
 
         _ = builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
-        //builder.Services.AddScoped(x => new HttpClient()
-        //{
-        //    BaseAddress = new Uri(builder.Host.add)
-        //});
-
-        _ = builder.Services
-            .AddRazorPages()
-            .AddMvcOptions(options =>
-            {
-                options.Filters.Add(new SampleAsyncPageFilter());
-            });
-        _ = builder.Services.AddServerSideBlazor();
-
         _ = builder.Services
                 .AddBlazoredSessionStorageAsSingleton()
                 .AddScoped<IStorage, SessionStorage>()
@@ -40,15 +27,25 @@ public sealed class Program
                 .AddMesInfraServices<Program>(CONNECTION_STRING, Library.Logging.ILogger.Empty)
                 ;
 
+        _ = builder.Services
+            .AddRazorPages()
+            .AddMvcOptions(options =>
+            {
+                //options.Filters.Add(new SampleAsyncPageFilter());
+            })
+            ;
+        _ = builder.Services.AddServerSideBlazor();
+
         _ = builder.Services.AddControllersWithViews(options =>
         {
-            _ = options.Filters.Add<SampleActionFilter>();
+            //_ = options.Filters.Add<SampleActionFilter>();
         });
         _ = builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.AddCqrs(typeof(Program).Assembly));
 
         var app = builder.Build();
 
-        //! Configure the HTTP request pipeline.
+        _ = app.UseMesInfraMiddleware();
+
         if (!app.Environment.IsDevelopment())
         {
             _ = app.UseExceptionHandler("/Error");
@@ -57,8 +54,6 @@ public sealed class Program
         _ = app.UseStaticFiles();
 
         _ = app.UseRouting();
-
-        _ = app.UseMesInfraMiddleware();
 
         _ = app.MapBlazorHub();
         _ = app.MapFallbackToPage("/_Host");

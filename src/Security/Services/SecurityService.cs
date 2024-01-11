@@ -69,7 +69,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
             }
 
             // Is user locked out?
-            if (userManager.SupportsUserLockout && !await userManager.IsLockedOutAsync(user))
+            if (userManager.SupportsUserLockout && await userManager.IsLockedOutAsync(user))
             {
                 return Result<InfraIdentityUser>.CreateFailure<UserIsLockedOutException>();
             }

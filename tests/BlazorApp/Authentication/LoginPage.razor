@@ -4,7 +4,7 @@
 @using HanyCo.Infra.Services;
 
 @layout MainLayout
-@inject NavigationManager Nav;
+@inject NavigationManager _navigationManager;
 @inject ISecurityService _security;
 
 <PageTitle>@("MES") - Login</PageTitle>
@@ -25,7 +25,7 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <button type="submit" class="btn btn-primary" disabled="@_isProcessing">Login</button>
-    <button class="btn btn-secondary" disabled="@_isProcessing" @onclick="@(()=>Nav.NavigateTo("javascript:history.back()"))">Back</button>
+    <button class="btn btn-secondary" disabled="@_isProcessing" @onclick="@(()=>_navigationManager.NavigateTo("javascript:history.back()"))">Back</button>
     <hr />
     <div class="row mb-3">
         <label for="inputUserName" class="col-sm-2 col-form-label">User Name</label>

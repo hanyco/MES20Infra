@@ -25,18 +25,18 @@ public partial class LoginPage : ComponentBase
             var loginResult = await this._security.LogInAsync(this.DataContext.UserName, this.DataContext.Password, this.DataContext.IsPersist);
             if (loginResult.IsSucceed)
             {
-                this.Nav.NavigateTo(string.Empty, forceLoad: false);
+                this._navigationManager.NavigateTo(string.Empty, forceLoad: false);
             }
             else
             {
                 if (loginResult.Exception is NoUserFoundException)
                 {
-                    this.Nav.NavigateTo("/authentication/user");
+                    this._navigationManager.NavigateTo("/authentication/user");
                     return;
                 }
                 else
                 {
-                    this.ErrorMessage = loginResult.Errors.Select(x => x.Error.ToString()).Merge();
+                    this.ErrorMessage = loginResult.Errors.Select(x => x.Error.Cast().As<Exception>().GetBaseException().Message).Merge();
                 }
             }
         }
