@@ -20,6 +20,7 @@ public sealed class UserDetailPageViewModel(in InfraIdentityUser infraIdentityUs
     public InfraIdentityUser IdentityUser { get; } = infraIdentityUser;
     public string LastName { get; set; }
     public bool LockoutEnabled { get; set; }
+    public bool IsAdmin { get; set; }
     public DateTimeOffset? LockoutEnd { get; } = infraIdentityUser?.LockoutEnd;
 
     [Required]

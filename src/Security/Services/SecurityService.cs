@@ -1,71 +1,120 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 
-using HanyCo.Infra.Security.Helpers;
+using HanyCo.Infra.Security.Exceptions;
 using HanyCo.Infra.Security.Identity;
 using HanyCo.Infra.Security.Model;
 using HanyCo.Infra.Services;
 
 using Library.Results;
+using Library.Validations;
 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace HanyCo.Infra.Security.Services;
 
-internal class SecurityService(InfraSignInManager signInManager, IStorage storage, IOptions<JwtOptions> jwtOptions, AuthenticationStateProvider stateProvider) : ISecurityService
+internal class SecurityService(InfraUserManager userManager, InfraSignInManager signInManager, IStorage storage, IOptions<JwtOptions> jwtOptions, AuthenticationStateProvider stateProvider) : ISecurityService
 {
-    private const string JWT_KEY = "MesIdentityJwtToken";
-    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+    public async Task<Result> CreateAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string password)
+    {
+        // Assuming userManager is an instance of UserManager<InfraIdentityUser> that has been
+        // injected previously.
+        var result = await userManager.CreateAsync(user, password);
 
-    public Task<Result> CreateAsync(InfraIdentityUser user, string password) => throw new NotImplementedException();
+        // Return the creation result
+        return result.ToResult();
+    }
 
     public Task<InfraIdentityUser> GetUserByIdAsync(Guid id) => throw new NotImplementedException();
 
-    public IEnumerable<InfraIdentityUser> GetUsers() => throw new NotImplementedException();
+    public IEnumerable<InfraIdentityUser> GetUsers() =>
+        userManager.Users;
 
-    public async Task<Result> LogInAsync(string username, string password, bool isPersist)
+    public async Task<Result> LogInAsync([DisallowNull] string username, [DisallowNull] string password, bool isPersist)
     {
-        //// Validate username and password
-        //var vr = await this.ValidateUser(username, password);
+        // Validate inputs
+        Check.MustBeArgumentNotNull(username);
+        Check.MustBeArgumentNotNull(password);
 
-        //// On any error, return thr error
-        //if (vr.IsFailure)
-        //{
-        //    return vr;
-        //}
+        // If no user is created, return NoUserFound.
+        if (!userManager.Users.Any())
+        {
+            return Result.CreateFailure<NoUserFoundException>();
+        }
 
-        //// Get claims from UserManager and add it to the user
-        //var claims = await userManager.GetClaimsAsync(vr!);
-        //var identity = getLoggedInIdentity();
-        //identity.AddClaims(claims);
+        // Validate username and password
+        var vr = await validateUser(username, password);
+        if (vr.IsFailure)
+        {
+            return vr;
+        }
 
-        var identity = GetSampleAdminIdentity();
-
-        // Save credentials to be used later.
-        _ = await storage.SaveAsync(JWT_KEY, JwtHelpers.Encode(identity, this._jwtOptions.Issuer, this._jwtOptions.Audience, this._jwtOptions.SecretKey, this._jwtOptions.ExpirationDate));
-
-        // Notify Identity about authentication is changed.
-        //x stateProvider.NotifyAuthenticationStateChanged(GetAuthenticationStateAsync(identity));
+        await signInManager.SignInAsync(vr!, isPersist);
         return Result.Success;
+
+        async Task<Result<InfraIdentityUser?>> validateUser(string username, string password)
+        {
+            // Find user by username
+            var user = await userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return Result<InfraIdentityUser>.CreateFailure<InvalidUsernameOrPasswordException>();
+            }
+
+            // Can user sign in?
+            if (!await signInManager.CanSignInAsync(user))
+            {
+                return Result<InfraIdentityUser>.CreateFailure<UserCannotLoginException>();
+            }
+
+            // Is user locked out?
+            if (userManager.SupportsUserLockout && !await userManager.IsLockedOutAsync(user))
+            {
+                return Result<InfraIdentityUser>.CreateFailure<UserIsLockedOutException>();
+            }
+
+            // Check password
+            var result = await signInManager.CheckPasswordSignInAsync(user, password, false);
+            if (!result.Succeeded)
+            {
+                // Increase the count of login failures., if supported.
+                if (userManager.SupportsUserLockout)
+                {
+                    _ = await userManager.AccessFailedAsync(user);
+                }
+                return Result<InfraIdentityUser>.CreateFailure<InvalidUsernameOrPasswordException>();
+            }
+
+            // Return user and succeed result
+            return Result<InfraIdentityUser?>.CreateSuccess(user);
+        }
     }
 
     public async Task<Result> LogOutAsync()
     {
-        // Clear current credentials storage.
-        _ = await storage.DeleteAsync(JWT_KEY);
-
-        // Get anonymous user and fake log it in.
-        var identity = GetNotLoggedInIdentity();
-        // Notify Identity about authentication is changed.
-        //x this.NotifyAuthenticationStateChanged(GetAuthenticationStateAsync(identity));
+        await signInManager.SignOutAsync();
         return Result.Success;
     }
 
-    public Task<Result> SetClaimAsync(InfraIdentityUser user, string claimType, string claimValue) => throw new NotImplementedException();
+    public async Task<Result> SetClaimAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string claimType, string claimValue)
+    {
+        Check.MustBeArgumentNotNull(user);
+        Check.MustBeArgumentNotNull(claimType);
+        Check.MustBeArgumentNotNull(claimValue);
 
-    public Task<Result> UpdateAsync(InfraIdentityUser user) => throw new NotImplementedException();
+        var claims = await userManager.GetClaimsAsync(user);
+        var oldClaim = claims.FirstOrDefault(x => x.Type == claimType);
+        var newClaim = new Claim(claimType, claimValue);
+        var result = oldClaim != null
+            ? await userManager.ReplaceClaimAsync(user, oldClaim, newClaim)
+            : await userManager.AddClaimAsync(user, newClaim);
+        return result.ToResult();
+    }
 
-    internal static Task<AuthenticationState> GetAuthenticationStateAsync(ClaimsIdentity identity)
+    public Task<Result> UpdateAsync([DisallowNull] InfraIdentityUser user) => throw new NotImplementedException();
+
+    internal static Task<AuthenticationState> GetAuthenticationStateAsync([DisallowNull] ClaimsIdentity identity)
     {
         var principal = new ClaimsPrincipal(identity);
         var result = new AuthenticationState(principal);

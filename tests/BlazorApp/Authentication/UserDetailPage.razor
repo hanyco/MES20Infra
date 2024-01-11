@@ -28,9 +28,10 @@
         <button type="button" class="col-1 btn btn-secondary" @onclick="@(() => _Navigator.NavigateTo("/authentication/users"))">Back</button>
         <button type="button" class="col-1 btn btn-info">Roles</button>
         <div class="row gap-1 mb-3">
+            <button id='SaveButton' name='SaveButton' class='col-1 btn btn-success' type='submit'>Save</button>
             <AuthorizeView Context="ToolbarContext" Policy=@InfraIdentityValues.PolicyCanCrudSystemEntities>
                 <Authorized>
-                    <button id='SaveButton' name='SaveButton' class='col-1 btn btn-success' type='submit'>Save</button>
+                    
                 </Authorized>
             </AuthorizeView>
         </div>
@@ -80,10 +81,12 @@
         </div>
         <hr />
         <div class="row mb-3">
-            <div class="form-check form-switch">
-                <InputCheckbox id='IsLockedCheckBox' name='inputLastName' class='col-5' @bind-Value='this.DataContext.LockoutEnabled' role="switch" />
-                <label class="form-check-label" for="IsLockedCheckBox">Is Locked</label>
-            </div>
+            <InputCheckbox id='IsLockedCheckBox' name='IsLockedCheckBox' class='col-5' @bind-Value='this.DataContext.LockoutEnabled' />
+            <label class="form-check-label" for="IsLockedCheckBox">Is Locked</label>
+        </div>
+        <div class="row mb-3">
+            <InputCheckbox id='IsAdminCheckBox' name='IsAdminCheckBox' class='col-5' @bind-Value='this.DataContext.IsAdmin' />
+            <label class="form-check-label" for="IsAdminCheckBox">Is Admin</label>
         </div>
     </div>
 

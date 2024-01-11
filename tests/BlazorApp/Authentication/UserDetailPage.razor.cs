@@ -1,6 +1,8 @@
 ﻿using BlazorApp.Data;
 using BlazorApp.Shared;
 
+using HanyCo.Infra.Security.Model;
+
 using Library.Exceptions;
 using Library.Results;
 using Library.Validations;
@@ -67,6 +69,14 @@ public partial class UserDetailPage : ComponentBase
             if (!saveResultBuffer.IsSucceed)
             {
                 return saveResultBuffer;
+            }
+            if (this.DataContext.IsAdmin)
+            {
+                saveResultBuffer = await this._securityService.SetClaimAsync(user, InfraIdentityValues.ClaimAdminValue, InfraIdentityValues.ClaimAdminValue);
+                if (!saveResultBuffer.IsSucceed)
+                {
+                    return saveResultBuffer;
+                }
             };
             return Result.Success;
         }

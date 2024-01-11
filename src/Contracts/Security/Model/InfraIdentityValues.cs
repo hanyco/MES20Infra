@@ -1,7 +1,11 @@
-﻿namespace HanyCo.Infra.Security.Model;
+﻿using System.Security.Claims;
+
+namespace HanyCo.Infra.Security.Model;
 
 public static class InfraIdentityValues
 {
+    public const string ClaimAdminType = ClaimTypes.Role;
+    public const string ClaimAdminValue = "Administrator";
     public const string ClaimFirstName = "FirstName";
     public const string ClaimLastName = "LastName";
     public const string LoggedInAuthenticationType = "MES Infra Authentication Type";
