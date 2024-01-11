@@ -45,7 +45,7 @@ internal class SecurityService(InfraSignInManager signInManager, IStorage storag
         _ = await storage.SaveAsync(JWT_KEY, JwtHelpers.Encode(identity, this._jwtOptions.Issuer, this._jwtOptions.Audience, this._jwtOptions.SecretKey, this._jwtOptions.ExpirationDate));
 
         // Notify Identity about authentication is changed.
-        stateProvider.NotifyAuthenticationStateChanged(GetAuthenticationStateAsync(identity));
+        //x stateProvider.NotifyAuthenticationStateChanged(GetAuthenticationStateAsync(identity));
         return Result.Success;
     }
 
@@ -57,7 +57,7 @@ internal class SecurityService(InfraSignInManager signInManager, IStorage storag
         // Get anonymous user and fake log it in.
         var identity = GetNotLoggedInIdentity();
         // Notify Identity about authentication is changed.
-        this.NotifyAuthenticationStateChanged(GetAuthenticationStateAsync(identity));
+        //x this.NotifyAuthenticationStateChanged(GetAuthenticationStateAsync(identity));
         return Result.Success;
     }
 

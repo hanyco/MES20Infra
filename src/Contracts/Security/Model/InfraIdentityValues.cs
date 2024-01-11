@@ -1,4 +1,4 @@
-﻿namespace HanyCo.Infra.Security.Identity;
+﻿namespace HanyCo.Infra.Security.Model;
 
 public static class InfraIdentityValues
 {

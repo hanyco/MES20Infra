@@ -1,10 +1,11 @@
 ﻿@using HanyCo.Infra.Security.Identity.Model;
+@using HanyCo.Infra.Security.Model;
+@using HanyCo.Infra.Security.Identity;
+@using HanyCo.Infra.Services;
+
 @attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)]
 @page "/authentication/users"
 @layout MainLayout
-
-@using HanyCo.Infra.Security.Identity;
-@using HanyCo.Infra.Services;
 
 @inject NavigationManager _Navigator;
 @inject ISecurityService _UserManager;

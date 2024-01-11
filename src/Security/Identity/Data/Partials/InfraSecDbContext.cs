@@ -1,5 +1,4 @@
-﻿using HanyCo.Infra.Security.Identity;
-using HanyCo.Infra.Security.Model;
+﻿using HanyCo.Infra.Security.Model;
 
 using Library.Types;
 
