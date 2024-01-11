@@ -10,7 +10,7 @@
 @using HanyCo.Infra.Services;
 @using HanyCo.Infra.Security.Model;
 
-@attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)]
+ @* @attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)] *@
 
 @inject NavigationManager _Navigator;
 @inject ISecurityService _securityService
