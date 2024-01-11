@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
+using HanyCo.Infra.Security.Client.Providers;
 using HanyCo.Infra.Security.Exceptions;
 using HanyCo.Infra.Security.Identity;
 using HanyCo.Infra.Security.Model;
@@ -10,11 +11,10 @@ using Library.Results;
 using Library.Validations;
 
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Extensions.Options;
 
 namespace HanyCo.Infra.Security.Services;
 
-internal class SecurityService(InfraUserManager userManager, InfraSignInManager signInManager, IStorage storage, IOptions<JwtOptions> jwtOptions, AuthenticationStateProvider stateProvider) : ISecurityService
+internal class SecurityService(InfraUserManager userManager, InfraSignInManager signInManager, CustomAuthenticationStateProvider stateProvider) : ISecurityService
 {
     public async Task<Result> CreateAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string password)
     {
@@ -50,7 +50,9 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
             return vr;
         }
 
-        await signInManager.SignInAsync(vr!, isPersist);
+        //await signInManager.SignInAsync(vr!, isPersist);
+        var claims = await userManager.GetClaimsAsync(vr);
+        stateProvider.SignIn(vr, claims);
         return Result.Success;
 
         async Task<Result<InfraIdentityUser?>> validateUser(string username, string password)

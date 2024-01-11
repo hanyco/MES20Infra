@@ -137,8 +137,8 @@ public static class MesSecurityConfiguration
 
         static void addTools(IServiceCollection services) =>
             services.AddScoped<ISecurityService, SecurityService>()
-                    //.AddScoped<CustomAuthenticationStateProvider>()
-                    //.AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>())
+                    .AddScoped<CustomAuthenticationStateProvider>()
+                    .AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>())
                     ;
     }
 

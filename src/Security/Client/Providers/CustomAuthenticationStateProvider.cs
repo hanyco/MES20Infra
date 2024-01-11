@@ -1,19 +1,42 @@
-﻿using HanyCo.Infra.Security.Identity;
+﻿using System.Security.Claims;
+
 using HanyCo.Infra.Security.Model;
-using HanyCo.Infra.Security.Services;
 
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Extensions.Options;
 
 namespace HanyCo.Infra.Security.Client.Providers;
 
-internal sealed class CustomAuthenticationStateProvider(InfraUserManager userManager, IStorage storage, IOptions<JwtOptions> jwtOptions) : AuthenticationStateProvider
+public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
-    {
-        var identity = SecurityService.GetNotLoggedInIdentity();
-        var result = await SecurityService.GetAuthenticationStateAsync(identity);
+    private ClaimsPrincipal? _user;
 
-        return result;
+    public override Task<AuthenticationState> GetAuthenticationStateAsync() => 
+        Task.FromResult(new AuthenticationState(this._user));
+
+    public void NotifyAuthenticationStateChanged(ClaimsPrincipal? user)
+    {
+        this._user = user;
+        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
     }
+
+    public void SignIn(InfraIdentityUser user, IEnumerable<Claim> claims)
+    {
+        //var claims = new List<Claim>
+        //{
+        //    new(ClaimTypes.Name, userName),
+        //    // Add other claims as needed
+        //};
+
+        var identity = new ClaimsIdentity(claims, InfraIdentityValues.LoggedInAuthenticationType);
+        var principal = new ClaimsPrincipal(identity);
+
+        //var authStateProvider = new CustomAuthenticationStateProvider();
+        //authStateProvider.NotifyAuthenticationStateChanged(principal);
+        this.NotifyAuthenticationStateChanged(principal);
+    }
+
+    public void SignOut() =>
+        //var authStateProvider = new CustomAuthenticationStateProvider();
+        //authStateProvider.NotifyAuthenticationStateChanged(null);
+        this.NotifyAuthenticationStateChanged(null);
 }
