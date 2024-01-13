@@ -12,7 +12,8 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
     private ClaimsPrincipal _currentUser;
 
-    public CustomAuthenticationStateProvider() => this._currentUser = new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous user by default
+    public CustomAuthenticationStateProvider() => 
+        this._currentUser = new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous user by default
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync() =>
         Task.FromResult(new AuthenticationState(this._currentUser));

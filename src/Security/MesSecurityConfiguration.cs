@@ -128,7 +128,7 @@ public static class MesSecurityConfiguration
         static void addAuthorization(IServiceCollection services) =>
             services.AddAuthorization(options =>
             {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder().AddAuthenticationSchemes("Bearer")
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()//.AddAuthenticationSchemes("Bearer")
                     .RequireAuthenticatedUser()
                     .RequireClaim("scope", "read").Build();
                 _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
