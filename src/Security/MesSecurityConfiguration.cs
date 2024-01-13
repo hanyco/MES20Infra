@@ -136,9 +136,9 @@ public static class MesSecurityConfiguration
             services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger)).AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
 
         static void addTools(IServiceCollection services) =>
-            services.AddScoped<ISecurityService, SecurityService>()
-                    .AddScoped<CustomAuthenticationStateProvider>()
+            services.AddScoped<CustomAuthenticationStateProvider>()
                     .AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>())
+                    .AddScoped<ISecurityService, SecurityService>()
                     ;
     }
 

@@ -2,41 +2,40 @@
 
 using HanyCo.Infra.Security.Model;
 
+using Library.Validations;
+
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace HanyCo.Infra.Security.Client.Providers;
 
 public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
-    private ClaimsPrincipal? _user;
+    private ClaimsPrincipal _currentUser;
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync() => 
-        Task.FromResult(new AuthenticationState(this._user));
+    public CustomAuthenticationStateProvider() => this._currentUser = new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous user by default
 
-    public void NotifyAuthenticationStateChanged(ClaimsPrincipal? user)
-    {
-        this._user = user;
-        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
-    }
+    public override Task<AuthenticationState> GetAuthenticationStateAsync() =>
+        Task.FromResult(new AuthenticationState(this._currentUser));
 
     public void SignIn(InfraIdentityUser user, IEnumerable<Claim> claims)
     {
-        //var claims = new List<Claim>
-        //{
-        //    new(ClaimTypes.Name, userName),
-        //    // Add other claims as needed
-        //};
+        Check.MustBeArgumentNotNull(user);
 
-        var identity = new ClaimsIdentity(claims, InfraIdentityValues.LoggedInAuthenticationType);
-        var principal = new ClaimsPrincipal(identity);
+        var cl = claims.ToList();
+        if (!cl.Where(x => x.Type == ClaimTypes.Name).Any())
+        {
+            cl.Add(new(ClaimTypes.Name, user.UserName));
+        }
 
-        //var authStateProvider = new CustomAuthenticationStateProvider();
-        //authStateProvider.NotifyAuthenticationStateChanged(principal);
-        this.NotifyAuthenticationStateChanged(principal);
+        var identity = new ClaimsIdentity(cl, InfraIdentityValues.LoggedInAuthenticationType);
+        this._currentUser = new ClaimsPrincipal(identity);
+        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
     }
 
-    public void SignOut() =>
-        //var authStateProvider = new CustomAuthenticationStateProvider();
-        //authStateProvider.NotifyAuthenticationStateChanged(null);
-        this.NotifyAuthenticationStateChanged(null);
+    // Add a sign-out method if needed
+    public void SignOut()
+    {
+        this._currentUser = new ClaimsPrincipal(new ClaimsIdentity()); // Reset to anonymous user
+        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
+    }
 }

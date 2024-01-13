@@ -95,7 +95,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
 
     public async Task<Result> LogOutAsync()
     {
-        await signInManager.SignOutAsync();
+        stateProvider.SignOut();
         return Result.Success;
     }
 
@@ -123,33 +123,27 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
         return Task.FromResult(result);
     }
 
-    internal static ClaimsIdentity GetLoggedInIdentity() =>
-        new(InfraIdentityValues.LoggedInAuthenticationType);
-
     internal static ClaimsIdentity GetNotLoggedInIdentity() =>
         new();
 
-    internal static ClaimsIdentity GetSampleAdminIdentity()
-    {
-        var identity = new ClaimsIdentity(
+    internal static ClaimsIdentity GetSampleAdminIdentity() =>
+        new(
         [
             new Claim(ClaimTypes.Name, "Administrator"),
             new Claim(ClaimTypes.Role, InfraIdentityValues.RoleAdminValue),
             new Claim(InfraIdentityValues.ClaimFirstName, "Mohammad-Admin"),
             new Claim(InfraIdentityValues.ClaimLastName, "Mirmostafa"),
         ], InfraIdentityValues.LoggedInAuthenticationType);
-        return identity;
-    }
 
-    internal static ClaimsIdentity GetSampleSupervisorIdentity()
-    {
-        var identity = new ClaimsIdentity(
+    internal static ClaimsIdentity GetSampleLoggedInIdentity() =>
+                new(InfraIdentityValues.LoggedInAuthenticationType);
+
+    internal static ClaimsIdentity GetSampleSupervisorIdentity() =>
+        new(
         [
             new Claim(ClaimTypes.Name, "User"),
             new Claim(ClaimTypes.Role, InfraIdentityValues.RoleSupervisor),
             new Claim(InfraIdentityValues.ClaimFirstName, "Mohammad-Supervisor"),
             new Claim(InfraIdentityValues.ClaimLastName, "Mirmostafa"),
         ], InfraIdentityValues.LoggedInAuthenticationType);
-        return identity;
-    }
 }
