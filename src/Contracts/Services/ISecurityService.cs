@@ -6,7 +6,13 @@ namespace HanyCo.Infra.Services;
 
 public interface ISecurityService
 {
-    Task<Result> CreateAsync(InfraIdentityUser user, string password);
+    Task<Result> CreateUserAsync(InfraIdentityUser user, string password);
+
+    Task<Result> DeleteRoleByIdAsync(Guid id);
+
+    Task<Result> DeleteUserByIdAsync(Guid id);
+
+    IEnumerable<InfraIdentityRole> GetRoles();
 
     Task<InfraIdentityUser> GetUserByIdAsync(Guid id);
 
@@ -16,7 +22,7 @@ public interface ISecurityService
 
     Task<Result> LogOutAsync();
 
-    Task<Result> SetClaimAsync(InfraIdentityUser user, string claimType, string claimValue);
+    Task<Result> SetUserClaimAsync(InfraIdentityUser user, string claimType, string claimValue);
 
-    Task<Result> UpdateAsync(InfraIdentityUser user);
+    Task<Result> UpdateUserAsync(InfraIdentityUser user);
 }

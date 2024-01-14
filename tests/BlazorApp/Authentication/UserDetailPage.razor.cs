@@ -50,29 +50,29 @@ public partial class UserDetailPage : ComponentBase
             Result saveResultBuffer;
             if (isNew)
             {
-                saveResultBuffer = await this._securityService.CreateAsync(user, this.DataContext.Password);
+                saveResultBuffer = await this._securityService.CreateUserAsync(user, this.DataContext.Password);
             }
             else
             {
-                saveResultBuffer = await this._securityService.UpdateAsync(user);
+                saveResultBuffer = await this._securityService.UpdateUserAsync(user);
             }
             if (!saveResultBuffer.IsSucceed)
             {
                 return saveResultBuffer;
             }
-            saveResultBuffer = await this._securityService.SetClaimAsync(user, nameof(UserDetailPageViewModel.FirstName), this.DataContext.FirstName);
+            saveResultBuffer = await this._securityService.SetUserClaimAsync(user, nameof(UserDetailPageViewModel.FirstName), this.DataContext.FirstName);
             if (!saveResultBuffer.IsSucceed)
             {
                 return saveResultBuffer;
             }
-            saveResultBuffer = await this._securityService.SetClaimAsync(user, nameof(UserDetailPageViewModel.LastName), this.DataContext.LastName);
+            saveResultBuffer = await this._securityService.SetUserClaimAsync(user, nameof(UserDetailPageViewModel.LastName), this.DataContext.LastName);
             if (!saveResultBuffer.IsSucceed)
             {
                 return saveResultBuffer;
             }
             if (this.DataContext.IsAdmin)
             {
-                saveResultBuffer = await this._securityService.SetClaimAsync(user, InfraIdentityValues.ClaimAdminValue, InfraIdentityValues.ClaimAdminValue);
+                saveResultBuffer = await this._securityService.SetUserClaimAsync(user, InfraIdentityValues.ClaimAdminValue, InfraIdentityValues.ClaimAdminValue);
                 if (!saveResultBuffer.IsSucceed)
                 {
                     return saveResultBuffer;

@@ -103,7 +103,7 @@ public static class MesSecurityConfiguration
             .ArgumentNotNull()
             .NotNull(x => x.ConnectionString);
 
-        addLoggers(services, options.Logger);
+        addLoggers(services, options!.Logger);
         addIdentity(services);
         addAuthorization(services);
         addAuthentication(services);
@@ -198,17 +198,17 @@ public static class MesSecurityConfiguration
 
         static void addUserContext(IServiceCollection services) =>
             services.AddScoped<UserContext>()
-                    .AddScoped<IUserContext>(x => x.GetRequiredService<UserContext>());
+                .AddScoped<IUserContext>(x => x.GetRequiredService<UserContext>());
 
         static void addLoggers(IServiceCollection services, ILogger logger) =>
             services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new WebLogger<UserManager<InfraIdentityUser>>(logger))
-                    .AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger))
-                    .AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
+                .AddSingleton<Microsoft.Extensions.Logging.ILogger<RoleManager<InfraIdentityRole>>>(new WebLogger<RoleManager<InfraIdentityRole>>(logger))
+                .AddSingleton<Microsoft.Extensions.Logging.ILogger<SignInManager<InfraIdentityUser>>>(new WebLogger<SignInManager<InfraIdentityUser>>(logger));
 
         static void addTools(IServiceCollection services) =>
             services.AddScoped<CustomAuthenticationStateProvider>()
-                    .AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>())
-                    .AddScoped<ISecurityService, SecurityService>()
+                .AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>())
+                .AddScoped<ISecurityService, SecurityService>()
                     ;
     }
 

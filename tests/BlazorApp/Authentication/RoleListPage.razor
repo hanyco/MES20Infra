@@ -4,20 +4,20 @@
 @using HanyCo.Infra.Services;
 
 @attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)]
-@page "/authentication/users"
+@page "/authentication/roles"
 @layout MainLayout
 
-@inject NavigationManager _Navigator;
+@inject NavigationManager _navigator;
 @inject ISecurityService _service;
 
-<PageTitle>MES User Management - List</PageTitle>
+<PageTitle>MES Role Management - List</PageTitle>
 
 <div class="container-fluid">
     <div class="row">
         <div class="div">
             <AuthorizeView Policy=@InfraIdentityValues.PolicyCanCrudSystemEntities>
                 <Authorized Context="AuthorizedToCreate">
-                    <button type="button" class="btn btn-primary" @onclick="@NewUser">New</button>
+                    <button type="button" class="btn btn-primary" @onclick="@NewRole">New</button>
                 </Authorized>
             </AuthorizeView>
         </div>
@@ -37,11 +37,11 @@
                     <GridRow>
                         <td>@context.Id</td>
                         <td>@context.UserName</td>
-                        <td>@context.Email</td>
+                        <td>@context.Name</td>
                         <td>
                             <AuthorizeView Policy=@InfraIdentityValues.PolicyCanCrudSystemEntities>
                                 <Authorized Context="AuthorizedToEdit">
-                                    <button class="btn btn-primary" @onclick="@(() => EditUser(context.Id))">Edit</button>
+                                    <button class="btn btn-primary" @onclick="@(() => EditRole(context.Id))">Edit</button>
                                     <button class="btn btn-primary" @onclick="@(() => DeleteUser(context.Id))">Delete</button>
                                 </Authorized>
                             </AuthorizeView>

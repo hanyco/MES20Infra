@@ -16,7 +16,7 @@ namespace HanyCo.Infra.Security.Services;
 
 internal class SecurityService(InfraUserManager userManager, InfraSignInManager signInManager, CustomAuthenticationStateProvider stateProvider) : ISecurityService
 {
-    public async Task<Result> CreateAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string password)
+    public async Task<Result> CreateUserAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string password)
     {
         // Assuming userManager is an instance of UserManager<InfraIdentityUser> that has been
         // injected previously.
@@ -99,7 +99,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
         return Result.Success;
     }
 
-    public async Task<Result> SetClaimAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string claimType, string claimValue)
+    public async Task<Result> SetUserClaimAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string claimType, string claimValue)
     {
         Check.MustBeArgumentNotNull(user);
         Check.MustBeArgumentNotNull(claimType);
@@ -114,7 +114,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
         return result.ToResult();
     }
 
-    public Task<Result> UpdateAsync([DisallowNull] InfraIdentityUser user) => throw new NotImplementedException();
+    public Task<Result> UpdateUserAsync([DisallowNull] InfraIdentityUser user) => throw new NotImplementedException();
 
     internal static Task<AuthenticationState> GetAuthenticationStateAsync([DisallowNull] ClaimsIdentity identity)
     {
