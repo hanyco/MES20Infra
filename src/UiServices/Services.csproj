@@ -1,24 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Debug Unit Test</Configurations>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="SecurityDescriptorService.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\..\.globalSuppressions.cs" Link=".globalSuppressions.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="SecurityDescriptorService.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
     <ProjectReference Include="..\Bcl\src\WpfLib\WpfLib.csproj" />
@@ -26,5 +21,4 @@
     <ProjectReference Include="..\CodeGenerator\Data\Data.csproj" />
     <ProjectReference Include="..\CodeGenerator\Engine\Engine.csproj" />
   </ItemGroup>
-
 </Project>

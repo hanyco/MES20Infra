@@ -1,24 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<AssemblyName>HanyCo.Infra.Internals.Data</AssemblyName>
-		<RootNamespace>HanyCo.Infra.Internals.Data</RootNamespace>
-		<Configurations>Debug;Release;Debug Unit Test</Configurations>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.5" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.5" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.5">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
-		<ProjectReference Include="..\..\Contracts\Contracts.csproj" />
-	</ItemGroup>
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>HanyCo.Infra.Internals.Data</AssemblyName>
+    <RootNamespace>HanyCo.Infra.Internals.Data</RootNamespace>
+    <Configurations>Debug;Release;Debug Unit Test</Configurations>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.1" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
+    <ProjectReference Include="..\..\Contracts\Contracts.csproj" />
+  </ItemGroup>
 </Project>

@@ -1,33 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<AssemblyName>HanyCo.Infrastructure</AssemblyName>
-		<RootNamespace>HanyCo.Infra</RootNamespace>
-		<Description>سرویس‌های عمومی مورد استفاده در کل سیستم</Description>
-		<Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DefineConstants>TRACE;DEBUG</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
-	  <DefineConstants>TRACE;DEBUG</DefineConstants>
-	</PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="Text\**" />
-		<EmbeddedResource Remove="Text\**" />
-		<None Remove="Text\**" />
-	</ItemGroup>
-	<ItemGroup>
-	  <None Include="..\.editorconfig" Link=".editorconfig" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Autofac" Version="7.1.0" />
-		<PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
-		<ProjectReference Include="..\BlazorLib\BlazorLib.csproj" />
-		<ProjectReference Include="..\Contracts\Contracts.csproj" />
-		<ProjectReference Include="..\Security\Security.csproj" />
-	</ItemGroup>
-
+  <PropertyGroup>
+    <AssemblyName>HanyCo.Infrastructure</AssemblyName>
+    <RootNamespace>HanyCo.Infra</RootNamespace>
+    <Description>سرویس‌های عمومی مورد استفاده در کل سیستم</Description>
+    <Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Text\**" />
+    <EmbeddedResource Remove="Text\**" />
+    <None Remove="Text\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="7.1.0" />
+    <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\Security\Security.csproj" />
+  </ItemGroup>
 </Project>
