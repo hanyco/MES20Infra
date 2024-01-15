@@ -56,7 +56,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
 
     public async Task<Result> SaveDbAsync()
     {
-        Check.MutBeNotNull(this.ViewModel);
+        Check.MustBeNotNull(this.ViewModel);
         try
         {
             var result = await this._service.SaveViewModelAsync(this.ViewModel);

@@ -159,7 +159,7 @@ internal sealed class PropertyService : IPropertyService
 
     public async Task<Result<PropertyViewModel?>> ValidateAsync(PropertyViewModel? item, CancellationToken cancellationToken = default)
     {
-        Check.MutBeNotNull(item);
+        Check.MustBeNotNull(item);
 
         var errors = new List<(object Id, object Error)>();
         if (item.Name.IsNullOrEmpty())

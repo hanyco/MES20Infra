@@ -20,11 +20,12 @@
 	  <None Include="..\.editorconfig" Link=".editorconfig" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Autofac" Version="6.4.0" />
+		<PackageReference Include="Autofac" Version="7.1.0" />
 		<PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\BlazorLib\BlazorLib.csproj" />
 		<ProjectReference Include="..\Contracts\Contracts.csproj" />
 		<ProjectReference Include="..\Security\Security.csproj" />
 	</ItemGroup>

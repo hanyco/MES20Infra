@@ -1,0 +1,93 @@
+﻿@page "/authentication/users/{Id}"
+@page "/authentication/user"
+
+@using HanyCo.Infra.Blazor
+@using Microsoft.AspNetCore.Identity;
+@using HanyCo.Infra.Security.Identity;
+@using Microsoft.AspNetCore.Components;
+@using BlazorApp.Data;
+@using HanyCo.Infra.Security.Identity.Model;
+@using HanyCo.Infra.Services;
+@using HanyCo.Infra.Security.Model;
+
+ @* @attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)] *@
+
+@inject NavigationManager _Navigator;
+@inject ISecurityService _securityService
+
+@layout MainLayout
+
+<PageTitle>MES User Management</PageTitle>
+
+<MessageComponent @ref="MessageComponent" />
+
+<EditForm OnValidSubmit='SaveData' Model='@this.DataContext'>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="container-fluid">
+        <button type="button" class="col-1 btn btn-secondary" @onclick="@(() => _Navigator.NavigateTo("/authentication/users"))">Back</button>
+        <button type="button" class="col-1 btn btn-info">Roles</button>
+        <div class="row gap-1 mb-3">
+            <button id='SaveButton' name='SaveButton' class='col-1 btn btn-success' type='submit'>Save</button>
+            <AuthorizeView Context="ToolbarContext" Policy=@InfraIdentityValues.PolicyCanCrudSystemEntities>
+                <Authorized>
+                    
+                </Authorized>
+            </AuthorizeView>
+        </div>
+        <hr />
+        <div class="row mb-3">
+            <label for="inputUserName" class="col-sm-2 col-form-label">User Name</label>
+            <div class="col-sm-10">
+                <InputText id='inputUserName' name='inputUserName' class='col-5' @bind-Value='this.DataContext.UserName' />
+                <ValidationMessage For="@(() => this.DataContext.UserName)" Class="error-message" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+            <div class="col-sm-10">
+                <InputText type="password" id='inputPassword' name='inputPassword' class='col-5' @bind-Value='this.DataContext.Password' />
+                <ValidationMessage For="@(() => this.DataContext.Password)" Class="error-message" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="inputConfirm" class="col-sm-2 col-form-label">Confirm</label>
+            <div class="col-sm-10">
+                <InputText type="password" id='inputConfirm' name='inputConfirm' class='col-5' @bind-Value='this.DataContext.PasswordConfirm' />
+                <ValidationMessage For="@(() => this.DataContext.PasswordConfirm)" Class="error-message" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="inputUserName" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-10">
+                <InputText id='inputEmail' name='inputEmail' class='col-5' @bind-Value='this.DataContext.Email' />
+                <ValidationMessage For="@(() => this.DataContext.Email)" Class="error-message" />
+            </div>
+        </div>
+        <hr />
+        <div class="row mb-3">
+            <label for="inputFirstName" class="col-sm-2 col-form-label">First Name</label>
+            <div class="col-sm-10">
+                <InputText id='inputConfirm' name='inputConfirm' class='col-5' @bind-Value='this.DataContext.FirstName' />
+                <ValidationMessage For="@(() => this.DataContext.FirstName)" Class="error-message" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="inputLastName" class="col-sm-2 col-form-label">Last Name</label>
+            <div class="col-sm-10">
+                <InputText id='inputLastName' name='inputLastName' class='col-5' @bind-Value='this.DataContext.LastName' />
+                <ValidationMessage For="@(() => this.DataContext.LastName)" Class="error-message" />
+            </div>
+        </div>
+        <hr />
+        <div class="row mb-3">
+            <InputCheckbox id='IsLockedCheckBox' name='IsLockedCheckBox' class='col-5' @bind-Value='this.DataContext.LockoutEnabled' />
+            <label class="form-check-label" for="IsLockedCheckBox">Is Locked</label>
+        </div>
+        <div class="row mb-3">
+            <InputCheckbox id='IsAdminCheckBox' name='IsAdminCheckBox' class='col-5' @bind-Value='this.DataContext.IsAdmin' />
+            <label class="form-check-label" for="IsAdminCheckBox">Is Admin</label>
+        </div>
+    </div>
+
+</EditForm>

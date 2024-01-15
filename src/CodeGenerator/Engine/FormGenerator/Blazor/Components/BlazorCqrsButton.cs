@@ -27,7 +27,7 @@ public sealed class BlazorCqrsButton(
         {
             yield break;
         }
-        Check.MutBeNotNull(this.Action.Segregation);
+        Check.MustBeNotNull(this.Action.Segregation);
         var calleeName = this.Action.Name;
         _ = TypePath.New(this.Action.Segregation.Name);
         var cqrsParamsType = this.Action.Segregation.Parameter?.Type ?? TypePath.New<object>();

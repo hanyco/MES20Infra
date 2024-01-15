@@ -1,0 +1,44 @@
+﻿@page "/authentication/login"
+
+@using System.ComponentModel.DataAnnotations;
+@using HanyCo.Infra.Services;
+
+@layout MainLayout
+@inject NavigationManager _navigationManager;
+@inject ISecurityService _security;
+
+<PageTitle>@("MES") - Login</PageTitle>
+
+<h1>
+    Login
+</h1>
+@if (!ErrorMessage.IsNullOrEmpty())
+{
+    <div class="container alert alert-danger">
+        <p>
+            @ErrorMessage
+        </p>
+    </div>
+
+}
+<EditForm OnValidSubmit='SaveDataAsync' Model='@this.DataContext'>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <button type="submit" class="btn btn-primary" disabled="@_isProcessing">Login</button>
+    <button class="btn btn-secondary" disabled="@_isProcessing" @onclick="@(()=>_navigationManager.NavigateTo("javascript:history.back()"))">Back</button>
+    <hr />
+    <div class="row mb-3">
+        <label for="inputUserName" class="col-sm-2 col-form-label">User Name</label>
+        <div class="col-sm-10">
+            <InputText id='inputUserName' name='inputUserName' class='col-5' @bind-Value='this.DataContext.UserName' disabled="@_isProcessing" />
+            <ValidationMessage For="@(() => this.DataContext.UserName)" Class="error-message" />
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+        <div class="col-sm-10">
+            <InputText type="password" id='inputPassword' name='inputPassword' class='col-5' @bind-Value='this.DataContext.Password' disabled="@_isProcessing" />
+            <ValidationMessage For="@(() => this.DataContext.Password)" Class="error-message" />
+        </div>
+    </div>
+</EditForm>

@@ -1,27 +1,42 @@
 ﻿using System.Security.Claims;
 
+using HanyCo.Infra.Security.Model;
+
+using Library.Validations;
+
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace HanyCo.Infra.Security.Client.Providers;
 
-public sealed class CustomAuthenticationStateProvider : AuthenticationStateProvider
+public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    private ClaimsPrincipal _currentUser;
+
+    public CustomAuthenticationStateProvider() => 
+        this._currentUser = new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous user by default
+
+    public override Task<AuthenticationState> GetAuthenticationStateAsync() =>
+        Task.FromResult(new AuthenticationState(this._currentUser));
+
+    public void SignIn(InfraIdentityUser user, IEnumerable<Claim> claims)
     {
-        // Anonymous user (not logged in)
-        var identity = new ClaimsIdentity();
-        //// Anonymous user (logged in)
-        //var identity = new ClaimsIdentity(authenticationType: "MES - Default Authentication Default Type");
-        identity.AddClaims([
-            new Claim(ClaimTypes.Name, "AnonymousUser"),
-            new Claim(ClaimTypes.Role, "Anonymous User"),
-            new Claim("FirstName", "Anonymous"),
-            new Claim("LastName", "User"),
-            ]);
+        Check.MustBeArgumentNotNull(user);
 
-        var user = new ClaimsPrincipal(identity);
+        var cl = claims.ToList();
+        if (!cl.Where(x => x.Type == ClaimTypes.Name).Any())
+        {
+            cl.Add(new(ClaimTypes.Name, user.UserName));
+        }
 
-        var result = new AuthenticationState(user);
-        return Task.FromResult(result);
+        var identity = new ClaimsIdentity(cl, InfraIdentityValues.LoggedInAuthenticationType);
+        this._currentUser = new ClaimsPrincipal(identity);
+        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
+    }
+
+    // Add a sign-out method if needed
+    public void SignOut()
+    {
+        this._currentUser = new ClaimsPrincipal(new ClaimsIdentity()); // Reset to anonymous user
+        this.NotifyAuthenticationStateChanged(this.GetAuthenticationStateAsync());
     }
 }

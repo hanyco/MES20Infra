@@ -56,7 +56,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
 
     public async Task<Result> SaveDbAsync()
     {
-        Check.MutBeNotNull(this.ViewModel);
+        Check.MustBeNotNull(this.ViewModel);
         try
         {
             this.ViewModel.SecurityClaims.AddRange(this.SecurityClaimCollectorUserControl.ClaimViewModels);

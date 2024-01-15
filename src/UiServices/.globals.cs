@@ -8,4 +8,3 @@ global using Library.Helpers;
 global using Library.Logging;
 
 global using static Library.Coding.CodeHelper;
-global using static Library.Coding.Functional;

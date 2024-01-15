@@ -4,15 +4,19 @@ namespace HanyCo.Infra.Security.Model;
 
 public interface ISecurityConfigOptions
 {
-    string? ConnectionString { get; }
+    string ConnectionString { get; }
     ILogger Logger { get; }
 
-    static ISecurityConfigOptions New(string? connectionString, ILogger? logger = null)
+    static ISecurityConfigOptions New(string connectionString, ILogger? logger = null)
         => new SecurityConfigOptions(connectionString, logger);
 }
 
-internal sealed class SecurityConfigOptions(string? connectionString, ILogger? logger) : ISecurityConfigOptions
+public class JwtOptions()
 {
-    public string? ConnectionString { get; } = connectionString;
-    public ILogger Logger { get; } = logger ?? ILogger.Empty;
+    public string Audience { get; set; } = default!;
+    public DateTime ExpirationDate { get; set; } = default!;
+    public string Issuer { get; set; } = default!;
+    public string SecretKey { get; set; } = default!;
 }
+
+internal sealed record class SecurityConfigOptions(string ConnectionString, ILogger Logger) : ISecurityConfigOptions;

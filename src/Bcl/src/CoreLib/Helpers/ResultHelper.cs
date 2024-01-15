@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 
@@ -11,8 +12,8 @@ using Library.Windows;
 
 namespace Library.Helpers;
 
-//[DebuggerStepThrough]
-//[StackTraceHidden]
+[DebuggerStepThrough]
+[StackTraceHidden]
 public static class ResultHelper
 {
     /// <summary>
@@ -216,7 +217,7 @@ public static class ResultHelper
     /// </remarks>
     public static bool TryParse<TResult>([DisallowNull] this TResult input, [NotNull] out TResult result) where TResult : ResultBase =>
         (result = input).IsSucceed;
-
+    
     //! Compiler Error CS1988: Async methods cannot have `ref`, `in` or `out` parameters
     //x public static async Task<bool> TryParseAsync<TResult>([DisallowNull] this Task<TResult> input, out TResult result) where TResult : ResultBase
     //x     => (result = await input).IsSucceed;

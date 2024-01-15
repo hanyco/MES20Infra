@@ -1,0 +1,61 @@
+﻿@using HanyCo.Infra.Security.Identity.Model;
+@using HanyCo.Infra.Security.Model;
+@using HanyCo.Infra.Security.Identity;
+@using HanyCo.Infra.Services;
+
+@attribute [Authorize(Policy = InfraIdentityValues.PolicyCanViewSystemEntities)]
+@page "/authentication/roles"
+@layout MainLayout
+
+@inject NavigationManager _navigator;
+@inject ISecurityService _service;
+
+<PageTitle>MES Role Management - List</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="div">
+            <AuthorizeView Policy=@InfraIdentityValues.PolicyCanCrudSystemEntities>
+                <Authorized Context="AuthorizedToCreate">
+                    <button type="button" class="btn btn-primary" @onclick="@NewRole">New</button>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            @if (this.DataContext.Any())
+            {
+                <MyGrid Items="@DataContext">
+                    <GridHeader>
+                        <th>Id</th>
+                        <th>User Name</th>
+                        <th>Mail</th>
+                        <th></th>
+                        <th></th>
+                    </GridHeader>
+                    <GridRow>
+                        <td>@context.Id</td>
+                        <td>@context.UserName</td>
+                        <td>@context.Name</td>
+                        <td>
+                            <AuthorizeView Policy=@InfraIdentityValues.PolicyCanCrudSystemEntities>
+                                <Authorized Context="AuthorizedToEdit">
+                                    <button class="btn btn-primary" @onclick="@(() => EditRole(context.Id))">Edit</button>
+                                    <button class="btn btn-primary" @onclick="@(() => DeleteUser(context.Id))">Delete</button>
+                                </Authorized>
+                            </AuthorizeView>
+                        </td>
+                    </GridRow>
+                </MyGrid>
+            }
+            else
+            {
+                <div class="container text-center">
+                    <h2>No user found.</h2>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

@@ -133,7 +133,7 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
 
     public UiBootstrapPositionViewModel FillWith([DisallowNull] UiBootstrapPositionViewModel positionViewModel)
     {
-        Check.MutBeNotNull(positionViewModel);
+        Check.MustBeNotNull(positionViewModel);
         var mapper = new Mapper();
         _ = mapper.Map(positionViewModel, this);
         //this.Order = positionViewModel.Order;
