@@ -14,14 +14,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
-  <!--<ItemGroup>
-		<Compile Remove="Helpers\**" />
-		<EmbeddedResource Remove="Helpers\**" />
-		<None Remove="Helpers\**" />
-	</ItemGroup>-->
-  <ItemGroup>
-    <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bcl\src\WebLib\WebLib.csproj" />
     <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
