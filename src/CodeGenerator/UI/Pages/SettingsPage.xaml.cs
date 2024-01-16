@@ -57,6 +57,5 @@ public partial class SettingsPage
     private async void TestButton_Click(object sender, RoutedEventArgs e) =>
         await Sql.TryConnectAsync(this.ViewModel.connectionString).ShowOrThrowAsync("Test Connection", "ConnectionString is checked.", "ConnectionString is Ok.");
 
-    private void ToastHelpButton_Click(object sender, RoutedEventArgs e) =>
-        Toast2.Test();
+    private void ToastHelpButton_Click(object sender, RoutedEventArgs e) {}
 }

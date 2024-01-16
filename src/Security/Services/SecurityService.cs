@@ -26,6 +26,12 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
         return result.ToResult();
     }
 
+    public Task<Result> DeleteRoleByIdAsync(Guid id) => throw new NotImplementedException();
+
+    public Task<Result> DeleteUserByIdAsync(Guid id) => throw new NotImplementedException();
+
+    public IEnumerable<InfraIdentityRole> GetRoles() => throw new NotImplementedException();
+
     public Task<InfraIdentityUser> GetUserByIdAsync(Guid id) => throw new NotImplementedException();
 
     public IEnumerable<InfraIdentityUser> GetUsers() =>
