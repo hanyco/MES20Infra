@@ -6,7 +6,7 @@ namespace HanyCo.Infra.Blazor;
 public abstract class ComponentBase<TDataContextType, TPageDataContextType> : ComponentBase
     where TDataContextType : new()
 {
-    public ComponentBase()
+    protected ComponentBase()
     {
         //this.StateHasChanged();
     }
