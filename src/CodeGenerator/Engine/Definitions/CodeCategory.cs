@@ -1,6 +1,4 @@
-﻿using Library.CodeGeneration.Models;
-
-namespace HanyCo.Infra.CodeGeneration.Definitions;
+﻿namespace HanyCo.Infra.CodeGeneration.Definitions;
 
 public enum CodeCategory
 {
@@ -10,4 +8,5 @@ public enum CodeCategory
     Page,
     Component,
     Converter,
+    Api,
 }
