@@ -10,4 +10,9 @@ public interface IApiCodingService : IBusinessService, ICodeGenerator<ApiCodingV
 {
 }
 
-public sealed record ApiCodingArgs(bool generateGetAll, bool generateGetById, bool generateInsert, bool generateUpdate, bool generateDelete);
+public sealed record ApiCodingArgs(
+    bool GenerateGetAll = true,
+    bool GenerateGetById = true,
+    bool GeneratePost = true,
+    bool GeneratePut = true,
+    bool GenerateDelete = true);
