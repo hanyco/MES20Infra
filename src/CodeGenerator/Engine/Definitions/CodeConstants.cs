@@ -9,6 +9,7 @@ public static class CodeConstants
     public const MemberAttributes DEFAULT_ACCESS_MODIFIER = MemberAttributes.Private | MemberAttributes.Final;
     public const string INDENT = "    ";
 
+    public static string DefaultMethodBody => "throw new NotImplementedException();";
     public static string DefaultTaskMethodBody => "await Task.CompletedTask;";
     public static string InitializedAsyncMethodBody => $"await this.OnPageInitializedAsync();";
     public static string Keyword_AddToOnInitializedAsync => "OnLoad";

@@ -126,21 +126,16 @@ public static class MesSecurityConfiguration
             .AddErrorDescriber<PersianIdentityErrorDescriber>();
 
         static void addAuthorization(IServiceCollection services) =>
-            services.AddAuthorization(options =>
-            {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()//.AddAuthenticationSchemes("Bearer")
+            services.AddAuthorizationBuilder()
+                .SetFallbackPolicy(new AuthorizationPolicyBuilder()//.AddAuthenticationSchemes("Bearer")
                     .RequireAuthenticatedUser()
-                    .RequireClaim("scope", "read").Build();
-                _ = options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy)
-                    .AddCrudRequirementPolicies();
-
-                options.AddPolicy(InfraIdentityValues.PolicyCanViewSystemEntities, policy
-                    => policy.RequireRole(InfraIdentityValues.RoleAdminValue, InfraIdentityValues.RoleSupervisor));
-                options.AddPolicy(InfraIdentityValues.PolicyCanCrudSystemEntities, policy
+                    .RequireClaim("scope", "read").Build())
+                .AddPolicy(InfraIdentityValues.PolicyCanViewSystemEntities, policy
+                    => policy.RequireRole(InfraIdentityValues.RoleAdminValue, InfraIdentityValues.RoleSupervisor))
+                .AddPolicy(InfraIdentityValues.PolicyCanCrudSystemEntities, policy
+                    => policy.RequireRole(InfraIdentityValues.RoleAdminValue))
+                .AddPolicy(InfraIdentityValues.PolicyIsAdmin, policy
                     => policy.RequireRole(InfraIdentityValues.RoleAdminValue));
-                options.AddPolicy(InfraIdentityValues.PolicyIsAdmin, policy
-                    => policy.RequireRole(InfraIdentityValues.RoleAdminValue));
-            });
 
         static void addAuthentication(IServiceCollection services)
         {

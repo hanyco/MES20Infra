@@ -1,9 +1,10 @@
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Globalization;
 
 using Library.Results;
 using Library.Validations;
+
+using Microsoft.Data.SqlClient;
 
 namespace Library.Helpers;
 
@@ -466,7 +467,7 @@ public static partial class AdoHelper
     /// <param name="columnTitle">The column title.</param>
     /// <returns><c>true</c> if the column is null or empty; otherwise, <c>false</c> .</returns>
     public static bool IsNullOrEmpty(this DataRow row, string columnTitle)
-        => row is null || row[columnTitle] is null || StringHelper.IsEmpty(row[columnTitle].ToString()) || row[columnTitle] == DBNull.Value;
+        => row is null || row[columnTitle] is null || StringHelper.IsNullOrEmpty(row[columnTitle].ToString()) || row[columnTitle] == DBNull.Value;
 
     /// <summary>
     /// Selects the specified table.
@@ -495,12 +496,12 @@ public static partial class AdoHelper
 
         var type = typeof(T);
         var properties = type.GetProperties();
-        var columnNames = table.Columns.Cast<DataColumn>().Select(col => col.ColumnName.ToLowerInvariant());
+        var columnNames = table.Columns.Cast<DataColumn>().Compact().Select(col => col.ColumnName?.ToUpperInvariant());
         foreach (var row in table.Select())
         {
             var t = new T();
             var row1 = row;
-            foreach (var property in properties.Where(property => columnNames.Contains(property.Name.ToLowerInvariant()))
+            foreach (var property in properties.Where(property => columnNames.Contains(property.Name?.ToUpperInvariant()))
                 .Where(property => row1[property.Name] is not null && row1[property.Name] != DBNull.Value))
             {
                 property.SetValue(t, row[property.Name], Array.Empty<object>());

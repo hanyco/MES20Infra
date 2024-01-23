@@ -1,7 +1,5 @@
 ﻿using HanyCo.Infra.Security.Model;
 
-using Library.Types;
-
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Security.DataSources;

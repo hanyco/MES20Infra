@@ -15,7 +15,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bcl\src\WebLib\WebLib.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.1" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
   </ItemGroup>
 </Project>
