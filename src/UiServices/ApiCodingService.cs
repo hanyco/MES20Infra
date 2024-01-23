@@ -35,8 +35,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         var modelType = CommonHelpers.Purify(viewModel.DtoType);
         var controller = new Class($"{modelType}Controller")
             .AddBaseType("Microsoft.AspNetCore.Mvc.ControllerBase")
-            .AddAttribute("Microsoft.AspNetCore.Mvc.ApiControllerAttribute")
-            .AddAttribute("Microsoft.AspNetCore.Mvc.RouteAttribute", (null, viewModel.Route ?? "[controller]"));
+            .AddAttribute("Microsoft.AspNetCore.Mvc.ApiController")
+            .AddAttribute("Microsoft.AspNetCore.Mvc.Route", (null, viewModel.Route ?? "[controller]"));
         if (arguments.GenerateGetAll)
         {
             var getAll = new Method("GetAll")
@@ -65,7 +65,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             {
                 Body = viewModel.Post?.Body ?? CodeConstants.DefaultMethodBody,
             }
-            .AddParameter(viewModel.Post?.Parameters.ElementAtOrDefault(0).Type ?? modelType, viewModel.Post?.Parameters.ElementAtOrDefault(0).Name ?? "value")
+            .AddParameter(viewModel.Post?.Parameters.ElementAtOrDefault(0).Type ?? viewModel.DtoType, viewModel.Post?.Parameters.ElementAtOrDefault(0).Name ?? "value")
             .AddAttribute("Microsoft.AspNetCore.Mvc.HttpPost");
 
             _ = controller.AddMember(post);
@@ -76,8 +76,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             {
                 Body = viewModel.Put?.Body ?? CodeConstants.DefaultMethodBody,
             }
-            .AddParameter(viewModel.Put?.Parameters.ElementAtOrDefault(0).Type ?? modelType, viewModel.Put?.Parameters.ElementAtOrDefault(0).Name ?? "id")
-            .AddParameter(viewModel.Put?.Parameters.ElementAtOrDefault(1).Type ?? modelType, viewModel.Put?.Parameters.ElementAtOrDefault(1).Name ?? "value")
+            .AddParameter(viewModel.Put?.Parameters.ElementAtOrDefault(0).Type ?? "long", viewModel.Put?.Parameters.ElementAtOrDefault(0).Name ?? "id")
+            .AddParameter(viewModel.Put?.Parameters.ElementAtOrDefault(1).Type ?? viewModel.DtoType, viewModel.Put?.Parameters.ElementAtOrDefault(1).Name ?? "value")
             .AddAttribute("Microsoft.AspNetCore.Mvc.HttpPut");
 
             _ = controller.AddMember(put);
@@ -88,7 +88,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             {
                 Body = viewModel.Delete?.Body ?? CodeConstants.DefaultMethodBody,
             }
-            .AddParameter(viewModel.Delete?.Parameters.ElementAtOrDefault(0).Type ?? modelType, viewModel.Delete?.Parameters.ElementAtOrDefault(0).Name ?? "id")
+            .AddParameter(viewModel.Delete?.Parameters.ElementAtOrDefault(0).Type ?? "long", viewModel.Delete?.Parameters.ElementAtOrDefault(0).Name ?? "id")
             .AddAttribute("Microsoft.AspNetCore.Mvc.HttpDelete", [(null, "{Id}")]);
 
             _ = controller.AddMember(delete);
