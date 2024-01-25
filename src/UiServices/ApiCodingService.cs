@@ -37,12 +37,13 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             .AddBaseType("Microsoft.AspNetCore.Mvc.ControllerBase")
             .AddAttribute("Microsoft.AspNetCore.Mvc.ApiController")
             .AddAttribute("Microsoft.AspNetCore.Mvc.Route", (null, viewModel.Route ?? "[controller]"));
+
         if (arguments.GenerateGetAll)
         {
             var getAll = new Method("GetAll")
             {
                 Body = viewModel.GetAllApi?.Body ?? CodeConstants.DefaultMethodBody,
-                ReturnType = viewModel.GetAllApi?.ReturnType ?? TypePath.New(typeof(IEnumerable<>), [viewModel.DtoType]),
+                ReturnType = viewModel.GetAllApi?.ReturnType ?? TypePathHelper.WrapWithTask(TypePathHelper.WrapWithIEnumetable(viewModel.DtoType)),
             }
             .AddAttribute("Microsoft.AspNetCore.Mvc.HttpGet");
 
@@ -53,7 +54,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             var getById = new Method("GetById")
             {
                 Body = viewModel.GetById?.Body ?? CodeConstants.DefaultMethodBody,
-                ReturnType = viewModel.GetById?.ReturnType ?? TypePath.New(viewModel.DtoType),
+                ReturnType = viewModel.GetById?.ReturnType ?? TypePathHelper.WrapWithTask(viewModel.DtoType),
             }
             .AddAttribute("Microsoft.AspNetCore.Mvc.HttpGet", [(null, "{Id}")]);
 

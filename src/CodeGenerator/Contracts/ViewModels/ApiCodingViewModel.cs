@@ -8,12 +8,12 @@ public sealed class ApiCodingViewModel : InfraViewModelBase
 
     public ApiMethod? Delete { get; set; }
     public string DtoType { get; set; }
-    public ApiMethod? GetAllApi { get; set; }
-    public ApiMethod? GetById { get; set; }
+    public ApiMethod GetAllApi { get; } = new();
+    public ApiMethod GetById { get; } = new();
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
-    public ApiMethod? Post { get; set; }
-    public ApiMethod? Put { get; set; }
-    public string? Route { get; set; }
+    public ApiMethod Post { get; } = new();
+    public ApiMethod Put { get; } = new();
+    public string Route { get; set; }
 }
 
 public sealed class ApiMethod
