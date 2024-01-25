@@ -3,12 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 
-
-
-
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
-using HanyCo.Infra.UI.Services;
 
 using Library.BusinessServices;
 using Library.Exceptions.Validations;

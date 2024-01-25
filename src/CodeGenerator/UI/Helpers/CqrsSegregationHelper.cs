@@ -1,10 +1,4 @@
-﻿
-
-
-using HanyCo.Infra.UI.Services;
-
-
-namespace HanyCo.Infra.UI.Helpers;
+﻿namespace HanyCo.Infra.UI.Helpers;
 
 internal static class CqrsSegregationHelper
 {

@@ -3,12 +3,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 
-
-
-
-using HanyCo.Infra.UI.Services;
-
-
 using Library.CodeGeneration.Models;
 using Library.Validations;
 using Library.Wpf.Dialogs;
@@ -110,6 +104,7 @@ public partial class CodeDetailsPage
         }
     }
 
+    [Obsolete]
     private void CodesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (this.Codes is null)
@@ -121,7 +116,7 @@ public partial class CodeDetailsPage
         this.IsPartialCheckBox.IsChecked = code.IsPartial;
     }
 
-    private async void CqrsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    private void CqrsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
         var selectedValue = e.NewValue.Cast().As<TreeViewItem>()?.DataContext;
         if (selectedValue is not null and CqrsViewModelBase viewModel)
@@ -129,7 +124,7 @@ public partial class CodeDetailsPage
             this.GenerateCommandButton.IsEnabled = true;
             if (this.AutoPreview)
             {
-                await this.FillCodeAsync(viewModel);
+                this.FillCode(viewModel);
             }
         }
         else
@@ -138,18 +133,18 @@ public partial class CodeDetailsPage
         }
     }
 
-    private async Task FillCodeAsync(CqrsViewModelBase viewModel)
+    private void FillCode(CqrsViewModelBase viewModel)
     {
         this.Codes = this._CodeGeneratorService.GenerateCodes(viewModel);
         this.CqrsSegregateTitle = viewModel.Name;
     }
 
-    private async void GenerateCommandButton_Click(object sender, RoutedEventArgs e)
+    private void GenerateCommandButton_Click(object sender, RoutedEventArgs e)
     {
         var selectedValue = this.CqrsTreeView.SelectedValue.Cast().As<TreeViewItem>()?.DataContext;
         if (selectedValue is not null and CqrsViewModelBase viewModel)
         {
-            await this.FillCodeAsync(viewModel);
+            this.FillCode(viewModel);
         }
     }
 
@@ -177,8 +172,8 @@ public partial class CodeDetailsPage
 
     private async void SaveToFileButton_Click(object sender, RoutedEventArgs e)
     {
-        Code code = this.CodesComboBox.SelectedItem.Cast().As<Code>().NotNull(() => "No code found.");
-        
+        var code = this.CodesComboBox.SelectedItem.Cast().As<Code>().NotNull(() => "No code found.");
+
         var asPartial = code.IsPartial ? ".partial" : "";
         var filePath = $"{code.Name}{asPartial}.cs";
         var (isOk, fileName) = CommonDialogHelper.Save(filePath, "cs", "C# Code (*.cs)|*.cs");

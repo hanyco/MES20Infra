@@ -5,7 +5,6 @@ using System.Windows.Controls;
 
 
 
-using HanyCo.Infra.UI.Services;
 
 
 using Library.EventsArgs;

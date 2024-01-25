@@ -1,15 +1,7 @@
-﻿
-
-
-using HanyCo.Infra.UI.Services;
-
-
-using Library.Coding;
+﻿using Library.Coding;
 using Library.Results;
 
-using Xunit.Abstractions;
-
-namespace InfraTestProject.Tests.Services;
+namespace TestProject.Tests.Services;
 
 public sealed class DtoServiceTest(IDtoService service, IModuleService moduleService, IDtoCodeService codeService)
 {
