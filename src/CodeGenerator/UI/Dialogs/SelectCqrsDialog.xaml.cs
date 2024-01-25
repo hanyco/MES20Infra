@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 
-using Contracts.Services;
-using Contracts.ViewModels;
+
+
 
 using Library.Exceptions.Validations;
 using Library.Globalization;

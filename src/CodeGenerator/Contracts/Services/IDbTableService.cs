@@ -1,4 +1,4 @@
-﻿using HanyCo.Infra.UI.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.Collections;
 using Library.DesignPatterns.Markers;
@@ -6,7 +6,7 @@ using Library.Extensions.Options;
 using Library.Interfaces;
 using Library.Threading.MultistepProgress;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IDbTableService : IService
 {

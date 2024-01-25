@@ -1,8 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-using HanyCo.Infra.UI.ViewModels;
-
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public class UiComponentViewModel : UiComponentViewModelBase
 {

@@ -7,7 +7,7 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
-    xmlns:viewmodels="clr-namespace:HanyCo.Infra.UI.ViewModels;assembly=Contracts"
+    xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=Contracts"
     x:Name="Me"
     Title="CQRS - Command Details"
     d:DataContext="{d:DesignInstance viewmodels:CqrsCommandViewModel,

@@ -1,11 +1,10 @@
-﻿using Contracts.ViewModels;
-
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>
 {

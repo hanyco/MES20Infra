@@ -1,12 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-using Contracts;
-using Contracts.Services;
-using Contracts.ViewModels;
-
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Mapping;
 using Library.Validations;

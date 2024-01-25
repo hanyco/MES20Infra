@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
 
-using Contracts.ViewModels;
+
 
 using HanyCo.Infra;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -21,7 +21,7 @@ using Library.Wpf.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using UiContracts;
+
 
 using UiServices;
 

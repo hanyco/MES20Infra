@@ -1,14 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-using Contracts.ViewModels;
-
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 using Library.CodeGeneration;
 using Library.Interfaces;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IMapperSourceGenerator : IBusinessService, ICodeGenerator<MapperSourceGeneratorArguments>
 {

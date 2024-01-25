@@ -1,11 +1,10 @@
-﻿using Contracts.ViewModels;
-
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Interfaces;
 using Library.Results;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IPropertyService : IBusinessService, IAsyncCrud<PropertyViewModel>
 {

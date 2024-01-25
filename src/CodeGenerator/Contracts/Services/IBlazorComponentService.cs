@@ -1,8 +1,8 @@
-﻿using Contracts.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.Interfaces;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IBlazorComponentService
     : IBusinessService

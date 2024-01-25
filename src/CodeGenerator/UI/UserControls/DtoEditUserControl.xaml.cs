@@ -2,8 +2,8 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-using Contracts.Services;
-using Contracts.ViewModels;
+
+
 
 using Library.ComponentModel;
 using Library.Exceptions.Validations;

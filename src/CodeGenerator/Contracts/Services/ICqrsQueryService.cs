@@ -1,9 +1,9 @@
-﻿using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Interfaces;
 
-namespace HanyCo.Infra.UI.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface ICqrsQueryService : IBusinessService, IAsyncCrud<CqrsQueryViewModel>, IAsyncCreator<CqrsQueryViewModel>, IResetChanges
 {
@@ -16,9 +16,9 @@ public interface ICqrsQueryService : IBusinessService, IAsyncCrud<CqrsQueryViewM
     CqrsQueryViewModel FillByDbEntity(CqrsQueryViewModel @this,
         CqrsSegregate segregate,
         Module infraModule,
-        Internals.Data.DataSources.Dto parameterDto,
+        Dto parameterDto,
         IEnumerable<Property> parameterDtoProperties,
-        Internals.Data.DataSources.Dto resultDto,
+        Dto resultDto,
         IEnumerable<Property> resultDtoProperties);
 
     Task<CqrsQueryViewModel> FillViewModelAsync(CqrsQueryViewModel model,

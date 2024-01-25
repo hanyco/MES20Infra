@@ -9,7 +9,7 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-    xmlns:viewmodels="clr-namespace:HanyCo.Infra.UI.ViewModels;assembly=Contracts"
+    xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=Contracts"
     x:Name="Me"
     Loaded="Me_Loaded"
     Title="Blazor Page Code Generator"

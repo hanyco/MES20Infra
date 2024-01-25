@@ -1,10 +1,10 @@
-﻿using Contracts.Services;
-using Contracts.ViewModels;
+﻿
+
 
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.Markers;
 using HanyCo.Infra.UI.Services;
-using HanyCo.Infra.UI.ViewModels;
+
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;

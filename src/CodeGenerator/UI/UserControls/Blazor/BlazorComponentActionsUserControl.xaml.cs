@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-using Contracts.ViewModels;
+
 
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;

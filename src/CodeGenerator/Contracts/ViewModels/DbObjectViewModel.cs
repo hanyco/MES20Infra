@@ -1,6 +1,4 @@
-﻿using Contracts.ViewModels;
-
-namespace HanyCo.Infra.UI.ViewModels;
+﻿namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public class DbObjectViewModel : InfraViewModelBase
 {

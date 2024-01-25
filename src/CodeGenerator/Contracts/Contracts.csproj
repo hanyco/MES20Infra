@@ -4,6 +4,8 @@
     <Nullable>annotations</Nullable>
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Debug Unit Test</Configurations>
+    <AssemblyName>HanyCo.Infra.CodeGen.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>HanyCo.Infra.CodeGen.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Services\ISecurityDescriptorService.cs" />

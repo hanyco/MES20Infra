@@ -1,9 +1,9 @@
-﻿using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts;
+using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Validations;
 
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public sealed class PropertyViewModel : InfraViewModelBase
 {
@@ -44,7 +44,7 @@ public sealed class PropertyViewModel : InfraViewModelBase
 
     public DbObjectViewModel? DbObject
     {
-        get => this._dbObject ?? (this.DbObject = new(this.Name, type: PropertyTypeHelper.ToDbTypeName(this.Type)));
+        get => this._dbObject ?? (this.DbObject = new(this.Name, type: this.Type.ToDbTypeName()));
         set => this.SetProperty(ref this._dbObject, value);
     }
 

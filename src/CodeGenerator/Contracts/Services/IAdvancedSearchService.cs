@@ -1,10 +1,9 @@
-﻿using Contracts.ViewModels;
-
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 using Library.Interfaces;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IAdvancedSearchService : IBusinessService, ICodeGenerator<AdvancedSearchViewModel>
 {

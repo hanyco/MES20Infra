@@ -1,9 +1,6 @@
-﻿using Contracts.Services;
-using Contracts.ViewModels;
+﻿using Library.CodeGeneration;
 
-using Library.CodeGeneration;
-
-namespace InfraTestProject.Tests.Services;
+namespace TestProject.Tests.Services;
 
 [Trait("Category", nameof(IAdvancedSearchService))]
 public sealed class AdvancedSearchServiceTest(IAdvancedSearchService service)

@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-using Contracts.Services;
-using Contracts.ViewModels;
-
-using HanyCo.Infra.Markers;
+using HanyCo.Infra.CodeGen.Contracts.Services;
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.CodeGeneration.Models;
 using Library.Interfaces;

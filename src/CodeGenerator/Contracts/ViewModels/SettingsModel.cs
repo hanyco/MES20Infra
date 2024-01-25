@@ -1,6 +1,6 @@
 ﻿using Library.ComponentModel;
 
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public sealed class SettingsModel : NotifyPropertyChanged
 {

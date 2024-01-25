@@ -1,12 +1,11 @@
-﻿using Contracts.ViewModels;
-
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 
-namespace HanyCo.Infra.UI.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IDtoCodeService : IBusinessService
     , ICodeGenerator<DtoViewModel, DtoCodeServiceGenerateCodesParameters>
@@ -39,4 +38,4 @@ public sealed record DtoCodeServiceGenerateCodesParameters(string? TypeName = nu
     /// <summary>
     /// The name of the frontend file.
     /// </summary>
-    in string? FrontFileName = null): GenerateCodesParameters(GenerateMainCode, GeneratePartialCode, GenerateUiCode, BackendFileName, FrontFileName);
+    in string? FrontFileName = null) : GenerateCodesParameters(GenerateMainCode, GeneratePartialCode, GenerateUiCode, BackendFileName, FrontFileName);

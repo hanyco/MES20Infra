@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows.Controls;
 
-using Contracts.ViewModels;
+
 
 namespace HanyCo.Infra.UI.UserControls;
 

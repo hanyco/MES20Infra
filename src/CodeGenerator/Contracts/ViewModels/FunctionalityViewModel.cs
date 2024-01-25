@@ -1,6 +1,4 @@
-﻿using HanyCo.Infra.UI.ViewModels;
-
-namespace Contracts.ViewModels;
+﻿namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 /// <summary>
 /// This class represents a functionality-specific view model. It inherits from InfraViewModelBase
@@ -31,7 +29,7 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public CqrsCommandViewModel InsertCommandViewModel { get; set; }
 
     public MapperGeneratorViewModel MapperGeneratorViewModel { get; } = new();
-    
+
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
     public CqrsCommandViewModel UpdateCommandViewModel { get; set; }

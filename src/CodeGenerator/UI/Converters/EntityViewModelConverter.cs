@@ -1,10 +1,10 @@
 ﻿//using System.Globalization;
 
-//using Contracts.Services;
+//
 
 //using HanyCo.Infra.Internals.Data.DataSources;
 //using HanyCo.Infra.UI.Helpers;
-//using HanyCo.Infra.UI.ViewModels;
+//
 
 //using Library.Mapping;
 //using Library.Validations;

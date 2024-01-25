@@ -1,4 +1,4 @@
-﻿namespace Contracts.ViewModels;
+﻿namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public sealed class UiComponentCustomLoad : InfraViewModelBase, IUiComponentCustomContent, BackElement
 {

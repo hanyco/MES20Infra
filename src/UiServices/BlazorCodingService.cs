@@ -1,10 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-using Contracts;
-using Contracts.Services;
-using Contracts.ViewModels;
-
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
@@ -12,7 +8,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -24,13 +19,13 @@ using Services.Helpers;
 
 using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
 
-using ButtonViewModelBase = Contracts.ViewModels.UiComponentButtonViewModelBase;
-using CqrsButtonViewModel = Contracts.ViewModels.UiComponentCqrsButtonViewModel;
-using CqrsLoadViewModel = Contracts.ViewModels.UiComponentCqrsLoadViewModel;
-using CstmButtonViewModel = Contracts.ViewModels.UiComponentCustomButton;
-using CstmLoadViewModel = Contracts.ViewModels.UiComponentCustomLoad;
-using PropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
-using UiViewModel = Contracts.ViewModels.UiComponentViewModel;
+using ButtonViewModelBase = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentButtonViewModelBase;
+using CqrsButtonViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCqrsButtonViewModel;
+using CqrsLoadViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCqrsLoadViewModel;
+using CstmButtonViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCustomButton;
+using CstmLoadViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCustomLoad;
+using PropertyViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiPropertyViewModel;
+using UiViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
@@ -243,7 +238,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
             static BlazorCustomButton createCstmButton(UiViewModel model, CstmButtonViewModel button)
             {
-                var btn = new BlazorCustomButton(name: button.Name, body: button.Caption, onClick: button.EventHandlerName, type:button.ButtonType)
+                var btn = new BlazorCustomButton(name: button.Name, body: button.Caption, onClick: button.EventHandlerName, type: button.ButtonType)
                 {
                     Position = button.Position.ToBootstrapPosition(),
                     OnClickReturnType = button.ReturnType,

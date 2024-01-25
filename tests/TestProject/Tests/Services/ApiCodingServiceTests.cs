@@ -1,7 +1,4 @@
-﻿using Contracts.Services;
-using Contracts.ViewModels;
-
-using Library.Coding;
+﻿using Library.Coding;
 
 using Xunit.Abstractions;
 
@@ -12,9 +9,11 @@ public sealed class ApiCodingServiceTests(ITestOutputHelper output, IApiCodingSe
     [Fact]
     public void CrudWithGetAllCustomBody()
     {
-        var viewModel = this.GetMinimalViewModel().With(x => x.GetAllApi.Body = "return Task.CompletedTask;");
-        var codes = service.GenerateCodes(viewModel);
-        Assert.NotNull(codes);
+        var bodyCode = "return Task.CompletedTask;";
+        var viewModel = this.GetMinimalViewModel().With(x => x.GetAllApi.Body = bodyCode);
+        var codes = service.GenerateCodes(viewModel).ThrowOnFail().Value;
+        var assertion = codes.Single()!.Statement.CountOf(bodyCode);
+        Assert.Equal(1, assertion);
     }
 
     [Fact]
@@ -24,5 +23,6 @@ public sealed class ApiCodingServiceTests(ITestOutputHelper output, IApiCodingSe
         Assert.NotNull(codes);
     }
 
-    private ApiCodingViewModel GetMinimalViewModel() => new() { DtoType = "PersonDto", NameSpace = this.GetType().Namespace! };
+    private ApiCodingViewModel GetMinimalViewModel() =>
+        new() { DtoType = "PersonDto", NameSpace = this.GetType().Namespace! };
 }

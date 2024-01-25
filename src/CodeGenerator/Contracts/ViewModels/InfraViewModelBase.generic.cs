@@ -4,7 +4,7 @@ using Library.Data.Markers;
 using Library.Wpf.Bases;
 using Library.Wpf.Markers;
 
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 [ViewModel]
@@ -57,7 +57,7 @@ public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraV
             !(left == right);
 
     public static bool operator ==(InfraViewModelBase<TId>? left, InfraViewModelBase<TId>? right) =>
-        (left is null && right is null) || (left is not null && right is not null && left.Equals(right));
+        left is null && right is null || left is not null && right is not null && left.Equals(right);
 
     public virtual bool Equals(InfraViewModelBase<TId>? other) =>
         other is not null && (this.Id, other.Id) switch

@@ -1,12 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
-using Contracts.Services;
+using HanyCo.Infra.CodeGen.Contracts.Services;
 
 using Library.CodeGeneration;
 using Library.Wpf.Markers;
 
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 [ViewModel]
 public sealed class MapperGeneratorViewModel : InfraViewModelBase

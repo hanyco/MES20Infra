@@ -1,2 +1,2 @@
-﻿namespace Contracts.ViewModels;
+﻿namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 

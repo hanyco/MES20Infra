@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using Contracts.ViewModels;
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.Interfaces;
 using Library.Results;
 using Library.Wpf.Windows;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IFunctionalityService : IBusinessService, IAsyncCrud<FunctionalityViewModel>, IAsyncCreator<FunctionalityViewModel>
 {

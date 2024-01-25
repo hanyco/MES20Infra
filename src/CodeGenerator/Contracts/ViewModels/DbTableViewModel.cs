@@ -3,7 +3,7 @@
 using Library.Data.SqlServer.Dynamics;
 using Library.Validations;
 
-namespace HanyCo.Infra.UI.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public sealed class DbTableViewModel : DbObjectViewModel
 {

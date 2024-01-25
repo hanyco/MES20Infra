@@ -1,12 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
-using HanyCo.Infra.UI.ViewModels;
-
 using Library.CodeGeneration;
 using Library.Wpf.Markers;
 
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 [ViewModel]
 public sealed class DtoViewModel : InfraViewModelBase

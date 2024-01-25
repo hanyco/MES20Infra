@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using Contracts.ViewModels;
-
-using HanyCo.Infra.UI.ViewModels;
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.Interfaces;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 /// <summary>
 /// The DTO service.

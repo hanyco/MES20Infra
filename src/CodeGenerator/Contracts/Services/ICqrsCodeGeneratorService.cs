@@ -1,12 +1,10 @@
-﻿using Contracts.ViewModels;
-
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
-using HanyCo.Infra.UI.ViewModels;
 
 using Library.Collections;
 using Library.Interfaces;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface ICqrsCodeGeneratorService : IBusinessService, ICodeGenerator<CqrsViewModelBase, CqrsCodeGenerateCodesConfig>
 {

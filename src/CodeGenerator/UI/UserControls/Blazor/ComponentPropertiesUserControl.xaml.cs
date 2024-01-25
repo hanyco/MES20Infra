@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-using Contracts.Services;
-using Contracts.ViewModels;
+
+
 
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;

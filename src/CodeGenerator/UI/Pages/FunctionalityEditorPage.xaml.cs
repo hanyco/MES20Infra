@@ -2,8 +2,8 @@
 using System.IO;
 using System.Windows;
 
-using Contracts.Services;
-using Contracts.ViewModels;
+
+
 
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.UI.Helpers;

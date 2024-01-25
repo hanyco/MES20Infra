@@ -7,7 +7,7 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using Library.Mapping;
 using Library.Validations;
 
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 /// <summary> <seealso cref="InfraViewModelBase" /> <seealso
 /// cref="IComparable" /> <seealso

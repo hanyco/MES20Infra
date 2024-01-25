@@ -11,7 +11,7 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-    xmlns:viewModels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    xmlns:viewModels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels"
     x:Name="Me"
     Title="Blazor Component Genertor"
     d:DataContext="{d:DesignInstance viewModels:UiComponentViewModel,

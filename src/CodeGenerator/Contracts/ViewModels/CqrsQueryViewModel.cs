@@ -1,8 +1,6 @@
-﻿using Contracts.ViewModels;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-using HanyCo.Infra.Internals.Data.DataSources;
-
-namespace HanyCo.Infra.UI.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public sealed class CqrsQueryViewModel : CqrsViewModelBase
 {

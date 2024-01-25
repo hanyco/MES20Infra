@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-using Contracts.Services;
-using Contracts.ViewModels;
+
 
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
@@ -18,9 +17,9 @@ using Microsoft.EntityFrameworkCore;
 
 using Services.Helpers;
 
-using CustomButtonViewModel = Contracts.ViewModels.UiComponentCustomButton;
-using UiComponentViewModel = Contracts.ViewModels.UiComponentViewModel;
-using UiPropertyViewModel = Contracts.ViewModels.UiPropertyViewModel;
+using CustomButtonViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCustomButton;
+using UiComponentViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentViewModel;
+using UiPropertyViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiPropertyViewModel;
 
 namespace Services;
 

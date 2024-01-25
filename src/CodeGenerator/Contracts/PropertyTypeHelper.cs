@@ -1,10 +1,9 @@
-﻿using Contracts.ViewModels;
-
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Validations;
 
-namespace Contracts;
+namespace HanyCo.Infra.CodeGen.Contracts;
 
 public static class PropertyTypeHelper
 {

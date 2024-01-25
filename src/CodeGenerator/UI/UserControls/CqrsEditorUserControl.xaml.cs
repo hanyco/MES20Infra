@@ -1,7 +1,7 @@
 ﻿using System.Windows.Controls;
 
-using Contracts.Services;
-using Contracts.ViewModels;
+
+
 
 using HanyCo.Infra.Internals.Data.DataSources;
 

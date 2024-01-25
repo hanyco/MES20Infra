@@ -7,7 +7,7 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.Pages.Blazor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
-    xmlns:viewModels="clr-namespace:HanyCo.Infra.UI.ViewModels"
+    xmlns:viewModels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels"
     x:Name="Me"
     d:DataContext="{d:DesignInstance viewModels:UiComponentViewModel,
                                      IsDesignTimeCreatable=True}"

@@ -1,5 +1,6 @@
-﻿using Contracts.Services;
+﻿
 
+using HanyCo.Infra.CodeGen.Contracts;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.BusinessServices;
@@ -13,10 +14,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-
-using Services;
-
-using UiContracts;
 
 using UiServices;
 

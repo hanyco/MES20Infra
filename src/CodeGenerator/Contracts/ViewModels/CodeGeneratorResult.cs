@@ -4,7 +4,7 @@ using Library.CodeGeneration.Models;
 using Library.DesignPatterns.Markers;
 using Library.Results;
 
-namespace Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 [Immutable]
 public readonly record struct CodeGeneratorResult(Result<Codes> Result)

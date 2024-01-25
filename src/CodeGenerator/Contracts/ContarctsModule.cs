@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace UiContracts;
+namespace HanyCo.Infra.CodeGen.Contracts;
 
 public static class ContractsModule
 {

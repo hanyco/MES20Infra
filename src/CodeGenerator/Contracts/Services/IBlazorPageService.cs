@@ -1,13 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using Contracts.ViewModels;
-
-using HanyCo.Infra.UI.ViewModels;
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.Interfaces;
 using Library.Validations;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IBlazorPageService : IBusinessService
     , IAsyncCrud<UiPageViewModel>

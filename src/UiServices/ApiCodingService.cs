@@ -1,7 +1,4 @@
-﻿using Contracts.Services;
-using Contracts.ViewModels;
-
-using HanyCo.Infra.CodeGeneration.Definitions;
+﻿using HanyCo.Infra.CodeGeneration.Definitions;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -98,6 +95,6 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         var ns = INamespace.New(viewModel.NameSpace).AddType(controller);
         var statement = codeGeneratorEngine.Generate(ns);
         var code = new Code(controller.Name, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Api);
-        return Codes.Empty;
+        return code.ToCodes();
     }
 }

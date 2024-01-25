@@ -3,11 +3,9 @@
 
 using System.Collections.ObjectModel;
 
-using Contracts.ViewModels;
-
 using Library.CodeGeneration;
 
-namespace HanyCo.Infra.UI.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public abstract class UiComponentViewModelBase : InfraViewModelBase
 {

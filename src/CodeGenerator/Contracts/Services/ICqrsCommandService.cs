@@ -1,8 +1,8 @@
-﻿using HanyCo.Infra.UI.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.Interfaces;
 
-namespace Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface ICqrsCommandService : IBusinessService, IAsyncSaveChanges, IAsyncCrud<CqrsCommandViewModel>, IAsyncCreator<CqrsCommandViewModel>, IResetChanges
 {

@@ -1,9 +1,9 @@
 ﻿#nullable disable
 
-using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.UI.ViewModels;
 
-namespace Contracts.ViewModels;
+using HanyCo.Infra.Internals.Data.DataSources;
+
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 public abstract class CqrsViewModelBase : InfraViewModelBase
 {

@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
-    xmlns:viewmodels="clr-namespace:Contracts.ViewModels;assembly=Contracts"
+    xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=Contracts"
     x:Name="Me"
     Title="Functionality Editor"
     d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
