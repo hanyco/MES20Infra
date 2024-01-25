@@ -30,10 +30,10 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         arguments ??= new();
 
         var modelType = CommonHelpers.Purify(viewModel.DtoType);
-        var controller = new Class($"{modelType}Controller")
+        var controller = new Class(viewModel.ControllerName ?? $"{modelType}Controller")
             .AddBaseType("Microsoft.AspNetCore.Mvc.ControllerBase")
             .AddAttribute("Microsoft.AspNetCore.Mvc.ApiController")
-            .AddAttribute("Microsoft.AspNetCore.Mvc.Route", (null, viewModel.Route ?? "[controller]"));
+            .AddAttribute("Microsoft.AspNetCore.Mvc.Route", (null, viewModel.ControllerRoute ?? "[controller]"));
 
         if (arguments.GenerateGetAll)
         {

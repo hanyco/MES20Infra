@@ -79,6 +79,7 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateInsertCommand, getTitle($"Creating `Insert{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
+                .AddStep(this.CreateController, getTitle($"Creating `{data.ViewModel.Name}Controller`…"))
 
                 .AddStep(this.CreateBlazorListPage, getTitle($"Creating {data.ViewModel.Name} Blazor List Page…"))
                 .AddStep(this.CreateBlazorDetailsPage, getTitle($"Creating {data.ViewModel.Name} Blazor Details Page…"))
@@ -390,6 +391,22 @@ internal sealed partial class FunctionalityService
 
         void setupSecurity(CreationData data) =>
             AddClaimViewModel(data.ViewModel.BlazorListPageViewModel, $"{name}List", data);
+    }
+
+    private Task CreateController(CreationData data, CancellationToken token)
+    {
+        return TaskRunner.StartWith(data)
+            .Then(createGetAllApi)
+            .Then(createGetByIdApi)
+            .Then(createInsertApi)
+            .Then(createUpdateApi)
+            .Then(createDeleteApi)
+            .RunAsync(token);
+        Task<CreationData> createGetAllApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
+        Task<CreationData> createGetByIdApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
+        Task<CreationData> createDeleteApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
+        Task<CreationData> createUpdateApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
+        Task<CreationData> createInsertApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
     }
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)

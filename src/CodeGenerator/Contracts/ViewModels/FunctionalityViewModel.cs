@@ -33,4 +33,6 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
     public CqrsCommandViewModel UpdateCommandViewModel { get; set; }
+
+    public ApiCodingViewModel ApiCodingViewModel { get; set; } = new();
 }
