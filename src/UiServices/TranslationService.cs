@@ -1,7 +1,5 @@
 ﻿using System.Globalization;
 
-
-
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Results;
@@ -24,7 +22,7 @@ internal sealed class TranslationService : ITranslationService
         var query = from x in this._readDbContext.Translations
                     where x.Key == translationKey && x.LangCode == langCode
                     select x.Value;
-        var dbResult = await query.FirstOrDefaultAsync();
+        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: token);
         return dbResult.IsNullOrEmpty() ? Result<string>.CreateFailure(value: translationKey)! : Result<string>.CreateSuccess(dbResult);
     }
 
@@ -34,7 +32,7 @@ internal sealed class TranslationService : ITranslationService
         var query = from x in this._writeDbContext.Translations
                     where x.Key == translationKey && x.LangCode == langCode
                     select x;
-        var dbResult = await query.FirstOrDefaultAsync();
+        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: token);
         if (dbResult != null)
         {
             dbResult.Value = translationValue;
@@ -44,7 +42,7 @@ internal sealed class TranslationService : ITranslationService
             var translation = new Translation { Key = translationKey, LangCode = langCode, Value = translationValue };
             _ = this._writeDbContext.Translations.Add(translation);
         }
-        return await this._writeDbContext.SaveChangesResultAsync();
+        return await this._writeDbContext.SaveChangesResultAsync(cancellationToken: token);
     }
 
     private static string _currentCulture()

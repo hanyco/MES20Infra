@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
-using UiServices;
+using Services;
 
 namespace TestProject;
 

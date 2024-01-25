@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
 
-
-
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 

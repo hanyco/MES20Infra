@@ -1,6 +1,4 @@
 ﻿
-
-
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.BusinessServices;
@@ -26,7 +24,7 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         => ServiceHelper.GetByIdAsync<ModuleViewModel, Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public IAsyncEnumerable<Module> GetChildEntitiesAsync(Module entity, CancellationToken cancellationToken = default)
-        => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id);
+        => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id, cancellationToken);
 
     public IAsyncEnumerable<Module> GetChildEntitiesByIdAsync(long parentId, CancellationToken cancellationToken = default)
     {
@@ -44,7 +42,7 @@ internal sealed class ModuleService : IBusinessService, IModuleService
                     where child.Id == childId
                     where parent.Id == child.ParentId
                     select parent;
-        var dbResult = await query.FirstOrDefaultAsync();
+        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         return dbResult;
     }
 

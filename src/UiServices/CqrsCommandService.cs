@@ -1,9 +1,6 @@
 ﻿
-
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
-using HanyCo.Infra.UI.Services.Imp;
-
 
 using Library.BusinessServices;
 using Library.DesignPatterns.Markers;
@@ -66,7 +63,7 @@ internal sealed class CqrsCommandService(
                        .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
         if (result?.Guid is { } guid)
         {
-            result.SecurityClaims.AddRange( await this._securityService.GetEntityClaimsAsync(guid, token).GetValueAsync());
+            _ = result.SecurityClaims.AddRange(await this._securityService.GetEntityClaimsAsync(guid, token).GetValueAsync());
         }
 
         return result;

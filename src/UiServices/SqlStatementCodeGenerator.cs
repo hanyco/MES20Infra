@@ -1,10 +1,4 @@
-﻿
-
-
-using HanyCo.Infra.CodeGeneration.Definitions;
-
-using Library.CodeGeneration.Models;
-using Library.CodeGeneration.v2;
+﻿using Library.CodeGeneration.Models;
 using Library.Data.SqlServer;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
@@ -27,7 +21,7 @@ internal sealed class SqlStatementCodeGenerator : IBusinessService, ISqlStatemen
         var tableName = dto.DbObject.Name;
         var columns = dto.Properties.Select(p => p.DbObject!.Name);
         var statement = generateStatement(tableName!, dto.DbObject.Schema, columns);
-        
+
         // Return result
         var code = Code.New(codeName, Languages.Sql, statement, false);
         return code;

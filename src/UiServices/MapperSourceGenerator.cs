@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-
-
 using HanyCo.Infra.CodeGeneration.Definitions;
 
 using Library.CodeGeneration;

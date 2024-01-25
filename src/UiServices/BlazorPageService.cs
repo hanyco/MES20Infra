@@ -1,8 +1,5 @@
 ﻿
-
-
 using HanyCo.Infra.Internals.Data.DataSources;
-
 
 using Library.BusinessServices;
 using Library.Results;
@@ -52,7 +49,10 @@ internal sealed class BlazorPageService(
             NameSpace = nameSpace ?? $"{CommonHelpers.Purify(dto.NameSpace)}.Pages"
         };
         if (!route.IsNullOrEmpty())
+        {
             result.Routes.Add(route);
+        }
+
         if (dto.IsViewModel)
         {
             result.DataContext = dto;
@@ -87,7 +87,7 @@ internal sealed class BlazorPageService(
                 NameSpace = dto.NameSpace,
                 Module = dto.Module
             };
-            result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
+            _ = result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
         }
         return result;
     }

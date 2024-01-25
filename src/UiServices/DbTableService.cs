@@ -1,7 +1,4 @@
 ﻿
-
-
-
 using Library.Collections;
 using Library.Data.SqlServer.Dynamics;
 using Library.Exceptions.Validations;

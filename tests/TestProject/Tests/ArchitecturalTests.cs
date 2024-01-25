@@ -7,7 +7,7 @@ using HanyCo.Infra.Markers;
 using Library.Helpers;
 using Library.Interfaces;
 
-using UiServices;
+using Services;
 
 namespace InfraTestProject.Tests;
 

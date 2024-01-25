@@ -12,15 +12,14 @@ public sealed class ApiCodingServiceTests(ITestOutputHelper output, IApiCodingSe
         var bodyCode = "return Task.CompletedTask;";
         var viewModel = this.GetMinimalViewModel().With(x => x.GetAllApi.Body = bodyCode);
         var codes = service.GenerateCodes(viewModel).ThrowOnFail().Value;
-        var assertion = codes.Single()!.Statement.CountOf(bodyCode);
-        Assert.Equal(1, assertion);
+        Assert.Equal(1, codes.Single()!.Statement.CountOf(bodyCode));
     }
 
     [Fact]
     public void CrudWithMinimalCustomSettings()
     {
-        var codes = service.GenerateCodes(this.GetMinimalViewModel());
-        Assert.NotNull(codes);
+        var codes = service.GenerateCodes(this.GetMinimalViewModel()).ThrowOnFail().Value;
+        _ = Assert.Single(codes);
     }
 
     private ApiCodingViewModel GetMinimalViewModel() =>

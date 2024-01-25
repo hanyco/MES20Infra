@@ -1,7 +1,4 @@
-﻿
-
-using HanyCo.Infra.Internals.Data.DataSources;
-
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.BusinessServices;
 using Library.Exceptions.Validations;

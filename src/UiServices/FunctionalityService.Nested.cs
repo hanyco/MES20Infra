@@ -2,11 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-
-
-
 using HanyCo.Infra.Internals.Data.DataSources;
-
 
 using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;

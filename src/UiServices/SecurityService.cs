@@ -1,6 +1,4 @@
 ﻿
-
-
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Results;

@@ -1,11 +1,6 @@
-﻿
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-using HanyCo.Infra.Internals.Data.DataSources;
-
-
-using Library.Mapping;
-
-namespace HanyCo.Infra.UI.Services.Imp;
+namespace Services;
 
 internal abstract class CqrsSegregationServiceBase
 {
