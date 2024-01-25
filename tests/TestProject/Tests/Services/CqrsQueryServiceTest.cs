@@ -1,12 +1,8 @@
-﻿
-
-using HanyCo.Infra.UI.Services;
-
-using InfraTestProject.Helpers;
+﻿using InfraTestProject.Helpers;
 
 using Xunit.Abstractions;
 
-namespace InfraTestProject.Tests.Services;
+namespace TestProject.Tests.Services;
 
 public sealed class CqrsQueryServiceTest(ITestOutputHelper output, ICqrsQueryService service, IModuleService moduleService)
 {
