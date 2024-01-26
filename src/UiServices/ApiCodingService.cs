@@ -11,7 +11,7 @@ using Services.Helpers;
 
 namespace Services;
 
-internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodingService
+internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodeGenerator
 {
     public Result<Codes> GenerateCodes(ApiCodingViewModel viewModel, ApiCodingArgs? arguments = null)
     {

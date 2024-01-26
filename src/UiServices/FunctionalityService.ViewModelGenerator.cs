@@ -396,17 +396,33 @@ internal sealed partial class FunctionalityService
     private Task CreateController(CreationData data, CancellationToken token)
     {
         return TaskRunner.StartWith(data)
+            .Then(initialize)
             .Then(createGetAllApi)
             .Then(createGetByIdApi)
             .Then(createInsertApi)
             .Then(createUpdateApi)
             .Then(createDeleteApi)
             .RunAsync(token);
-        Task<CreationData> createGetAllApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
-        Task<CreationData> createGetByIdApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
-        Task<CreationData> createDeleteApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
-        Task<CreationData> createUpdateApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
-        Task<CreationData> createInsertApi(CreationData data, CancellationToken token) => throw new NotImplementedException();
+
+        void initialize(CreationData data) =>
+            data.ViewModel.ApiCodingViewModel
+                .With(x => x.DtoType = data.ViewModel.SourceDto.FullName)
+                .With(x => x.NameSpace = TypePath.Combine(GetNameSpace(data), "Controllers"));
+
+        void createGetAllApi(CreationData data) =>
+            data.ViewModel.ApiCodingViewModel.GetAllApi.Body = "return Task.CompletedTask;";
+
+        void createGetByIdApi(CreationData data) =>
+            data.ViewModel.ApiCodingViewModel.GetById.Body = "return Task.CompletedTask;";
+
+        void createInsertApi(CreationData data) =>
+            data.ViewModel.ApiCodingViewModel.Post.Body = "return Task.CompletedTask;";
+
+        void createUpdateApi(CreationData data) =>
+            data.ViewModel.ApiCodingViewModel.Put.Body = "return Task.CompletedTask;";
+
+        void createDeleteApi(CreationData data) =>
+            data.ViewModel.ApiCodingViewModel.Delete.Body = "return Task.CompletedTask;";
     }
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)

@@ -30,7 +30,8 @@ internal partial class FunctionalityService(
     IBlazorComponentCodeService blazorComponentCodeService,
     IBlazorPageService blazorPageService,
     IBlazorPageCodeService blazorPageCodeService,
-    IMapperSourceGenerator mapperSourceGenerator)
+    IMapperSourceGenerator mapperSourceGenerator,
+    IApiCodeGenerator apiCodeGenerator)
     : IFunctionalityService
     , IFunctionalityCodeService
     , IValidator<FunctionalityViewModel>
@@ -47,6 +48,7 @@ internal partial class FunctionalityService(
     private readonly IDtoCodeService _dtoCodeService = dtoCodeService;
     private readonly IDtoService _dtoService = dtoService;
     private readonly IMapperSourceGenerator _mapperSourceGenerator = mapperSourceGenerator;
+    private readonly IApiCodeGenerator _apiCodeGenerator = apiCodeGenerator;
     private readonly IModuleService _moduleService = moduleService;
     private readonly ICqrsQueryService _queryService = queryService;
     private readonly InfraReadDbContext _readDbContext = readDbContext;

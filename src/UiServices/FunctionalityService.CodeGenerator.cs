@@ -29,7 +29,7 @@ internal sealed partial class FunctionalityService
 
         IEnumerable<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes)
         {
-            var max = 13;
+            var max = 14;
             var index = 0;
             if (viewModel.SourceDto != null)
             {
@@ -194,6 +194,17 @@ internal sealed partial class FunctionalityService
                 }
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.MapperGeneratorViewModel)}");
                 codes.BlazorDetailsComponentMapperCodes = Codes.New(mapperCodes);
+            }
+
+            {
+                var codeGenRes = this._apiCodeGenerator.GenerateCodes(viewModel.ApiCodingViewModel);
+                codes.ApiCodes = codeGenRes;
+                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.ApiCodingViewModel)}");
+                yield return codes.ApiCodes;
+                if (!codeGenRes.IsSucceed)
+                {
+                    yield break;
+                }
             }
 
             ImmutableArray<Result<Codes>> generateAllCodes(CqrsViewModelBase cqrsViewModel)

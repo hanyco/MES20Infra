@@ -6,7 +6,7 @@ public sealed class ApiCodingViewModel : InfraViewModelBase
 {
     private string _nameSpace;
 
-    public ApiMethod? Delete { get; set; }
+    public ApiMethod Delete { get; set; } = new();
     public string DtoType { get; set; }
     public ApiMethod GetAllApi { get; } = new();
     public ApiMethod GetById { get; } = new();

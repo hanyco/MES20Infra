@@ -4,6 +4,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 
 using Library.CodeGeneration.Models;
+using Library.Results;
 
 namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
@@ -65,6 +66,7 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
     /// Gets or sets the codes for the UpdateCommandCodes functionality.
     /// </summary>
     public Codes UpdateCommandCodes { get => this.Get(); set => this.Set(value); }
+    public Codes ApiCodes { get => this.Get(); set => this.Set(value); }
 
     public IEnumerable<Codes> GetAllCodes() =>
         this._allCodes.Select(x => x.Value).Compact();
