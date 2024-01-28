@@ -51,7 +51,6 @@ public partial class DtoDetailsPage
         this._reporter = reporter;
 
         this.InitializeComponent();
-        this.DtoEditUserControl.Initialize();
     }
 
     public DtoViewModel? ViewModel

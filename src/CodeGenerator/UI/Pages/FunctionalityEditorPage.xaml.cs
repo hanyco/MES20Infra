@@ -8,6 +8,7 @@ using HanyCo.Infra.UI.UserControls;
 
 using Library.BusinessServices;
 using Library.CodeGeneration.Models;
+using Library.ComponentModel;
 using Library.EventsArgs;
 using Library.Results;
 using Library.Threading.MultistepProgress;
@@ -136,7 +137,8 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 
     private async void Me_Loaded(object sender, RoutedEventArgs e)
     {
-        await this.FunctionalityTreeView.BindAsync();
+        this.GetChildren<IAsyncBindable>().ForEach(async x => await x.BindAsync());
+        //await this.FunctionalityTreeView.BindAsync();
         this.ViewModel = await this.GetNewViewModelAsync();
     }
 

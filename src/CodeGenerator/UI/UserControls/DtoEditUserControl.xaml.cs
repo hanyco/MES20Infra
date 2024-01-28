@@ -2,15 +2,10 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-
-
-
 using Library.ComponentModel;
-using Library.Exceptions.Validations;
 using Library.Validations;
 using Library.Wpf.Dialogs;
 
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 using Key = System.Windows.Input.Key;
@@ -21,7 +16,7 @@ namespace HanyCo.Infra.UI.UserControls;
 /// Interaction logic for DtoEditUserControl.xaml
 /// </summary>
 public partial class DtoEditUserControl : UserControl,
-    IAsyncBindable, IUnidirectionalViewModel<DtoViewModel?>, IInitialzable, ISupportReadOnly
+    IAsyncBindable, IUnidirectionalViewModel<DtoViewModel?>, ISupportReadOnly
 {
     public static readonly DependencyProperty IsReadOnlyProperty = ControlHelper.GetDependencyProperty<bool, DtoEditUserControl>(nameof(IsReadOnly));
     public static readonly DependencyProperty? SelectedPropertyProperty = ControlHelper.GetDependencyProperty<PropertyViewModel?, DtoEditUserControl>(nameof(SelectedProperty));
@@ -46,17 +41,14 @@ public partial class DtoEditUserControl : UserControl,
         set => this.SetValue(SelectedPropertyProperty, value);
     }
 
-    public DtoViewModel? ViewModel => 
+    public DtoViewModel? ViewModel =>
         this.DataContext.Cast().As<DtoViewModel>()?.With(x => x.SecurityClaims.AddRange(this.DtoSecurityClaimCollectorUserControl.ClaimViewModels));
 
     public async Task BindAsync()
     {
-        Check.MustBeNotNull(this._moduleService, () => new ValidationException($"Please call `{nameof(Initialize)}` method."));
+        this._moduleService ??= DI.GetService<IModuleService>();
         this.SelectModuleUserControl.Modules = await this._moduleService.GetAllAsync();
     }
-
-    public void Initialize() =>
-        this._moduleService = DI.GetService<IModuleService>();
 
     public void RefreshState(DtoViewModel? viewModel)
     {

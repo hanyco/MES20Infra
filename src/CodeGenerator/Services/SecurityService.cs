@@ -1,5 +1,6 @@
 ﻿
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Security.Identity;
 
 using Library.Results;
 
@@ -7,10 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbContext infraWriteDb, IEntityViewModelConverter converter) : ISecurityService
+internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbContext infraWriteDb, InfraUserManager userManager, IEntityViewModelConverter converter) : ISecurityService
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraWriteDbContext _infraWriteDb = infraWriteDb;
+    private readonly InfraUserManager _userManager = userManager;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
 
     public Task<Result> DeleteAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
@@ -59,7 +61,11 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
 
     public Task<Result<int>> SaveChangesAsync(CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<Result> SetEntityClaimsAsync(Guid entity, IEnumerable<ClaimViewModel> claims, bool persist, CancellationToken token = default) => throw new NotImplementedException();
+    public Task<Result> SetEntityClaimsAsync(Guid entity, IEnumerable<ClaimViewModel> claims, bool persist, CancellationToken token = default)
+    {
+        //this._userManager.AddClaimAsync()
+        return Task.FromResult(Result.Success);
+    }
 
     public Task<Result<ClaimViewModel>> UpdateAsync(Guid id, ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
         throw new NotImplementedException();

@@ -81,6 +81,7 @@ internal sealed class CqrsCommandService(
 
     public async Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
+        model.Guid ??= Guid.NewGuid();
         var man = ServiceHelper.InsertAsync(this,
             this._writeDbContext,
             model,
