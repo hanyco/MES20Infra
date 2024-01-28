@@ -1,5 +1,5 @@
-﻿
-
+﻿using HanyCo.Infra.CodeGen.Contracts.Services;
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.CodeGeneration;
 

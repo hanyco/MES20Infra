@@ -1,13 +1,5 @@
-﻿
-
-
-using HanyCo.Infra.UI.Services;
-
-
-using Library.Coding;
+﻿using Library.Coding;
 using Library.Results;
-
-using Xunit.Abstractions;
 
 namespace InfraTestProject.Tests.Services;
 
@@ -88,7 +80,7 @@ public sealed class DtoServiceTest(IDtoService service, IModuleService moduleSer
         Assert.Equal(18, actual4.Count);
 
         var actual5 = await this._service.GetAllByCategoryAsync(false, false, false);
-        Assert.Equal(0, actual5.Count);
+        Assert.Empty(actual5);
 
         async Task<Result<int>> insertDtoAsync(Func<(DtoViewModel Model, int Index), (DtoViewModel Model, bool canContiniue)> process)
         {
@@ -120,17 +112,17 @@ public sealed class DtoServiceTest(IDtoService service, IModuleService moduleSer
 
         var actual1 = await this._service.GetByIdAsync(model1.Value.Id!.Value);
         Assert.NotNull(actual1);
-        Assert.NotNull(actual1.Id);
+        _ = Assert.NotNull(actual1.Id);
         Assert.Equal(model1.Value.Name, actual1.Name);
 
         var actual2 = await this._service.GetByIdAsync(model2.Value.Id!.Value);
         Assert.NotNull(actual2);
-        Assert.NotNull(actual2.Id);
+        _ = Assert.NotNull(actual2.Id);
         Assert.Equal(model2.Value.Name, actual2.Name);
 
         var actual3 = await this._service.GetByIdAsync(model3.Value.Id!.Value);
         Assert.NotNull(actual3);
-        Assert.NotNull(actual3.Id);
+        _ = Assert.NotNull(actual3.Id);
         Assert.Equal(model3.Value.Name, actual3.Name);
     }
 
@@ -175,7 +167,7 @@ public sealed class DtoServiceTest(IDtoService service, IModuleService moduleSer
         _ = await this._service.UpdateAsync(model.Id!.Value, model);
         var actual = await this._service.GetByIdAsync(model.Id!.Value);
         Assert.NotNull(actual);
-        Assert.NotNull(actual.Id);
+        _ = Assert.NotNull(actual.Id);
         Assert.Equal(model.Name, actual.Name);
     }
 

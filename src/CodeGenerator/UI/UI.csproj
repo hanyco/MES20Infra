@@ -64,8 +64,9 @@
     <ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
     <ProjectReference Include="..\..\Bcl\src\WpfLib\WpfLib.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Infrastructure.csproj" />
-    <ProjectReference Include="..\..\UiServices\Services.csproj" />
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\Engine\Engine.csproj" />
+    <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="AppSettings.Development.json">

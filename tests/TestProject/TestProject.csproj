@@ -30,8 +30,9 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Bcl\src\CoreLib\CoreLib.csproj" />
 		<ProjectReference Include="..\..\src\CodeGenerator\Contracts\Contracts.csproj" />
+		<ProjectReference Include="..\..\src\CodeGenerator\Services\Services.csproj" />
 		<ProjectReference Include="..\..\src\CodeGenerator\Data\Data.csproj" />
-		<ProjectReference Include="..\..\src\UiServices\Services.csproj" />
+		<ProjectReference Include="..\..\src\CodeGenerator\Services\Services.csproj" />
 	</ItemGroup>
 
 </Project>

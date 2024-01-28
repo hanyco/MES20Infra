@@ -182,9 +182,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
                 // Add members
                 _ = handlerClass.AddBaseType(baseType)
-                    .AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { IsReadOnly = true })
-                    .AddMember(new Field(fld(qryPcr.Name), qryPcr) { IsReadOnly = true })
-                    .AddMember(new Field(fld(dal.Name), dal) { IsReadOnly = true });
+                    .AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { AccessModifier = IField.DefaultAccessModifier })
+                    .AddMember(new Field(fld(qryPcr.Name), qryPcr) { AccessModifier = IField.DefaultAccessModifier })
+                    .AddMember(new Field(fld(dal.Name), dal) { AccessModifier = IField.DefaultAccessModifier });
                 _ = handlerClass.AddMember(ctor);
 
                 // Create namespace

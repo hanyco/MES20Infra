@@ -1,7 +1,4 @@
 ﻿
-
-using HanyCo.Infra.UI.Services;
-
 using InfraTestProject.Helpers;
 
 using Xunit.Abstractions;

@@ -1,4 +1,5 @@
-﻿using HanyCo.Infra.Internals.Data.DataSources;
+﻿using HanyCo.Infra.CodeGen.Contracts;
+using HanyCo.Infra.Internals.Data.DataSources;
 
 using InfraTestProject.Tests;
 
@@ -14,9 +15,9 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
+using Services;
 
 
-using UiServices;
 
 namespace InfraTestProject;
 

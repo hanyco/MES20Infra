@@ -7,8 +7,6 @@ using HanyCo.Infra.Markers;
 using Library.Helpers;
 using Library.Interfaces;
 
-using Services;
-
 namespace InfraTestProject.Tests;
 
 [Trait("Category", nameof(ArchitecturalTests))]
