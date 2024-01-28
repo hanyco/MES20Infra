@@ -2,9 +2,6 @@
 using System.IO;
 using System.Windows;
 
-
-
-
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
@@ -137,8 +134,11 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
         await this._service.CreateAsync().WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
 
-    private async void Me_Loaded(object sender, RoutedEventArgs e) =>
+    private async void Me_Loaded(object sender, RoutedEventArgs e)
+    {
+        await this.FunctionalityTreeView.BindAsync();
         this.ViewModel = await this.GetNewViewModelAsync();
+    }
 
     private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e) =>
         e.Item = this._moduleService;

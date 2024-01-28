@@ -5,7 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=HanyCo.Infra.CodeGen.Contracts"
     x:Name="Me"
+    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="250"
     mc:Ignorable="d">

@@ -1,9 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-
-
-
 namespace HanyCo.Infra.UI.UserControls;
 
 /// <summary>
