@@ -195,7 +195,7 @@ internal sealed partial class FunctionalityService
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.MapperGeneratorViewModel)}");
                 codes.BlazorDetailsComponentMapperCodes = Codes.New(mapperCodes);
             }
-
+            // No condition is required.
             {
                 var codeGenRes = this._apiCodeGenerator.GenerateCodes(viewModel.ApiCodingViewModel);
                 codes.ApiCodes = codeGenRes;
