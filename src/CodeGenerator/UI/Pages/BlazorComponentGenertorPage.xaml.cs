@@ -84,7 +84,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    public async Task<Result> SaveDbAsync()
+    public async Task<Result> SaveToDbAsync()
     {
         try
         {
@@ -249,7 +249,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
     }
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
-        => await this.SaveDbAsync();
+        => await this.SaveToDbAsync();
 
     private async void SaveToFileButton_Click(object sender, RoutedEventArgs e)
     {

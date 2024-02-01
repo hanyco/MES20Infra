@@ -10,5 +10,5 @@ namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IFunctionalityService : IBusinessService, IAsyncCrud<FunctionalityViewModel>, IAsyncCreator<FunctionalityViewModel>
 {
-    Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync([DisallowNull] FunctionalityViewModel model, CancellationToken token = default);
+    
 }

@@ -70,7 +70,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    public async Task<Result> SaveDbAsync()
+    public async Task<Result> SaveToDbAsync()
     {
         this.CheckIfInitiated();
         this.PrepareViewModel();
@@ -128,7 +128,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     {
         await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
         this.PrepareViewModel();
-        var viewModel = await this.ActionScopeRunAsync(() => this._service.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
+        var viewModel = await this.ActionScopeRunAsync(() => this._codeService.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
         this.ViewModel = viewModel;
     }
 
@@ -253,7 +253,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
     {
         _ = ControlHelper.MoveToNextUIElement();
-        _ = await this.SaveDbAsync().ShowOrThrowAsync(this.Title);
+        _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
     }
 
     private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)

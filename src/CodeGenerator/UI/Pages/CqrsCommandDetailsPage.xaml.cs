@@ -54,7 +54,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         set => this.DataContext = value;
     }
 
-    public async Task<Result> SaveDbAsync()
+    public async Task<Result> SaveToDbAsync()
     {
         Check.MustBeNotNull(this.ViewModel);
         try
@@ -207,7 +207,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
     {
         _ = this.SelectModuleBox.Focus();
-        _ = await this.SaveDbAsync();
+        _ = await this.SaveToDbAsync();
     }
 
     private IEnumerable<ClaimViewModel> SecurityClaimCollectorUserControl_OnAutoGenerateClaim() =>
