@@ -20,7 +20,7 @@ internal partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        var saveChanges = true;
+        const bool saveChanges = true;
 
         if (!validate(model, cancellationToken).TryParse(out var validationResult))
         {
@@ -74,32 +74,27 @@ internal partial class FunctionalityService
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model, CancellationToken cancellationToken) =>
             BasicChecks(model)
-                    .NotNull(x => x.SourceDto)
-                    .NotNull(x => x.GetAllQueryViewModel)
-                    .NotNull(x => x.GetAllQueryViewModel.ParamsDto)
-                    .NotNull(x => x.GetAllQueryViewModel.ResultDto)
-                    .NotNull(x => x.GetByIdQueryViewModel)
-                    .NotNull(x => x.GetByIdQueryViewModel.ParamsDto)
-                    .NotNull(x => x.GetByIdQueryViewModel.ResultDto)
-                    .NotNull(x => x.InsertCommandViewModel)
-                    .NotNull(x => x.InsertCommandViewModel.ParamsDto)
-                    .NotNull(x => x.InsertCommandViewModel.ResultDto)
-                    .NotNull(x => x.UpdateCommandViewModel)
-                    .NotNull(x => x.UpdateCommandViewModel.ParamsDto)
-                    .NotNull(x => x.UpdateCommandViewModel.ResultDto)
-                    .NotNull(x => x.DeleteCommandViewModel)
-                    .NotNull(x => x.DeleteCommandViewModel.ParamsDto)
-                    .NotNull(x => x.DeleteCommandViewModel.ResultDto);
+            .NotNull(x => x!.SourceDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQueryViewModel, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQueryViewModel.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQueryViewModel.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQueryViewModel, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQueryViewModel.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQueryViewModel.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommandViewModel, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommandViewModel.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommandViewModel.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommandViewModel, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommandViewModel.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommandViewModel.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommandViewModel, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommandViewModel.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommandViewModel.ResultDto, () => "ViewModel is not initiated.");
         async Task<Result> saveQueryAsync(CqrsQueryViewModel model, FunctionalityViewModel functionality, bool saveChanges, CancellationToken token)
         {
             //! Not used. one-way to UI.
             //x model.ParamsDto.Functionality = model.ResultDto.Functionality = functionality;
             Result result = await this._dtoService.InsertAsync(model.ParamsDto, saveChanges, token);
-            if (!result.IsSucceed)
-            {
-                return result;
-                this._dtoService.ResetChanges();
-            }
             result = await this._dtoService.InsertAsync(model.ResultDto, saveChanges, token);
             if (!result.IsSucceed)
             {
