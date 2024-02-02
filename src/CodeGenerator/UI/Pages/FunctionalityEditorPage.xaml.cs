@@ -10,6 +10,7 @@ using Library.BusinessServices;
 using Library.CodeGeneration.Models;
 using Library.ComponentModel;
 using Library.EventsArgs;
+using Library.Exceptions;
 using Library.Results;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
@@ -19,14 +20,12 @@ using Library.Wpf.Windows.CommonTools;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
 
-using UI;
-
 namespace HanyCo.Infra.UI.Pages;
 
 /// <summary>
 /// Interaction logic for FunctionalityEditorPage.xaml
 /// </summary>
-public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
+public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 {
     private readonly IFunctionalityCodeService _codeService;
     private readonly IEntityViewModelConverter _converter;
@@ -59,7 +58,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this._dtoService = dtoService;
         this._propertyService = propertyService;
         this._converter = converter;
-        this.InitializeComponent();
+        ((System.Windows.Markup.IComponentConnector)this).InitializeComponent();
     }
 
     bool IStatefulPage.IsViewModelChanged { get; set; }
@@ -70,7 +69,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    public async Task<Result> SaveToDbAsync()
+    async Task<Result> IAsyncSavePage.SaveToDbAsync()
     {
         this.CheckIfInitiated();
         this.PrepareViewModel();
@@ -108,28 +107,30 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         this.ViewModel = await this.GetNewViewModelAsync();
     }
 
-    private void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
+    private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-        //Check.MustBeNotNull(this.FunctionalityTreeView.SelectedItem, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
+        var functionality = this.FunctionalityTreeView.SelectedItem;
+        Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
         var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
-        Check.If(resp != TaskDialogResult.Ok).BreakOnFail().End();
-        //_ = await this._service.DeleteAsync(this.FunctionalityTreeView.SelectedItem).ShowOrThrowAsync(this.Title);
+        if (resp != TaskDialogResult.Ok)
+        {
+            return;
+        }
+
+        _ = await this._service.DeleteAsync(functionality).ShowOrThrowAsync(this.Title);
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
         await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
-        var codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
-
-        this.ComponentCodeResultUserControl.Codes = codes;
+        this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
     }
 
     private async void GenerateViewModelButton_Click(object sender, RoutedEventArgs e)
     {
         await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
         this.PrepareViewModel();
-        var viewModel = await this.ActionScopeRunAsync(() => this._codeService.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
-        this.ViewModel = viewModel;
+        this.ViewModel = await this.ActionScopeRunAsync(() => this._codeService.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
     }
 
     private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
@@ -204,32 +205,29 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
         var settings = SettingsService.Get();
         {
             var dir = settings.projectSourceRoot;
-            if (Directory.Exists(dir))
+            if (Directory.Exists(dir) && Directory.GetFileSystemEntries(dir).Any())
             {
-                if (Directory.GetFileSystemEntries(dir).Any())
+                try
                 {
-                    try
+                    var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
+                    if (resp == TaskDialogResult.Cancel)
                     {
-                        var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
-                        if (resp == TaskDialogResult.Cancel)
-                        {
-                            return Result<string>.CreateFailure(new Library.Exceptions.OperationCancelException());
-                        }
-                        if (resp == TaskDialogResult.Yes)
-                        {
-                            Directory.Delete(dir, true);
-                        }
+                        return Result<string>.CreateFailure(new OperationCancelException());
                     }
-                    finally
+                    if (resp == TaskDialogResult.Yes)
                     {
-                        await Task.Delay(750);
+                        Directory.Delete(dir, true);
                     }
+                }
+                finally
+                {
+                    await Task.Delay(750);
                 }
             }
         }
         var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
         var saveResult = FileUiTools.SaveToFile(files, $"Saving source codes to {settings.projectSourceRoot}");
-        await App.Current.DoEventsAsync(500);
+        await Application.Current.DoEventsAsync(500);
         return saveResult.WithValue(settings.projectSourceRoot).IfSucceed(x => x.SetMessage("Codes are saved successfully."));
 
         static string getPath(SettingsModel settings, Code code)
@@ -245,8 +243,7 @@ public partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
                 _ => Result<string>.CreateFailure(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
             relativePath.ThrowOnFail().End();
-            var path = Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.Value.NotNull());
-            return path;
+            return Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.Value.NotNull());
         }
     }
 

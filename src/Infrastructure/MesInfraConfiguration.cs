@@ -13,18 +13,18 @@ namespace HanyCo.Infra;
 
 public static class MesInfraConfiguration
 {
-    public static IServiceCollection AddMesInfraServices<TStartup>(this IServiceCollection services, string connectionString, ILogger logger)
+    public static IServiceCollection AddMesInfraServices(this IServiceCollection services, string connectionString, ILogger logger)
         => services.AddMemoryCache()
             .AddSingleton(new Sql(connectionString))
             .AddSingleton<IMapper, Mapper>()
             .AddHttpContextAccessor()
-            .AddMesInfraSecurityServices<TStartup>(ISecurityConfigOptions.New(connectionString, logger))
+            .AddMesInfraSecurityServices(ISecurityConfigOptions.New(connectionString, logger))
             ;
 
     public static IApplicationBuilder UseMesInfraMiddleware(this IApplicationBuilder app)
         => app.UseMiddleware<ExceptionHandlerMiddleware>()
-              .UseMiddleware<LicenseManagerMiddleware>()
-              .UseMiddleware<InterceptorMiddleware>()
-              .UseMesSecurityInfraMiddleware()
-        ;
+            .UseMiddleware<LicenseManagerMiddleware>()
+            .UseMiddleware<InterceptorMiddleware>()
+            .UseMesSecurityInfraMiddleware()
+            ;
 }

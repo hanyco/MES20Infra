@@ -4,6 +4,7 @@ using System.Security.Claims;
 using HanyCo.Infra.Security.Client.Providers;
 using HanyCo.Infra.Security.Exceptions;
 using HanyCo.Infra.Security.Identity;
+using HanyCo.Infra.Security.Identity.Entity;
 using HanyCo.Infra.Security.Model;
 using HanyCo.Infra.Services;
 

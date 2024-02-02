@@ -2,6 +2,7 @@
 using HanyCo.Infra.Security.DataSources;
 using HanyCo.Infra.Security.Helpers;
 using HanyCo.Infra.Security.Identity;
+using HanyCo.Infra.Security.Identity.Entity;
 using HanyCo.Infra.Security.Identity.Model;
 using HanyCo.Infra.Security.Model;
 using HanyCo.Infra.Security.Services;
@@ -9,7 +10,6 @@ using HanyCo.Infra.Services;
 
 using Library.Logging;
 using Library.Security.Authorization;
-using Library.Security.Claims;
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -23,7 +23,7 @@ namespace HanyCo.Infra.Security;
 
 public static class MesSecurityConfiguration
 {
-    //public static IServiceCollection AddMesInfraSecurityServices<TStartup>(this IServiceCollection services, ISecurityConfigOptions options)
+    //public static IServiceCollection AddMesInfraSecurityServices(this IServiceCollection services, ISecurityConfigOptions options)
     //{
     //    _ = options.Check(CheckBehavior.ThrowOnFail)
     //        .ArgumentNotNull()
@@ -38,16 +38,14 @@ public static class MesSecurityConfiguration
     // return services;
 
     // static void addIdentity(IServiceCollection services) => services
-    // .AddIdentity<InfraIdentityUser, InfraIdentityRole>(options => { //options.Password = new() {
-    // RequiredLength = 8 }; options.User.RequireUniqueEmail = true; })
-    // .AddEntityFrameworkStores<InfraSecDbContext>() .AddDefaultTokenProviders() .AddErrorDescriber<PersianIdentityErrorDescriber>();
+    // .AddIdentity<InfraIdentityUser, InfraIdentityRole>(options => { options.Password = new() {
+    // RequiredLength = 8 }; options.User.RequireUniqueEmail = true; }) .AddEntityFrameworkStores<InfraSecDbContext>().AddDefaultTokenProviders().AddErrorDescriber<PersianIdentityErrorDescriber>();
 
     // static void addAuthorization(IServiceCollection services) =>
     // services.AddAuthorization(options => { options.FallbackPolicy = new
-    // AuthorizationPolicyBuilder().AddAuthenticationSchemes("Bearer") .RequireAuthenticatedUser()
+    // AuthorizationPolicyBuilder().AddAuthenticationSchemes("Bearer").RequireAuthenticatedUser()
     // .RequireClaim("scope", "read").Build(); _ =
-    // options.AddPolicies(LibCrudPolicies.FullAccessPolicy,
-    // LibCrudPolicies.AdminOrFullAccessPolicy) .AddCrudRequirementPolicies();
+    // options.AddPolicies(LibCrudPolicies.FullAccessPolicy, LibCrudPolicies.AdminOrFullAccessPolicy).AddCrudRequirementPolicies();
 
     // options.AddPolicy(InfraIdentityValues.PolicyCanViewSystemEntities, policy
     // => policy.RequireRole(InfraIdentityValues.RoleAdminValue, InfraIdentityValues.RoleSupervisor));
@@ -70,21 +68,26 @@ public static class MesSecurityConfiguration
     // defaultOptions.Issuer, ValidAudience = defaultOptions.Audience, IssuerSigningKey =
     // JwtHelpers.GetIssuerSigningKey(defaultOptions.SecretKey), }; }); }
 
-    // static void addDbContextPool(IServiceCollection services, string connectionString) =>
-    // services.AddDbContextPool<InfraSecDbContext>(o => { _ =
-    // o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); _ =
-    // o.UseSqlServer(connectionString); _ = o.EnableSensitiveDataLogging(); });
+    //    static void addDbContextPool(IServiceCollection services, string connectionString) =>
+    //services.AddDbContextPool<InfraSecDbContext>(o =>
+    //{
+    //    _ =
+    //o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    //    _ =
+    //o.UseSqlServer(connectionString);
+    //    _ = o.EnableSensitiveDataLogging();
+    //});
 
     // static void addIdentityServices(IServiceCollection services) { _ = services
-    // .AddScoped<System.Security.Claims.ClaimsIdentity>() .AddScoped<InfraUserManager,
-    // InfraUserManager>() .AddScoped<InfraSignInManager, InfraSignInManager>()
+    // .AddScoped<System.Security.Claims.ClaimsIdentity>().AddScoped<InfraUserManager,
+    // InfraUserManager>().AddScoped<InfraSignInManager, InfraSignInManager>()
     // .AddScoped<SignInManager<InfraIdentityUser>>(x => x.GetRequiredService<InfraSignInManager>());
 
-    // _ = services .AddScoped<IAuthorizationHandler, DynamicRoleHandler>()
+    // _ = services.AddScoped<IAuthorizationHandler, DynamicRoleHandler>()
     // .AddSingleton<IAuthorizationHandler, ClaimRequirementHandler>(); }
 
     // static void addUserContext(IServiceCollection services) => services.AddScoped<UserContext,
-    // UserContext>() .AddScoped<IUserContext>(x => x.GetRequiredService<UserContext>());
+    // UserContext>().AddScoped<IUserContext>(x => x.GetRequiredService<UserContext>());
 
     // static void addLoggers(IServiceCollection services, ILogger logger) =>
     // services.AddSingleton<Microsoft.Extensions.Logging.ILogger<UserManager<InfraIdentityUser>>>(new
@@ -97,7 +100,8 @@ public static class MesSecurityConfiguration
     //                .AddScoped<ISecurityService, SecurityService>()
     //                ;
     //}
-    public static IServiceCollection AddMesInfraSecurityServices<TStartup>(this IServiceCollection services, ISecurityConfigOptions options)
+
+    public static IServiceCollection AddMesInfraSecurityServices(this IServiceCollection services, ISecurityConfigOptions options)
     {
         _ = options.Check(CheckBehavior.ThrowOnFail)
             .ArgumentNotNull()
@@ -117,10 +121,7 @@ public static class MesSecurityConfiguration
 
         static void addIdentity(IServiceCollection services) =>
             services
-            .AddIdentity<InfraIdentityUser, InfraIdentityRole>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-            })
+            .AddIdentity<InfraIdentityUser, InfraIdentityRole>(options => options.User.RequireUniqueEmail = true)
             .AddEntityFrameworkStores<InfraSecDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber<PersianIdentityErrorDescriber>();

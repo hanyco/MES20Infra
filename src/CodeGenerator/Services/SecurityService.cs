@@ -1,6 +1,6 @@
 ﻿
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.Security.Identity;
+using HanyCo.Infra.Security.Identity.Entity;
 
 using Library.Results;
 

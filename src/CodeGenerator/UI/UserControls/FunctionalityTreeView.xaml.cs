@@ -13,33 +13,31 @@ public partial class FunctionalityTreeView : UserControl, IBinable<IEnumerable<F
     public static readonly DependencyProperty SelectedItemProperty =
         ControlHelper.GetDependencyProperty<FunctionalityViewModel?, FunctionalityTreeView>(nameof(SelectedItem));
 
-    private readonly IFunctionalityService _service = default!;
+    private IFunctionalityService? _service;
 
-    public FunctionalityTreeView()
-    {
-        this.InitializeComponent();
-        if (ControlHelper.IsDesignTime())
-        {
-            return;
-        }
-        this._service = DI.GetService<IFunctionalityService>();
-    }
+    public FunctionalityTreeView() => this.InitializeComponent();
 
     public FunctionalityViewModel? SelectedItem
     {
         get => (FunctionalityViewModel?)this.GetValue(SelectedItemProperty);
         set => this.SetValue(SelectedItemProperty, value);
     }
-    public FunctionalityViewModel ViewModel { get; set; }
+
+    public FunctionalityViewModel? ViewModel { get; set; }
 
     public void Bind(IEnumerable<FunctionalityViewModel> viewMode) =>
-        ControlHelper.BindItemsSource(this.TreeView, viewMode);
+        this.TreeView.BindItemsSource(viewMode);
 
     public async Task BindAsync()
     {
+        this._service ??= DI.GetService<IFunctionalityService>();
         var functionalities = await this._service.GetAllAsync();
         this.Bind(functionalities);
     }
 
-    public void Rebind() => ControlHelper.RebindItemsSource(this.TreeView);
+    public void Rebind() =>
+        this.TreeView.RebindItemsSource();
+
+    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) => 
+        this.SelectedItem = e.GetModel<FunctionalityViewModel>();
 }

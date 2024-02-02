@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
 
-
-
 using HanyCo.Infra;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI;
@@ -20,6 +18,7 @@ using Library.Wpf.Windows;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Services;
 
@@ -30,11 +29,7 @@ namespace UI;
 /// </summary>
 public partial class App : LibApp
 {
-    #region Fields
-
     private string? _logFilePath;
-
-    #endregion Fields
 
     protected override void OnConfigureServices(ServiceCollection services)
     {
@@ -80,8 +75,9 @@ public partial class App : LibApp
                ;
 
         static void addLogger(IServiceCollection services) => _ = services
-                .AddSingleton<ILogger>(AppLogger)
+                .AddSingleton<Library.Logging.ILogger>(AppLogger)
                 .AddSingleton<Microsoft.Extensions.Logging.ILogger>(new WebLogger(AppLogger))
+                .AddLogging(builder => builder.AddConsole())
                 .AddSingleton(IProgressReport.New());
 
         static void registerServices(IServiceCollection services)
@@ -107,12 +103,11 @@ public partial class App : LibApp
         }
 
         static void addMesInfraServices(IServiceCollection services, SettingsModel settings)
-            => services.AddMesInfraServices<App>(settings.connectionString!, AppLogger);
+            => services.AddMesInfraServices(settings.connectionString!, AppLogger);
     }
 
     private void Logger_Logging(object? sender, ItemActedEventArgs<object> e)
     {
-
     }
 
     private void OnStartup(object sender, StartupEventArgs e)
@@ -125,7 +120,7 @@ public partial class App : LibApp
     private void InitializeLog()
     {
         this._logFilePath = Path.Combine(Environment.CurrentDirectory, $"{this.Title ?? "Application"}.log");
-        this.Logger.LogLevel = LogLevel.Trace;
+        this.Logger.LogLevel = Library.Logging.LogLevel.Trace;
         this.Logger.Logging += this.Logger_Logging;
         this.Logger.Debug("Loading Main Window...");
     }
