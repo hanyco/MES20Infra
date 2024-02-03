@@ -251,6 +251,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     {
         _ = ControlHelper.MoveToNextUIElement();
         _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
+        await this.FunctionalityTreeView.BindAsync();
     }
 
     private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
