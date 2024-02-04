@@ -2,6 +2,6 @@
 
 namespace HanyCo.Infra.Markers;
 
-public interface IMesEntity : IIdenticalEntity<long>
+public interface IMesEntity : IIdenticalEntity
 {
 }
