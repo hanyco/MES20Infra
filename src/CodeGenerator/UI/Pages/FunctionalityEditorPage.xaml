@@ -6,11 +6,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:HanyCo.Infra.UI.Pages"
-    xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls" 
-    xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=HanyCo.Infra.CodeGen.Contracts" 
-    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
+    xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
+    xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=HanyCo.Infra.CodeGen.Contracts"
     x:Name="Me"
     Title="Functionality Editor"
+    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Loaded="Me_Loaded"
@@ -32,7 +32,7 @@
                 ToolTip="New Functionality">
                 <Path Style="{StaticResource New}" />
             </Button>
-            <!--<Button
+            <Button
                 Name="EditFunctionalityButton"
                 Style="{StaticResource IconButton}"
                 ToolTip="Edit Functionality">
@@ -44,7 +44,7 @@
                 Style="{StaticResource IconButton}"
                 ToolTip="Delete Functionality">
                 <Path Style="{StaticResource Delete}" />
-            </Button>-->
+            </Button>
             <Separator />
             <Button
                 Name="GenerateViewModelButton"
@@ -76,7 +76,10 @@
                 <Path Style="{StaticResource SaveAll}" />
             </Button>
         </ToolBar>
-        <usercontrols:FunctionalityTreeView x:Name="FunctionalityTreeView" Width="150" Grid.Row="1" />
+        <usercontrols:FunctionalityTreeView
+            x:Name="FunctionalityTreeView"
+            Grid.Row="1"
+            Width="150" />
         <TabControl
             Grid.Row="1"
             Grid.Column="1"

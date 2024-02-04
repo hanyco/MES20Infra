@@ -26,7 +26,7 @@ public partial class FunctionalityTreeView : UserControl, IBinable<IEnumerable<F
     public FunctionalityViewModel? ViewModel { get; set; }
 
     public void Bind(IEnumerable<FunctionalityViewModel> viewMode) =>
-        this.TreeView.BindItemsSource(viewMode);
+        this.TreeView.BindItems(viewMode);
 
     public async Task BindAsync()
     {
@@ -38,6 +38,6 @@ public partial class FunctionalityTreeView : UserControl, IBinable<IEnumerable<F
     public void Rebind() =>
         this.TreeView.RebindItemsSource();
 
-    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) => 
+    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) =>
         this.SelectedItem = e.GetModel<FunctionalityViewModel>();
 }

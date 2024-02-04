@@ -112,7 +112,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         var functionality = this.FunctionalityTreeView.SelectedItem;
         Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
         var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
-        if (resp != TaskDialogResult.Ok)
+        if (resp != TaskDialogResult.Yes)
         {
             return;
         }
@@ -314,5 +314,10 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.SelectRootDtoByTableButton.IsEnabled = true;
         }
+    }
+
+    private void DeleteFunctionalityButton_Click_1(object sender, RoutedEventArgs e)
+    {
+
     }
 }
