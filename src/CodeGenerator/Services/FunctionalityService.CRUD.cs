@@ -45,7 +45,10 @@ internal partial class FunctionalityService
         await removeSegregate(functionality.InsertCommand, cancellationToken);
         await removeSegregate(functionality.UpdateCommand, cancellationToken);
         await removeSegregate(functionality.DeleteCommand, cancellationToken);
+<<<<<<< HEAD
         await remove<Dto>(functionality.)
+=======
+>>>>>>> d813da98ae241a0963a06379af87e7233d396915
         await this.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return Result.Success;
