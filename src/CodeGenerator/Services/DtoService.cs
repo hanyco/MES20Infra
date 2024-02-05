@@ -276,7 +276,8 @@ internal sealed class DtoService(
 
         async Task<Result<int?>> insertDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
         {
-            _ = this._writeDbContext.ReAttach(dto.Module!).DbContext.Dtos.Add(dto).With(_ => viewModel.Guid = dto.Guid);
+            //_ = this._writeDbContext.ReAttach(dto.Module!);
+            _ = this._writeDbContext.Dtos.Add(dto).With(_ => viewModel.Guid = dto.Guid);
             int? result;
             if (persist)
             {
