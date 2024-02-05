@@ -39,16 +39,13 @@ internal partial class FunctionalityService
             return Result.CreateFailure<ObjectNotFoundException>();
         }
 
-        _ = this._writeDbContext.Functionalities.Remove(functionality);
         await removeSegregate(functionality.GetAllQuery, cancellationToken);
         await removeSegregate(functionality.GetByIdQuery, cancellationToken);
         await removeSegregate(functionality.InsertCommand, cancellationToken);
         await removeSegregate(functionality.UpdateCommand, cancellationToken);
         await removeSegregate(functionality.DeleteCommand, cancellationToken);
-<<<<<<< HEAD
-        await remove<Dto>(functionality.)
-=======
->>>>>>> d813da98ae241a0963a06379af87e7233d396915
+        await remove<Dto>(functionality.SourceDtoId,cancellationToken);
+        _ = this._writeDbContext.Functionalities.Remove(functionality);
         await this.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return Result.Success;
@@ -107,69 +104,101 @@ internal partial class FunctionalityService
             return validationResult;
         }
 
-        Result actionResult;
-
-        model.SourceDto.Functionality = model;
         await using var transaction = await this._readDbContext.BeginTransactionAsync(cancellationToken);
+        Result actionResult;
+        var entity = this._converter.ToDbEntity(model);
+        _ = this._writeDbContext.Functionalities.Add(entity);
+        await this.SaveChangesAsync(cancellationToken);
+        model.SourceDto.Functionality = model;
         actionResult = await this._dtoService.InsertAsync(model.SourceDto, true, cancellationToken);
         if (!actionResult.IsSucceed)
         {
-            this._dtoService.ResetChanges();
+            await rollback();
             return actionResult.WithValue(model);
         }
         if (cancellationToken.IsCancellationRequested)
         {
+            await rollback();
+            return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
+        }
+
+        actionResult = await this._dtoService.InsertAsync(model.SourceDto, true, cancellationToken);
+        if (!actionResult.IsSucceed)
+        {
+            await rollback();
+            return actionResult.WithValue(model);
+        }
+        if (cancellationToken.IsCancellationRequested)
+        {
+            await rollback();
             return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
         }
         actionResult = await saveQueryAsync(model.GetAllQueryViewModel, model, true, cancellationToken);
         if (!actionResult.IsSucceed)
         {
+            await rollback();
             return actionResult.WithValue(model);
         }
         if (cancellationToken.IsCancellationRequested)
         {
+            await rollback();
             return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
         }
         actionResult = await saveQueryAsync(model.GetByIdQueryViewModel, model, true, cancellationToken);
         if (!actionResult.IsSucceed)
         {
+            await rollback();
             return actionResult.WithValue(model);
         }
         if (cancellationToken.IsCancellationRequested)
         {
+            await rollback();
             return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
         }
         actionResult = await saveCommandAsync(model.InsertCommandViewModel, model, true, cancellationToken);
         if (!actionResult.IsSucceed)
         {
+            await rollback();
             return actionResult.WithValue(model);
         }
         if (cancellationToken.IsCancellationRequested)
         {
+            await rollback();
             return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
         }
         actionResult = await saveCommandAsync(model.UpdateCommandViewModel, model, true, cancellationToken);
         if (!actionResult.IsSucceed)
         {
+            await rollback();
             return actionResult.WithValue(model);
         }
         if (cancellationToken.IsCancellationRequested)
         {
+            await rollback();
             return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
         }
         actionResult = await saveCommandAsync(model.DeleteCommandViewModel, model, true, cancellationToken);
         if (!actionResult.IsSucceed)
         {
+            await rollback();
             return actionResult.WithValue(model);
         }
         if (cancellationToken.IsCancellationRequested)
         {
+            await rollback();
             return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
         }
-
-        var entity = this._converter.ToDbEntity(model);
-        _ = this._writeDbContext.Functionalities.Add(entity);
         actionResult = await this.SubmitChangesAsync(true, token: cancellationToken);
+        if (!actionResult.IsSucceed)
+        {
+            await rollback();
+            return actionResult.WithValue(model);
+        }
+        if (cancellationToken.IsCancellationRequested)
+        {
+            await rollback();
+            return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
+        }
         await transaction.CommitAsync(cancellationToken);
 
         return actionResult.WithValue(model);
@@ -230,6 +259,12 @@ internal partial class FunctionalityService
             }
 
             return result;
+        }
+
+        async Task rollback()
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            this._dtoService.ResetChanges();
         }
     }
 

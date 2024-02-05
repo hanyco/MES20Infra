@@ -1,21 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.Internals.Data.DataSources
+namespace HanyCo.Infra.Internals.Data.DataSources;
+
+[Table("UiPageComponent", Schema = "infra")]
+public partial class UiPageComponent
 {
-    public partial class UiPageComponent
-    {
-        public long Id { get; set; }
-        public Guid Guid { get; set; }
-        public long PageId { get; set; }
-        public long UiComponentId { get; set; }
-        /// <summary>
-        /// مکان در پیج
-        /// </summary>
-        public long? PositionId { get; set; }
+    [Key]
+    public long Id { get; set; }
 
-        public virtual UiPage Page { get; set; } = null!;
-        public virtual UiBootstrapPosition? Position { get; set; }
-        public virtual UiComponent UiComponent { get; set; } = null!;
-    }
+    public Guid Guid { get; set; }
+
+    public long PageId { get; set; }
+
+    public long UiComponentId { get; set; }
+
+    /// <summary>
+    /// مکان در پیج
+    /// </summary>
+    public long? PositionId { get; set; }
+
+    [ForeignKey("PageId")]
+    [InverseProperty("UiPageComponents")]
+    public virtual UiPage Page { get; set; } = null!;
+
+    [ForeignKey("PositionId")]
+    [InverseProperty("UiPageComponents")]
+    public virtual UiBootstrapPosition? Position { get; set; }
+
+    [ForeignKey("UiComponentId")]
+    [InverseProperty("UiPageComponents")]
+    public virtual UiComponent UiComponent { get; set; } = null!;
 }

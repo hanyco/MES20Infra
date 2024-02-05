@@ -124,23 +124,26 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => (x.Id < 0).IfTrue(() => x.Id = 0).Fluent().IfTrue(viewModel.Id > 0, () => x.Id = viewModel.Id!.Value))
             .ForMember(x => x.DtoId = viewModel.Dto?.Id);
 
-    public Dto? ToDbEntity(DtoViewModel? viewModel)
+    [return: NotNullIfNotNull(nameof(model))]
+    public Dto? ToDbEntity(DtoViewModel? model)
     {
-        if (viewModel is null)
+        if (model is null)
         {
             return null;
         }
 
-        var result = this._mapper.Map<Dto>(viewModel)
-            .ForMember(x => x.Module = this.ToDbEntity(viewModel.Module))
-            .ForMember(x => x.ModuleId = viewModel.Module.Id);
-        _ = result.Properties!.AddRange(viewModel.Properties.Select(this.ToDbEntity));
+        var result = this._mapper.Map<Dto>(model)
+            .ForMember(x => x.Module = this.ToDbEntity(model.Module))
+            .ForMember(x => x.ModuleId = model.Module.Id);
+        _ = result.Properties!.AddRange(model.Properties.Select(this.ToDbEntity));
         return result;
     }
 
+    [return: NotNullIfNotNull(nameof(model))]
     public CqrsSegregate? ToDbEntity(CqrsQueryViewModel? model) =>
         this.CqrsViewModelToDbEntityInner(model, CqrsSegregateType.Query);
 
+    [return: NotNullIfNotNull(nameof(model))]
     public CqrsSegregate? ToDbEntity(CqrsCommandViewModel? model) =>
         this.CqrsViewModelToDbEntityInner(model, CqrsSegregateType.Command);
 
@@ -151,19 +154,23 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             return null;
         }
 
-        var result = this._mapper.Map<Functionality>(model);
-        //! Not required for saving
-        //x result.GetAllQuery = this.ToDbEntity(model.GetAllQueryViewModel.NotNull());
-        //x result.GetByIdQuery = this.ToDbEntity(model.GetByIdQueryViewModel.NotNull());
-        //x result.InsertCommand = this.ToDbEntity(model.InsertCommandViewModel.NotNull());
-        //x result.UpdateCommand = this.ToDbEntity(model.UpdateCommandViewModel.NotNull());
-        //x result.DeleteCommand = this.ToDbEntity(model.DeleteCommandViewModel.NotNull());
+        var result = this._mapper.MapExcept<Functionality>(model, x => x.Id);
+        if (model.Id is not null and not 0)
+            result.Id = model.Id.Value;
 
-        result.GetAllQueryId = model.GetAllQueryViewModel?.Id ?? 0;
-        result.GetByIdQueryId = model.GetByIdQueryViewModel?.Id ?? 0;
-        result.InsertCommandId = model.InsertCommandViewModel?.Id ?? 0;
-        result.UpdateCommandId = model.UpdateCommandViewModel?.Id ?? 0;
-        result.DeleteCommandId = model.DeleteCommandViewModel?.Id ?? 0;
+        result.GetAllQuery = this.ToDbEntity(model.GetAllQueryViewModel.NotNull());
+        result.GetByIdQuery = this.ToDbEntity(model.GetByIdQueryViewModel.NotNull());
+        result.InsertCommand = this.ToDbEntity(model.InsertCommandViewModel.NotNull());
+        result.UpdateCommand = this.ToDbEntity(model.UpdateCommandViewModel.NotNull());
+        result.DeleteCommand = this.ToDbEntity(model.DeleteCommandViewModel.NotNull());
+        result.SourceDto = this.ToDbEntity(model.SourceDto);
+
+        //result.GetAllQueryId = model.GetAllQueryViewModel?.Id ?? 0;
+        //result.GetByIdQueryId = model.GetByIdQueryViewModel?.Id ?? 0;
+        //result.InsertCommandId = model.InsertCommandViewModel?.Id ?? 0;
+        //result.UpdateCommandId = model.UpdateCommandViewModel?.Id ?? 0;
+        //result.DeleteCommandId = model.DeleteCommandViewModel?.Id ?? 0;
+
         return result;
     }
 

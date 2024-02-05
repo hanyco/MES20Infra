@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.Internals.Data.DataSources
+namespace HanyCo.Infra.Internals.Data.DataSources;
+
+[Table("SecurityClaim", Schema = "infra")]
+public partial class SecurityClaim
 {
-    public partial class SecurityClaim
-    {
-        public SecurityClaim()
-        {
-            EntityClaims = new HashSet<EntityClaim>();
-            UserClaimAccesses = new HashSet<UserClaimAccess>();
-        }
+    [Key]
+    public Guid Id { get; set; }
 
-        public Guid Id { get; set; }
-        public string Key { get; set; } = null!;
-        public Guid? Parent { get; set; }
+    [StringLength(50)]
+    public string Key { get; set; } = null!;
 
-        public virtual ICollection<EntityClaim> EntityClaims { get; set; }
-        public virtual ICollection<UserClaimAccess> UserClaimAccesses { get; set; }
-    }
+    public Guid? Parent { get; set; }
+
+    [InverseProperty("Claim")]
+    public virtual ICollection<EntityClaim> EntityClaims { get; set; } = new List<EntityClaim>();
+
+    [InverseProperty("Claim")]
+    public virtual ICollection<UserClaimAccess> UserClaimAccesses { get; set; } = new List<UserClaimAccess>();
 }

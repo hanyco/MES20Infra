@@ -1,26 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace HanyCo.Infra.Internals.Data.DataSources
+namespace HanyCo.Infra.Internals.Data.DataSources;
+
+[Table("Module", Schema = "infra")]
+public partial class Module
 {
-    public partial class Module
-    {
-        public Module()
-        {
-            CqrsSegregates = new HashSet<CqrsSegregate>();
-            CrudCodes = new HashSet<CrudCode>();
-            Dtos = new HashSet<Dto>();
-            UiPages = new HashSet<UiPage>();
-        }
+    [Key]
+    public long Id { get; set; }
 
-        public long Id { get; set; }
-        public string Name { get; set; } = null!;
-        public Guid Guid { get; set; }
-        public long? ParentId { get; set; }
+    [StringLength(50)]
+    public string Name { get; set; } = null!;
 
-        public virtual ICollection<CqrsSegregate> CqrsSegregates { get; set; }
-        public virtual ICollection<CrudCode> CrudCodes { get; set; }
-        public virtual ICollection<Dto> Dtos { get; set; }
-        public virtual ICollection<UiPage> UiPages { get; set; }
-    }
+    public Guid Guid { get; set; }
+
+    public long? ParentId { get; set; }
+
+    [InverseProperty("Module")]
+    public virtual ICollection<CqrsSegregate> CqrsSegregates { get; set; } = new List<CqrsSegregate>();
+
+    [InverseProperty("Module")]
+    public virtual ICollection<CrudCode> CrudCodes { get; set; } = new List<CrudCode>();
+
+    [InverseProperty("Module")]
+    public virtual ICollection<Dto> Dtos { get; set; } = new List<Dto>();
+
+    [InverseProperty("Module")]
+    public virtual ICollection<UiPage> UiPages { get; set; } = new List<UiPage>();
 }
