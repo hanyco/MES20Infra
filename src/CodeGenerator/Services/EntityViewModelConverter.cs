@@ -156,7 +156,9 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
         var result = this._mapper.MapExcept<Functionality>(model, x => x.Id);
         if (model.Id is not null and not 0)
+        {
             result.Id = model.Id.Value;
+        }
 
         result.GetAllQuery = this.ToDbEntity(model.GetAllQueryViewModel.NotNull());
         result.GetByIdQuery = this.ToDbEntity(model.GetByIdQueryViewModel.NotNull());
@@ -164,12 +166,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         result.UpdateCommand = this.ToDbEntity(model.UpdateCommandViewModel.NotNull());
         result.DeleteCommand = this.ToDbEntity(model.DeleteCommandViewModel.NotNull());
         result.SourceDto = this.ToDbEntity(model.SourceDto);
-
-        //result.GetAllQueryId = model.GetAllQueryViewModel?.Id ?? 0;
-        //result.GetByIdQueryId = model.GetByIdQueryViewModel?.Id ?? 0;
-        //result.InsertCommandId = model.InsertCommandViewModel?.Id ?? 0;
-        //result.UpdateCommandId = model.UpdateCommandViewModel?.Id ?? 0;
-        //result.DeleteCommandId = model.DeleteCommandViewModel?.Id ?? 0;
+        result.Module = this.ToDbEntity(model.SourceDto.Module);
+        result.ModuleId = result.Module?.Id;
 
         return result;
     }
@@ -306,13 +304,33 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public ClaimViewModel? ToViewModel(SecurityClaim? entity) =>
         entity is null ? null : this._mapper.Map<ClaimViewModel>(entity);
 
-    private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType) =>
-        model == null ? null : this._mapper.Map<CqrsSegregate>(model)
-            .ForMember(x => x.ModuleId = model.Module.Id.GetValueOrDefault())
-            .ForMember(x => x.ParamDtoId = model.ParamsDto.Id.GetValueOrDefault())
-            .ForMember(x => x.ResultDtoId = model.ResultDto.Id.GetValueOrDefault())
+    private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType)
+    {
+        if (model == null)
+        {
+            return null;
+        }
+
+        var result = this._mapper.Map<CqrsSegregate>(model)
             .ForMember(x => x.SegregateType = segregateType.Cast().ToInt())
             .ForMember(x => x.CategoryId = model.Category.Cast().ToInt());
+        if (model.Module?.Id is { } moduleId)
+        {
+            result.ModuleId = moduleId;
+        }
+
+        if (model.ParamsDto?.Id is { } paramDtoId)
+        {
+            result.ParamDtoId = paramDtoId;
+        }
+
+        if (model.ResultDto?.Id is { } resultDtoId)
+        {
+            result.ResultDtoId = resultDtoId;
+        }
+
+        return result;
+    }
 
     [return: NotNullIfNotNull(nameof(entity))]
     private DtoViewModel? InnerToViewModel(Dto? entity) =>

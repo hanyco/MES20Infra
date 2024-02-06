@@ -99,19 +99,23 @@ public partial class InfraWriteDbContext : DbContext
 
             entity.HasOne(d => d.GetAllQuery).WithMany(p => p.FunctionalityGetAllQueries)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Functionality_CqrsSegregate");
+                .HasConstraintName("FK_Functionality_CqrsSegregate1");
 
             entity.HasOne(d => d.GetByIdQuery).WithMany(p => p.FunctionalityGetByIdQueries)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Functionality_CqrsSegregate1");
+                .HasConstraintName("FK_Functionality_CqrsSegregate");
 
             entity.HasOne(d => d.InsertCommand).WithMany(p => p.FunctionalityInsertCommands)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Functionality_CqrsSegregate2");
 
+            entity.HasOne(d => d.Module).WithMany(p => p.Functionalities)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Functionality_Module");
+
             entity.HasOne(d => d.SourceDto).WithMany(p => p.Functionalities)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Functionality_Dto");
+                .HasConstraintName("FK_Functionality_Dto1");
 
             entity.HasOne(d => d.UpdateCommand).WithMany(p => p.FunctionalityUpdateCommands)
                 .OnDelete(DeleteBehavior.ClientSetNull)

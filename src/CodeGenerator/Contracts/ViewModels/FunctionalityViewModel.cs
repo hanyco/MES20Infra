@@ -1,4 +1,6 @@
-﻿namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
+
+namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 /// <summary>
 /// This class represents a functionality-specific view model. It inherits from InfraViewModelBase
@@ -9,6 +11,8 @@
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
     private DtoViewModel _sourceDto;
+
+    public ApiCodingViewModel ApiCodingViewModel { get; set; } = new();
 
     public UiComponentViewModel BlazorDetailsComponentViewModel { get; set; }
 
@@ -33,6 +37,4 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
     public CqrsCommandViewModel UpdateCommandViewModel { get; set; }
-
-    public ApiCodingViewModel ApiCodingViewModel { get; set; } = new();
 }

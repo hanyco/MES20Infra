@@ -14,15 +14,12 @@ namespace Services;
 internal partial class FunctionalityService
 {
     public async Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-    //=> ServiceHelper.DeleteAsync<FunctionalityViewModel, Functionality>(this, this._writeDbContext, model, persist, persist, this.Logger);
     {
-        CheckPersistance(persist);
+        CheckPersistence(persist);
         if (!model.Check().ArgumentNotNull().NotNull(x => x.Id).TryParse(out var vr))
         {
             return vr;
         }
-
-        await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(cancellationToken);
 
         var dbQuery = from func in this._writeDbContext.Functionalities
                         .Include(x => x.GetAllQuery)
@@ -35,7 +32,6 @@ internal partial class FunctionalityService
         var functionality = await dbQuery.FirstOrDefaultAsync(cancellationToken);
         if (functionality == null)
         {
-            await transaction.RollbackAsync(cancellationToken);
             return Result.CreateFailure<ObjectNotFoundException>();
         }
 
@@ -46,8 +42,6 @@ internal partial class FunctionalityService
         await removeSegregate(functionality.DeleteCommand, cancellationToken);
         await remove<Dto>(functionality.SourceDtoId, cancellationToken);
         _ = this._writeDbContext.Functionalities.Remove(functionality);
-        _ = await this.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
         return Result.Success;
 
         async Task removeSegregate(CqrsSegregate segregate, CancellationToken token)
@@ -98,15 +92,15 @@ internal partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        CheckPersistance(persist);
+        CheckPersistence(persist);
         if (!validate(model).TryParse(out var validationResult))
         {
             return validationResult;
         }
 
-        Result actionResult;
+        await saveFunctionality(model, cancellationToken);
 
-        actionResult = await saveQueryAsync(model.GetAllQueryViewModel, model, true, cancellationToken);
+        var actionResult = await saveQueryAsync(model.GetAllQueryViewModel, model, true, cancellationToken);
         if (!actionResult.IsSucceed)
         {
             rollback();
@@ -192,10 +186,6 @@ internal partial class FunctionalityService
         }
         _ = await this.SaveChangesAsync(cancellationToken);
 
-        var entity = this._converter.ToDbEntity(model);
-        _ = this._writeDbContext.Functionalities.Add(entity);
-        _ = await this.SaveChangesAsync(cancellationToken);
-
         return actionResult.WithValue(model);
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model) =>
@@ -257,6 +247,14 @@ internal partial class FunctionalityService
         }
 
         void rollback() => this._dtoService.ResetChanges();
+
+        async Task saveFunctionality(FunctionalityViewModel model, CancellationToken cancellationToken)
+        {
+            var entity = this._converter.ToDbEntity(model);
+            entity.Module = null;
+            _ = await this._writeDbContext.Functionalities.AddAsync(entity, cancellationToken);
+            _ = await this.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task<Result<FunctionalityViewModel>> UpdateAsync(long id, FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
@@ -310,7 +308,7 @@ internal partial class FunctionalityService
         return result;
     }
 
-    private static void CheckPersistance(bool persist)
+    private static void CheckPersistence(bool persist)
     {
         if (!persist)
         {

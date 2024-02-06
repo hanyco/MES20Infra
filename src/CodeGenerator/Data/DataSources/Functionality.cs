@@ -50,6 +50,10 @@ public partial class Functionality
     [InverseProperty("FunctionalityInsertCommands")]
     public virtual CqrsSegregate InsertCommand { get; set; } = null!;
 
+    [ForeignKey("ModuleId")]
+    [InverseProperty("Functionalities")]
+    public virtual Module? Module { get; set; }
+
     [ForeignKey("SourceDtoId")]
     [InverseProperty("Functionalities")]
     public virtual Dto SourceDto { get; set; } = null!;
