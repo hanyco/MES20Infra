@@ -13,75 +13,88 @@ namespace Services;
 
 internal partial class FunctionalityService
 {
-    public async Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
         CheckPersistence(persist);
-        if (!model.Check().ArgumentNotNull().NotNull(x => x.Id).TryParse(out var vr))
+        if (validate(model).TryParse(out var vr))
         {
             return vr;
         }
 
-        var dbQuery = from func in this._writeDbContext.Functionalities
-                        .Include(x => x.GetAllQuery)
-                        .Include(x => x.GetByIdQuery)
-                        .Include(x => x.InsertCommand)
-                        .Include(x => x.UpdateCommand)
-                        .Include(x => x.DeleteCommand)
-                      where func.Id == model.Id
-                      select func;
-        var functionality = await dbQuery.FirstOrDefaultAsync(cancellationToken);
+        var functionality = await getFunctionality(model, token);
         if (functionality == null)
         {
             return Result.CreateFailure<ObjectNotFoundException>();
         }
 
-        await removeSegregate(functionality.GetAllQuery, cancellationToken);
-        await removeSegregate(functionality.GetByIdQuery, cancellationToken);
-        await removeSegregate(functionality.InsertCommand, cancellationToken);
-        await removeSegregate(functionality.UpdateCommand, cancellationToken);
-        await removeSegregate(functionality.DeleteCommand, cancellationToken);
-        await remove<Dto>(functionality.SourceDtoId, cancellationToken);
-        _ = this._writeDbContext.Functionalities.Remove(functionality);
+        await removeSegregate(functionality.GetAllQuery, token);
+        await removeSegregate(functionality.GetByIdQuery, token);
+        await removeSegregate(functionality.InsertCommand, token);
+        await removeSegregate(functionality.UpdateCommand, token);
+        await removeSegregate(functionality.DeleteCommand, token);
+        await removeDto(functionality, token);
+        await removeFunctionality(functionality, token);
+
         return Result.Success;
+
+        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model)
+            => model.Check().ArgumentNotNull().NotNull(x => x.Id);
 
         async Task removeSegregate(CqrsSegregate segregate, CancellationToken token)
         {
             await remove<CqrsSegregate>(segregate.Id, token);
-            await remove<Dto>(segregate.ParamDtoId, cancellationToken);
-            await removeProperty(segregate.ParamDtoId, cancellationToken);
-            await remove<Dto>(segregate.ResultDtoId, cancellationToken);
-            await removeProperty(segregate.ResultDtoId, cancellationToken);
+            await remove<Dto>(segregate.ParamDtoId, token);
+            await removeProperty(segregate.ParamDtoId, token);
+            await remove<Dto>(segregate.ResultDtoId, token);
+            await removeProperty(segregate.ResultDtoId, token);
+
+            async Task removeProperty(long parentId, CancellationToken token)
+            {
+                var query = from property in this._writeDbContext.Properties
+                            where property.ParentEntityId == parentId
+                            select property;
+                var entities = await query.ToListAsync(token);
+                foreach (var p in entities)
+                {
+                    _ = this._writeDbContext.Remove(p);
+                }
+            }
         }
 
-        async Task remove<TEntity>(long id, CancellationToken token)
-            where TEntity : class, IIdenticalEntity
+        async Task remove<TEntity>(long id, CancellationToken token) where TEntity : class, IIdenticalEntity
         {
-            var entity = await getById<TEntity>(id, token);
+            var query = from ntt in this._writeDbContext.Set<TEntity>()
+                        where ntt.Id == id
+                        select ntt;
+            var entity = await query.FirstOrDefaultAsync(token);
             if (entity != null)
             {
                 _ = this._writeDbContext.Remove(entity);
             }
         }
-        async Task removeProperty(long parentId, CancellationToken token)
+        
+        async Task<Functionality?> getFunctionality(FunctionalityViewModel model, CancellationToken cancellationToken)
         {
-            var query = from property in this._writeDbContext.Properties
-                        where property.ParentEntityId == parentId
-                        select property;
-            var entities = await query.ToListAsync(token);
-            foreach (var p in entities)
-            {
-                _ = this._writeDbContext.Remove(p);
-            }
+            var dbQuery = from func in this._writeDbContext.Functionalities
+                                    .Include(x => x.GetAllQuery)
+                                    .Include(x => x.GetByIdQuery)
+                                    .Include(x => x.InsertCommand)
+                                    .Include(x => x.UpdateCommand)
+                                    .Include(x => x.DeleteCommand)
+                          where func.Id == model.Id
+                          select func;
+            var functionality = await dbQuery.FirstOrDefaultAsync(cancellationToken);
+            return functionality;
         }
 
-        async Task<TEntity?> getById<TEntity>(long id, CancellationToken token)
-            where TEntity : class, IIdenticalEntity
+        async Task removeFunctionality(Functionality? functionality, CancellationToken token)
         {
-            var query = from entity in this._writeDbContext.Set<TEntity>()
-                        where entity.Id == id
-                        select entity;
-            return await query.FirstOrDefaultAsync(token);
+            _ = this._writeDbContext.Functionalities.Remove(functionality!);
+            _ = await this.SaveChangesAsync(token);
         }
+
+        async Task removeDto(Functionality functionality, CancellationToken token) =>
+            await remove<Dto>(functionality.SourceDtoId, token);
     }
 
     public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default) =>
@@ -182,7 +195,7 @@ internal partial class FunctionalityService
             rollback();
             return Result<FunctionalityViewModel>.CreateFailure(new TaskCanceledException(), model);
         }
-        
+
         await saveFunctionality(model, cancellationToken);
 
         return actionResult.WithValue(model);
