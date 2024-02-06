@@ -133,8 +133,12 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
 
         var result = this._mapper.Map<Dto>(model)
-            .ForMember(x => x.Module = this.ToDbEntity(model.Module))
-            .ForMember(x => x.ModuleId = model.Module.Id);
+            .ForMember(x => x.Module = this.ToDbEntity(model.Module));
+        if (model.Module?.Id is { } moduleId && result.ModuleId != moduleId)
+        {
+            result.ModuleId = moduleId;
+        }
+
         _ = result.Properties!.AddRange(model.Properties.Select(this.ToDbEntity));
         return result;
     }
@@ -168,7 +172,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         result.SourceDto = this.ToDbEntity(model.SourceDto);
         result.Module = this.ToDbEntity(model.SourceDto.Module);
         result.ModuleId = result.Module?.Id;
-
+        //TODO Fill IDs
         return result;
     }
 
@@ -267,6 +271,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.Type = PropertyTypeHelper.FromPropertyTypeId(entity.PropertyType))
             .ForMember(x => x.Dto = this.InnerToViewModel(entity.Dto));
 
+    [return: NotNullIfNotNull(nameof(CqrsSegregate))]
     public CqrsViewModelBase? ToViewModel(CqrsSegregate? entity) =>
         entity is null ? null : EnumHelper.ToEnum<CqrsSegregateType>(entity.SegregateType) switch
         {
