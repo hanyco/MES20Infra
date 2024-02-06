@@ -16,7 +16,7 @@ internal partial class FunctionalityService
     public async Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     //=> ServiceHelper.DeleteAsync<FunctionalityViewModel, Functionality>(this, this._writeDbContext, model, persist, persist, this.Logger);
     {
-        CheckPersistance(persist);
+        CheckPersistence(persist);
         if (!model.Check().ArgumentNotNull().NotNull(x => x.Id).TryParse(out var vr))
         {
             return vr;
@@ -98,7 +98,7 @@ internal partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        CheckPersistance(persist);
+        CheckPersistence(persist);
         if (!validate(model).TryParse(out var validationResult))
         {
             return validationResult;
@@ -310,7 +310,7 @@ internal partial class FunctionalityService
         return result;
     }
 
-    private static void CheckPersistance(bool persist)
+    private static void CheckPersistence(bool persist)
     {
         if (!persist)
         {

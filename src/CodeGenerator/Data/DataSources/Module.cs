@@ -29,5 +29,8 @@ public partial class Module
     public virtual ICollection<Dto> Dtos { get; set; } = new List<Dto>();
 
     [InverseProperty("Module")]
+    public virtual ICollection<Functionality> Functionalities { get; set; } = new List<Functionality>();
+
+    [InverseProperty("Module")]
     public virtual ICollection<UiPage> UiPages { get; set; } = new List<UiPage>();
 }
