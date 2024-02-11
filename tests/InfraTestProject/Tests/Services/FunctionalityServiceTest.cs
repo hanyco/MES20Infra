@@ -1,20 +1,14 @@
-﻿
+﻿namespace InfraTestProject.Tests.Services;
 
-
-
-
-namespace InfraTestProject.Tests.Services;
-
-public sealed class FunctionalityServiceTest(IFunctionalityService service, IFunctionalityCodeService codeService)
+public sealed class FunctionalityServiceTest(IFunctionalityService crudService, IFunctionalityCodeService codeService)
 {
-    [Trait("Category", "__ActiveTest")]
     [Trait("Category", nameof(IFunctionalityCodeService))]
     [Fact]
     public async void GenerateCode()
     {
         // Assign
         using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var model = await service.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
+        var model = await codeService.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
 
         // Act
         var actual = codeService.GenerateCodes(model!, new(true, tokenSource.Token));
@@ -35,7 +29,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         }
     }
 
-    [Trait("Category", nameof(IFunctionalityService))]
+    [Trait("Category", nameof(IFunctionalityCodeService))]
     [Fact]
     public async Task GenerateModelTest()
     {
@@ -44,25 +38,26 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var model = CreateModel();
 
         // Act
-        var actual = await service.GenerateViewModelAsync(model, tokenSource.Token);
+        var actual = await codeService.GenerateViewModelAsync(model, tokenSource.Token);
 
         // Assert
         if (!actual.IsSucceed)
         {
-            Assert.Fail(actual.Message ?? $"{nameof(service.GenerateViewModelAsync)} failed.");
+            Assert.Fail(actual.Message ?? $"{nameof(codeService.GenerateViewModelAsync)} failed.");
         }
     }
 
+    [Trait("Category", "__ActiveTest")]
     [Trait("Category", nameof(IFunctionalityService))]
     [Fact]
     public async void InsertViewModel()
     {
         // Assign
-        using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3600));
-        var model = await service.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
+        using var tokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        var model = await codeService.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
 
         // Act
-        var result = await service.InsertAsync(model!, token: tokenSource.Token);
+        var result = await crudService.InsertAsync(model!, token: tokenSource.Token);
 
         // Assert
         Assert.True(result.IsSucceed);

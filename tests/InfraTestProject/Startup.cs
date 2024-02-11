@@ -1,7 +1,8 @@
 ﻿using HanyCo.Infra.CodeGen.Contracts;
 using HanyCo.Infra.Internals.Data.DataSources;
-
-using InfraTestProject.Tests;
+using HanyCo.Infra.Security.Identity;
+using HanyCo.Infra.Security.Identity.Entity;
+using HanyCo.Infra.Security.Model;
 
 using Library.BusinessServices;
 using Library.CodeGeneration.v2;
@@ -10,6 +11,7 @@ using Library.Logging;
 using Library.Mapping;
 using Library.Threading.MultistepProgress;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -17,37 +19,42 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Services;
 
-
-
 namespace InfraTestProject;
 
 public sealed class Startup
 {
-    public static IServiceProvider GetServiceProvider()
+    public static void ConfigureServices(IServiceCollection services)
     {
-        var services = new ServiceCollection();
-        services.AddUnitTestServices();
-        var result = services.BuildServiceProvider();
-        DI.Initialize(result);
-        return result;
-    }
+        _ = services.AddIdentity<InfraIdentityUser, InfraIdentityRole>();
+        _ = services
+            .AddSingleton<InfraUserManager>()
+            .AddSingleton<InfraSignInManager>()
+            .AddSingleton<SignInManager<InfraIdentityUser>>(x => x.GetRequiredService<InfraSignInManager>())
+            ;
 
-    public void ConfigureServices(IServiceCollection services)
-    {
         services.AddUnitTestServices();
         var result = services.BuildServiceProvider();
         DI.Initialize(result);
         InitializeDatabase();
     }
 
-    private void InitializeDatabase()
+    //public static IServiceProvider GetServiceProvider()
+    //{
+    //    var services = new ServiceCollection();
+    //    services.AddUnitTestServices();
+    //    var result = services.BuildServiceProvider();
+    //    DI.Initialize(result);
+    //    return result;
+    //}
+
+    private static void InitializeDatabase()
     {
         var db = DI.GetService<InfraWriteDbContext>();
-        db.Database.EnsureDeleted();
-        db.Database.EnsureCreated();
-        db.Modules.Add(new() { Guid = Guid.NewGuid(), Name = "Unit Test Module 1"});
-        db.Modules.Add(new() { Guid = Guid.NewGuid(), Name = "Unit Test Module 2" });
-        db.SaveChanges();
+        _ = db.Database.EnsureDeleted();
+        _ = db.Database.EnsureCreated();
+        _ = db.Modules.Add(new() { Guid = Guid.NewGuid(), Name = "Unit Test Module 1" });
+        _ = db.Modules.Add(new() { Guid = Guid.NewGuid(), Name = "Unit Test Module 2" });
+        _ = db.SaveChanges();
     }
 }
 
@@ -57,7 +64,7 @@ internal static class ServiceCollectionExtensions
     {
         _ = services
                 .RegisterServices<IService>(typeof(ContractsModule), typeof(ServicesModule));
-        
+
         _ = services
                 .AddScoped<IMapper, Mapper>()
                 .AddScoped<ILogger, EmptyLogger>()
@@ -69,6 +76,5 @@ internal static class ServiceCollectionExtensions
                 .AddDbContext<InfraWriteDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot)
                                                                      .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)))
                 .AddDbContext<InfraReadDbContext>(options => options.UseInMemoryDatabase("MesInfra", inMemoryDatabaseRoot));
-        
     }
 }

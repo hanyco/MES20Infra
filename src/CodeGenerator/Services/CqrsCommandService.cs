@@ -43,6 +43,13 @@ internal sealed class CqrsCommandService(
         return await this.SubmitChangesAsync(persist: persist, token: token);
     }
 
+    public async Task<Result> DeleteByIdAsync(long commandId, bool persist = true, CancellationToken token = default)
+    {
+        var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = commandId });
+        _ = this._writeDbContext.Remove(entry.Entity);
+        return await this.SubmitChangesAsync(persist: persist, token: token);
+    }
+
     public Task<CqrsCommandViewModel> FillByDbEntity(
         CqrsCommandViewModel model,
         long id,

@@ -1,8 +1,6 @@
-﻿
-using HanyCo.Infra.Internals.Data.DataSources;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.BusinessServices;
-using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
 using Library.Validations;
@@ -15,7 +13,7 @@ internal sealed class CqrsQueryService(
     IMapper mapper,
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
-    IEntityViewModelConverter converter) : CqrsSegregationServiceBase, IBusinessService, ICqrsQueryService, IValidator<CqrsQueryViewModel>
+    IEntityViewModelConverter converter) : CqrsSegregationServiceBase, ICqrsQueryService, IValidator<CqrsQueryViewModel>
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly IMapper _mapper = mapper;
@@ -30,8 +28,13 @@ internal sealed class CqrsQueryService(
     public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default) =>
         ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
 
-    public async Task<int> DeleteByIdAsync(long id, CancellationToken token = default) =>
-        await this._writeDbContext.RemoveById<CqrsSegregate>(id).SaveChangesAsync(token);
+    public async Task<Result> DeleteByIdAsync(long id, bool persist = true, CancellationToken token = default)
+    {
+        _ = this._writeDbContext.RemoveById<CqrsSegregate>(id);
+        return persist
+            ? await this._writeDbContext.SaveChangesResultAsync(token)
+            : Result.CreateSuccess(-1);
+    }
 
     public CqrsQueryViewModel FillByDbEntity(
         CqrsQueryViewModel @this,
@@ -198,7 +201,11 @@ internal sealed class CqrsQueryService(
                     .SetModified(x => x.Comment)
                     .SetModified(x => x.SegregateType)
                     .SetModified(x => x.CqrsNameSpace);
-            var result = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
+            if (persist)
+            {
+                _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
+            }
+
             model.Id = segregate.Id;
             return Result<CqrsQueryViewModel>.CreateSuccess(model);
         }

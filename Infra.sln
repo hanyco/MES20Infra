@@ -185,6 +185,7 @@ Global
 		{78C1BD15-E72D-4F6E-8FF6-2B33F72955AC}.Release|x86.ActiveCfg = Release|Any CPU
 		{78C1BD15-E72D-4F6E-8FF6-2B33F72955AC}.Release|x86.Build.0 = Release|Any CPU
 		{E072A41E-F99C-428A-91DF-DDBFA377A71E}.Debug Unit Test|Any CPU.ActiveCfg = Debug Unit Test|Any CPU
+		{E072A41E-F99C-428A-91DF-DDBFA377A71E}.Debug Unit Test|Any CPU.Build.0 = Debug Unit Test|Any CPU
 		{E072A41E-F99C-428A-91DF-DDBFA377A71E}.Debug Unit Test|x64.ActiveCfg = Debug Unit Test|Any CPU
 		{E072A41E-F99C-428A-91DF-DDBFA377A71E}.Debug Unit Test|x64.Build.0 = Debug Unit Test|Any CPU
 		{E072A41E-F99C-428A-91DF-DDBFA377A71E}.Debug Unit Test|x86.ActiveCfg = Debug Unit Test|Any CPU
@@ -202,6 +203,7 @@ Global
 		{E072A41E-F99C-428A-91DF-DDBFA377A71E}.Release|x86.ActiveCfg = Release|Any CPU
 		{E072A41E-F99C-428A-91DF-DDBFA377A71E}.Release|x86.Build.0 = Release|Any CPU
 		{91DBCD2B-F25C-46E9-B8F4-AE70A86638F7}.Debug Unit Test|Any CPU.ActiveCfg = Debug Unit Test|Any CPU
+		{91DBCD2B-F25C-46E9-B8F4-AE70A86638F7}.Debug Unit Test|Any CPU.Build.0 = Debug Unit Test|Any CPU
 		{91DBCD2B-F25C-46E9-B8F4-AE70A86638F7}.Debug Unit Test|x64.ActiveCfg = Debug Unit Test|Any CPU
 		{91DBCD2B-F25C-46E9-B8F4-AE70A86638F7}.Debug Unit Test|x64.Build.0 = Debug Unit Test|Any CPU
 		{91DBCD2B-F25C-46E9-B8F4-AE70A86638F7}.Debug Unit Test|x86.ActiveCfg = Debug Unit Test|Any CPU

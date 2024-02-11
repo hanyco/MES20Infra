@@ -58,7 +58,7 @@ internal partial class FunctionalityService
         Task<Result> removeDto(Dto dto, CancellationToken token)
             => token.IsCancellationRequested
                 ? Result.CreateFailure<TaskCanceledException>().ToAsync()
-                : this._dtoService.DeleteByIdAsync(dto.Id, token);
+                : this._dtoService.DeleteByIdAsync(dto.Id, true, token);
         async Task<Result> removeFunctionality(Functionality functionality, CancellationToken token)
         {
             if (token.IsCancellationRequested)
@@ -72,11 +72,11 @@ internal partial class FunctionalityService
                 return i > 0 ? Result.Success : Result.Failure;
             }
         }
-        async Task<Result> removeSegregate(CqrsSegregate segregate, CancellationToken token, Func<long, CancellationToken, Task<Result>> deleteByIdAsync)
+        async Task<Result> removeSegregate(CqrsSegregate segregate, CancellationToken token, Func<long, bool, CancellationToken, Task<Result>> deleteByIdAsync)
         {
             _ = await removeDto(segregate.ParamDto, token);
             _ = await removeDto(segregate.ResultDto, token);
-            return await deleteByIdAsync(segregate.Id, token);
+            return await deleteByIdAsync(segregate.Id, true, token);
         }
     }
 
@@ -100,8 +100,7 @@ internal partial class FunctionalityService
             .Then(x => saveCommand(x.InsertCommandViewModel, token))
             .Then(x => saveCommand(x.UpdateCommandViewModel, token))
             .Then(x => saveCommand(x.DeleteCommandViewModel, token))
-            .Then(x => this._dtoService.InsertAsync(x.SourceDto, true, token))
-            .Then(x => this._dtoService.InsertAsync(x.SourceDto, true, token))
+            .Then(x => saveDto(x.SourceDto, token))
             .Then(x => saveFunctionality(x, token))
             .RunAsync(token)
             .IfFailure(this._dtoService.ResetChanges)
@@ -114,6 +113,7 @@ internal partial class FunctionalityService
                 }
                 return saveResult.WithValue(x);
             }, token);
+
         return result.ToNotNullValue();
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model) =>
@@ -180,6 +180,8 @@ internal partial class FunctionalityService
 
             return result;
         }
+        Task<Result> saveDto(DtoViewModel model, CancellationToken token)
+            => this._dtoService.InsertAsync(model, true, token).ToResultAsync();
         async Task<Result> saveFunctionality(FunctionalityViewModel model, CancellationToken token)
         {
             var entity = this._converter.ToDbEntity(model);

@@ -28,7 +28,7 @@ public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyn
     [return: NotNull]
     DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns);
 
-    Task<Result> DeleteByIdAsync(long dtoId, CancellationToken token);
+    Task<Result> DeleteByIdAsync(long dtoId, bool persist = true, CancellationToken token = default);
 
     /// <summary>
     /// Gets all DTOs by category.

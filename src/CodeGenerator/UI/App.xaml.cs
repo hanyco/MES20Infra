@@ -50,7 +50,7 @@ public partial class App : LibApp
 
         static void addDataContext(IServiceCollection services, SettingsModel settings) =>
             services
-#if !TEST_MODE
+#if !DEBUG_UNIT_TEST
                .AddDbContext<InfraWriteDbContext>(options =>
                {
                    _ = options.UseSqlServer(settings.connectionString!);
