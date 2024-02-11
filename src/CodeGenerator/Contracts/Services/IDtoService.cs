@@ -3,6 +3,7 @@
 using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 using Library.Interfaces;
+using Library.Results;
 
 namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
@@ -26,6 +27,8 @@ public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyn
     /// <returns>A DtoViewModel.</returns>
     [return: NotNull]
     DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns);
+
+    Task<Result> DeleteByIdAsync(long dtoId, CancellationToken token);
 
     /// <summary>
     /// Gets all DTOs by category.
