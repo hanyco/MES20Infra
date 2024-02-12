@@ -1,5 +1,6 @@
 ﻿using HanyCo.Infra.CodeGen.Contracts;
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Security;
 using HanyCo.Infra.Security.Identity;
 using HanyCo.Infra.Security.Identity.Entity;
 using HanyCo.Infra.Security.Model;
@@ -16,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Services;
 
@@ -26,11 +28,6 @@ public sealed class Startup
     public static void ConfigureServices(IServiceCollection services)
     {
         _ = services.AddIdentity<InfraIdentityUser, InfraIdentityRole>();
-        _ = services
-            .AddSingleton<InfraUserManager>()
-            .AddSingleton<InfraSignInManager>()
-            .AddSingleton<SignInManager<InfraIdentityUser>>(x => x.GetRequiredService<InfraSignInManager>())
-            ;
 
         services.AddUnitTestServices();
         var result = services.BuildServiceProvider();
@@ -67,7 +64,7 @@ internal static class ServiceCollectionExtensions
 
         _ = services
                 .AddScoped<IMapper, Mapper>()
-                .AddScoped<ILogger, EmptyLogger>()
+                .AddScoped<Library.Logging.ILogger, EmptyLogger>()
                 .AddSingleton(IProgressReport.New())
                 .AddScoped<ICodeGeneratorEngine, RoslynCodeGenerator>();
 
