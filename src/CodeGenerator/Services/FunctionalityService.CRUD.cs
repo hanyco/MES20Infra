@@ -13,10 +13,18 @@ namespace Services;
 
 internal partial class FunctionalityService
 {
+    public Task<bool> AnyByNameAsync(string name)
+    {
+        var query = from dto in this._readDbContext.Functionalities
+                    where dto.Name == name
+                    select dto.Id;
+        return query.AnyAsync();
+    }
+
     public async Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
         CheckPersistence(persist);
-        if (validate(model).TryParse(out var vr))
+        if (!validate(model).TryParse(out var vr))
         {
             return vr;
         }
@@ -28,13 +36,13 @@ internal partial class FunctionalityService
         };
 
         return await TaskRunner.StartWith(functionality)
+            .Then(x => removeFunctionality(x, token))
+            .Then(x => removeDto(x.SourceDto, token))
             .Then(x => removeQuery(x.GetAllQuery, token))
             .Then(x => removeQuery(x.GetByIdQuery, token))
             .Then(x => removeCommand(x.InsertCommand, token))
             .Then(x => removeCommand(x.UpdateCommand, token))
             .Then(x => removeCommand(x.DeleteCommand, token))
-            .Then(x => removeDto(x.SourceDto, token))
-            .Then(x => removeFunctionality(x, token))
             .RunAsync(token);
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model)
@@ -56,7 +64,8 @@ internal partial class FunctionalityService
         Task<Result> removeCommand(CqrsSegregate command, CancellationToken token)
             => removeSegregate(command, token, this._commandService.DeleteByIdAsync);
         Task<Result> removeDto(Dto dto, CancellationToken token)
-            => this._dtoService.DeleteByIdAsync(dto.Id, true, token);
+            => dto == null ? Task.FromResult(Result.Success) : this._dtoService.DeleteByIdAsync(dto.Id, true, token);
+
         async Task<Result> removeFunctionality(Functionality functionality, CancellationToken token)
         {
             _ = this._writeDbContext.RemoveById<Functionality>(functionality.Id);
@@ -80,11 +89,16 @@ internal partial class FunctionalityService
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
         CheckPersistence(persist);
-        if (!validate(model).TryParse(out var validationResult))
+        if (!validateModel(model).TryParse(out var vr))
         {
-            return validationResult;
+            return vr;
         }
 
+        var er = await checkExitance(model);
+        if (er.IsFailure)
+        {
+            return er.WithValue(model);
+        }
         var result = await TaskRunner.StartWith(model)
             .Then(x => saveQuery(x.GetAllQueryViewModel, token))
             .Then(x => saveQuery(x.GetByIdQueryViewModel, token))
@@ -107,7 +121,7 @@ internal partial class FunctionalityService
 
         return result.ToNotNullValue();
 
-        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model) =>
+        static Result<FunctionalityViewModel> validateModel(FunctionalityViewModel model) =>
             BasicChecks(model)
             .NotNull(x => x!.GetAllQueryViewModel, () => "ViewModel is not initiated.")
             .NotNull(x => x!.GetAllQueryViewModel.ParamsDto, () => "ViewModel is not initiated.")
@@ -192,6 +206,46 @@ internal partial class FunctionalityService
             _ = await this._writeDbContext.Functionalities.AddAsync(entity, token);
             entity.Module = null!;
             return await this.SaveChangesAsync(token);
+        }
+
+        async Task<Result> checkExitance(FunctionalityViewModel model)
+        {
+            var exists = await this.AnyByNameAsync(model.Name!);
+            if (exists)
+            {
+                return Result.CreateFailure("Functionality already exists.")!;
+            }
+            exists = await this._dtoService.AnyByNameAsync(model.SourceDto.Name!);
+            if (exists)
+            {
+                return Result.CreateFailure("Functionality already exists.")!;
+            }
+            exists = await this._queryService.AnyByNameAsync(model.GetAllQueryViewModel.Name!);
+            if (exists)
+            {
+                return Result.CreateFailure("GetAllQuery already exists.")!;
+            }
+            exists = await this._queryService.AnyByNameAsync(model.GetByIdQueryViewModel.Name!);
+            if (exists)
+            {
+                return Result.CreateFailure("GetByIdQuery already exists.")!;
+            }
+            exists = await this._commandService.AnyByNameAsync(model.InsertCommandViewModel.Name!);
+            if (exists)
+            {
+                return Result.CreateFailure("InsertCommand already exists.")!;
+            }
+            exists = await this._commandService.AnyByNameAsync(model.UpdateCommandViewModel.Name!);
+            if (exists)
+            {
+                return Result.CreateFailure("UpdateCommand already exists.")!;
+            }
+            exists = await this._commandService.AnyByNameAsync(model.DeleteCommandViewModel.Name!);
+            if (exists)
+            {
+                return Result.CreateFailure("DeleteCommand already exists.")!;
+            };
+            return Result.Success;
         }
     }
 

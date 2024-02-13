@@ -22,6 +22,14 @@ internal sealed class CqrsQueryService(
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 
+    public Task<bool> AnyByNameAsync(string name)
+    {
+        var query = from entity in this.GetAllQuery()
+                    where entity.Name == name
+                    select entity.Id;
+        return query.AnyAsync();
+    }
+
     public Task<CqrsQueryViewModel> CreateAsync(CancellationToken token = default) =>
         Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandler = true, HasPartialOnInitialize = true });
 

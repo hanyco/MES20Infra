@@ -12,6 +12,8 @@ namespace HanyCo.Infra.CodeGen.Contracts.Services;
 /// </summary>
 public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyncSaveChanges, IResetChanges, IAsyncCreator<DtoViewModel>
 {
+    Task<bool> AnyByNameAsync(string name);
+
     /// <summary>
     /// Gets a new DtoViewModel.
     /// </summary>

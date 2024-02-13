@@ -1,5 +1,4 @@
-﻿
-using HanyCo.Infra.Internals.Data.DataSources;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
 using Library.BusinessServices;
@@ -31,6 +30,14 @@ internal sealed class CqrsCommandService(
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Command;
 
+    public Task<bool> AnyByNameAsync(string name)
+    {
+        var query = from dto in this.GetAllQuery()
+                    where dto.Name == name
+                    select dto.Id;
+        return query.AnyAsync();
+    }
+
     public Task<CqrsCommandViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new CqrsCommandViewModel { HasPartialHandler = true, HasPartialOnInitialize = true });
 
@@ -45,7 +52,7 @@ internal sealed class CqrsCommandService(
 
     public async Task<Result> DeleteByIdAsync(long commandId, bool persist = true, CancellationToken token = default)
     {
-        var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = commandId });
+        var entry = this._writeDbContext.ReAttach(new CqrsSegregate { Id = commandId }).Entry;
         _ = this._writeDbContext.Remove(entry.Entity);
         return await this.SubmitChangesAsync(persist: persist, token: token);
     }

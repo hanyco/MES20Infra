@@ -37,12 +37,20 @@ internal sealed class DtoService(
 {
     private readonly ICodeGeneratorEngine _codeGeneratorEngine = codeGeneratorEngine;
     private readonly IEntityViewModelConverter _converter = converter;
-    private readonly InfraReadDbContext _db = readDbContext;
     private readonly IPropertyService _propertyService = propertyService;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
+    public Task<bool> AnyByNameAsync(string name)
+    {
+        var query = from dto in this._readDbContext.Dtos
+                    where dto.Name == name
+                    select dto.Id;
+        return query.AnyAsync();
+    }
+
     public Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
-        Task.FromResult(new DtoViewModel());
+            Task.FromResult(new DtoViewModel());
 
     [return: NotNull]
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
@@ -161,22 +169,22 @@ internal sealed class DtoService(
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync(CancellationToken token = default)
     {
-        var query = from dto in this._db.Dtos
+        var query = from dto in this._readDbContext.Dtos
                     select dto;
 
-        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
 
     public async Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool? paramsDtos, bool? resultDtos, bool? viewModels, CancellationToken token = default)
     {
-        var rawQuery = from dto in this._db.Dtos.Include(x => x.Module)
+        var rawQuery = from dto in this._readDbContext.Dtos.Include(x => x.Module)
                        select dto;
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels, token);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
 
-        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToReadOnlySet();
         return result;
 
@@ -219,10 +227,10 @@ internal sealed class DtoService(
 
         async Task<DtoEntity?> getDto(long id, CancellationToken token = default)
         {
-            var query = from x in this._db.Dtos.Include(x => x.Module)
+            var query = from x in this._readDbContext.Dtos.Include(x => x.Module)
                         where x.Id == id
                         select x;
-            var dbResult = await query.FirstOrDefaultLockAsync(this._db.AsyncLock);
+            var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock);
 
             //! MOHAMMAD: 💀 Sample code. Don't remove the following lines 💀
             //var q1 = EF.CompileAsyncQuery((InfraReadDbContext db, long id) => db.Dtos.FirstOrDefault(x => x.Id == id));
@@ -253,10 +261,10 @@ internal sealed class DtoService(
 
     public async Task<IReadOnlyList<DtoViewModel>> GetByModuleId(long id, CancellationToken token = default)
     {
-        var query = from dto in this._db.Dtos
+        var query = from dto in this._readDbContext.Dtos
                     where dto.ModuleId == id
                     select dto;
-        var dbResult = await query.ToListLockAsync(this._db.AsyncLock);
+        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.FillByDbEntity(dbResult).ToList();
         return result;
     }
@@ -382,7 +390,7 @@ internal sealed class DtoService(
             return validation;
         }
 
-        var query = from dto in this._db.Dtos
+        var query = from dto in this._readDbContext.Dtos
                     where dto.Name == viewModel!.Name && dto.Id != viewModel.Id
                     select dto.Id;
         if (await query.AnyAsync(cancellationToken: token))
