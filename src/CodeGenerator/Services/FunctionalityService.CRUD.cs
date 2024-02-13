@@ -28,12 +28,12 @@ internal partial class FunctionalityService
         };
 
         return await TaskRunner.StartWith(functionality)
-            .Then(x => removeDto(x.SourceDto, token))
             .Then(x => removeQuery(x.GetAllQuery, token))
             .Then(x => removeQuery(x.GetByIdQuery, token))
             .Then(x => removeCommand(x.InsertCommand, token))
             .Then(x => removeCommand(x.UpdateCommand, token))
             .Then(x => removeCommand(x.DeleteCommand, token))
+            .Then(x => removeDto(x.SourceDto, token))
             .Then(x => removeFunctionality(x, token))
             .RunAsync(token);
 
@@ -56,21 +56,12 @@ internal partial class FunctionalityService
         Task<Result> removeCommand(CqrsSegregate command, CancellationToken token)
             => removeSegregate(command, token, this._commandService.DeleteByIdAsync);
         Task<Result> removeDto(Dto dto, CancellationToken token)
-            => token.IsCancellationRequested
-                ? Result.CreateFailure<TaskCanceledException>().ToAsync()
-                : this._dtoService.DeleteByIdAsync(dto.Id, true, token);
+            => this._dtoService.DeleteByIdAsync(dto.Id, true, token);
         async Task<Result> removeFunctionality(Functionality functionality, CancellationToken token)
         {
-            if (token.IsCancellationRequested)
-            {
-                return Result.CreateFailure<TaskCanceledException>();
-            }
-            else
-            {
-                _ = this._writeDbContext.RemoveById<Functionality>(functionality.Id);
-                var i = await this.SaveChangesAsync(token);
-                return i > 0 ? Result.Success : Result.Failure;
-            }
+            _ = this._writeDbContext.RemoveById<Functionality>(functionality.Id);
+            var i = await this.SaveChangesAsync(token);
+            return i > 0 ? Result.Success : Result.Failure;
         }
         async Task<Result> removeSegregate(CqrsSegregate segregate, CancellationToken token, Func<long, bool, CancellationToken, Task<Result>> deleteByIdAsync)
         {
@@ -185,8 +176,21 @@ internal partial class FunctionalityService
         async Task<Result> saveFunctionality(FunctionalityViewModel model, CancellationToken token)
         {
             var entity = this._converter.ToDbEntity(model);
-            entity.Module = null;
+            var (getAllId, getById, insertId, updateId, deleteId, moduleId, sourceDtoId) =
+                (entity.GetAllQuery.Id, entity.GetByIdQuery.Id, entity.InsertCommand.Id, entity.UpdateCommand.Id, entity.DeleteCommand.Id, entity.Module.Id, entity.SourceDto.Id);
+            entity.GetAllQuery
+                = entity.GetByIdQuery
+                = entity.InsertCommand
+                = entity.UpdateCommand
+                = entity.DeleteCommand
+                = null!;
+            entity.Module = null!;
+            entity.SourceDto = null!;
+            (entity.GetAllQueryId, entity.GetByIdQueryId, entity.InsertCommandId, entity.UpdateCommandId, entity.DeleteCommandId, entity.ModuleId, entity.SourceDtoId) =
+                (getAllId, getById, insertId, updateId, deleteId, moduleId, sourceDtoId);
+
             _ = await this._writeDbContext.Functionalities.AddAsync(entity, token);
+            entity.Module = null!;
             return await this.SaveChangesAsync(token);
         }
     }
