@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
     <UserSecretsId>aspnet-Server-3d7ea738-a274-4910-abcc-f77f23e754b5</UserSecretsId>
     <AssemblyName>MES.$(MSBuildProjectName)API</AssemblyName>
