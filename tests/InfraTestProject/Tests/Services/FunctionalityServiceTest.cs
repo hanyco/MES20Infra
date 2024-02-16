@@ -69,7 +69,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService crudService, 
         var model = new FunctionalityViewModel
         {
             SourceDto = new(-1, "PersonDto") { Module = new(1, "Module"), DbObject = personTable, NameSpace = "UnitTests.CodeGen" },
-            Name = "PersonDto"
+            Name = "PersonFunctionality"
         };
         _ = model.SourceDto.Properties.AddRange(new PropertyViewModel[]
         {
