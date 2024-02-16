@@ -58,7 +58,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         this._dtoService = dtoService;
         this._propertyService = propertyService;
         this._converter = converter;
-        ((System.Windows.Markup.IComponentConnector)this).InitializeComponent();
+        this.InitializeComponent();
     }
 
     bool IStatefulPage.IsViewModelChanged { get; set; }
