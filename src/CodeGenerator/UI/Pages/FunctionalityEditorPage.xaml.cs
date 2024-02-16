@@ -118,6 +118,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
 
         _ = await this._service.DeleteAsync(functionality).ShowOrThrowAsync(this.Title);
+        await this.BindDataAsync();
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)

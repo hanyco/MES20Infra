@@ -37,7 +37,6 @@ internal partial class FunctionalityService
             return Result.CreateFailure<ObjectNotFoundException>();
         }
 
-        using var tran = await this._writeDbContext.BeginTransactionAsync(token);
         var tasks = new Collection<Func<Functionality, Task<Result>>>
         {
             x => removeFunctionality(x, token),
@@ -50,15 +49,6 @@ internal partial class FunctionalityService
         };
 
         var result = await tasks.RunAllAsync(functionality, token);
-
-        if (result.IsSucceed)
-        {
-            await tran.CommitAsync(token);
-        }
-        else
-        {
-            await tran.RollbackAsync(token);
-        }
         return result;
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model)
@@ -74,20 +64,25 @@ internal partial class FunctionalityService
 
         async Task<Result> removeFunctionality(Functionality functionality, CancellationToken token)
         {
-            var rr = this._writeDbContext.RemoveById<Functionality>(functionality.Id);
+            _ = this._writeDbContext.RemoveById<Functionality>(functionality.Id);
             var i = await this.SaveChangesAsync(token);
             return i > 0 ? Result.Success : Result.Failure;
         }
         async Task<Result> removeSegregate(CqrsSegregate segregate, Func<long, bool, CancellationToken, Task<Result>> deleteByIdAsync, CancellationToken token)
         {
-            var rr = await removeDto(segregate.ParamDto, token);
-            if (rr.IsFailure)
+            var result = await deleteByIdAsync(segregate.Id, true, token);
+            if (result.IsFailure)
             {
-                return rr;
+                return result;
+            }
+            result = await removeDto(segregate.ParamDto, token);
+            if (result.IsFailure)
+            {
+                return result;
             }
 
-            rr = await removeDto(segregate.ResultDto, token);
-            return rr.IsFailure ? rr : await deleteByIdAsync(segregate.Id, true, token);
+            result = await removeDto(segregate.ResultDto, token);
+            return result;
         }
     }
 
@@ -104,11 +99,33 @@ internal partial class FunctionalityService
 
     private IQueryable<Functionality> GetByIdQuery(long id)
         => from func in this._readDbContext.Functionalities
+            .Include(x => x.SourceDto)
+
             .Include(x => x.GetAllQuery)
+               .ThenInclude(x => x.ParamDto)
+            .Include(x => x.GetAllQuery)
+               .ThenInclude(x => x.ResultDto)
+
             .Include(x => x.GetByIdQuery)
+               .ThenInclude(x => x.ParamDto)
+            .Include(x => x.GetByIdQuery)
+               .ThenInclude(x => x.ResultDto)
+
             .Include(x => x.InsertCommand)
+               .ThenInclude(x => x.ParamDto)
+            .Include(x => x.InsertCommand)
+               .ThenInclude(x => x.ResultDto)
+
             .Include(x => x.UpdateCommand)
+               .ThenInclude(x => x.ParamDto)
+            .Include(x => x.UpdateCommand)
+               .ThenInclude(x => x.ResultDto)
+
             .Include(x => x.DeleteCommand)
+               .ThenInclude(x => x.ParamDto)
+            .Include(x => x.DeleteCommand)
+                .ThenInclude(x => x.ResultDto)
+
            where func.Id == id
            select func;
 
