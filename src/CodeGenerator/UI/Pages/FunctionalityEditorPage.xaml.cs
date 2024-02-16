@@ -212,7 +212,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                     var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
                     if (resp == TaskDialogResult.Cancel)
                     {
-                        return Result<string>.CreateFailure(new OperationCancelException());
+                        return Result<string>.CreateFailure(new OperationCancelledException());
                     }
                     if (resp == TaskDialogResult.Yes)
                     {

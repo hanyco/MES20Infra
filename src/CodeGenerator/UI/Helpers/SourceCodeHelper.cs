@@ -48,7 +48,7 @@ public static class SourceCodeHelper
             var resp = dlg.ShowDialog();
             if (resp != DialogResult.OK)
             {
-                return Result<string?>.CreateFailure(new OperationCancelException());
+                return Result<string?>.CreateFailure(new OperationCancelledException());
             }
 
             await File.WriteAllTextAsync(dlg.FileName, code.Statement);
