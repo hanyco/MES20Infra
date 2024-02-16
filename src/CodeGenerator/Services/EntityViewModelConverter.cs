@@ -3,7 +3,6 @@ using System.Globalization;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.Interfaces;
 using Library.Mapping;
 using Library.Validations;
 
@@ -288,8 +287,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             _ => null,
         };
 
-    public UiComponentViewModel? ToViewModel(UiPageComponent? entity) =>
-        entity is null ? null : this._mapper.Map<UiComponentViewModel>(entity)
+    public UiComponentViewModel? ToViewModel(UiPageComponent? entity)
+        => entity is null ? null : this._mapper.Map<UiComponentViewModel>(entity)
             .ForMember(x => x.Id = entity.UiComponentId)
             .ForMember(x => x.Name = entity.UiComponent.Name)
             .ForMember(x => x.NameSpace = entity.UiComponent.NameSpace)
@@ -300,21 +299,17 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.PageDataContextProperty = this.ToViewModel(entity.UiComponent.PageDataContextProperty));
 
     public FunctionalityViewModel? ToViewModel(Functionality? entity)
-    {
-        var qtyConverter = this.Cast().As<IDbEntityToViewModelConverter<CqrsQueryViewModel, CqrsSegregate>>()!;
-        var cmdConverter = this.Cast().As<IDbEntityToViewModelConverter<CqrsCommandViewModel, CqrsSegregate>>()!;
-        return entity == null ? null : this._mapper.Map<FunctionalityViewModel>(entity)
+        => entity == null ? null : this._mapper.Map<FunctionalityViewModel>(entity)
             .ForMember(x => x.SourceDto = this.ToViewModel(entity.SourceDto))
-            .ForMember(x => x.GetAllQueryViewModel = qtyConverter.ToViewModel(entity.GetAllQuery))
-            .ForMember(x => x.GetByIdQueryViewModel = qtyConverter.ToViewModel(entity.GetByIdQuery))
-            .ForMember(x => x.InsertCommandViewModel = cmdConverter.ToViewModel(entity.InsertCommand))
-            .ForMember(x => x.UpdateCommandViewModel = cmdConverter.ToViewModel(entity.UpdateCommand))
-            .ForMember(x => x.DeleteCommandViewModel = cmdConverter.ToViewModel(entity.DeleteCommand));
-    }
+            .ForMember(x => x.GetAllQueryViewModel = this.ToQueryViewModel(entity.GetAllQuery))
+            .ForMember(x => x.GetByIdQueryViewModel = this.ToQueryViewModel(entity.GetByIdQuery))
+            .ForMember(x => x.InsertCommandViewModel = this.ToCommandViewModel(entity.InsertCommand))
+            .ForMember(x => x.UpdateCommandViewModel = this.ToCommandViewModel(entity.UpdateCommand))
+            .ForMember(x => x.DeleteCommandViewModel = this.ToCommandViewModel(entity.DeleteCommand));
 
     [return: NotNullIfNotNull(nameof(entity))]
-    public ClaimViewModel? ToViewModel(SecurityClaim? entity) =>
-        entity is null ? null : this._mapper.Map<ClaimViewModel>(entity);
+    public ClaimViewModel? ToViewModel(SecurityClaim? entity)
+        => entity is null ? null : this._mapper.Map<ClaimViewModel>(entity);
 
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType)
     {
@@ -347,9 +342,12 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     [return: NotNullIfNotNull(nameof(entity))]
     private DtoViewModel? InnerToViewModel(Dto? entity) =>
         entity is null ? null : this._mapper.Map<DtoViewModel>(entity);
-    CqrsQueryViewModel? IDbEntityToViewModelConverter<CqrsQueryViewModel, CqrsSegregate>.ToViewModel(CqrsSegregate? entity)
+
+    [return: NotNullIfNotNull(nameof(entity))]
+    private CqrsQueryViewModel? ToQueryViewModel(CqrsSegregate? entity)
         => this.ToViewModel(entity) as CqrsQueryViewModel;
 
-    CqrsCommandViewModel? IDbEntityToViewModelConverter<CqrsCommandViewModel, CqrsSegregate>.ToViewModel(CqrsSegregate? entity)
+    [return: NotNullIfNotNull(nameof(entity))]
+    private CqrsCommandViewModel? ToCommandViewModel(CqrsSegregate? entity)
         => this.ToViewModel(entity) as CqrsCommandViewModel;
 }

@@ -74,8 +74,9 @@ internal sealed class CqrsCommandService(
     {
         var result = await ServiceHelper.GetByIdAsync(this, model.Id!.Value, this.GetAllQuery()
                        .Include(x => x.Module).Include(x => x.ParamDto)
-                       .Include(x => x.ResultDto), x => this._converter.ToViewModel(x).Cast().As<CqrsCommandViewModel>(), this._readDbContext.AsyncLock);
-        if (result?.Guid is { } guid)
+                       .Include(x => x.ResultDto), x => this._converter.ToViewModel(x) as CqrsCommandViewModel, this._readDbContext.AsyncLock)
+            ?? throw new Library.Exceptions.ObjectNotFoundException();
+        if (result.Guid is { } guid)
         {
             _ = result.SecurityClaims.AddRange(await this._securityService.GetEntityClaimsAsync(guid, token).GetValueAsync());
         }
