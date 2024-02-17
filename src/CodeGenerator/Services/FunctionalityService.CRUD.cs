@@ -100,31 +100,42 @@ internal partial class FunctionalityService
     private IQueryable<Functionality> GetByIdQuery(long id)
         => from func in this._readDbContext.Functionalities
             .Include(x => x.SourceDto)
+               .ThenInclude(x => x.Properties)
 
             .Include(x => x.GetAllQuery)
                .ThenInclude(x => x.ParamDto)
+               .ThenInclude(x=>x.Properties)
             .Include(x => x.GetAllQuery)
                .ThenInclude(x => x.ResultDto)
+               .ThenInclude(x => x.Properties)
 
             .Include(x => x.GetByIdQuery)
                .ThenInclude(x => x.ParamDto)
+               .ThenInclude(x => x.Properties)
             .Include(x => x.GetByIdQuery)
                .ThenInclude(x => x.ResultDto)
+               .ThenInclude(x => x.Properties)
 
             .Include(x => x.InsertCommand)
                .ThenInclude(x => x.ParamDto)
+               .ThenInclude(x => x.Properties)
             .Include(x => x.InsertCommand)
                .ThenInclude(x => x.ResultDto)
+               .ThenInclude(x => x.Properties)
 
             .Include(x => x.UpdateCommand)
                .ThenInclude(x => x.ParamDto)
+               .ThenInclude(x => x.Properties)
             .Include(x => x.UpdateCommand)
                .ThenInclude(x => x.ResultDto)
+               .ThenInclude(x => x.Properties)
 
             .Include(x => x.DeleteCommand)
                .ThenInclude(x => x.ParamDto)
+               .ThenInclude(x => x.Properties)
             .Include(x => x.DeleteCommand)
                 .ThenInclude(x => x.ResultDto)
+               .ThenInclude(x => x.Properties)
 
            where func.Id == id
            select func;
