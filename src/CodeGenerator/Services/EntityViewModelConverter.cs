@@ -277,11 +277,11 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         entity is null ? null : EnumHelper.ToEnum<CqrsSegregateType>(entity.SegregateType) switch
         {
             CqrsSegregateType.Command => this._mapper.Map<CqrsCommandViewModel>(entity)
-                .ForMember(x => x.Module = this._mapper.Map<ModuleViewModel>(entity.Module))
+                .ForMember(x => x.Module = this.ToViewModel(entity.Module))
                 .ForMember(x => x.ParamsDto = this.ToViewModel(entity.ParamDto))
                 .ForMember(x => x.ResultDto = this.ToViewModel(entity.ResultDto)),
             CqrsSegregateType.Query => this._mapper.Map<CqrsQueryViewModel>(entity)
-                .ForMember(x => x.Module = this._mapper.Map<ModuleViewModel>(entity.Module))
+                .ForMember(x => x.Module = this.ToViewModel(entity.Module))
                 .ForMember(x => x.ParamsDto = this.ToViewModel(entity.ParamDto))
                 .ForMember(x => x.ResultDto = this.ToViewModel(entity.ResultDto)),
             _ => null,

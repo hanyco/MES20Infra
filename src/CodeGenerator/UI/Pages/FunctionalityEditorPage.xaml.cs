@@ -317,8 +317,13 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
-    private void DeleteFunctionalityButton_Click_1(object sender, RoutedEventArgs e)
+    private async void EditFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-
+        var id = this.FunctionalityTreeView.SelectedItem.Check()
+            .NotNull(() => "No functionality is selected.")
+            .NotNull(x => x!.Id).ThrowOnFail().Value!.Id!.Value;
+        var viewModel = await this._service.GetByIdAsync(id);
+        this.ViewModel = viewModel;
+        await this.BindDataAsync();
     }
 }

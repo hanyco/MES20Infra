@@ -35,6 +35,7 @@
             <Button
                 Name="EditFunctionalityButton"
                 Style="{StaticResource IconButton}"
+                Click="EditFunctionalityButton_Click"
                 ToolTip="Edit Functionality">
                 <Path Style="{StaticResource Edit}" />
             </Button>
