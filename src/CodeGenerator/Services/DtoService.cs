@@ -49,8 +49,8 @@ internal sealed class DtoService(
         return query.AnyAsync();
     }
 
-    public Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
-            Task.FromResult(new DtoViewModel());
+    public Task<DtoViewModel> CreateAsync(CancellationToken token = default) 
+        => Task.FromResult(new DtoViewModel());
 
     [return: NotNull]
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
@@ -230,7 +230,7 @@ internal sealed class DtoService(
             var query = from x in this._readDbContext.Dtos.Include(x => x.Module)
                         where x.Id == id
                         select x;
-            var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock);
+            var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock, cancellationToken: token);
 
             //! MOHAMMAD: 💀 Sample code. Don't remove the following lines 💀
             //var q1 = EF.CompileAsyncQuery((InfraReadDbContext db, long id) => db.Dtos.FirstOrDefault(x => x.Id == id));
@@ -280,11 +280,12 @@ internal sealed class DtoService(
             return validationCheck!;
         }
 
-        _ = InitializeViewModel(viewModel);
+        _ = this.InitializeViewModel(viewModel);
         var entity = this.ToDbEntity(viewModel);
 
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(token);
         var insertResult = await insertDto(viewModel, entity.Dto, token);
+        _ = this.PrepareProperties(viewModel);
         if (persist)
         {
             await insertProperties(entity.PropertyViewModels, entity.Dto.Id, token);
@@ -323,7 +324,7 @@ internal sealed class DtoService(
     public async Task<Result<DtoViewModel>> UpdateAsync(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
         _ = await this.ValidateAsync(viewModel, token).ThrowOnFailAsync();
-        _ = InitializeViewModel(viewModel);
+        _ = this.InitializeViewModel(viewModel).PrepareProperties(viewModel);
         var entity = this.ToDbEntity(viewModel);
         this.ResetChanges();
 
@@ -406,12 +407,17 @@ internal sealed class DtoService(
         return Result<DtoViewModel>.CreateSuccess(viewModel)!;
     }
 
-    private static DtoViewModel InitializeViewModel(in DtoViewModel viewModel)
+    private DtoService InitializeViewModel(in DtoViewModel viewModel)
     {
         if (viewModel.Guid.IsNullOrEmpty())
         {
             viewModel.Guid = Guid.NewGuid();
         }
+        return this;
+    }
+
+    private DtoService PrepareProperties(DtoViewModel viewModel)
+    {
         foreach (var property in viewModel.Properties)
         {
             if (viewModel.Id is { } parentId && property.ParentEntityId != parentId)
@@ -424,7 +430,7 @@ internal sealed class DtoService(
                 property.Guid = Guid.NewGuid();
             }
         }
-        return viewModel;
+        return this;
     }
 
     private (DtoEntity Dto, IEnumerable<Property> Properties, IEnumerable<PropertyViewModel> PropertyViewModels) ToDbEntity(in DtoViewModel viewModel)
@@ -432,7 +438,7 @@ internal sealed class DtoService(
         var propsVm = viewModel.Properties.Copy();
         viewModel.Properties.Clear();
         var dto = this._converter.ToDbEntity(viewModel)!;
-        var props = propsVm.Select(x => this._converter.ToDbEntity(x).With(x => x.Id = dto.Id));
+        var props = propsVm.Select(x => this._converter.ToDbEntity(x)).Build();
         return (dto, props!, propsVm);
     }
 }
