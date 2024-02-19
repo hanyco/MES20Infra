@@ -99,7 +99,7 @@ internal partial class FunctionalityService
 
     private IQueryable<Functionality> GetByIdQueryAsync(long id)
     {
-        var functionalityQuery = this._readDbContext.Functionalities
+        var result = this._readDbContext.Functionalities
             .Include(f => f.DeleteCommand)
                 .ThenInclude(cs => cs.Module)
             .Include(f => f.DeleteCommand)
@@ -254,7 +254,7 @@ internal partial class FunctionalityService
                 }
             });
 
-        return functionalityQuery;
+        return result.AsNoTracking().AsSplitQuery();
     }
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
