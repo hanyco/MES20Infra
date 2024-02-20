@@ -204,7 +204,7 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            _ = Result.CreateFailure("Exception occurred on connecting to database", ex).ThrowOnFail();
+            _ = Result.Fail("Exception occurred on connecting to database", ex).ThrowOnFail();
         }
     }
 }

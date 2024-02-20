@@ -39,7 +39,7 @@ internal sealed class SqlStatementCodeGenerator : IBusinessService, ISqlStatemen
             vr = dto.Properties.Check()
                 .RuleFor(x => x.Any(), () => new NoItemValidationException())
                 .RuleFor(x => x.All(y => y.DbObject != null), () => new ValidationException()).Build();
-            return !vr.IsSucceed ? vr : Result.Success;
+            return !vr.IsSucceed ? vr : Result.Succeed;
         }
 
         static string generateStatement(string tableName, string? schema, IEnumerable<string?> columns) =>

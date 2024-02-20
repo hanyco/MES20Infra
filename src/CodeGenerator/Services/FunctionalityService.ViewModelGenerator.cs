@@ -65,7 +65,7 @@ internal sealed partial class FunctionalityService
             }
 
             // Return a success result with the result and cancellationTokenSource
-            return Result<(CreationData, CancellationTokenSource)>.CreateSuccess((result, tokenSource));
+            return Result.Success<(CreationData, CancellationTokenSource)>((result, tokenSource));
         }
 
         [DebuggerStepThrough]

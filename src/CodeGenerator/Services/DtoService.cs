@@ -87,7 +87,7 @@ internal sealed class DtoService(
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the CQRS Segregate and try again.");
-            return Result.CreateFailure(message);
+            return Result.Fail(message);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_UiComponent_Property"))
         {
@@ -95,7 +95,7 @@ internal sealed class DtoService(
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the UI Component property and try again.");
-            return Result.CreateFailure(message);
+            return Result.Fail(message);
         }
 
         static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default)
@@ -396,15 +396,15 @@ internal sealed class DtoService(
                     select dto.Id;
         if (await query.AnyAsync(cancellationToken: token))
         {
-            return Result<DtoViewModel>.CreateFailure(new ObjectDuplicateValidationException("DTO"));
+            return Result.Fail<DtoViewModel>(new ObjectDuplicateValidationException("DTO"));
         }
 
         var duplicates = viewModel!.Properties.FindDuplicates().Select(x => x?.Name).Compact().ToList();
         if (duplicates.Any())
         {
-            return Result<DtoViewModel>.CreateFailure(new Library.Exceptions.Validations.ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
+            return Result.Fail<DtoViewModel>(new Library.Exceptions.Validations.ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
         };
-        return Result<DtoViewModel>.CreateSuccess(viewModel)!;
+        return Result.Success<DtoViewModel>(viewModel)!;
     }
 
     private DtoService InitializeViewModel(in DtoViewModel viewModel)

@@ -47,7 +47,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
         // If no user is created, return NoUserFound.
         if (!userManager.Users.Any())
         {
-            return Result.CreateFailure<NoUserFoundException>();
+            return Result.Fail<NoUserFoundException>();
         }
 
         // Validate username and password
@@ -60,7 +60,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
         //await signInManager.SignInAsync(vr!, isPersist);
         var claims = await userManager.GetClaimsAsync(vr);
         stateProvider.SignIn(vr, claims);
-        return Result.Success;
+        return Result.Succeed;
 
         async Task<Result<InfraIdentityUser?>> validateUser(string username, string password)
         {
@@ -68,19 +68,19 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
             var user = await userManager.FindByNameAsync(username);
             if (user == null)
             {
-                return Result<InfraIdentityUser>.CreateFailure<InvalidUsernameOrPasswordException>();
+                return Result.Fail<InfraIdentityUser, InvalidUsernameOrPasswordException>();
             }
 
             // Can user sign in?
             if (!await signInManager.CanSignInAsync(user))
             {
-                return Result<InfraIdentityUser>.CreateFailure<UserCannotLoginException>();
+                return Result.Fail<InfraIdentityUser, UserCannotLoginException>();
             }
 
             // Is user locked out?
             if (userManager.SupportsUserLockout && await userManager.IsLockedOutAsync(user))
             {
-                return Result<InfraIdentityUser>.CreateFailure<UserIsLockedOutException>();
+                return Result.Fail<InfraIdentityUser,UserIsLockedOutException>();
             }
 
             // Check password
@@ -92,18 +92,18 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
                 {
                     _ = await userManager.AccessFailedAsync(user);
                 }
-                return Result<InfraIdentityUser>.CreateFailure<InvalidUsernameOrPasswordException>();
+                return Result.Fail<InfraIdentityUser,InvalidUsernameOrPasswordException>();
             }
 
             // Return user and succeed result
-            return Result<InfraIdentityUser?>.CreateSuccess(user);
+            return Result.Success<InfraIdentityUser?>(user);
         }
     }
 
     public async Task<Result> LogOutAsync()
     {
         stateProvider.SignOut();
-        return Result.Success;
+        return Result.Succeed;
     }
 
     public async Task<Result> SetUserClaimAsync([DisallowNull] InfraIdentityUser user, [DisallowNull] string claimType, string claimValue)

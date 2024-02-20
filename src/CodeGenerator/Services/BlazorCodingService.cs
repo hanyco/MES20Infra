@@ -83,11 +83,11 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
             processFrontActions(model, component);
             addParameters(model, component);
             var codes = component.GenerateCodes(CodeCategory.Component, arguments).AddRange(this.GenerateModelConverterCode());
-            return Result<Codes>.CreateSuccess(codes);
+            return Result.Success<Codes>(codes);
         }
         catch (Exception ex)
         {
-            return Result<Codes>.CreateFailure(ex, Codes.Empty);
+            return Result.Fail<Codes>(Codes.Empty, ex);
         }
 
         static BlazorComponent createComponent(in UiViewModel model)
@@ -357,7 +357,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
         var result = page.GenerateCodes(CodeCategory.Page, arguments);
         this._logger.Debug($"Generating code is done.");
 
-        return Result<Codes>.CreateSuccess(result);
+        return Result.Success<Codes>(result);
 
         static IHtmlElement toHtmlElement(UiViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
             BlazorComponent.New(component.Name!)

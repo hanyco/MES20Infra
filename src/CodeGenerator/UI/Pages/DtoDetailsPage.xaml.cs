@@ -153,7 +153,7 @@ public partial class DtoDetailsPage
         Application.Current.DoEvents();
         this.Debug("DTO deleting...");
         var saveResult = await this._service.DeleteAsync(dto).ConfigureAwait(false);
-        if (saveResult.IsFailure && saveResult.Status is DbUpdateException ex)
+        if (saveResult.IsFailure && saveResult.Exception is DbUpdateException ex)
         {
             if (ex.InnerException?.Message.Contains("infra.CqrsSegregate") ?? false)
             {

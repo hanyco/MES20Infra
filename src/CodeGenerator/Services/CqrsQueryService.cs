@@ -41,7 +41,7 @@ internal sealed class CqrsQueryService(
         _ = this._writeDbContext.RemoveById<CqrsSegregate>(id);
         return persist
             ? await this._writeDbContext.SaveChangesResultAsync(token)
-            : Result.CreateSuccess(-1);
+            : Result.Success(-1);
     }
 
     public CqrsQueryViewModel FillByDbEntity(
@@ -175,7 +175,7 @@ internal sealed class CqrsQueryService(
             }
 
             model.Id = segregate.Id;
-            return Result<CqrsQueryViewModel>.CreateSuccess(model);
+            return Result.Success<CqrsQueryViewModel>(model);
         }
         finally
         {
@@ -215,7 +215,7 @@ internal sealed class CqrsQueryService(
             }
 
             model.Id = segregate.Id;
-            return Result<CqrsQueryViewModel>.CreateSuccess(model);
+            return Result.Success<CqrsQueryViewModel>(model);
         }
         finally
         {

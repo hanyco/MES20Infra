@@ -34,7 +34,7 @@ internal partial class FunctionalityService
         var functionality = await getFunctionality(model.Id!.Value, token);
         if (functionality == null)
         {
-            return Result.CreateFailure<ObjectNotFoundException>();
+            return Result.Fail<ObjectNotFoundException>();
         }
 
         var tasks = new Collection<Func<Functionality, Task<Result>>>
@@ -60,13 +60,13 @@ internal partial class FunctionalityService
         Task<Result> removeCommand(CqrsSegregate command, CancellationToken token)
             => removeSegregate(command, this._commandService.DeleteByIdAsync, token);
         Task<Result> removeDto(Dto dto, CancellationToken token)
-            => dto == null ? Task.FromResult(Result.Success) : this._dtoService.DeleteByIdAsync(dto.Id, true, token);
+            => dto == null ? Task.FromResult(Result.Succeed) : this._dtoService.DeleteByIdAsync(dto.Id, true, token);
 
         async Task<Result> removeFunctionality(Functionality functionality, CancellationToken token)
         {
             _ = this._writeDbContext.RemoveById<Functionality>(functionality.Id);
             var i = await this.SaveChangesAsync(token);
-            return i > 0 ? Result.Success : Result.Failure;
+            return i > 0 ? Result.Succeed : Result.Failed;
         }
         async Task<Result> removeSegregate(CqrsSegregate segregate, Func<long, bool, CancellationToken, Task<Result>> deleteByIdAsync, CancellationToken token)
         {
@@ -384,39 +384,39 @@ internal partial class FunctionalityService
             var exists = await this.AnyByNameAsync(model.Name!);
             if (exists)
             {
-                return Result.CreateFailure("Functionality already exists.")!;
+                return Result.Fail("Functionality already exists.")!;
             }
             exists = await this._dtoService.AnyByNameAsync(model.SourceDto.Name!);
             if (exists)
             {
-                return Result.CreateFailure("Functionality already exists.")!;
+                return Result.Fail("Functionality already exists.")!;
             }
             exists = await this._queryService.AnyByNameAsync(model.GetAllQueryViewModel.Name!);
             if (exists)
             {
-                return Result.CreateFailure("GetAllQuery already exists.")!;
+                return Result.Fail("GetAllQuery already exists.")!;
             }
             exists = await this._queryService.AnyByNameAsync(model.GetByIdQueryViewModel.Name!);
             if (exists)
             {
-                return Result.CreateFailure("GetByIdQuery already exists.")!;
+                return Result.Fail("GetByIdQuery already exists.")!;
             }
             exists = await this._commandService.AnyByNameAsync(model.InsertCommandViewModel.Name!);
             if (exists)
             {
-                return Result.CreateFailure("InsertCommand already exists.")!;
+                return Result.Fail("InsertCommand already exists.")!;
             }
             exists = await this._commandService.AnyByNameAsync(model.UpdateCommandViewModel.Name!);
             if (exists)
             {
-                return Result.CreateFailure("UpdateCommand already exists.")!;
+                return Result.Fail("UpdateCommand already exists.")!;
             }
             exists = await this._commandService.AnyByNameAsync(model.DeleteCommandViewModel.Name!);
             if (exists)
             {
-                return Result.CreateFailure("DeleteCommand already exists.")!;
+                return Result.Fail("DeleteCommand already exists.")!;
             };
-            return Result.Success;
+            return Result.Succeed;
         }
     }
 
@@ -428,7 +428,7 @@ internal partial class FunctionalityService
         }
         if (model.SourceDto is null or { Id: null })
         {
-            return Result<FunctionalityViewModel>.CreateFailure(model, () => new NullValueValidationException(nameof(model.SourceDto)))!;
+            return Result.Fail<FunctionalityViewModel>(model)!;
         }
 
         Result actionResult;

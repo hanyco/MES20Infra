@@ -23,7 +23,7 @@ internal sealed class TranslationService : ITranslationService
                     where x.Key == translationKey && x.LangCode == langCode
                     select x.Value;
         var dbResult = await query.FirstOrDefaultAsync(cancellationToken: token);
-        return dbResult.IsNullOrEmpty() ? Result<string>.CreateFailure(value: translationKey)! : Result<string>.CreateSuccess(dbResult);
+        return dbResult.IsNullOrEmpty() ? Result.Fail<string>(value: translationKey)! : Result.Success<string>(dbResult);
     }
 
     public async Task<Result> SetTranslationAsync(string translationKey, string translationValue, string? langCode = null, CancellationToken token = default)

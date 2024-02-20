@@ -139,7 +139,7 @@ internal sealed class CqrsCommandService(
             .SetModified(x => x.CqrsNameSpace);
         _ = await this._securityService.SetEntityClaimsAsync(model.Guid!.Value, model.SecurityClaims, persist, token);
         _ = await this.SubmitChangesAsync(persist: persist, token: token);
-        return Result<CqrsCommandViewModel>.CreateSuccess(model);
+        return Result.Success<CqrsCommandViewModel>(model);
     }
 
     public Task<Result<CqrsCommandViewModel>> ValidateAsync(CqrsCommandViewModel? item, CancellationToken token = default)

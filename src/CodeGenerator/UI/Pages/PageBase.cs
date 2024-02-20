@@ -19,7 +19,7 @@ public class PageBase : Library.Wpf.Bases.LibPageBase, ILoggerContainer
     protected ILogger Logger { get; }
 
     protected virtual async Task<Result> OnValidateFormAsync()
-        => await Task.FromResult(Result.Success);
+        => await Task.FromResult(Result.Succeed);
 
     protected async Task<Result> ValidateFormAsync()
         => await this.OnValidateFormAsync();

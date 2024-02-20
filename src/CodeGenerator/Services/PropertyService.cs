@@ -36,7 +36,7 @@ internal sealed class PropertyService : IPropertyService
         _ = this._writeDbContext.RemoveById<Property>(model.Id.Value);
         _ = await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
 
-        return Result.Success;
+        return Result.Succeed;
     }
 
     public async Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true, CancellationToken cancellationToken = default)
@@ -122,7 +122,7 @@ internal sealed class PropertyService : IPropertyService
         {
             if (token.IsCancellationRequested)
             {
-                return Result.CreateFailure(new OperationCanceledException());
+                return Result.Fail(new OperationCanceledException());
             }
 
             property.ParentEntityId = parentEntityId;
@@ -132,7 +132,7 @@ internal sealed class PropertyService : IPropertyService
                 return insertResult;
             }
         }
-        return Result.Success;
+        return Result.Succeed;
     }
 
     public void ResetChanges()
@@ -159,14 +159,14 @@ internal sealed class PropertyService : IPropertyService
     {
         Check.MustBeNotNull(item);
 
-        var errors = new List<(object Id, object Error)>();
+        var errors = new List<Exception>();
         if (item.Name.IsNullOrEmpty())
         {
-            errors.Add((NullValueValidationException.ErrorCode, $"Property {nameof(item.Name)} cannot be empty."));
+            errors.Add(new NullValueValidationException(nameof(item.Name)));
         }
         if (item.ParentEntityId == 0)
         {
-            errors.Add((ValidationExceptionBase.ErrorCode, "Parent entity Id cannot be null or 0"));
+            errors.Add(new NullValueValidationException(nameof(item.ParentEntityId)));
         }
         var result = new Result<PropertyViewModel?>(item, errors: errors);
         return await Task.FromResult(result);
@@ -182,6 +182,6 @@ internal sealed class PropertyService : IPropertyService
             _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: cancellationToken);
         }
 
-        return Result<PropertyViewModel>.CreateSuccess(model);
+        return Result.Success<PropertyViewModel>(model);
     }
 }

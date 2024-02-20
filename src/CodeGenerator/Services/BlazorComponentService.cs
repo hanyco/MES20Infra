@@ -114,7 +114,7 @@ internal sealed class BlazorComponentService(
 
         if (!persist)
         {
-            return Result.Success;
+            return Result.Succeed;
         }
 
         try
@@ -123,7 +123,7 @@ internal sealed class BlazorComponentService(
         }
         catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("infra.UiPageComponent") ?? false)
         {
-            return Result.CreateFailure(new NotificationMessage("This component is used in a page. Please remove the component from that page. Then try again.", "Unable to delete this component.", "Unable to delete"));
+            return Result.Fail(new NotificationMessage("This component is used in a page. Please remove the component from that page. Then try again.", "Unable to delete this component.", "Unable to delete"));
         }
     }
 
@@ -285,6 +285,6 @@ internal sealed class BlazorComponentService(
                         select c.Id;
         var duplicate = await nameQuery.AnyAsync(cancellationToken: cancellationToken);
         var isDuplicated = Check.If(duplicate, () => new ObjectDuplicateValidationException(model.Name));
-        return isDuplicated.IsSucceed ? isDuplicated.WithValue(model) : Result<UiComponentViewModel>.CreateSuccess(model);
+        return isDuplicated.IsSucceed ? isDuplicated.WithValue(model) : Result.Success<UiComponentViewModel>(model);
     }
 }

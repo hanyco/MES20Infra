@@ -2,9 +2,6 @@
 using System.IO;
 using System.Windows.Forms;
 
-using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
-using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
-
 using Library.CodeGeneration.Models;
 using Library.Exceptions;
 using Library.Results;
@@ -24,7 +21,7 @@ public static class SourceCodeHelper
     {
         if (codes?.Any() is not true)
         {
-            return Result<string?>.CreateFailure("No code generated.");
+            return Result.Fail<string?>("No code generated.");
         }
         var result = codes.Count switch
         {
@@ -41,44 +38,44 @@ public static class SourceCodeHelper
         {
             if (code == null)
             {
-                return Result<string?>.CreateFailure("No code found to save.");
+                return Result.Fail<string?>("No code found to save.");
             }
             using var dlg = new SaveFileDialog();
             dlg.FileName = code.FileName;
             var resp = dlg.ShowDialog();
             if (resp != DialogResult.OK)
             {
-                return Result<string?>.CreateFailure(new OperationCancelledException());
+                return Result.Fail<string?>(new OperationCancelledException());
             }
 
             await File.WriteAllTextAsync(dlg.FileName, code.Statement);
             var result = Path.GetDirectoryName(dlg.FileName)!;
-            return Result<string?>.CreateSuccess(result, message: "Code(s) saved");
+            return Result.Success<string?>(result, message: "Code(s) saved");
         }
         static async Task<Result<string?>> saveCodesFunc(Codes codes)
         {
             using var dlg = new FolderBrowserDialog();
             if (dlg.ShowDialog() is not DialogResult.OK)
             {
-                return Result<string?>.CreateFailure();
+                return Result.Fail<string?>();
             }
             var result = dlg.SelectedPath;
             var meaningfulCodes = codes.Compact();
             if (meaningfulCodes?.Any() is not true)
             {
-                return Result<string?>.CreateFailure("No codes found to save.");
+                return Result.Fail<string?>("No codes found to save.");
             }
             foreach (var code in meaningfulCodes)
             {
                 var filePath = Path.Combine(result, code.FileName);
                 await File.WriteAllTextAsync(filePath, code.Statement);
             }
-            return Result<string?>.CreateSuccess(result, message: "Code(s) saved");
+            return Result.Success<string?>(result, message: "Code(s) saved");
         }
     }
 
     public static async Task<Result<string?>> SaveToFileAskAsync(this Code code)
         => code == default
-            ? Result<string?>.CreateFailure("No code found to save.")
+            ? Result.Fail<string?>("No code found to save.")
             : await SaveToFileAskAsync(new Codes(code));
 }

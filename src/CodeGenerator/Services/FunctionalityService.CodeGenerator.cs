@@ -240,7 +240,7 @@ internal sealed partial class FunctionalityService
             Result<Codes> result;
             if (!results.Any())
             {
-                result = Result<Codes>.CreateFailure("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
+                result = Result.Fail<Codes>("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
             }
             else if (results.FirstOrDefault(x => x.IsFailure) is { } failure)
             {

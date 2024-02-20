@@ -201,7 +201,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         var codes = this.ViewModel!.Codes.SelectAll().Compact();
         if (!codes.Any())
         {
-            return Result<string>.CreateFailure("No source code found. Please press <Generate Sources> button.", string.Empty);
+            return Result.Fail<string>("No source code found. Please press <Generate Sources> button.", string.Empty);
         }
         var settings = SettingsService.Get();
         {
@@ -213,7 +213,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                     var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
                     if (resp == TaskDialogResult.Cancel)
                     {
-                        return Result<string>.CreateFailure(new OperationCancelledException());
+                        return Result.Fail<string>(new OperationCancelledException());
                     }
                     if (resp == TaskDialogResult.Yes)
                     {
@@ -241,7 +241,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 CodeCategory.Page => settings.blazorPagesPath ?? "UI/Pages",
                 CodeCategory.Component => settings.blazorComponentsPath ?? "UI/Components",
                 CodeCategory.Converter => settings.convertersPath ?? "Converters",
-                _ => Result<string>.CreateFailure(new NotSupportedException("Code category is null or not supported."), string.Empty)
+                _ => Result.Fail<string>(string.Empty, new NotSupportedException("Code category is null or not supported."))
             };
             relativePath.ThrowOnFail().End();
             return Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.Value.NotNull());

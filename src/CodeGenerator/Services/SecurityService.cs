@@ -44,7 +44,7 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
                     select x.Claim;
         var dbResult = await query.ToListAsync(cancellationToken: token);
         var result = this._converter.ToViewModel(dbResult).Compact();
-        return Result<IEnumerable<ClaimViewModel>>.CreateSuccess(result);
+        return Result.Success<IEnumerable<ClaimViewModel>>(result);
     }
 
     public Task<Result<ClaimViewModel>> InsertAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
@@ -64,7 +64,7 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
     public Task<Result> SetEntityClaimsAsync(Guid entity, IEnumerable<ClaimViewModel> claims, bool persist, CancellationToken token = default)
     {
         //this._userManager.AddClaimAsync()
-        return Task.FromResult(Result.Success);
+        return Task.FromResult(Result.Succeed);
     }
 
     public Task<Result<ClaimViewModel>> UpdateAsync(Guid id, ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
