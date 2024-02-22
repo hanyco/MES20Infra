@@ -32,7 +32,7 @@ internal sealed partial class FunctionalityService
         var initResult = initialize(viewModel, token);
         if (!initResult.IsSucceed)
         {
-            return Result<FunctionalityViewModel>.From(initResult, viewModel)!;
+            return Result.From<FunctionalityViewModel>(initResult, viewModel)!;
         }
 
         var (data, tokenSource) = initResult.Value;

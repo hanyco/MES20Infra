@@ -292,7 +292,7 @@ internal sealed class DtoService(
         }
 
         var result = await this.SubmitChangesAsync(persist, transaction, token: token).With((Task<Result<int>> _) => viewModel.Id = entity.Dto.Id);
-        return Result<DtoViewModel>.From(result, viewModel);
+        return Result.From<DtoViewModel>(result, viewModel);
 
         async Task<Result<int?>> insertDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
         {
@@ -333,7 +333,7 @@ internal sealed class DtoService(
         updateDto(viewModel, entity.Dto, token);
         updateProperties(entity.PropertyViewModels, entity.Dto, token);
         var result = await this.SubmitChangesAsync(persist, transaction, token: token).With(_ => viewModel.Id = entity.Dto.Id);
-        return Result<DtoViewModel>.From(result, viewModel);
+        return Result.From<DtoViewModel>(result, viewModel);
 
         void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default) => _ = this._writeDbContext.Attach(dto)
                                     .SetModified(x => x.Name)

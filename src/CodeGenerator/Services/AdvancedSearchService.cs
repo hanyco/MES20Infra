@@ -14,7 +14,7 @@ internal sealed class AdvancedSearchService : IBusinessService, IAdvancedSearchS
     {
         if (!args.Check().ArgumentNotNull().Any().TryParse(out var vr))
         {
-            return Result<Codes>.From(vr, Codes.Empty);
+            return Result.From<Codes>(vr, Codes.Empty);
         }
         var buffer = new StringBuilder();
 

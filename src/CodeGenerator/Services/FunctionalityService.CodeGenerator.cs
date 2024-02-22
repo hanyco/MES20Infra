@@ -248,7 +248,7 @@ internal sealed partial class FunctionalityService
             }
             else
             {
-                result = Result<Codes>.From(results.Combine(), results.Select(x => x.Value).ToCodes());
+                result = Result.From(results.Combine(), results.Select(x => x.Value).ToCodes());
             }
 
             return result;

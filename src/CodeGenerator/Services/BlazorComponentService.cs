@@ -272,7 +272,7 @@ internal sealed class BlazorComponentService(
         {
             var result = await this.SubmitChangesAsync(persist, token: cancellationToken);
             model.Id = entity.Id;
-            return Result<UiComponentViewModel>.From(result, model);
+            return Result.From<UiComponentViewModel>(result, model);
         }
     }
 

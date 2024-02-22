@@ -137,7 +137,7 @@ internal sealed class BlazorPageService(
 
             var save = await this.SubmitChangesAsync(persist, token: cancellationToken);
             var result = (await this.GetByIdAsync(entity.Id, cancellationToken: cancellationToken))!;
-            return Result<UiPageViewModel>.From(save, result);
+            return Result.From<UiPageViewModel>(save, result);
         }
         finally
         {

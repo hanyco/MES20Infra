@@ -54,7 +54,7 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
         var statement = codeGeneratorEngine.Generate(nameSpace);
         var code = new Code(args.ClassName, Languages.CSharp, RoslynHelper.ReformatCode(statement), args.IsPartial, fileName)
             .With(x => x.props().Category = CodeCategory.Converter);
-        return Result<Codes>.From(statement, code.ToCodes());
+        return Result.From<Codes>(statement, code.ToCodes());
 
         static Class createClass(string name) =>
             new(name)
