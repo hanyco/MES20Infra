@@ -3,8 +3,8 @@
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.BusinessServices;
+using Library.Collections;
 using Library.Exceptions;
-using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Threading;
 using Library.Validations;
@@ -86,8 +86,8 @@ internal partial class FunctionalityService
         }
     }
 
-    public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        ServiceHelper.GetAllAsync<FunctionalityViewModel, Functionality>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+    public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
+        => ServiceHelper.GetAllAsync<FunctionalityViewModel, Functionality>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
