@@ -123,7 +123,7 @@ internal sealed class DtoService(
             return validationResult.WithValue(Codes.Empty);
         }
 
-        var properties = viewModel.Properties.Select(toProperty);
+        var properties = viewModel.Properties.Distinct().Select(toProperty);
         var type = new Class(arguments?.TypeName ?? viewModel.Name!).AddMember(properties);
         foreach (var claim in viewModel.SecurityClaims)
         {
