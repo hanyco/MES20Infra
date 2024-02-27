@@ -88,13 +88,13 @@
                     <Path Style="{StaticResource Save}" />
                 </Button>
                 <Separator />
-                <Button
+                <!--<Button
                     Name="AddToDtoButton"
                     Click="AddColumnToDtoButton_Click"
                     Style="{StaticResource IconButton}"
                     ToolTip="Adds column to model as a new property">
                     <Path Style="{StaticResource Add}" />
-                </Button>
+                </Button>-->
                 <Button
                     x:Name="SecurityDescriptorButton"
                     Click="SecurityDescriptorButton_Click"
