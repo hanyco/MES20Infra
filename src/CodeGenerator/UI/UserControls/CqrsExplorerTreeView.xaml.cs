@@ -119,21 +119,10 @@ public partial class CqrsExplorerTreeView : UserControl
         this.FilterTextBox.Text = string.Empty;
 
     private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        ImmutableArray<TreeViewItem>? cases;
-        if (this.FilterTextBox.Text.IsNullOrEmpty())
-        {
-            cases = this._result;
-        }
-        else
-        {
-            cases = this._result.SelectAllChildren(tvi => tvi.Items.Cast<TreeViewItem>())
-                .Where(x => x.GetModel<InfraViewModelBase>()?.Name?.Contains(this.FilterTextBox.Text, StringComparison.OrdinalIgnoreCase) ?? false)
-                .ToImmutableArray();
-        }
-
-        _ = this.TreeView.BindItemsSource(cases).Refresh();
-    }
+        => this.TreeView.FilterTreeView(
+            this.FilterTextBox.Text,
+            item => item.GetModel<InfraViewModelBase>()?.Name,
+            this.TreeView.Items[0].Cast().To<TreeViewItem>().Items);
 
     private async Task<IEnumerable<CqrsCommandViewModel>> OnGetCommandsAsync()
     {
