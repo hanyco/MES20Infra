@@ -2,13 +2,9 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-
-
-
 using HanyCo.Infra.Exceptions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
-
 
 using Library.BusinessServices;
 using Library.Collections;
@@ -152,7 +148,7 @@ public partial class DtoDetailsPage
         }
         Application.Current.DoEvents();
         this.Debug("DTO deleting...");
-        var saveResult = await this._service.DeleteAsync(dto).ConfigureAwait(false);
+        var saveResult = await this._service.DeleteAsync(dto);
         if (saveResult.IsFailure && saveResult.Exception is DbUpdateException ex)
         {
             if (ex.InnerException?.Message.Contains("infra.CqrsSegregate") ?? false)
@@ -161,16 +157,16 @@ public partial class DtoDetailsPage
             }
         }
         _ = saveResult.ThrowOnFail();
-        await this.InitDtoExplorerTreeAsync().ConfigureAwait(false);
+        await this.InitDtoExplorerTreeAsync();
         this.Debug("DTO deleted.");
     }
 
     private async void DtoDetailsPage_Binding(object sender, EventArgs e)
     {
         var scope = this.ActionScopeBegin("Initializing... Please wait.");
-        await this.InitDtoExplorerTreeAsync().ConfigureAwait(false);
-        await this.DtoEditUserControl.BindAsync().ConfigureAwait(false);
-        this.RefreshFormState();
+        await this.InitDtoExplorerTreeAsync();
+        await this.DtoEditUserControl.BindAsync();
+        _ = this.RunInUiThread(this.RefreshFormState);
 
         scope.End();
     }
@@ -197,7 +193,7 @@ public partial class DtoDetailsPage
     {
         var dto = this.CqrsExplorerTreeView.SelectedItem.Cast().As<DtoViewModel>();
         Check.MustBeNotNull(dto, () => "Please select a DTO");
-        var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value).ConfigureAwait(false);
+        var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value);
         this.ViewModel = viewModel.NotNull(() => new NotFoundValidationException("Entity not found."));
         this.EndActionScope();
     }
@@ -229,7 +225,7 @@ public partial class DtoDetailsPage
 
     private async void RefreshDatabaseButton_Click(object sender, RoutedEventArgs e)
     {
-        await this.RebindDataAsync().ConfigureAwait(false);
+        await this.RebindDataAsync();
         this.EndActionScope();
     }
 
@@ -291,7 +287,7 @@ public partial class DtoDetailsPage
             return;
         }
 
-        var result = await saveSourceToDiskAskAsync().ThrowOnFailAsync(this.Title).ConfigureAwait(false);
+        var result = await saveSourceToDiskAskAsync().ThrowOnFailAsync(this.Title);
         _ = this.EndActionScope(result);
 
         async Task<Result<string?>> saveSourceToDiskAskAsync()
@@ -306,12 +302,12 @@ public partial class DtoDetailsPage
 
     private async void SaveDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).ConfigureAwait(false);
+        _ = await this.ValidateFormAsync().ThrowOnFailAsync(this.Title);
 
         this.SaveDtoButton.IsEnabled = false;
         try
         {
-            await Lock(this, save).ConfigureAwait(false);
+            await Lock(this, save);
         }
         finally
         {
@@ -324,13 +320,13 @@ public partial class DtoDetailsPage
 
             this.Debug("Saving DTO…");
             var viewModel = this.ViewModel!;
-            var saveResult = await this._service.SaveViewModelAsync(viewModel).ThrowOnFailAsync(this.Title).ConfigureAwait(false);
+            var saveResult = await this._service.SaveViewModelAsync(viewModel).ThrowOnFailAsync(this.Title);
 
             this.Debug("Reloading DTO…");
-            var resultViewModel = await this._service.GetByIdAsync(viewModel.Id!.Value).WaitAsync(TimeSpan.FromSeconds(15)).ConfigureAwait(false);
+            var resultViewModel = await this._service.GetByIdAsync(viewModel.Id!.Value).WaitAsync(TimeSpan.FromSeconds(15));
             this.RebindDataContext(resultViewModel);
 
-            await this.InitDtoExplorerTreeAsync().ConfigureAwait(false);
+            await this.InitDtoExplorerTreeAsync();
             this.Debug("DTO saved.");
             _ = saveResult.ShowOrThrow();
         }

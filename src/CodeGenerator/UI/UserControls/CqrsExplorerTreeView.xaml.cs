@@ -2,11 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 
-
-
-
-
-
 using Library.EventsArgs;
 
 namespace HanyCo.Infra.UI.UserControls;
@@ -17,7 +12,7 @@ public partial class CqrsExplorerTreeView : UserControl
     private readonly IDtoService _dtoService;
     private readonly ICqrsQueryService _queryService;
 
-    private ImmutableList<TreeViewItem> _result;
+    private ImmutableArray<TreeViewItem> _result;
 
     public event EventHandler<ItemActingEventArgs<Task<IReadOnlyList<CqrsCommandViewModel>>>>? GettingCommands;
 
@@ -100,17 +95,8 @@ public partial class CqrsExplorerTreeView : UserControl
             result.Add(ControlHelper.BindNewTreeViewItems(commandsViewItemRoot, commands));
             commandsViewItemRoot.IsExpanded = true;
         }
-
-        //this.TreeView.BindItemsSource(result.ToEnumerable());
-
-        //var selectedHeaders = this.TreeView.Items.Cast<TreeViewItem>().Where(x => x.IsSelected).Select(x => x.Header);
-        //this.TreeView.Items.Clear();
-        //foreach (var item in this._result)
-        //{
-        //    _ = this.TreeView.Items.Add(item);
-        //}
-        //_ = this.TreeView.Items.Cast<TreeViewItem>().ForEach(x => selectedHeaders.Contains(x.Header).IfTrue(() => x.IsSelected = true));
-        this.TreeView.ItemsSource = this._result = result.ToImmutableList();
+        this._result = [.. result];
+        _ = this.TreeView.BindItemsSource(result);
     }
 
     public void EndInitializing() =>
@@ -134,11 +120,19 @@ public partial class CqrsExplorerTreeView : UserControl
 
     private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var cases = this.FilterTextBox.Text.IsNullOrEmpty()
-                    ? this._result
-                    : this._result.SelectAllChildren(tvi => tvi.Items.Cast<TreeViewItem>())
-                        .Where(x => x.GetModel<InfraViewModelBase>()?.Name?.Contains(this.FilterTextBox.Text, StringComparison.OrdinalIgnoreCase) ?? false);
-        this.TreeView.BindItemsSource(cases);
+        ImmutableArray<TreeViewItem>? cases;
+        if (this.FilterTextBox.Text.IsNullOrEmpty())
+        {
+            cases = this._result;
+        }
+        else
+        {
+            cases = this._result.SelectAllChildren(tvi => tvi.Items.Cast<TreeViewItem>())
+                .Where(x => x.GetModel<InfraViewModelBase>()?.Name?.Contains(this.FilterTextBox.Text, StringComparison.OrdinalIgnoreCase) ?? false)
+                .ToImmutableArray();
+        }
+
+        _ = this.TreeView.BindItemsSource(cases).Refresh();
     }
 
     private async Task<IEnumerable<CqrsCommandViewModel>> OnGetCommandsAsync()
