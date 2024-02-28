@@ -135,12 +135,12 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     }
 
     private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
-        await this._service.CreateAsync().WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
+        await this._service.CreateAsync()
+            .WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
 
     private async void Me_Loaded(object sender, RoutedEventArgs e)
     {
         this.GetChildren<IAsyncBindable>().ForEach(async x => await x.BindAsync());
-        //await this.FunctionalityTreeView.BindAsync();
         this.ViewModel = await this.GetNewViewModelAsync();
     }
 
@@ -159,7 +159,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
     [MemberNotNull(nameof(ViewModel))]
     private void PrepareViewModel() =>
-        this.ViewModel!.Name = this.ViewModel.SourceDto.Name;
+        this.ViewModel!.Name = this.ViewModel.SourceDto.Name.TrimEnd("Dto").AddEnd("Functionality");
 
     private void PrepareViewModelByDto(DtoViewModel? details)
     {

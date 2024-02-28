@@ -150,7 +150,7 @@ internal sealed partial class FunctionalityService
         // Internal method for adding table columns to DTO
         static DtoViewModel AddColumns(CreationData data, DtoViewModel dto)
         {
-            _ = dto.Properties.ClearAndAddRange(data.ViewModel.SourceDto.Properties.Select(x => new PropertyViewModel(x))); // Add columns to DTO
+            _ = dto.Properties.ClearAndAddRange(data.ViewModel.SourceDto.Properties.Select(x => new PropertyViewModel(x) { Comment = data.COMMENT })); // Add columns to DTO
             return dto;
         }
     }
@@ -282,8 +282,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
         }
 
-        void setupSecurity(CreationData data) =>
-            AddClaimViewModel(data.ViewModel.BlazorDetailsComponentViewModel, $"{name}Details", data);
+        void setupSecurity(CreationData data)
+            => AddClaimViewModel(data.ViewModel.BlazorDetailsComponentViewModel, $"{name}Details", data);
     }
 
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
@@ -342,7 +342,7 @@ internal sealed partial class FunctionalityService
                 Guid = Guid.NewGuid(),
                 Name = "NewButton",
                 Placement = Placement.FormButton,
-                Description = $"Creates new {name}"
+                Description = $"Creates new {name}",
             };
             var editButton = new UiComponentCustomButton
             {

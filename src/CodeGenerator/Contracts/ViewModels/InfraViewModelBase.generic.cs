@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 
+using Library.ComponentModel;
 using Library.Data.Markers;
 using Library.Wpf.Bases;
 using Library.Wpf.Markers;
@@ -8,7 +9,7 @@ namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 [ViewModel]
-public abstract class InfraViewModelBase<TId> : ViewModelBase, IEquatable<InfraViewModelBase<TId>>, ICanSetKey<TId>, IEntity
+public abstract class InfraViewModelBase<TId> : NotifyPropertyChanged, IViewModel, IEquatable<InfraViewModelBase<TId>>, ICanSetKey<TId>, IEntity
 {
     protected string? _name;
 

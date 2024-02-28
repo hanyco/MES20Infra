@@ -42,7 +42,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.RowSpan="4" Grid.Column="4">
+            <StackPanel Grid.RowSpan="5" Grid.Column="4">
                 <TextBlock Style="{StaticResource Heading}" Text="Security" />
                 <local:SecurityClaimCollectorUserControl
                     x:Name="DtoSecurityClaimCollectorUserControl"
@@ -64,7 +64,7 @@
             </StackPanel>
             <StackPanel
                 Grid.Row="1"
-                Grid.RowSpan="3"
+                Grid.RowSpan="4"
                 Grid.Column="2"
                 Style="{StaticResource FieldPanel}">
                 <TextBlock Style="{StaticResource LabelBlock}" Text="Comments:" />
@@ -106,6 +106,12 @@
                 Content="Is View Model"
                 IsChecked="{Binding IsViewModel}"
                 IsEnabled="{Binding ElementName=Me, Path=IsReadOnly, Converter={StaticResource BooleanInverterConverter}}" />
+            <CheckBox
+                Grid.Row="4"
+                Grid.Column="3"
+                Content="Is List"
+                IsChecked="{Binding IsList}"
+                IsEnabled="{Binding ElementName=Me, Path=IsReadOnly, Converter={StaticResource BooleanInverterConverter}}" />        
         </Grid>
         <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
             <TextBlock Style="{StaticResource GroupTitleBlock}" Text="Properties" />

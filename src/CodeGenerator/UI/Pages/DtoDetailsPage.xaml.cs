@@ -130,7 +130,10 @@ public partial class DtoDetailsPage
     }
 
     private void DatabaseExplorerUserControl_SelectedDbObjectNodeChanged(object sender, ItemActedEventArgs<Node<DbObjectViewModel>> e)
-        => (this.NewDtoFromTableButton.IsEnabled, this.AddToDtoButton.IsEnabled) = (e.Item?.Value is DbTableViewModel, e.Item?.Value is DbColumnViewModel);
+    {
+        this.NewDtoFromTableButton.IsEnabled = e.Item?.Value is DbTableViewModel;
+        //this.AddToDtoButton.IsEnabled = e.Item?.Value is DbColumnViewModel;
+    }
 
     private async void DeleteDtoButton_Click(object sender, RoutedEventArgs e)
     {
@@ -176,10 +179,10 @@ public partial class DtoDetailsPage
 
     private void DtoExplorerTreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (this.AddToDtoButton.IsEnabled)
-        {
-            this.AddToDtoButton.PerformClick();
-        }
+        //if (this.AddToDtoButton.IsEnabled)
+        //{
+        //    this.AddToDtoButton.PerformClick();
+        //}
     }
 
     private void DtoExplorerTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -238,14 +241,13 @@ public partial class DtoDetailsPage
         this.NewDtoButton.IsEnabled =
         this.EditDtoButton.IsEnabled =
         this.DeleteDtoButton.IsEnabled =
-        this.AddToDtoButton.IsEnabled =
+        //this.AddToDtoButton.IsEnabled =
         this.SaveDtoButton.IsEnabled =
         this.ResetFormButton.IsEnabled =
         this.DtoDetails.IsEnabled =
         this.GenerateCodeButton.IsEnabled =
         this.SaveCodeButton.IsEnabled =
         this.SecurityDescriptorButton.IsEnabled =
-        this.AddToDtoButton.IsEnabled =
         this.CqrsExplorerTreeView.IsEnabled =
             false;
         this.DtoEditUserControl.RefreshState(this.ViewModel);
@@ -261,14 +263,13 @@ public partial class DtoDetailsPage
         }
         else
         {
-            this.AddToDtoButton.IsEnabled = true;
+            //this.AddToDtoButton.IsEnabled = true;
             this.SaveDtoButton.IsEnabled = true;
             this.ResetFormButton.IsEnabled = true;
             this.DtoDetails.IsEnabled = true;
             this.GenerateCodeButton.IsEnabled = true;
             this.SaveCodeButton.IsEnabled = true;
             this.SecurityDescriptorButton.IsEnabled = true;
-            this.AddToDtoButton.IsEnabled = true;
         }
     }
 
