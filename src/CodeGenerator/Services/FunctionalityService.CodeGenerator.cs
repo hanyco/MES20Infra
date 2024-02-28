@@ -12,17 +12,21 @@ namespace Services;
 
 internal sealed partial class FunctionalityService
 {
-    public Result<Codes> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null)
+    public Result<Codes?> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null)
     {
         Check.MustBeArgumentNotNull(viewModel);
 
-        Result<Codes> result;
+        Result<Codes?> result;
         // Determine whether to update existing codes or generate new ones.
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : [];
         var scope = ActionScope.Begin(this.Logger, "Generating Functionality code.");
 
         var results = generateCodes(viewModel, codeResult).ToImmutableArray();
         result = aggregatedResults(results);
+        if (result.IsFailure || (result.Value?.Count < 1))
+        {
+            return result;
+        }
         this._reporter.End(result.ToString());
         scope.End(result);
         return result;
@@ -36,7 +40,7 @@ internal sealed partial class FunctionalityService
             {
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.SourceDto);
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.SourceDto)}");
-                yield return codes.SourceDtoCodes = codeGenRes;
+                yield return codes.SourceDtoCodes = codeGenRes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -108,7 +112,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel);
                 codes.BlazorListPageCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPageViewModel)}");
-                yield return codes.BlazorListPageCodes;
+                yield return codes.BlazorListPageCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -120,7 +124,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext);
                 codes.BlazorListPageDataContextCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPageViewModel.DataContext)}");
-                yield return codes.BlazorListPageDataContextCodes;
+                yield return codes.BlazorListPageDataContextCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -132,7 +136,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel);
                 codes.BlazorDetailsPageCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPageViewModel)}");
-                yield return codes.BlazorDetailsPageCodes;
+                yield return codes.BlazorDetailsPageCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -144,7 +148,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext);
                 codes.BlazorListPageDataContextCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPageViewModel.DataContext)}");
-                yield return codes.BlazorListPageDataContextCodes;
+                yield return codes.BlazorListPageDataContextCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -156,7 +160,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel);
                 codes.BlazorListComponentCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListComponentViewModel)}");
-                yield return codes.BlazorListComponentCodes;
+                yield return codes.BlazorListComponentCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -173,7 +177,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel, args);
                 codes.BlazorDetailsComponentCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsComponentViewModel)}");
-                yield return codes.BlazorDetailsComponentCodes;
+                yield return codes.BlazorDetailsComponentCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -202,7 +206,7 @@ internal sealed partial class FunctionalityService
                 var codeGenRes = this._apiCodeGenerator.GenerateCodes(viewModel.ApiCodingViewModel);
                 codes.ApiCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.ApiCodingViewModel)}");
-                yield return codes.ApiCodes;
+                yield return codes.ApiCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
                     yield break;
@@ -228,27 +232,27 @@ internal sealed partial class FunctionalityService
                     // Generate the codes of CQRS handler.
                     var handlerCode = this._cqrsCodeService.GenerateCodes(model);
 
-                    yield return paramsDtoCode;
-                    yield return resultDtoCode;
-                    yield return handlerCode;
+                    yield return paramsDtoCode!;
+                    yield return resultDtoCode!;
+                    yield return handlerCode!;
                 }
             }
         }
 
-        static Result<Codes> aggregatedResults(IReadOnlyList<Result<Codes>> results)
+        static Result<Codes?> aggregatedResults(IReadOnlyList<Result<Codes>> results)
         {
-            Result<Codes> result;
+            Result<Codes?> result;
             if (!results.Any())
             {
-                result = Result.Fail<Codes>("No codes generated. ViewModel may have no parameter to generate any codes.", Codes.Empty)!;
+                result = Result.Fail<Codes>("No codes generated. Maybe ViewModel has no parameter to generate any codes.");
             }
             else if (results.FirstOrDefault(x => x.IsFailure) is { } failure)
             {
-                result = failure;
+                result = failure!;
             }
             else
             {
-                result = Result.From(results.Combine(), results.Select(x => x.Value).ToCodes());
+                result = Result.From(results.Combine(), results.Select(x => x.Value).ToCodes())!;
             }
 
             return result;

@@ -69,7 +69,7 @@ public interface ICodeGenerator<in TViewModel, in TArguments>
     /// <param name="viewModel">The view model to generate codes from.</param>
     /// <param name="arguments">Parameters for generating codes.</param>
     /// <returns>A result containing the generated codes.</returns>
-    Result<Codes> GenerateCodes(TViewModel viewModel, TArguments? arguments = default);
+    Result<Codes?> GenerateCodes(TViewModel viewModel, TArguments? arguments = default);
 }
 
 /// <summary>

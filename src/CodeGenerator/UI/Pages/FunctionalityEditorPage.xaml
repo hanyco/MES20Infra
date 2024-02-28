@@ -89,6 +89,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Style="{StaticResource FieldPanel}">
@@ -112,11 +113,22 @@
                             <Path Style="{StaticResource FolderOpen}" />
                         </Button>
                     </StackPanel>
-                    <usercontrols:DtoEditUserControl
-                        x:Name="DtoViewModelEditor"
-                        Grid.Row="1"
-                        DataContext="{Binding Path=SourceDto}"
-                        IsEnabled="False" />
+                    <GroupBox Grid.Row="1" Header="Functionality">
+                        <StackPanel Style="{StaticResource FieldPanel}">
+                            <TextBlock Style="{StaticResource LabelBlock}" Text="Name:" />
+                            <TextBox
+                                IsReadOnly="True"
+                                Style="{StaticResource LongTextBox}"
+                                Text="{Binding Name}" />
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox Grid.Row="2" Header="Source DTO">
+                        <usercontrols:DtoEditUserControl
+                            x:Name="DtoViewModelEditor"
+                            DataContext="{Binding Path=SourceDto}"
+                            IsEnabled="False" />
+                    </GroupBox>
+                    
                 </Grid>
             </TabItem>
             <TabItem Header="Result">

@@ -21,7 +21,7 @@ public static class SourceCodeHelper
     {
         if (codes?.Any() is not true)
         {
-            return Result.Fail<string?>("No code generated.");
+            return Result.Fail<string?>(value: "No code generated.");
         }
         var result = codes.Count switch
         {
@@ -38,7 +38,7 @@ public static class SourceCodeHelper
         {
             if (code == null)
             {
-                return Result.Fail<string?>("No code found to save.");
+                return Result.Fail<string?>(value: "No code found to save.");
             }
             using var dlg = new SaveFileDialog();
             dlg.FileName = code.FileName;
@@ -63,7 +63,7 @@ public static class SourceCodeHelper
             var meaningfulCodes = codes.Compact();
             if (meaningfulCodes?.Any() is not true)
             {
-                return Result.Fail<string?>("No codes found to save.");
+                return Result.Fail<string?>(message:"No codes found to save.");
             }
             foreach (var code in meaningfulCodes)
             {
@@ -76,6 +76,6 @@ public static class SourceCodeHelper
 
     public static async Task<Result<string?>> SaveToFileAskAsync(this Code code)
         => code == default
-            ? Result.Fail<string?>("No code found to save.")
+            ? Result.Fail<string?>(value: "No code found to save.")
             : await SaveToFileAskAsync(new Codes(code));
 }

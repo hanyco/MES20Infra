@@ -50,11 +50,11 @@
                     MinHeight="120" />
             </StackPanel>
 
-            <TextBlock
+            <!--<TextBlock
                 Grid.ColumnSpan="3"
                 d:Text="Table Name"
                 Style="{StaticResource Heading1}"
-                Text="{Binding FullName, Mode=OneWay}" />
+                Text="{Binding FullName, Mode=OneWay}" />-->
             <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
                 <TextBlock Style="{StaticResource LabelBlock}" Text="Name:" />
                 <TextBox

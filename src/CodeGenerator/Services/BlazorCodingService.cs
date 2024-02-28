@@ -87,7 +87,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
         }
         catch (Exception ex)
         {
-            return Result.Fail<Codes>(Codes.Empty, ex);
+            return Result.Fail<Codes>(ex, Codes.Empty);
         }
 
         static BlazorComponent createComponent(in UiViewModel model)

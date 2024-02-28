@@ -455,37 +455,37 @@ internal partial class FunctionalityService
             var exists = await this.AnyByNameAsync(model.Name!);
             if (exists)
             {
-                return Result.Fail("Functionality already exists.")!;
+                return Result.Fail()!;
             }
             exists = await this._dtoService.AnyByNameAsync(model.SourceDto.Name!);
             if (exists)
             {
-                return Result.Fail("Functionality already exists.")!;
+                return Result.Fail()!;
             }
             exists = await this._queryService.AnyByNameAsync(model.GetAllQueryViewModel.Name!);
             if (exists)
             {
-                return Result.Fail("GetAllQuery already exists.")!;
+                return Result.Fail()!;
             }
             exists = await this._queryService.AnyByNameAsync(model.GetByIdQueryViewModel.Name!);
             if (exists)
             {
-                return Result.Fail("GetByIdQuery already exists.")!;
+                return Result.Fail()!;
             }
             exists = await this._commandService.AnyByNameAsync(model.InsertCommandViewModel.Name!);
             if (exists)
             {
-                return Result.Fail("InsertCommand already exists.")!;
+                return Result.Fail()!;
             }
             exists = await this._commandService.AnyByNameAsync(model.UpdateCommandViewModel.Name!);
             if (exists)
             {
-                return Result.Fail("UpdateCommand already exists.")!;
+                return Result.Fail()!;
             }
             exists = await this._commandService.AnyByNameAsync(model.DeleteCommandViewModel.Name!);
             if (exists)
             {
-                return Result.Fail("DeleteCommand already exists.")!;
+                return Result.Fail()!;
             };
             return Result.Succeed;
         }

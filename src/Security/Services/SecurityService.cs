@@ -80,7 +80,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
             // Is user locked out?
             if (userManager.SupportsUserLockout && await userManager.IsLockedOutAsync(user))
             {
-                return Result.Fail<InfraIdentityUser,UserIsLockedOutException>();
+                return Result.Fail<InfraIdentityUser, UserIsLockedOutException>();
             }
 
             // Check password
@@ -92,7 +92,7 @@ internal class SecurityService(InfraUserManager userManager, InfraSignInManager 
                 {
                     _ = await userManager.AccessFailedAsync(user);
                 }
-                return Result.Fail<InfraIdentityUser,InvalidUsernameOrPasswordException>();
+                return Result.Fail<InfraIdentityUser, InvalidUsernameOrPasswordException>();
             }
 
             // Return user and succeed result

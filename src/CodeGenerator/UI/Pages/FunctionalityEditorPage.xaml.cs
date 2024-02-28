@@ -187,7 +187,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
         if (this.ViewModel.Name.IsNullOrEmpty())
         {
-            this.ViewModel.Name = details.Name;
+            this.ViewModel.Name = details.Name.TrimEnd("Dto").AddEnd("Functionality");
         }
         //The form is now ready to call services.
     }
@@ -241,7 +241,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 CodeCategory.Page => settings.blazorPagesPath ?? "UI/Pages",
                 CodeCategory.Component => settings.blazorComponentsPath ?? "UI/Components",
                 CodeCategory.Converter => settings.convertersPath ?? "Converters",
-                _ => Result.Fail<string>(string.Empty, new NotSupportedException("Code category is null or not supported."))
+                _ => Result.Fail<string>(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
             relativePath.ThrowOnFail().End();
             return Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.Value.NotNull());
