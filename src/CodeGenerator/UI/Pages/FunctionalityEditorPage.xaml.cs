@@ -233,7 +233,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
         static string getPath(SettingsModel settings, Code code)
         {
-            Result<string> relativePath = code.props().Category switch
+            Result<string?> relativePath = code.props().Category switch
             {
                 CodeCategory.Dto => settings.dtosPath ?? "Dtos",
                 CodeCategory.Query => settings.queriesPath ?? "Queries",
@@ -241,7 +241,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 CodeCategory.Page => settings.blazorPagesPath ?? "UI/Pages",
                 CodeCategory.Component => settings.blazorComponentsPath ?? "UI/Components",
                 CodeCategory.Converter => settings.convertersPath ?? "Converters",
-                _ => Result.Fail<string>(new NotSupportedException("Code category is null or not supported."), string.Empty)
+                _ => Result.Fail(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
             relativePath.ThrowOnFail().End();
             return Path.Combine(settings.projectSourceRoot.NotNull(), relativePath.Value.NotNull());
