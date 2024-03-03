@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 using HanyCo.Infra;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -54,12 +55,13 @@ public partial class App : LibApp
                .AddDbContext<InfraWriteDbContext>(options =>
                {
                    _ = options.UseSqlServer(settings.connectionString!);
+                   //options.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                    _ = options.EnableSensitiveDataLogging();
                })
 #endif
                .AddDbContext<InfraReadDbContext>(options =>
                {
-                   _ = options.UseSqlServer(settings.connectionString!);
+                   _ = options.UseSqlServer();
                    _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                    _ = options.EnableSensitiveDataLogging();
                })
