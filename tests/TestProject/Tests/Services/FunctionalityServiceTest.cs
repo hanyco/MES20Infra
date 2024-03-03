@@ -14,7 +14,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     {
         // Assign
         using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var model = await service.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
+        var model = await codeService.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
 
         // Act
         var actual = codeService.GenerateCodes(model!, new(true, tokenSource.Token));
@@ -44,12 +44,12 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
         var model = CreateModel();
 
         // Act
-        var actual = await service.GenerateViewModelAsync(model, tokenSource.Token);
+        var actual = await codeService.GenerateViewModelAsync(model, tokenSource.Token);
 
         // Assert
         if (!actual.IsSucceed)
         {
-            Assert.Fail(actual.Message ?? $"{nameof(service.GenerateViewModelAsync)} failed.");
+            Assert.Fail(actual.Message ?? $"{nameof(codeService.GenerateViewModelAsync)} failed.");
         }
     }
 
@@ -59,7 +59,7 @@ public sealed class FunctionalityServiceTest(IFunctionalityService service, IFun
     {
         // Assign
         using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3600));
-        var model = await service.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
+        var model = await codeService.GenerateViewModelAsync(CreateModel(), tokenSource.Token);
 
         // Act
         var result = await service.InsertAsync(model!, token: tokenSource.Token);

@@ -74,10 +74,13 @@ public partial class CqrsExplorerTreeView : UserControl
 
         if (this.LoadDtos)
         {
-            var dtosTreeViewItemRoot = ControlHelper.BindNewTreeViewItem(InfraViewModelBase.NewEmpty("Models"));
             var dtos = await this.OnGetDtosAsync();
-            result.Add(ControlHelper.BindNewTreeViewItems(dtosTreeViewItemRoot, dtos));
-            dtosTreeViewItemRoot.IsExpanded = true;
+            if(dtos.Any())
+            {
+                var dtosTreeViewItemRoot = ControlHelper.BindNewTreeViewItem(InfraViewModelBase.NewEmpty("Models"));
+                result.Add(ControlHelper.BindNewTreeViewItems(dtosTreeViewItemRoot, dtos));
+                dtosTreeViewItemRoot.IsExpanded = true;
+            }
         }
 
         if (this.LoadQueries)
@@ -95,6 +98,7 @@ public partial class CqrsExplorerTreeView : UserControl
             result.Add(ControlHelper.BindNewTreeViewItems(commandsViewItemRoot, commands));
             commandsViewItemRoot.IsExpanded = true;
         }
+
         this._result = [.. result];
         _ = this.TreeView.BindItemsSource(result);
     }

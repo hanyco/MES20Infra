@@ -55,7 +55,7 @@ public partial class App : LibApp
                .AddDbContext<InfraWriteDbContext>(options =>
                {
                    _ = options.UseSqlServer(settings.connectionString!);
-                   //options.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                   //_ = options.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                    _ = options.EnableSensitiveDataLogging();
                })
 #endif
