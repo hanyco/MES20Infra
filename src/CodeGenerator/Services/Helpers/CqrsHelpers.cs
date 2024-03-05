@@ -1,5 +1,4 @@
-﻿
-using Library.CodeGeneration;
+﻿using Library.CodeGeneration;
 
 using static Services.Helpers.CommonHelpers;
 
@@ -11,21 +10,22 @@ internal static class CqrsHelpers
     public static TypePath GetSegregateHandlerType(this CqrsViewModelBase model, string kind) =>
         TypePath.New($"{Purify(model.Name)}{kind}Handler", model.CqrsNameSpace);
 
-    // GetAllPeopleQuery
-    public static TypePath GetSegregateType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New($"{Purify(model.Name)}{kind}", model.DtoNameSpace);
-    public static TypePath GetSegregateValidatorType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New($"{Purify(model.Name)}{kind}Validator", model.DtoNameSpace);
-
     // GetAllPeople
     public static TypePath GetSegregateParamsType(this CqrsViewModelBase model, string? kind) =>
         TypePath.New($"{model.ParamsDto.Name}", model.ParamsDto.NameSpace);
 
-    // GetAllPeopleQueryResult
-    public static TypePath GetSegregateResultType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New($"{Purify(model.Name)}{kind}Result", model.DtoNameSpace);
-
     // GetAllPeopleResult
     public static TypePath GetSegregateResultParamsType(this CqrsViewModelBase model, string? kind) =>
         TypePath.New($"{model.ResultDto.Name}", model.ResultDto.NameSpace);
+
+    // GetAllPeopleQueryResult
+    public static TypePath GetSegregateResultType(this CqrsViewModelBase model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}Result", model.DtoNameSpace?? model.ResultDto?.NameSpace);
+
+    // GetAllPeopleQuery
+    public static TypePath GetSegregateType(this CqrsViewModelBase model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}", model.DtoNameSpace ?? model.ParamsDto?.NameSpace);
+
+    public static TypePath GetSegregateValidatorType(this CqrsViewModelBase model, string kind) =>
+        TypePath.New($"{Purify(model.Name)}{kind}Validator", model.DtoNameSpace);
 }
