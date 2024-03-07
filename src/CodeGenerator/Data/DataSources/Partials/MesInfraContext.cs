@@ -56,6 +56,7 @@ public enum PropertyType
     ByteArray = 10,
     Dto = 20,
     Custom = 30,
+    Decimal = 40,
 }
 
 public enum Placement

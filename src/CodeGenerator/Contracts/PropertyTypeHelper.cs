@@ -57,6 +57,7 @@ public static class PropertyTypeHelper
             PropertyType.Long => typeof(long).FullName!,
             PropertyType.Short => typeof(short).FullName!,
             PropertyType.Float => typeof(float).FullName!,
+            PropertyType.Decimal => typeof(decimal).FullName!,
             PropertyType.Byte => typeof(byte).FullName!,
             PropertyType.Boolean => typeof(bool).FullName!,
             PropertyType.DateTime => typeof(DateTime).FullName!,
@@ -93,15 +94,16 @@ public static class PropertyTypeHelper
     private static IEnumerable<(IEnumerable<string> DbTypes, Type netType, PropertyType propertyType)> Mapper()
     {
         yield return (Iterate(""), null, PropertyType.None);
+        yield return (Iterate("uniqueidentifier"), typeof(Guid), PropertyType.Guid);
+        yield return (Iterate("nvarchar", "varchar", "nchar"), typeof(string), PropertyType.String);
+        yield return (Iterate("smallint"), typeof(short), PropertyType.Short);
+        yield return (Iterate("int"), typeof(int), PropertyType.Integer);
+        yield return (Iterate("bigint"), typeof(long), PropertyType.Long);
+        yield return (Iterate("float"), typeof(float), PropertyType.Float);
+        yield return (Iterate("decimal"), typeof(decimal), PropertyType.Decimal);
         yield return (Iterate("bit"), typeof(bool), PropertyType.Boolean);
         yield return (Iterate("byte"), typeof(byte), PropertyType.Byte);
         yield return (Iterate("varbinary"), typeof(byte[]), PropertyType.ByteArray);
         yield return (Iterate("datetime", "datetime2", "datetimeoffset", "date"), typeof(byte[]), PropertyType.DateTime);
-        yield return (Iterate("float"), typeof(float), PropertyType.Float);
-        yield return (Iterate("uniqueidentifier"), typeof(Guid), PropertyType.Guid);
-        yield return (Iterate("int"), typeof(int), PropertyType.Integer);
-        yield return (Iterate("bigint"), typeof(long), PropertyType.Long);
-        yield return (Iterate("smallint"), typeof(short), PropertyType.Short);
-        yield return (Iterate("nvarchar", "varchar", "nchar"), typeof(string), PropertyType.String);
     }
 }

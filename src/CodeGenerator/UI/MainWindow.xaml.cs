@@ -219,4 +219,13 @@ public partial class MainWindow
     {
         LogListBox.Items.Clear();
     }
+
+    private void PageHostFrame_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
+    {
+        
+    }
+
+    private void PageHostFrame_Navigating(object sender, System.Windows.Navigation.NavigatingCancelEventArgs e)
+    {
+    }
 }

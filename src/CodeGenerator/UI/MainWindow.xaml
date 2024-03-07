@@ -101,7 +101,7 @@
 
         <TabControl Grid.Row="1">
             <TabItem x:Name="PageTab" Header="Page">
-                <Frame
+                <Frame LoadCompleted="PageHostFrame_LoadCompleted" Navigating="PageHostFrame_Navigating"
     Name="PageHostFrame"
     Grid.Row="1"
     Navigated="PageHostFrame_Navigated"
@@ -116,7 +116,7 @@
                             <Path Style="{StaticResource ResourceKey=Delete}"/>
                         </Button>
                     </ToolBar>
-                    <ListBox x:Name="LogListBox" />
+                    <ListBox x:Name="LogListBox" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible"/>
                 </StackPanel>
             </TabItem>
         </TabControl>

@@ -58,7 +58,7 @@ internal sealed class DtoService(
         var result = new DtoViewModel
         {
             DbObject = table,
-            Name = $"{table.Name}Dto",
+            Name = $"{StringHelper.Singularize(table.Name)}Dto",
         };
         if (columns?.Any() is true)
         {
@@ -335,14 +335,15 @@ internal sealed class DtoService(
         var result = await this.SubmitChangesAsync(persist, transaction, token: token).With(_ => viewModel.Id = entity.Dto.Id);
         return Result.From<DtoViewModel>(result, viewModel);
 
-        void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default) => _ = this._writeDbContext.Attach(dto)
-                                    .SetModified(x => x.Name)
-                                    .SetModified(x => x.NameSpace)
-                                    .SetModified(x => x.Comment)
-                                    .SetModified(x => x.ModuleId)
-                                    .SetModified(x => x.IsParamsDto)
-                                    .SetModified(x => x.IsResultDto)
-                                    .SetModified(x => x.IsViewModel);
+        void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default) 
+            => _ = this._writeDbContext.Attach(dto)
+                    .SetModified(x => x.Name)
+                    .SetModified(x => x.NameSpace)
+                    .SetModified(x => x.Comment)
+                    .SetModified(x => x.ModuleId)
+                    .SetModified(x => x.IsParamsDto)
+                    .SetModified(x => x.IsResultDto)
+                    .SetModified(x => x.IsViewModel);
         void updateProperties(IEnumerable<PropertyViewModel> properties, DtoEntity dto, CancellationToken token = default)
         {
             foreach (var prop in properties)
