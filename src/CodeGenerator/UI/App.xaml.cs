@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Windows;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 using HanyCo.Infra;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -49,23 +48,18 @@ public partial class App : LibApp
         static void addBclServices(IServiceCollection services) =>
             services.AddScoped<ICodeGeneratorEngine, RoslynCodeGenerator>();
 
-        static void addDataContext(IServiceCollection services, SettingsModel settings) =>
+        static void addDataContext(IServiceCollection services, SettingsModel settings)
+        {
             services
 #if !DEBUG_UNIT_TEST
-               .AddDbContext<InfraWriteDbContext>(options =>
-               {
-                   _ = options.UseSqlServer(settings.connectionString!);
-                   //_ = options.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                   _ = options.EnableSensitiveDataLogging();
-               })
-#endif
+               .AddDbContext<InfraWriteDbContext>(applyDefaults)
                .AddDbContext<InfraReadDbContext>(options =>
                {
-                   _ = options.UseSqlServer();
+                   applyDefaults(options);
                    _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-                   _ = options.EnableSensitiveDataLogging();
                })
 
+#endif
 #if TEST_MODE
                .AddDbContext<InfraWriteDbContext>(options =>
                {
@@ -73,8 +67,24 @@ public partial class App : LibApp
                    _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                    _ = options.EnableSensitiveDataLogging();
                })
+               .AddDbContext<InfraReadDbContext>(options =>
+               {
+                   _ = options.UseSqlServer();
+                   _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                   _ = options.EnableSensitiveDataLogging();
+               })
 #endif
                ;
+
+            void applyDefaults(DbContextOptionsBuilder options)
+                => options
+                    .UseSqlServer(settings.connectionString!)
+                    .LogTo(Console.WriteLine)
+                    .EnableDetailedErrors()
+                    .EnableSensitiveDataLogging()
+                    //.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null)
+                    ;
+        }
 
         static void addLogger(IServiceCollection services) => _ = services
                 .AddSingleton<Library.Logging.ILogger>(AppLogger)

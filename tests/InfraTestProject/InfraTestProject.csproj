@@ -44,8 +44,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CodeGenerator\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\..\src\CodeGenerator\Services\Services.csproj" />
+    <ProjectReference Include="..\..\src\CodeGenerator\Contracts\Contracts.CodeGen.csproj" />
+    <ProjectReference Include="..\..\src\CodeGenerator\Services\Services.CodeGen.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Library.Helpers" />
