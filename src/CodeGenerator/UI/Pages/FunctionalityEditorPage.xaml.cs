@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;

@@ -99,7 +99,7 @@ public partial class MainWindow
             object o => o.ToString(),
             _ => "Ready."
         };
-        this.StatusBarItem.Refresh();
+        _ = this.StatusBarItem.Refresh();
         var log = LoggingHelper.Reformat(message);
         if (!log.IsNullOrEmpty())
         {
@@ -107,8 +107,8 @@ public partial class MainWindow
         }
     }
 
-    private void Logger_Logging(object? sender, ItemActedEventArgs<object> e) =>
-        this.Log(e.Item);
+    private void Logger_Logging(object? sender, ItemActedEventArgs<LogRecord<object>> e)
+                                                                => this.Log(e.Item);
 
     private void Navigate<TPage>()
         where TPage : PageBase
@@ -135,7 +135,7 @@ public partial class MainWindow
         {
             this.StatusProgressBar.Visibility = Visibility.Collapsed;
             this.StatusProgressBar.Background = System.Windows.Media.Brushes.Blue;
-            this.StatusProgressBar.Refresh();
+            _ = this.StatusProgressBar.Refresh();
             _ = Taskbar.MainWindow.ProgressBar.SetState(TaskbarProgressState.None);
             this.Log(e.Item ?? "Ready.");
         });
@@ -161,8 +161,8 @@ public partial class MainWindow
             {
                 this.Log(e.Item.Description);
             }
-            this.StatusProgressBar.Refresh();
-            this.StatusBarItem.Refresh();
+            _ = this.StatusProgressBar.Refresh();
+            _ = this.StatusBarItem.Refresh();
         });
 
     private void SettingMenuItem_Click(object sender, RoutedEventArgs e) =>

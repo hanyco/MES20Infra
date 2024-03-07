@@ -1,4 +1,6 @@
 ﻿
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+
 using Library.Collections;
 using Library.Data.SqlServer.Dynamics;
 using Library.Exceptions.Validations;

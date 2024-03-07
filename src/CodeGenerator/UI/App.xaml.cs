@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Windows;
 
 using HanyCo.Infra;
@@ -30,6 +31,8 @@ namespace UI;
 public partial class App : LibApp
 {
     private string? _logFilePath;
+
+    public new static App Current => LibApp.Current.Cast().As<App>()!;
 
     protected override void OnConfigureServices(ServiceCollection services)
     {
@@ -79,7 +82,7 @@ public partial class App : LibApp
             void applyDefaults(DbContextOptionsBuilder options)
                 => options
                     .UseSqlServer(settings.connectionString!)
-                    .LogTo(Console.WriteLine)
+                    .LogTo(Current.LogEf)
                     .EnableDetailedErrors()
                     .EnableSensitiveDataLogging()
                     //.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null)
@@ -118,9 +121,8 @@ public partial class App : LibApp
             => services.AddMesInfraServices(settings.connectionString!, AppLogger);
     }
 
-    private void Logger_Logging(object? sender, ItemActedEventArgs<object> e)
-    {
-    }
+    private void LogEf(string message)
+        => this.Logger.Log(message, sender: "EF");
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
@@ -136,4 +138,7 @@ public partial class App : LibApp
         this.Logger.Logging += this.Logger_Logging;
         this.Logger.Debug("Loading Main Window...");
     }
+
+    private void Logger_Logging(object? sender, ItemActedEventArgs<LogRecord<object>> e) 
+        => Trace.WriteLine(e.Item.Message);
 }
