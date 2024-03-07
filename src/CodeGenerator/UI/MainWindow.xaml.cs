@@ -91,24 +91,31 @@ public partial class MainWindow
     }
 
     private void Log(object message)
-    {
-        this.StatusBarItem.Content = message switch
-        {
-            LogRecord l => l.Message,
-            LogRecord<object> lo => lo.Message?.ToString()?.Trim(),
-            object o => o.ToString(),
-            _ => "Ready."
-        };
-        _ = this.StatusBarItem.Refresh();
-        var log = LoggingHelper.Reformat(message);
-        if (!log.IsNullOrEmpty())
-        {
-            _ = this.LogListBox.Items.Add(log);
-        }
-    }
+        => this.StatusBarItem.RunInControlThread(() =>
+            {
+                var v = message switch
+                {
+                    LogRecord l => l.Message?.ToString(),
+                    LogRecord<object> lo => lo.Message?.ToString()?.Trim(),
+                    object o => o.ToString(),
+                    _ => "Ready."
+                };
+                if (v.IsNullOrEmpty())
+                {
+                    return;
+                }
+
+                this.StatusBarItem.Content = v.Split(Environment.NewLine).Last().Trim();
+                _ = this.StatusBarItem.Refresh();
+                var log = LoggingHelper.Reformat(message);
+                if (!log.IsNullOrEmpty())
+                {
+                    _ = this.LogListBox.Items.Add(log);
+                }
+            });
 
     private void Logger_Logging(object? sender, ItemActedEventArgs<LogRecord<object>> e)
-                                                                => this.Log(e.Item);
+        => this.Log(e.Item);
 
     private void Navigate<TPage>()
         where TPage : PageBase
@@ -206,5 +213,10 @@ public partial class MainWindow
         {
             _ = Result.Fail("Exception occurred on connecting to database", ex).ThrowOnFail();
         }
+    }
+
+    private void ClearLogsButton_Click(object sender, RoutedEventArgs e)
+    {
+        LogListBox.Items.Clear();
     }
 }

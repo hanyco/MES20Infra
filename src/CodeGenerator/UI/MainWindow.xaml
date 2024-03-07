@@ -99,17 +99,25 @@
             </Menu>
         </Grid>
 
-        <Frame
-            Name="PageHostFrame"
-            Grid.Row="1"
-            Navigated="PageHostFrame_Navigated"
-            NavigationUIVisibility="Hidden"
-            ScrollViewer.HorizontalScrollBarVisibility="Auto"
-            ScrollViewer.VerticalScrollBarVisibility="Auto" />
-        <TabControl Grid.Row="1" Visibility="Collapsed">
-            <TabItem x:Name="PageTab" Header="Page" />
-            <TabItem Header="Event Log" Visibility="Collapsed">
-                <ListBox x:Name="LogListBox" />
+        <TabControl Grid.Row="1">
+            <TabItem x:Name="PageTab" Header="Page">
+                <Frame
+    Name="PageHostFrame"
+    Grid.Row="1"
+    Navigated="PageHostFrame_Navigated"
+    NavigationUIVisibility="Hidden"
+    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+    ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            </TabItem>
+            <TabItem Header="Event Log">
+                <StackPanel>
+                    <ToolBar>
+                        <Button Name="ClearLogsButton" Click="ClearLogsButton_Click">
+                            <Path Style="{StaticResource ResourceKey=Delete}"/>
+                        </Button>
+                    </ToolBar>
+                    <ListBox x:Name="LogListBox" />
+                </StackPanel>
             </TabItem>
         </TabControl>
 

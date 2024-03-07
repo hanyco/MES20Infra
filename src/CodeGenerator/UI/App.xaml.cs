@@ -122,7 +122,7 @@ public partial class App : LibApp
     }
 
     private void LogEf(string message)
-        => this.Logger.Log(message, sender: "EF");
+        => Logger.Log(message, Library.Logging.LogLevel.Debug);
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
@@ -140,5 +140,5 @@ public partial class App : LibApp
     }
 
     private void Logger_Logging(object? sender, ItemActedEventArgs<LogRecord<object>> e) 
-        => Trace.WriteLine(e.Item.Message);
+        => Debug.WriteLine(e.Item.Message);
 }
