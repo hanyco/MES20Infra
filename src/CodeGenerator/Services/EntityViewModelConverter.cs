@@ -8,7 +8,7 @@ using Library.Validations;
 
 using Services.Helpers;
 
-namespace Services;
+namespace Services.CodeGen;
 
 internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) : IEntityViewModelConverter
 {
@@ -138,8 +138,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         {
             result.ModuleId = moduleId;
         }
-
-        _ = result.Properties!.AddRange(model.Properties.Select(this.ToDbEntity));
+        _ = (result.Properties?.AddRange(model.Properties.Select(this.ToDbEntity)));
         return result;
     }
 
@@ -344,10 +343,10 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         entity is null ? null : this._mapper.Map<DtoViewModel>(entity);
 
     [return: NotNullIfNotNull(nameof(entity))]
-    private CqrsQueryViewModel? ToQueryViewModel(CqrsSegregate? entity)
-        => this.ToViewModel(entity) as CqrsQueryViewModel;
-
-    [return: NotNullIfNotNull(nameof(entity))]
     private CqrsCommandViewModel? ToCommandViewModel(CqrsSegregate? entity)
         => this.ToViewModel(entity) as CqrsCommandViewModel;
+
+    [return: NotNullIfNotNull(nameof(entity))]
+    private CqrsQueryViewModel? ToQueryViewModel(CqrsSegregate? entity)
+        => this.ToViewModel(entity) as CqrsQueryViewModel;
 }
