@@ -121,6 +121,7 @@ public partial class App : LibApp
             => services.AddMesInfraServices(settings.connectionString!, AppLogger);
     }
 
+    [DebuggerStepThrough]
     private void LogEf(string message)
         => Logger.Log(message, Library.Logging.LogLevel.Debug);
 

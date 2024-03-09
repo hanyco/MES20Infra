@@ -284,13 +284,12 @@ internal sealed class DtoService(
         var entity = this.ToDbEntity(viewModel);
 
         await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(token);
-        await insertDto(viewModel, entity.Dto, token);
+        await insertDto(viewModel, entity.Dto, persist, token);
         await insertProperties(viewModel, persist, entity, token);
-
         var result = await this.SubmitChangesAsync(persist, transaction, token: token).With((_) => viewModel.Id = entity.Dto.Id);
         return Result.From(result, viewModel);
 
-        async Task insertDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
+        async Task insertDto(DtoViewModel viewModel, DtoEntity dto, bool persist, CancellationToken token = default)
         {
             dto.Module = null;
             _ = this._writeDbContext.Dtos.Add(dto).With(_ => viewModel.Guid = dto.Guid);
@@ -301,13 +300,10 @@ internal sealed class DtoService(
             //x await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
         }
 
-        async Task insertProperties(DtoViewModel viewModel, bool persist, (DtoEntity Dto, IEnumerable<Property> Properties, IEnumerable<PropertyViewModel> PropertyViewModels) entity, CancellationToken token)
+        Task insertProperties(DtoViewModel viewModel, bool persist, (DtoEntity Dto, IEnumerable<Property> Properties, IEnumerable<PropertyViewModel> PropertyViewModels) entity, CancellationToken token)
         {
             _ = this.PrepareProperties(viewModel);
-            if (persist)
-            {
-                _ = await this._propertyService.InsertProperties(entity.PropertyViewModels, entity.Dto.Id, false, token);
-            }
+            return this._propertyService.InsertProperties(entity.PropertyViewModels, entity.Dto.Id, false, token);
         }
     }
 
