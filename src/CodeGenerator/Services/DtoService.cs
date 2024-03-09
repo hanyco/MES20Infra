@@ -315,16 +315,20 @@ internal sealed class DtoService(
 
     public async Task<Result<DtoViewModel>> UpdateAsync(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
-        _ = await this.ValidateAsync(viewModel, token).ThrowOnFailAsync();
-        _ = this.InitializeViewModel(viewModel).PrepareProperties(viewModel);
-        var entity = this.ToDbEntity(viewModel);
+        var vr = await this.ValidateAsync(viewModel, token);
+        if (vr.IsFailure)
+        {
+            return vr!;
+        }
+        var entity = this.InitializeViewModel(viewModel)
+            .PrepareProperties(viewModel).
+            ToDbEntity(viewModel);
         this.ResetChanges();
 
-        await using var transaction = await this._writeDbContext.BeginTransactionAsync(cancellationToken: token);
-        await removeDeletedProperties(viewModel.DeletedProperties, token);
+        removeDeletedProperties(viewModel.DeletedProperties);
         updateDto(viewModel, entity.Dto, token);
         updateProperties(entity.PropertyViewModels, entity.Dto, token);
-        var result = await this.SubmitChangesAsync(persist, transaction, token: token).With(_ => viewModel.Id = entity.Dto.Id);
+        var result = await this.SubmitChangesAsync(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id);
         return Result.From(result, viewModel);
 
         void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
@@ -356,7 +360,7 @@ internal sealed class DtoService(
                                         .SetModified(x => x.DtoId);
             }
         }
-        async Task removeDeletedProperties(IEnumerable<PropertyViewModel>? deletedProperties, CancellationToken token = default)
+        void removeDeletedProperties(IEnumerable<PropertyViewModel>? deletedProperties)
         {
             if (deletedProperties?.Any() is true)
             {
@@ -368,7 +372,6 @@ internal sealed class DtoService(
                     }
                 }
             }
-            await Task.CompletedTask;
         }
     }
 
@@ -409,7 +412,7 @@ internal sealed class DtoService(
         return this;
     }
 
-    private DtoService PrepareProperties(DtoViewModel viewModel)
+    private DtoService PrepareProperties(in DtoViewModel viewModel)
     {
         foreach (var property in viewModel.Properties)
         {
