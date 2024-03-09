@@ -321,8 +321,8 @@ internal sealed class DtoService(
             return vr!;
         }
         var entity = this.InitializeViewModel(viewModel)
-            .PrepareProperties(viewModel).
-            ToDbEntity(viewModel);
+            .PrepareProperties(viewModel)
+            .ToDbEntity(viewModel);
         this.ResetChanges();
 
         removeDeletedProperties(viewModel.DeletedProperties);
