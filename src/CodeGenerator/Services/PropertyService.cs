@@ -1,5 +1,4 @@
-﻿
-using HanyCo.Infra.Internals.Data.DataSources;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.BusinessServices;
 using Library.Exceptions.Validations;
@@ -9,7 +8,7 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace Services;
+namespace Services.CodeGen;
 
 internal sealed class PropertyService : IPropertyService
     , IAsyncValidator<PropertyViewModel>
@@ -132,6 +131,11 @@ internal sealed class PropertyService : IPropertyService
                 return insertResult;
             }
         }
+        if (persist)
+        {
+            _ = await this.SaveChangesAsync(token);
+        }
+
         return Result.Succeed;
     }
 
@@ -182,6 +186,6 @@ internal sealed class PropertyService : IPropertyService
             _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: cancellationToken);
         }
 
-        return Result.Success<PropertyViewModel>(model);
+        return Result.Success(model);
     }
 }
