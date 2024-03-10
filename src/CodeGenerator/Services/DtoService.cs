@@ -348,28 +348,29 @@ internal sealed class DtoService(
                 _ = Catch(() => this._writeDbContext.Detach(property));
                 _ = Catch(() => this._writeDbContext.Detach(dto.Module!));
                 _ = this._writeDbContext.Attach(property)
-                                        .SetModified(x => x.Name)
-                                        .SetModified(x => x.DbObjectId)
-                                        .SetModified(x => x.HasGetter)
-                                        .SetModified(x => x.HasSetter)
-                                        .SetModified(x => x.IsList)
-                                        .SetModified(x => x.IsNullable)
-                                        .SetModified(x => x.PropertyType)
-                                        .SetModified(x => x.Comment)
-                                        .SetModified(x => x.TypeFullName)
-                                        .SetModified(x => x.DtoId);
+                    .SetModified(x => x.Name)
+                    .SetModified(x => x.DbObjectId)
+                    .SetModified(x => x.HasGetter)
+                    .SetModified(x => x.HasSetter)
+                    .SetModified(x => x.IsList)
+                    .SetModified(x => x.IsNullable)
+                    .SetModified(x => x.PropertyType)
+                    .SetModified(x => x.Comment)
+                    .SetModified(x => x.TypeFullName)
+                    .SetModified(x => x.DtoId);
             }
         }
         void removeDeletedProperties(IEnumerable<PropertyViewModel>? deletedProperties)
         {
-            if (deletedProperties?.Any() is true)
+            if (deletedProperties?.Any() is not true)
             {
-                foreach (var prop in deletedProperties)
+                return;
+            }
+            foreach (var prop in deletedProperties)
+            {
+                if (prop?.Id is { } id)
                 {
-                    if (prop?.Id is { } id)
-                    {
-                        _ = this._writeDbContext.RemoveById<Property>(id);
-                    }
+                    _ = this._writeDbContext.RemoveById<Property>(id);
                 }
             }
         }
