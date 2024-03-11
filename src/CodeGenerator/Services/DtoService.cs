@@ -320,26 +320,28 @@ internal sealed class DtoService(
         {
             return vr!;
         }
+        this.ResetChanges();
+
         var entity = this.InitializeViewModel(viewModel)
             .PrepareProperties(viewModel)
             .ToDbEntity(viewModel);
-        this.ResetChanges();
-
         removeDeletedProperties(viewModel.DeletedProperties);
         updateDto(viewModel, entity.Dto, token);
         updateProperties(entity.PropertyViewModels, entity.Dto, token);
+        
         var result = await this.SubmitChangesAsync(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id);
         return Result.From(result, viewModel);
 
         void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
-            => _ = this._writeDbContext.Attach(dto)
+            => this._writeDbContext.Attach(dto)
                     .SetModified(x => x.Name)
                     .SetModified(x => x.NameSpace)
                     .SetModified(x => x.Comment)
                     .SetModified(x => x.ModuleId)
                     .SetModified(x => x.IsParamsDto)
                     .SetModified(x => x.IsResultDto)
-                    .SetModified(x => x.IsViewModel);
+                    .SetModified(x => x.IsViewModel)
+                    .SetEntryModified();
         void updateProperties(IEnumerable<PropertyViewModel> properties, DtoEntity dto, CancellationToken token = default)
         {
             foreach (var prop in properties)

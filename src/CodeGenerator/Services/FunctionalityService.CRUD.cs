@@ -493,13 +493,14 @@ internal partial class FunctionalityService
 
     public async Task<Result<FunctionalityViewModel>> UpdateAsync(long id, FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
+        CheckPersistence(persist);
         if (!this.Validate(model).TryParse(out var validationCheck))
         {
             return validationCheck!;
         }
         if (model.SourceDto is null or { Id: null })
         {
-            return Result.Fail<FunctionalityViewModel>(model)!;
+            return Result.Fail(model)!;
         }
 
         Result actionResult;
