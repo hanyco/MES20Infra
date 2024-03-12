@@ -1,4 +1,6 @@
-﻿namespace InfraTestProject.Tests.Services;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+
+namespace InfraTestProject.Tests.Services;
 
 public sealed class FunctionalityServiceTest(IFunctionalityService crudService, IFunctionalityCodeService codeService)
 {

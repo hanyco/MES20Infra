@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 
@@ -86,7 +87,7 @@ internal partial class FunctionalityService
     }
 
     public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => ServiceHelper.GetAllAsync<FunctionalityViewModel, Functionality>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => this.GetAllAsync<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
@@ -94,238 +95,6 @@ internal partial class FunctionalityService
         var result = this._converter.ToViewModel(dbResult);
         return result;
     }
-
-    private async Task<Functionality?> GetByIdFuncitonality(long id, CancellationToken cancellationToken)
-    {
-        var funcQuery = from func in this._readDbContext.Functionalities
-                            .Include(f => f.DeleteCommand)
-                                .ThenInclude(cs => cs.Module)
-                            .Include(f => f.DeleteCommand)
-                                .ThenInclude(cs => cs.ParamDto)
-                            .Include(f => f.DeleteCommand)
-                                .ThenInclude(cs => cs.ResultDto)
-                            .Include(f => f.GetAllQuery)
-                                .ThenInclude(cs => cs.Module)
-                            .Include(f => f.GetAllQuery)
-                                .ThenInclude(cs => cs.ParamDto)
-                            .Include(f => f.GetAllQuery)
-                                .ThenInclude(cs => cs.ResultDto)
-                            .Include(f => f.GetByIdQuery)
-                                .ThenInclude(cs => cs.Module)
-                            .Include(f => f.GetByIdQuery)
-                                .ThenInclude(cs => cs.ParamDto)
-                            .Include(f => f.GetByIdQuery)
-                                .ThenInclude(cs => cs.ResultDto)
-                            .Include(f => f.InsertCommand)
-                                .ThenInclude(cs => cs.Module)
-                            .Include(f => f.InsertCommand)
-                                .ThenInclude(cs => cs.ParamDto)
-                            .Include(f => f.InsertCommand)
-                                .ThenInclude(cs => cs.ResultDto)
-                            .Include(f => f.UpdateCommand)
-                                .ThenInclude(cs => cs.Module)
-                            .Include(f => f.UpdateCommand)
-                                .ThenInclude(cs => cs.ParamDto)
-                            .Include(f => f.UpdateCommand)
-                                .ThenInclude(cs => cs.ResultDto)
-                            .Include(f => f.Module)
-                            .Include(f => f.SourceDto)
-                                .ThenInclude(f => f.Module)
-                        where func.Id == id
-                        select func;
-        var functionality = await funcQuery.FirstOrDefaultAsync(cancellationToken);
-        if (functionality == null)
-        {
-            return null;
-        }
-
-        await fillProps(functionality.GetAllQuery);
-        await fillProps(functionality.GetByIdQuery);
-        await fillProps(functionality.InsertCommand);
-        await fillProps(functionality.UpdateCommand);
-        await fillProps(functionality.DeleteCommand);
-        await fillProperties(functionality.SourceDto.Properties, functionality.SourceDtoId);
-
-        return functionality;
-
-        async Task fillProps(CqrsSegregate cqrs)
-        {
-            await fillProperties(cqrs.ParamDto.Properties, cqrs.ParamDtoId);
-            await fillProperties(cqrs.ResultDto.Properties, cqrs.ResultDtoId);
-        }
-
-        async Task fillProperties(ICollection<Property> properties, long paramDtoId)
-            => properties.AddRange(await getProperties(paramDtoId));
-
-        async Task<List<Property>> getProperties(long parentEntityId)
-        {
-            var propertiesQuery = from x in this._readDbContext.Properties
-                                  where x.ParentEntityId == parentEntityId
-                                  select x;
-            var properties = await propertiesQuery.ToListAsync(cancellationToken: cancellationToken);
-            return properties;
-        }
-    }
-
-    //private IQueryable<Functionality> GetByIdQueryAsync(long id)
-    //{
-    //    var result = this._readDbContext.Functionalities
-    //        .Include(f => f.DeleteCommand)
-    //            .ThenInclude(cs => cs.Module)
-    //        .Include(f => f.DeleteCommand)
-    //            .ThenInclude(cs => cs.ParamDto)
-    //        .Include(f => f.DeleteCommand)
-    //            .ThenInclude(cs => cs.ResultDto)
-    //        .Include(f => f.GetAllQuery)
-    //            .ThenInclude(cs => cs.Module)
-    //        .Include(f => f.GetAllQuery)
-    //            .ThenInclude(cs => cs.ParamDto)
-    //        .Include(f => f.GetAllQuery)
-    //            .ThenInclude(cs => cs.ResultDto)
-    //        .Include(f => f.GetByIdQuery)
-    //            .ThenInclude(cs => cs.Module)
-    //        .Include(f => f.GetByIdQuery)
-    //            .ThenInclude(cs => cs.ParamDto)
-    //        .Include(f => f.GetByIdQuery)
-    //            .ThenInclude(cs => cs.ResultDto)
-    //        .Include(f => f.InsertCommand)
-    //            .ThenInclude(cs => cs.Module)
-    //        .Include(f => f.InsertCommand)
-    //            .ThenInclude(cs => cs.ParamDto)
-    //        .Include(f => f.InsertCommand)
-    //            .ThenInclude(cs => cs.ResultDto)
-    //        .Include(f => f.UpdateCommand)
-    //            .ThenInclude(cs => cs.Module)
-    //        .Include(f => f.UpdateCommand)
-    //            .ThenInclude(cs => cs.ParamDto)
-    //        .Include(f => f.UpdateCommand)
-    //            .ThenInclude(cs => cs.ResultDto)
-    //        .Include(f => f.Module)
-    //        .Include(f => f.SourceDto)
-    //        .Where(f => f.Id == id)
-    //        .Select(f => new Functionality
-    //        {
-    //            Id = f.Id,
-    //            Name = f.Name,
-    //            ModuleId = f.ModuleId,
-    //            Guid = f.Guid,
-    //            Comment = f.Comment,
-    //            DeleteCommand = new CqrsSegregate
-    //            {
-    //                Id = f.DeleteCommand.Id,
-    //                ModuleId = f.DeleteCommand.ModuleId,
-    //                CqrsNameSpace = f.DeleteCommand.CqrsNameSpace,
-    //                ParamDto = new Dto
-    //                {
-    //                    Id = f.DeleteCommand.ParamDto.Id,
-    //                    Name = f.DeleteCommand.ParamDto.Name,
-    //                    NameSpace = f.DeleteCommand.ParamDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.DeleteCommand.ParamDto.Id).ToList()
-    //                },
-    //                ResultDto = new Dto
-    //                {
-    //                    Id = f.DeleteCommand.ResultDto.Id,
-    //                    Name = f.DeleteCommand.ResultDto.Name,
-    //                    NameSpace = f.DeleteCommand.ResultDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.DeleteCommand.ResultDto.Id).ToList()
-    //                }
-    //            },
-    //            GetAllQuery = new CqrsSegregate
-    //            {
-    //                Id = f.GetAllQuery.Id,
-    //                ModuleId = f.GetAllQuery.ModuleId,
-    //                CqrsNameSpace = f.GetAllQuery.CqrsNameSpace,
-    //                ParamDto = new Dto
-    //                {
-    //                    Id = f.GetAllQuery.ParamDto.Id,
-    //                    Name = f.GetAllQuery.ParamDto.Name,
-    //                    NameSpace = f.GetAllQuery.ParamDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.GetAllQuery.ParamDto.Id).ToList()
-    //                },
-    //                ResultDto = new Dto
-    //                {
-    //                    Id = f.GetAllQuery.ResultDto.Id,
-    //                    Name = f.GetAllQuery.ResultDto.Name,
-    //                    NameSpace = f.GetAllQuery.ResultDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.GetAllQuery.ResultDto.Id).ToList()
-    //                }
-    //            },
-    //            GetByIdQuery = new CqrsSegregate
-    //            {
-    //                Id = f.GetByIdQuery.Id,
-    //                ModuleId = f.GetByIdQuery.ModuleId,
-    //                CqrsNameSpace = f.GetByIdQuery.CqrsNameSpace,
-    //                ParamDto = new Dto
-    //                {
-    //                    Id = f.GetByIdQuery.ParamDto.Id,
-    //                    Name = f.GetByIdQuery.ParamDto.Name,
-    //                    NameSpace = f.GetByIdQuery.ParamDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.GetByIdQuery.ParamDto.Id).ToList()
-    //                },
-    //                ResultDto = new Dto
-    //                {
-    //                    Id = f.GetByIdQuery.ResultDto.Id,
-    //                    Name = f.GetByIdQuery.ResultDto.Name,
-    //                    NameSpace = f.GetByIdQuery.ResultDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.GetByIdQuery.ResultDto.Id).ToList()
-    //                }
-    //            },
-    //            InsertCommand = new CqrsSegregate
-    //            {
-    //                Id = f.InsertCommand.Id,
-    //                ModuleId = f.InsertCommand.ModuleId,
-    //                CqrsNameSpace = f.InsertCommand.CqrsNameSpace,
-    //                ParamDto = new Dto
-    //                {
-    //                    Id = f.InsertCommand.ParamDto.Id,
-    //                    Name = f.InsertCommand.ParamDto.Name,
-    //                    NameSpace = f.InsertCommand.ParamDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.InsertCommand.ParamDto.Id).ToList()
-    //                },
-    //                ResultDto = new Dto
-    //                {
-    //                    Id = f.InsertCommand.ResultDto.Id,
-    //                    Name = f.InsertCommand.ResultDto.Name,
-    //                    NameSpace = f.InsertCommand.ResultDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.InsertCommand.ResultDto.Id).ToList()
-    //                }
-    //            },
-    //            UpdateCommand = new CqrsSegregate
-    //            {
-    //                Id = f.UpdateCommand.Id,
-    //                ModuleId = f.UpdateCommand.ModuleId,
-    //                CqrsNameSpace = f.UpdateCommand.CqrsNameSpace,
-    //                ParamDto = new Dto
-    //                {
-    //                    Id = f.UpdateCommand.ParamDto.Id,
-    //                    Name = f.UpdateCommand.ParamDto.Name,
-    //                    NameSpace = f.UpdateCommand.ParamDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.UpdateCommand.ParamDto.Id).ToList()
-    //                },
-    //                ResultDto = new Dto
-    //                {
-    //                    Id = f.UpdateCommand.ResultDto.Id,
-    //                    Name = f.UpdateCommand.ResultDto.Name,
-    //                    NameSpace = f.UpdateCommand.ResultDto.NameSpace,
-    //                    Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.UpdateCommand.ResultDto.Id).ToList()
-    //                }
-    //            },
-    //            Module = new Module
-    //            {
-    //                Id = f.Module!.Id,
-    //                Name = f.Module.Name,
-    //            },
-    //            SourceDto = new Dto
-    //            {
-    //                Id = f.SourceDto.Id,
-    //                Name = f.SourceDto.Name,
-    //                NameSpace = f.SourceDto.NameSpace,
-    //                Properties = this._readDbContext.Properties.Where(x => x.ParentEntityId == f.SourceDto.Id).ToList()
-    //            }
-    //        });
-
-    //    return result.AsNoTracking().AsSplitQuery();
-    //}
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
@@ -491,6 +260,8 @@ internal partial class FunctionalityService
         }
     }
 
+    //    return result.AsNoTracking().AsSplitQuery();
+    //}
     public async Task<Result<FunctionalityViewModel>> UpdateAsync(long id, FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         CheckPersistence(persist);
@@ -543,11 +314,83 @@ internal partial class FunctionalityService
         return result;
     }
 
-    private static void CheckPersistence(bool persist)
+    private static void CheckPersistence([DoesNotReturnIf(false)] bool persist)
     {
         if (!persist)
         {
             throw new NotSupportedException("non-persistent operation is not supported.");
+        }
+    }
+
+    private async Task<Functionality?> GetByIdFuncitonality(long id, CancellationToken cancellationToken)
+    {
+        var funcQuery = from func in this._readDbContext.Functionalities
+                            .Include(f => f.DeleteCommand)
+                                .ThenInclude(cs => cs.Module)
+                            .Include(f => f.DeleteCommand)
+                                .ThenInclude(cs => cs.ParamDto)
+                            .Include(f => f.DeleteCommand)
+                                .ThenInclude(cs => cs.ResultDto)
+                            .Include(f => f.GetAllQuery)
+                                .ThenInclude(cs => cs.Module)
+                            .Include(f => f.GetAllQuery)
+                                .ThenInclude(cs => cs.ParamDto)
+                            .Include(f => f.GetAllQuery)
+                                .ThenInclude(cs => cs.ResultDto)
+                            .Include(f => f.GetByIdQuery)
+                                .ThenInclude(cs => cs.Module)
+                            .Include(f => f.GetByIdQuery)
+                                .ThenInclude(cs => cs.ParamDto)
+                            .Include(f => f.GetByIdQuery)
+                                .ThenInclude(cs => cs.ResultDto)
+                            .Include(f => f.InsertCommand)
+                                .ThenInclude(cs => cs.Module)
+                            .Include(f => f.InsertCommand)
+                                .ThenInclude(cs => cs.ParamDto)
+                            .Include(f => f.InsertCommand)
+                                .ThenInclude(cs => cs.ResultDto)
+                            .Include(f => f.UpdateCommand)
+                                .ThenInclude(cs => cs.Module)
+                            .Include(f => f.UpdateCommand)
+                                .ThenInclude(cs => cs.ParamDto)
+                            .Include(f => f.UpdateCommand)
+                                .ThenInclude(cs => cs.ResultDto)
+                            .Include(f => f.Module)
+                            .Include(f => f.SourceDto)
+                                .ThenInclude(f => f.Module)
+                        where func.Id == id
+                        select func;
+        var functionality = await funcQuery.FirstOrDefaultAsync(cancellationToken);
+        if (functionality == null)
+        {
+            return null;
+        }
+
+        await fillProps(functionality.GetAllQuery);
+        await fillProps(functionality.GetByIdQuery);
+        await fillProps(functionality.InsertCommand);
+        await fillProps(functionality.UpdateCommand);
+        await fillProps(functionality.DeleteCommand);
+        await fillProperties(functionality.SourceDto.Properties, functionality.SourceDtoId);
+
+        return functionality;
+
+        async Task fillProps(CqrsSegregate cqrs)
+        {
+            await fillProperties(cqrs.ParamDto.Properties, cqrs.ParamDtoId);
+            await fillProperties(cqrs.ResultDto.Properties, cqrs.ResultDtoId);
+        }
+
+        async Task fillProperties(ICollection<Property> properties, long paramDtoId)
+            => properties.AddRange(await getProperties(paramDtoId));
+
+        async Task<List<Property>> getProperties(long parentEntityId)
+        {
+            var propertiesQuery = from x in this._readDbContext.Properties
+                                  where x.ParentEntityId == parentEntityId
+                                  select x;
+            var properties = await propertiesQuery.ToListAsync(cancellationToken: cancellationToken);
+            return properties;
         }
     }
 }
