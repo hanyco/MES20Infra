@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 
 using Library.CodeGeneration.Models;

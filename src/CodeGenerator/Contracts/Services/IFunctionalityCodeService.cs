@@ -7,7 +7,7 @@ using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 using Library.Results;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 
 public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>
 {
@@ -17,6 +17,6 @@ public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<Fu
 [Immutable]
 public sealed class FunctionalityCodeServiceAsyncCodeGeneratorArgs(bool updateModelView, CancellationToken token = default)
 {
-    public bool UpdateModelView { get; } = updateModelView;
     public CancellationToken Token { get; set; } = token;
+    public bool UpdateModelView { get; } = updateModelView;
 }
