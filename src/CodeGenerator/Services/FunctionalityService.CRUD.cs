@@ -15,14 +15,6 @@ namespace Services;
 
 internal partial class FunctionalityService
 {
-    public Task<bool> AnyByNameAsync(string name)
-    {
-        var query = from dto in this._readDbContext.Functionalities
-                    where dto.Name == name
-                    select dto.Id;
-        return query.AnyAsync();
-    }
-
     public async Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
         CheckPersistence(persist);
@@ -320,6 +312,14 @@ internal partial class FunctionalityService
         {
             throw new NotSupportedException("non-persistent operation is not supported.");
         }
+    }
+
+    private Task<bool> AnyByNameAsync(string name)
+    {
+        var query = from dto in this._readDbContext.Functionalities
+                    where dto.Name == name
+                    select dto.Id;
+        return query.AnyAsync();
     }
 
     private async Task<Functionality?> GetByIdFuncitonality(long id, CancellationToken cancellationToken)
