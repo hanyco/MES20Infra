@@ -22,6 +22,9 @@ public sealed class ApiControllerViewModel : InfraViewModelBase
     {
     }
 
+    [NotNull]
+    public ObservableCollection<AttributeViewModel> Attributes { get; } = [];
+
     public string? Comment { get => this._comment; set => this.SetProperty(ref this._comment, value); }
 
     public string FullName => TypePath.Combine(this.NameSpace, this.Name);
@@ -56,9 +59,4 @@ public sealed class ApiControllerViewModel : InfraViewModelBase
 
     [NotNull]
     public ObservableCollection<PropertyViewModel> Properties { get; } = [];
-}
-
-public sealed class ApiMethodViewModel : InfraViewModelBase
-{
-
 }
