@@ -32,7 +32,7 @@ internal sealed partial class FunctionalityService
         var initResult = initialize(viewModel, token);
         if (!initResult.IsSucceed)
         {
-            return Result.From<FunctionalityViewModel>(initResult, viewModel)!;
+            return Result.From(initResult, viewModel)!;
         }
 
         var (data, tokenSource) = initResult.Value;
@@ -522,7 +522,6 @@ internal sealed partial class FunctionalityService
         void setupSecurity(CreationData data) =>
             AddClaimViewModel(data.ViewModel.GetAllQueryViewModel, data);
     }
-
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
         var name = $"GetById{CommonHelpers.Purify(data.SourceDtoName)}";
