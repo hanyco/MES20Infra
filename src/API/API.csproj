@@ -19,4 +19,10 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Library" />
+    <Using Include="Library.Coding" />
+    <Using Include="Library.Results" />
+  </ItemGroup>
+
 </Project>

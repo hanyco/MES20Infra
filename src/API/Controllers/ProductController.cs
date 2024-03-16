@@ -3,12 +3,14 @@ using Domain.Queries;
 
 using MediatR;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[AllowAnonymous]
 public class ProductController : ControllerBase
 {
     private readonly IMediator _mediator;

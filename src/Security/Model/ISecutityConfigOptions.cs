@@ -19,4 +19,4 @@ public class JwtOptions()
     public string SecretKey { get; set; } = default!;
 }
 
-internal sealed record class SecurityConfigOptions(string ConnectionString, ILogger Logger) : ISecurityConfigOptions;
+internal sealed record class SecurityConfigOptions(string ConnectionString, ILogger? Logger) : ISecurityConfigOptions;

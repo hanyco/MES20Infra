@@ -14,14 +14,14 @@ namespace HanyCo.Infra;
 
 public static class MesInfraConfiguration
 {
-    public static IServiceCollection AddMesInfraServices(this IServiceCollection services, IConfiguration configuration, ILogger logger)
+    public static IServiceCollection AddMesInfraServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("ApplicationConnectionString");
         return services.AddMemoryCache()
                 .AddSingleton(new Sql(connectionString))
                 .AddSingleton<IMapper, Mapper>()
                 .AddHttpContextAccessor()
-                .AddMesInfraSecurityServices(ISecurityConfigOptions.New(connectionString, logger))
+                .AddMesInfraSecurityServices(ISecurityConfigOptions.New(connectionString))
                 ;
     }
 

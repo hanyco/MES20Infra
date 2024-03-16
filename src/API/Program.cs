@@ -6,8 +6,6 @@ using Domain;
 
 using HanyCo.Infra;
 
-using Library.Coding;
-
 var builder = WebApplication.CreateBuilder(args);
 
 var config = new ConfigurationBuilder()
@@ -24,7 +22,7 @@ builder.Services.With(services =>
     _ = services.AddExceptionHandler<GlobalExceptionHander>().AddProblemDetails();
     _ = services.AddMediatR(options => options.RegisterServicesFromAssemblyContaining(typeof(DomainModule)));
     _ = services.AddMediatR(options => options.RegisterServicesFromAssemblyContaining(typeof(ApplicatioModule)));
-    //services.AddMesInfraServices()
+    _ = services.AddMesInfraServices(config);
 });
 
 builder.Services.AddControllers();

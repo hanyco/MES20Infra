@@ -107,7 +107,7 @@ public static class MesSecurityConfiguration
             .ArgumentNotNull()
             .NotNull(x => x.ConnectionString);
 
-        addLoggers(services, options!.Logger);
+        //addLoggers(services, options!.Logger);
         addIdentity(services);
         addAuthorization(services);
         addAuthentication(services);
@@ -183,13 +183,14 @@ public static class MesSecurityConfiguration
         static void addIdentityServices(IServiceCollection services)
         {
             _ = services
-                .AddSingleton<InfraUserManager>()
-                .AddSingleton<InfraSignInManager>()
-                .AddSingleton<SignInManager<InfraIdentityUser>>(x => x.GetRequiredService<InfraSignInManager>());
+                .AddScoped<InfraUserManager>()
+                .AddScoped<InfraSignInManager>()
+                .AddScoped<SignInManager<InfraIdentityUser>>(x => x.GetRequiredService<InfraSignInManager>());
 
             _ = services
-                .AddScoped<IAuthorizationHandler, DynamicRoleHandler>()
-                .AddSingleton<IAuthorizationHandler, ClaimRequirementHandler>();
+                //.AddScoped<IAuthorizationHandler, DynamicRoleHandler>()
+                .AddSingleton<IAuthorizationHandler, ClaimRequirementHandler>()
+                ;
         }
 
         static void addUserContext(IServiceCollection services) =>

@@ -2,6 +2,6 @@
 
 namespace Domain.Queries;
 
-public sealed class GetAllProductsQuery : IRequest<GetAllProductsQueryRequest>
+public sealed class GetAllProductsQuery : IRequest<GetAllProductsQueryResponse>
 {
 }
