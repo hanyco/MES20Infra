@@ -311,6 +311,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             var table = this._databaseExplorerUserControl.SelectedTable!;
             var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
             var dto = this._dtoService.CreateByDbTable(table, columns);
+            //dto.NameSpace = this.ViewModel.nam
             this.PrepareViewModelByDto(dto);
         }
         finally

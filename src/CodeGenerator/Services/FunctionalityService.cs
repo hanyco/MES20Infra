@@ -2,6 +2,7 @@
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
+using Library.CodeGeneration.v2;
 using Library.DesignPatterns.Markers;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
@@ -32,13 +33,15 @@ internal partial class FunctionalityService(
     IBlazorPageService blazorPageService,
     IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator,
-    IApiCodeGenerator apiCodeGenerator)
+    IApiCodeGenerator apiCodeGenerator,
+    ICodeGeneratorEngine generatorEngine)
     : IFunctionalityService
     , IFunctionalityCodeService
     , IValidator<FunctionalityViewModel>
     , IAsyncTransactionSave
     , ILoggerContainer
 {
+    private readonly IApiCodeGenerator _apiCodeGenerator = apiCodeGenerator;
     private readonly IBlazorComponentCodeService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
     private readonly IBlazorPageCodeService _blazorPageCodeService = blazorPageCodeService;
@@ -48,8 +51,8 @@ internal partial class FunctionalityService(
     private readonly ICqrsCodeGeneratorService _cqrsCodeService = cqrsCodeService;
     private readonly IDtoCodeService _dtoCodeService = dtoCodeService;
     private readonly IDtoService _dtoService = dtoService;
+    private readonly ICodeGeneratorEngine _generatorEngine = generatorEngine;
     private readonly IMapperSourceGenerator _mapperSourceGenerator = mapperSourceGenerator;
-    private readonly IApiCodeGenerator _apiCodeGenerator = apiCodeGenerator;
     private readonly IModuleService _moduleService = moduleService;
     private readonly ICqrsQueryService _queryService = queryService;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
@@ -88,5 +91,5 @@ internal partial class FunctionalityService(
             .NotNull(x => x!.SourceDto)
             .NotNull(x => x!.SourceDto.Name)
             .NotNull(x => x!.SourceDto.NameSpace, paramName: "namespace")
-            .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
+            .RuleFor(x => x!.SourceDto.Module?.Id is null or > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
 }

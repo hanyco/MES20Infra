@@ -1,11 +1,15 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections;
+using System.Collections.Immutable;
+using System.Text;
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
-using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2.Back;
+using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
 
@@ -234,26 +238,49 @@ internal sealed partial class FunctionalityService
                     //var resultDtoCode = this._dtoCodeService.GenerateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
                     //// Generate the codes of CQRS handler.
                     //var handlerCode = this._cqrsCodeService.GenerateCodes(model);
-                    
+
                     // Generate the codes of CQRS parameters.
-                    var paramsDtoCode = generateParamsCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
+                    var paramsDtoCode = generateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
                     // Generate the codes of CQRS result.
-                    var resultDtoCode = generateResultCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
+                    var resultDtoCode = generateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
                     // Generate the codes of CQRS handler.
                     var handlerCode = this._cqrsCodeService.GenerateCodes(model);
 
-                    yield return paramsDtoCode!;
-                    yield return resultDtoCode!;
+                    yield return paramsDtoCode.ToCodes();
+                    yield return resultDtoCode.ToCodes();
                     yield return handlerCode!;
+
+                    Code generateCodes(DtoViewModel dto, string typeName)
+                    {
+                        var type = new Class(typeName);
+                        if (dto.BaseType is not null)
+                        {
+                            _ = type.AddBaseType(dto.BaseType);
+                        }
+                        var ctor = new Method(typeName);
+                        var ctorBody = new StringBuilder(string.Empty);
+                        foreach (var property in dto.Properties)
+                        {
+                            var prop = property.IsList ?? false
+                                ? new CodeGenProperty(property.Name!, TypePath.New<IList>([property.TypeFullName]))
+                                : new CodeGenProperty(property.Name!, property.TypeFullName);
+                            _ = type.AddMember(prop);
+                            var argName = TypeMemberNameHelper.ToArgName(prop.Name);
+                            _ = ctor.AddParameter(prop.Type, argName);
+                            _ = ctorBody.AppendLine($"this.{prop.Name} = {argName};");
+                        }
+                        if (ctorBody.Length != 0)
+                        {
+                            ctor.Body = ctorBody.ToString();
+                            _ = type.AddMember(ctor);
+                        }
+
+                        var ns = INamespace.New(dto.NameSpace).AddType(type);
+                        var codeStatement = this._generatorEngine.Generate(ns);
+                        var code = Code.New(typeName, Languages.CSharp, codeStatement);
+                        return code;
+                    }
                 }
-            }
-            Codes generateParamsCodes(DtoViewModel dto, string typeName)
-            {
-                return Codes.Empty;
-            }
-            Codes generateResultCodes(DtoViewModel dto, string typeName)
-            {
-                return Codes.Empty;
             }
         }
 
