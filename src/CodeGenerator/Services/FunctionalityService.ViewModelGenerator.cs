@@ -153,7 +153,8 @@ internal sealed partial class FunctionalityService
         // Internal method for adding table columns to DTO
         static DtoViewModel AddColumns(CreationData data, DtoViewModel dto)
         {
-            _ = dto.Properties.ClearAndAddRange(data.ViewModel.SourceDto.Properties.Select(x => new PropertyViewModel(x) { Comment = data.COMMENT })); // Add columns to DTO
+            // Add columns to DTO
+            _ = dto.Properties.ClearAndAddRange(data.ViewModel.SourceDto.Properties.Select(x => new PropertyViewModel(x) { Comment = data.COMMENT }));
             return dto;
         }
     }
@@ -515,10 +516,15 @@ internal sealed partial class FunctionalityService
 
         void createResult(CreationData data)
         {
-            data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, true);
+            data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, false);
             data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
-            data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
+            data.ViewModel.GetAllQueryViewModel.ResultDto.Properties.Add(new(StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName!)), PropertyType.Dto)
+            {
+                IsList = true,
+                IsNullable = true,
+                TypeFullName = data.SourceDtoName!
+            });
         }
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.GetAllQueryViewModel.HandleMethodBody = CodeSnippets.CreateGetAllQueryHandleMethodBody(data.ViewModel.GetAllQueryViewModel);

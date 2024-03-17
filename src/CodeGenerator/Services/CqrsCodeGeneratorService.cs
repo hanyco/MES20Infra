@@ -14,6 +14,8 @@ using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
 
+using MediatR;
+
 using Services.Helpers;
 
 using ICommand = Library.Cqrs.Models.Commands.ICommand;
@@ -67,7 +69,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         return codeGeneratorEngine.Generate(ns);
     }
-
+    class FakeReuqest : IRequest<FakeResponse>;
+    class FakeResponse;
     private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind)
     {
         //return Codes.Empty;
@@ -94,8 +97,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var handlerMethodBody = model.HandleMethodBody ?? "throw new NotImplementedException();";
                 var handlerMethodName = kind switch
                 {
-                    CodeCategory.Query => nameof(IQueryHandler<string, string>.HandleAsync),
-                    CodeCategory.Command => nameof(ICommandHandler<ICommand, string>.HandleAsync),
+                    CodeCategory.Query => nameof(IRequestHandler<FakeReuqest, FakeResponse>.Handle),
+                    CodeCategory.Command => nameof(IRequestHandler<FakeReuqest, FakeResponse>.Handle),
                     _ => throw new NotImplementedException(),
                 };
                 var handleAsyncMethod = new Method(handlerMethodName)

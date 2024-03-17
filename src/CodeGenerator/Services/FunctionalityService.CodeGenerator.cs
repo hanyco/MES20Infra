@@ -1,7 +1,9 @@
 ﻿using System.Collections.Immutable;
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration.Models;
 using Library.Results;
@@ -226,10 +228,17 @@ internal sealed partial class FunctionalityService
                         CqrsCommandViewModel => "Command",
                         _ => throw new NotImplementedException()
                     };
+                    //// Generate the codes of CQRS parameters.
+                    //var paramsDtoCode = this._dtoCodeService.GenerateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
+                    //// Generate the codes of CQRS result.
+                    //var resultDtoCode = this._dtoCodeService.GenerateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
+                    //// Generate the codes of CQRS handler.
+                    //var handlerCode = this._cqrsCodeService.GenerateCodes(model);
+                    
                     // Generate the codes of CQRS parameters.
-                    var paramsDtoCode = this._dtoCodeService.GenerateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
+                    var paramsDtoCode = generateParamsCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
                     // Generate the codes of CQRS result.
-                    var resultDtoCode = this._dtoCodeService.GenerateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
+                    var resultDtoCode = generateResultCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
                     // Generate the codes of CQRS handler.
                     var handlerCode = this._cqrsCodeService.GenerateCodes(model);
 
@@ -237,6 +246,14 @@ internal sealed partial class FunctionalityService
                     yield return resultDtoCode!;
                     yield return handlerCode!;
                 }
+            }
+            Codes generateParamsCodes(DtoViewModel dto, string typeName)
+            {
+                return Codes.Empty;
+            }
+            Codes generateResultCodes(DtoViewModel dto, string typeName)
+            {
+                return Codes.Empty;
             }
         }
 
