@@ -116,7 +116,7 @@ internal sealed class DtoService(
         return await this.DeleteAsync(dto!, persist, token);
     }
 
-    public Result<Codes> GenerateCodes(DtoViewModel viewModel, DtoCodeServiceGenerateCodesParameters? arguments = null)
+    public Result<Codes?> GenerateCodes(DtoViewModel viewModel, DtoCodeServiceGenerateCodesParameters? arguments = null)
     {
         if (!validate(viewModel).TryParse(out var validationResult))
         {
@@ -125,18 +125,14 @@ internal sealed class DtoService(
 
         var properties = viewModel.Properties.Distinct().Select(toProperty);
         var type = new Class(arguments?.TypeName ?? viewModel.Name!).AddMember(properties);
-        foreach (var claim in viewModel.SecurityClaims)
-        {
-            type.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
-        }
+        addSecurityClaims(viewModel, type);
 
         var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
 
         var statement = this._codeGeneratorEngine.Generate(nameSpace);
-        var code = new Code(type.Name, Languages.CSharp, statement.Value)
-            .With(x => x.props().Category = CodeCategory.Dto);
+        var code = new Code(type.Name, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Dto);
 
-        var result = Result.From(statement, code.ToCodes());
+        var result = Result.From<Codes?>(statement, code.ToCodes());
         return result;
 
         static CodeGenProperty toProperty(PropertyViewModel pvm)
@@ -148,10 +144,10 @@ internal sealed class DtoService(
                 : TypePath.New(typeFullName))
                 .WithNullable(pvm.IsNullable ?? false);
             var result = new CodeGenProperty(pvm.Name!, type);
-            if (pvm.Name != "Id" && !(pvm.IsNullable ?? false))
-            {
-                result.AddAttribute<RequiredAttribute>();
-            }
+            //if (pvm.Name != "Id" && !(pvm.IsNullable ?? false))
+            //{
+            //    result.AddAttribute<RequiredAttribute>();
+            //}
             foreach (var claim in pvm.SecurityClaims)
             {
                 result.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
@@ -165,6 +161,14 @@ internal sealed class DtoService(
                 .NotNullOrEmpty(x => x.Name)
                 .NotNullOrEmpty(x => x.NameSpace)
                 .Build();
+
+        static void addSecurityClaims(DtoViewModel viewModel, Class type)
+        {
+            foreach (var claim in viewModel.SecurityClaims)
+            {
+                type.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
+            }
+        }
     }
 
     public async Task<IReadOnlyList<DtoViewModel>> GetAllAsync(CancellationToken token = default)
@@ -328,7 +332,7 @@ internal sealed class DtoService(
         removeDeletedProperties(viewModel.DeletedProperties);
         updateDto(viewModel, entity.Dto, token);
         updateProperties(entity.PropertyViewModels, entity.Dto, token);
-        
+
         var result = await this.SubmitChangesAsync(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id);
         return Result.From(result, viewModel);
 
