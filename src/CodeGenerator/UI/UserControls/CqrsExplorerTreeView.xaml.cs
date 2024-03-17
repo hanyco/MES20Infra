@@ -2,6 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+
 using Library.EventsArgs;
 
 namespace HanyCo.Infra.UI.UserControls;

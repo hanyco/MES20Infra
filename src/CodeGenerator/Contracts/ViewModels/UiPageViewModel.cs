@@ -2,6 +2,8 @@
 
 using System.Collections.ObjectModel;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+
 using Library.CodeGeneration;
 
 namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;

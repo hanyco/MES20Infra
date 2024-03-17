@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Mapping;

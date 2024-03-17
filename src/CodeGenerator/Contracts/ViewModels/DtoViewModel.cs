@@ -1,14 +1,17 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+
 using Library.CodeGeneration;
 using Library.Wpf.Markers;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 
 [ViewModel]
 public sealed class DtoViewModel : InfraViewModelBase
 {
+    private TypePath? _baseType;
     private string? _comment;
     private DbObjectViewModel _dbObject = null!;
     private FunctionalityViewModel? _functionality;
@@ -18,13 +21,14 @@ public sealed class DtoViewModel : InfraViewModelBase
     private bool _isViewModel;
     private ModuleViewModel _module = null!;
     private string _nameSpace = null!;
-    private IEnumerable<ClaimViewModel>? _securityClaims;
 
     public DtoViewModel()
     { }
 
     public DtoViewModel(long? id, string name)
         : base(id, name) { }
+
+    public TypePath? BaseType { get => this._baseType; set => this.SetProperty(ref this._baseType, value); }
 
     public string? Comment { get => this._comment; set => this.SetProperty(ref this._comment, value); }
 

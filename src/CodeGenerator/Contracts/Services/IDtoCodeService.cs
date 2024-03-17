@@ -1,4 +1,4 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 

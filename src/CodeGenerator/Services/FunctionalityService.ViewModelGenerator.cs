@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Xml.Linq;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -12,6 +13,8 @@ using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
 using Library.Validations;
+
+using MediatR;
 
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -482,8 +485,8 @@ internal sealed partial class FunctionalityService
         var name = $"GetAll{StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName))}";
         var result = await TaskRunner.StartWith(data)
             .Then(createViewModel)
-            .Then(createParams)
             .Then(createResult)
+            .Then(createParams)
             .Then(createHandleMethodBody)
             .Then(setupSecurity)
             .RunAsync(token);
@@ -505,14 +508,15 @@ internal sealed partial class FunctionalityService
         void createParams(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ParamsDto = RawDto(data, false);
-            data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{name}";
+            data.ViewModel.GetAllQueryViewModel.ParamsDto.Name = $"{name}Query";
+            data.ViewModel.GetAllQueryViewModel.ParamsDto.BaseType = TypePath.New<IRequest>([data.ViewModel.GetAllQueryViewModel.ResultDto.Name!]);
             data.ViewModel.GetAllQueryViewModel.ParamsDto.IsParamsDto = true;
         }
 
         void createResult(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, true);
-            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{name}Result";
+            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsList = true;
         }

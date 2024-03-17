@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Exceptions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;

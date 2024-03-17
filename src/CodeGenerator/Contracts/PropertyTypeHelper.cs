@@ -1,4 +1,4 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Validations;

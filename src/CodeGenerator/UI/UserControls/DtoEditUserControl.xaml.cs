@@ -2,6 +2,8 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+
 using Library.ComponentModel;
 using Library.Validations;
 using Library.Wpf.Dialogs;

@@ -1,4 +1,6 @@
-﻿using Library.CodeGeneration.Models;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+
+using Library.CodeGeneration.Models;
 using Library.Data.SqlServer;
 using Library.Exceptions.Validations;
 using Library.Interfaces;

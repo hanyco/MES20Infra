@@ -1,9 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-
-
-
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI.Dialogs;

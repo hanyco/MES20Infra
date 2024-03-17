@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
@@ -128,6 +129,10 @@ internal sealed class DtoService(
             InheritanceModifier = InheritanceModifier.Sealed,
             AccessModifier = AccessModifier.Public
         }.AddMember(properties);
+        if (viewModel.BaseType is { } baseType)
+        {
+            _ = type.AddBaseType(baseType);
+        }
         addSecurityClaims(viewModel, type);
 
         var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
