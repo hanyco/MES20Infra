@@ -18,6 +18,7 @@ using Library.Validations;
 using Library.Wpf.Windows;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -36,13 +37,20 @@ public partial class App : LibApp
 
     protected override void OnConfigureServices(ServiceCollection services)
     {
-        var settings = SettingsService.Get();
-        Check.MustBeArgumentNotNull(settings.connectionString);
+        var config = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .Build();
+
+        var connectionString = config.GetConnectionString("ApplicationConnectionString").NotNull();
+        var settings = SettingsService.Get()
+            .With(x => x.connectionString = connectionString)
+            .Save();
 
         addBclServices(services);
         addDataContext(services, settings);
         addLogger(services);
-        addMesInfraServices(services, settings);
+        addMesInfraServices(services, config);
         registerServices(services);
         addPages(services);
 
@@ -53,31 +61,13 @@ public partial class App : LibApp
 
         static void addDataContext(IServiceCollection services, SettingsModel settings)
         {
-            services
-#if !DEBUG_UNIT_TEST
-               .AddDbContext<InfraWriteDbContext>(applyDefaults)
+            _ = services
+                .AddDbContext<InfraWriteDbContext>(applyDefaults)
                .AddDbContext<InfraReadDbContext>(options =>
                {
                    applyDefaults(options);
                    _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-               })
-
-#endif
-#if TEST_MODE
-               .AddDbContext<InfraWriteDbContext>(options =>
-               {
-                   _ = options.UseSqlServer(settings.connectionString!);
-                   _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-                   _ = options.EnableSensitiveDataLogging();
-               })
-               .AddDbContext<InfraReadDbContext>(options =>
-               {
-                   _ = options.UseSqlServer();
-                   _ = options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-                   _ = options.EnableSensitiveDataLogging();
-               })
-#endif
-               ;
+               });
 
             void applyDefaults(DbContextOptionsBuilder options)
                 => options
@@ -117,19 +107,8 @@ public partial class App : LibApp
             _ = services.AddTransient<SelectCqrsDialog>();
         }
 
-        static void addMesInfraServices(IServiceCollection services, SettingsModel settings)
-            => services.AddMesInfraServices(settings.connectionString!, AppLogger);
-    }
-
-    [DebuggerStepThrough]
-    private void LogEf(string message)
-        => Logger.Log(message, Library.Logging.LogLevel.Debug);
-
-    private void OnStartup(object sender, StartupEventArgs e)
-    {
-        this.InitializeLog();
-        var mainWindow = DI.GetService<MainWindow>();
-        mainWindow!.Show();
+        static void addMesInfraServices(IServiceCollection services, IConfiguration configuration)
+            => services.AddMesInfraServices(configuration);
     }
 
     private void InitializeLog()
@@ -140,6 +119,17 @@ public partial class App : LibApp
         this.Logger.Debug("Loading Main Window...");
     }
 
-    private void Logger_Logging(object? sender, ItemActedEventArgs<LogRecord<object>> e) 
+    [DebuggerStepThrough]
+    private void LogEf(string message)
+        => this.Logger.Log(message, Library.Logging.LogLevel.Debug);
+
+    private void Logger_Logging(object? sender, ItemActedEventArgs<LogRecord<object>> e)
         => Debug.WriteLine(e.Item.Message);
+
+    private void OnStartup(object sender, StartupEventArgs e)
+    {
+        this.InitializeLog();
+        var mainWindow = DI.GetService<MainWindow>();
+        mainWindow!.Show();
+    }
 }

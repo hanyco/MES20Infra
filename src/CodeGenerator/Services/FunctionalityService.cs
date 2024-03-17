@@ -86,6 +86,7 @@ internal partial class FunctionalityService(
             .ArgumentNotNull()
             .NotNull(x => x!.Name)
             .NotNull(x => x!.SourceDto)
+            .NotNull(x => x!.SourceDto.Name)
             .NotNull(x => x!.SourceDto.NameSpace, paramName: "namespace")
             .RuleFor(x => x!.SourceDto.Module?.Id > 0, () => new NullValueValidationException(nameof(model.SourceDto.Module)));
 }

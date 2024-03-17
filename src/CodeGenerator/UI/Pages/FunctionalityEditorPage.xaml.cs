@@ -132,7 +132,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     {
         await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
         this.PrepareViewModel();
-        this.ViewModel = await this.ActionScopeRunAsync(() => this._codeService.GenerateViewModelAsync(this.ViewModel), "Generating view models...").ThrowOnFailAsync(this.Title);
+        this.ViewModel = await this._codeService.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
     }
 
     private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>

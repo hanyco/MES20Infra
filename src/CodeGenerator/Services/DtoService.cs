@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using HanyCo.Infra.CodeGeneration.Definitions;
@@ -124,7 +123,11 @@ internal sealed class DtoService(
         }
 
         var properties = viewModel.Properties.Distinct().Select(toProperty);
-        var type = new Class(arguments?.TypeName ?? viewModel.Name!).AddMember(properties);
+        var type = new Class(arguments?.TypeName ?? viewModel.Name!)
+        {
+            InheritanceModifier = InheritanceModifier.Sealed,
+            AccessModifier = AccessModifier.Public
+        }.AddMember(properties);
         addSecurityClaims(viewModel, type);
 
         var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);

@@ -21,6 +21,7 @@ namespace Services;
 
 internal sealed partial class FunctionalityService
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
         if (!this.Validate(viewModel).TryParse(out var validationResult))
@@ -54,11 +55,10 @@ internal sealed partial class FunctionalityService
         ProgressData getTitle(in string description)
             => new(Description: description, Sender: nameof(FunctionalityService));
 
-        [DebuggerStepThrough]
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)
         {
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            var result = new CreationData(viewModel, (viewModel.Name ?? viewModel.SourceDto.Name).NotNull(), tokenSource);
+            var result = new CreationData(viewModel, viewModel.SourceDto.Name!, tokenSource);
             if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
             {
                 result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "));
@@ -522,6 +522,7 @@ internal sealed partial class FunctionalityService
         void setupSecurity(CreationData data) =>
             AddClaimViewModel(data.ViewModel.GetAllQueryViewModel, data);
     }
+
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
         var name = $"GetById{CommonHelpers.Purify(data.SourceDtoName)}";

@@ -99,28 +99,29 @@
             </Menu>
         </Grid>
 
-        <TabControl Grid.Row="1">
+        <TabControl Grid.Row="1" Visibility="Hidden">
             <TabItem x:Name="PageTab" Header="Page">
-                <Frame LoadCompleted="PageHostFrame_LoadCompleted" Navigating="PageHostFrame_Navigating"
+                <!--Frame placeholder-->
+            </TabItem>
+            <TabItem Header="Event Log">
+                <StackPanel>
+                    <ToolBar>
+                        <Button Name="ClearLogsButton" Click="ClearLogsButton_Click">
+                            <Path Style="{StaticResource ResourceKey=Delete}" />
+                        </Button>
+                    </ToolBar>
+                    <ListBox x:Name="LogListBox" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <Frame LoadCompleted="PageHostFrame_LoadCompleted" Navigating="PageHostFrame_Navigating"
     Name="PageHostFrame"
     Grid.Row="1"
     Navigated="PageHostFrame_Navigated"
     NavigationUIVisibility="Hidden"
     ScrollViewer.HorizontalScrollBarVisibility="Auto"
     ScrollViewer.VerticalScrollBarVisibility="Auto" />
-            </TabItem>
-            <TabItem Header="Event Log">
-                <StackPanel>
-                    <ToolBar>
-                        <Button Name="ClearLogsButton" Click="ClearLogsButton_Click">
-                            <Path Style="{StaticResource ResourceKey=Delete}"/>
-                        </Button>
-                    </ToolBar>
-                    <ListBox x:Name="LogListBox" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible"/>
-                </StackPanel>
-            </TabItem>
-        </TabControl>
-
         <StatusBar x:Name="StatusBar" Grid.Row="2">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>

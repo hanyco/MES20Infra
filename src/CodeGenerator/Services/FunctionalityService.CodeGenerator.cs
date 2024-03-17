@@ -18,7 +18,7 @@ internal sealed partial class FunctionalityService
         Check.MustBeArgumentNotNull(viewModel);
 
         Result<Codes?> result;
-        // Determine whether to update existing codes or generate new ones.
+        // To determine whether to update existing codes or generate new ones.
         var codeResult = (args?.UpdateModelView ?? false) ? viewModel.Codes : [];
         var scope = ActionScope.Begin(this.Logger, "Generating Functionality code.");
 
