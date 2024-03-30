@@ -1,7 +1,7 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
-using Library.BusinessServices;
+using Library.Data.EntityFrameworkCore;
 using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 using Library.Results;
@@ -72,7 +72,7 @@ internal sealed class CqrsCommandService(
         string? resultDtoName = null,
         CancellationToken token = default)
     {
-        var result = await ServiceHelper.GetByIdAsync(this, model.Id!.Value, this.GetAllQuery()
+        var result = await DataServiceHelper.GetByIdAsync(this, model.Id!.Value, this.GetAllQuery()
                        .Include(x => x.Module).Include(x => x.ParamDto)
                        .Include(x => x.ResultDto), x => this._converter.ToViewModel(x) as CqrsCommandViewModel, this._readDbContext.AsyncLock)
             ?? throw new Library.Exceptions.ObjectNotFoundException();
@@ -85,7 +85,7 @@ internal sealed class CqrsCommandService(
     }
 
     public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync(CancellationToken token = default)
-        => ServiceHelper.GetAllAsync(
+        => DataServiceHelper.GetAllAsync(
             this,
             this.GetAllQuery(),
             x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(),
@@ -97,7 +97,7 @@ internal sealed class CqrsCommandService(
     public async Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         model.Guid ??= Guid.NewGuid();
-        var man = ServiceHelper.InsertAsync(this,
+        var man = DataServiceHelper.InsertAsync(this,
             this._writeDbContext,
             model,
             this._converter.ToDbEntity,

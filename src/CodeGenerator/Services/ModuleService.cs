@@ -1,7 +1,7 @@
 ﻿
 using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.BusinessServices;
+using Library.Data.EntityFrameworkCore;
 using Library.Interfaces;
 using Library.Validations;
 
@@ -18,10 +18,10 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         => (this._readDbContext, this._converter) = (readDbContext, converter);
 
     public Task<IReadOnlyList<ModuleViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => ServiceHelper.GetAllAsync<ModuleViewModel, Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetAllAsync<ModuleViewModel, Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<ModuleViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => ServiceHelper.GetByIdAsync<ModuleViewModel, Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetByIdAsync<ModuleViewModel, Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public IAsyncEnumerable<Module> GetChildEntitiesAsync(Module entity, CancellationToken cancellationToken = default)
         => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id, cancellationToken);

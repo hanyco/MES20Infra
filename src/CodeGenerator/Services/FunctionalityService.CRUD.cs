@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.BusinessServices;
+using Library.Data.EntityFrameworkCore;
 using Library.Exceptions;
 using Library.Results;
 using Library.Threading;
@@ -298,7 +298,7 @@ internal partial class FunctionalityService
         {
             return actionResult.WithValue(model);
         }
-        var result = await ServiceHelper.UpdateAsync(this, this._readDbContext, model, this._converter.ToDbEntity, false, logger: this.Logger, cancellationToken: cancellationToken).ModelResult();
+        var result = await DataServiceHelper.UpdateAsync(this, this._readDbContext, model, this._converter.ToDbEntity, false, logger: this.Logger, cancellationToken: cancellationToken).ModelResult();
         if (persist)
         {
             _ = await this.SaveChangesAsync(cancellationToken);

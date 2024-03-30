@@ -171,9 +171,9 @@ internal partial class FunctionalityService
             // Create query to be used inside the body code.
             var bodyQuery = SqlStatementBuilder
                 .Select(model.ParamsDto.DbObject.Name!)
-                .SetTopCount(model.ResultDto.IsList ? null : 1)
-                .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
+                .Top(model.ResultDto.IsList ? null : 1)
                 .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact())
+                .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
                 .Build()
                 .Replace(Environment.NewLine, " ").Replace("  ", " ");
             // Create body code.

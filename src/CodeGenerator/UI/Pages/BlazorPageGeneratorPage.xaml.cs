@@ -5,7 +5,7 @@ using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.UI.Dialogs;
 using HanyCo.Infra.UI.Helpers;
 
-using Library.BusinessServices;
+using Library.Data.EntityFrameworkCore;
 using Library.EventsArgs;
 using Library.Exceptions.Validations;
 using Library.Validations;

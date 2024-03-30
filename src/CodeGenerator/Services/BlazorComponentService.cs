@@ -4,7 +4,7 @@ using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
-using Library.BusinessServices;
+using Library.Data.EntityFrameworkCore;
 using Library.DesignPatterns.Markers;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
@@ -163,10 +163,10 @@ internal sealed class BlazorComponentService(
     }
 
     public Task<IReadOnlyList<UiComponentViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => ServiceHelper.GetAllAsync<UiComponentViewModel, UiComponent>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetAllAsync<UiComponentViewModel, UiComponent>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<UiComponentViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => ServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiComponents
+        => DataServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiComponents
             .Include(x => x.UiComponentActions)
             .Include(x => x.UiComponentProperties)
             .Include(x => x.UiPageComponents)
@@ -193,7 +193,7 @@ internal sealed class BlazorComponentService(
     }
 
     public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-            => ServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
+            => DataServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();

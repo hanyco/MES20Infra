@@ -1,6 +1,6 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.BusinessServices;
+using Library.Data.EntityFrameworkCore;
 using Library.Mapping;
 using Library.Results;
 using Library.Validations;
@@ -34,7 +34,7 @@ internal sealed class CqrsQueryService(
         Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandler = true, HasPartialOnInitialize = true });
 
     public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default) =>
-        ServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
+        DataServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
 
     public async Task<Result> DeleteByIdAsync(long id, bool persist = true, CancellationToken token = default)
     {

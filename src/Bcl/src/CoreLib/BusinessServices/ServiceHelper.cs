@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 
+using Library.Data.EntityFrameworkCore;
 using Library.Data.Markers;
 using Library.Interfaces;
 using Library.Logging;
@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Library.BusinessServices;
 
+[Obsolete($"Use {nameof(DataServiceHelper)}, instead.", true)]
 public static class ServiceHelper
 {
     #region CRUD
@@ -682,6 +683,8 @@ public static class ServiceHelper
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
 /// <typeparam name="TDbEntity">The type of the database entity.</typeparam>
 /// <returns>A manipulation result containing a view model and a database entity.</returns>
+
+[Obsolete($"Use {nameof(Library.Data.EntityFrameworkCore.DataServiceHelper)}, instead.", true)]
 public record struct ManipulationResult<TViewModel, TDbEntity>(in TViewModel Model, in TDbEntity Entity)
 {
     public static implicit operator (TViewModel Model, TDbEntity? Entity)(ManipulationResult<TViewModel, TDbEntity> value) => (value.Model, value.Entity);

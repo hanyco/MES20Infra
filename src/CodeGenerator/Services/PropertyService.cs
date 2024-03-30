@@ -1,6 +1,6 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.BusinessServices;
+using Library.Data.EntityFrameworkCore;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
 using Library.Results;

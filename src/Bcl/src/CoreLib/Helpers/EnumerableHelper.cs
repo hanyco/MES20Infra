@@ -210,8 +210,8 @@ public static class EnumerableHelper
         var itemArray = items.ArgumentNotNull().ToArray();
         return itemArray switch
         {
-            [] => defaultValue, // Return the default value if the array is empty.
-            [var item] => item, // Return the single item if there's only one element.
+        [] => defaultValue, // Return the default value if the array is empty.
+        [var item] => item, // Return the single item if there's only one element.
             { Length: 2 } => aggregator.ArgumentNotNull()(itemArray.First(), itemArray.Last()), // Aggregate two elements using the aggregator function.
             [var item, .. var others] => aggregator(item, Aggregate(others, aggregator, defaultValue)) // Recursively aggregate remaining elements.
         };
@@ -523,8 +523,8 @@ public static class EnumerableHelper
     /// Returns an IEnumerable of non-null elements from the given IEnumerable of nullable elements.
     /// </summary>
     [return: NotNull]
-    public static IEnumerable<TSource> Compact<TSource>(this IEnumerable<TSource?>? items) where TSource : class 
-        => items ?
+    public static IEnumerable<TSource> Compact<TSource>(this IEnumerable<TSource?>? items) where TSource : class
+        => items?
             .Where([DebuggerStepThrough] (x) => x is not null)
             .Select([DebuggerStepThrough] (x) => x!)
            ?? [];
@@ -721,14 +721,25 @@ public static class EnumerableHelper
     /// </remarks>
     public static IEnumerable<T> FindDuplicates<T>(this IEnumerable<T> source)
     {
-        var buffer = new HashSet<T>(); // Initialize a HashSet to store unique elements.
+        var buffer = new HashSet<T>();
 
         // Use the LINQ Where operator to filter elements that have already been added to the HashSet.
         return source.Where([DebuggerStepThrough] (x) => !buffer.Add(x));
     }
 
+    public static async Task<TItem?> FirstOrDefaultAsync<TItem>(this IAsyncEnumerable<TItem?> asyncItems)
+    {
+        Check.MustBeArgumentNotNull(asyncItems);
+
+        await foreach (var asyncItem in asyncItems)
+        {
+            return asyncItem;
+        }
+        return default;
+    }
+
     public static IEnumerable<T> Flatten<T>([DisallowNull] IEnumerable<T> roots, [DisallowNull] Func<T, IEnumerable<T>?> getChildren) =>
-            roots.SelectAllChildren(getChildren);
+                roots.SelectAllChildren(getChildren);
 
     [Obsolete("Please use `Fluent()`, instead.", true)]
     public static TCollection FluentAdd<TCollection, T>(this TCollection collection, T item)
@@ -890,6 +901,27 @@ public static class EnumerableHelper
     /// </summary>
     public static IEnumerable<T?> IfEmpty<T>(this IEnumerable<T?>? items, [DisallowNull] IEnumerable<T?> defaultValues) =>
         items?.Any() is true ? items : defaultValues;
+    
+    /// <summary>
+    /// This method returns a sequence of items along with their index.
+    /// </summary>
+    /// <typeparam name="TItem">The type of items in the sequence.</typeparam>
+    /// <param name="items">The sequence of items to be indexed.</param>
+    /// <returns>A sequence of tuples, each containing the index and the corresponding item.</returns>
+    public static IEnumerable<(int Index, TItem Item)> Index<TItem>(this IEnumerable<TItem>? items)
+    {
+        if (items?.Any() is not true)
+        {
+            yield break;
+        }
+
+        var index = 0;
+        foreach (var item in items)
+        {
+            yield return (index, item);
+            index++;
+        }
+    }
 
     /// <summary>
     /// Returns an enumerable of indexes at which a specified item appears in the source sequence.
