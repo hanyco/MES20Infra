@@ -15,7 +15,7 @@
     <None Include="SecurityDescriptorService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="MediatR" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
