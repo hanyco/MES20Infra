@@ -15,10 +15,30 @@
 		<RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
 		<CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+		<RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageVersion Include="Autofac" Version="8.0.0" />
 		<PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
+		<PackageVersion Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.9.2" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.3" >
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageVersion >
+		<PackageVersion Include="MediatR" Version="12.2.0" />
+		<PackageVersion Include="Microsoft-Windows10-APICodePack-Core" Version="1.1.8" />
+		<PackageVersion Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
+		<PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+		<PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="8.0.3" />
+		<PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
+		<PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.3" />
+		<PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+		<PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	</ItemGroup>
 </Project>
