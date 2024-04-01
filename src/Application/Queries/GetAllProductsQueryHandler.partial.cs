@@ -22,12 +22,13 @@ public sealed partial class GetAllProductsQueryHandler : IRequestHandler<GetAllP
         }
 
         var result = new GetAllProductsQueryResponse([new ProductDto() { Id = 1, Name = "Monitor", Price = 9_000_000 }]);
+
         await this.OnHanded(request, result, cancellationToken);
         if (cancellationToken.IsCancellationRequested)
         {
             return await Task.FromCanceled<GetAllProductsQueryResponse>(cancellationToken);
         };
-        
+
         return await Task.FromResult(result);
     }
 

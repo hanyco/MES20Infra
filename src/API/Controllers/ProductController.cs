@@ -15,7 +15,10 @@ public class ProductController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public ProductController(IMediator mediator) => this._mediator = mediator;
+    public ProductController(IMediator mediator)
+    {
+        this._mediator = mediator;
+    }
 
     [HttpGet]
     public async Task<IEnumerable<ProductDto>> GetAll()
