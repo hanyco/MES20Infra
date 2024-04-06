@@ -27,7 +27,7 @@ public sealed partial class GetAllProductsQueryHandler : IRequestHandler<GetAllP
         if (cancellationToken.IsCancellationRequested)
         {
             return await Task.FromCanceled<GetAllProductsQueryResponse>(cancellationToken);
-        };
+        }
 
         return await Task.FromResult(result);
     }
