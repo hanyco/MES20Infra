@@ -1,5 +1,12 @@
-﻿using Domain.Dtos;
+﻿using System;
+using System.Threading.Tasks;
+
+using Domain.Commands;
+using Domain.Dtos;
 using Domain.Queries;
+
+using Library.Helpers;
+using Library.Types;
 
 using MediatR;
 
@@ -24,13 +31,34 @@ public class ProductController : ControllerBase
     public async Task<IEnumerable<ProductDto>> GetAll()
     {
         var result = await this._mediator.Send(new GetAllProductsQuery());
-        return result.Products;
+        return result.Result;
     }
 
     [HttpGet("{id:long}")]
     public async Task<ProductDto?> GetById(long id)
     {
         var result = await this._mediator.Send(new GetProductByIdQuery(id));
-        return result.Product;
+        return result.Result;
+    }
+
+    [HttpPost]
+    public async Task<Result<long?>> Insert(ProductDto product)
+    {
+        var result = await this._mediator.Send(new InsertProductCommand(product));
+        return result;
+    }
+
+    [HttpPut]
+    public async Task<Result> Update(ProductDto product)
+    {
+        var result = await this._mediator.Send(new UpdateProductCommand(product));
+        return result;
+    }
+
+    [HttpDelete("{id:long}")]
+    public async Task<Result> Delete(long id)
+    {
+        var result = await this._mediator.Send(new DeleteProductCommand(id));
+        return result;
     }
 }
