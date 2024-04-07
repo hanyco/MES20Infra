@@ -15,7 +15,7 @@ internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbCon
     private readonly InfraUserManager _userManager = userManager;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
 
-    public Task<Result> DeleteAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
+    public Task<Result<int>> DeleteAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
         throw new NotImplementedException();
 
     public async Task<IReadOnlyList<ClaimViewModel>> GetAllAsync(CancellationToken token = default)

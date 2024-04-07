@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var config = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
 builder.Services.With(services =>
@@ -21,7 +21,7 @@ builder.Services.With(services =>
      });
     _ = services.AddExceptionHandler<GlobalExceptionHander>().AddProblemDetails();
     _ = services.AddMediatR(options => options.RegisterServicesFromAssemblyContaining(typeof(DomainModule)));
-    _ = services.AddMediatR(options => options.RegisterServicesFromAssemblyContaining(typeof(ApplicatioModule)));
+    _ = services.AddMediatR(options => options.RegisterServicesFromAssemblyContaining(typeof(ApplicationModule)));
     _ = services.AddMesInfraServices(config);
 });
 

@@ -16,18 +16,18 @@ namespace Services;
 
 internal partial class FunctionalityService
 {
-    public async Task<Result> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
+    public async Task<Result<int>> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
         CheckPersistence(persist);
         if (!validate(model).TryParse(out var vr))
         {
-            return vr;
+            return vr.WithValue<int>(-1);
         }
 
         var functionality = await getFunctionality(model.Id!.Value, token);
         if (functionality == null)
         {
-            return Result.Fail<ObjectNotFoundException>();
+            return Result.Fail<int, ObjectNotFoundException>();
         }
 
         var tasks = new Collection<Func<Functionality, Task<Result>>>
@@ -42,7 +42,7 @@ internal partial class FunctionalityService
         };
 
         var result = await tasks.RunAllAsync(functionality, token);
-        return result;
+        return result.WithValue<int>(1);
 
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model)
             => model.Check().ArgumentNotNull().NotNull(x => x.Id);

@@ -93,7 +93,7 @@ internal sealed class BlazorPageService(
         return result;
     }
 
-    public Task<Result> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
+    public Task<Result<int>> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
         DataServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
 
     public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
