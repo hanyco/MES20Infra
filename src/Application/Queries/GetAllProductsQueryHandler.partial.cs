@@ -1,6 +1,7 @@
 ﻿using Domain.Dtos;
 using Domain.Queries;
 
+using Library.Data.Ado;
 using Library.Data.SqlServer;
 
 using MediatR;
@@ -9,8 +10,11 @@ namespace Application.Queries;
 
 public sealed partial class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, GetAllProductsQueryResponse>
 {
-    public GetAllProductsQueryHandler(Sql sql)
+    private readonly AdoGenericRepository _repository;
+
+    public GetAllProductsQueryHandler(AdoGenericRepository repository)
     {
+        this._repository = repository;
     }
 
     public async Task<GetAllProductsQueryResponse> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
@@ -21,7 +25,8 @@ public sealed partial class GetAllProductsQueryHandler : IRequestHandler<GetAllP
             return await Task.FromCanceled<GetAllProductsQueryResponse>(cancellationToken);
         }
 
-        var result = new GetAllProductsQueryResponse([new ProductDto() { Id = 1, Name = "Monitor", Price = 9_000_000 }]);
+        var dbResult =await _repository.GetAllAsync<Product>(cancellationToken);
+        var result = new GetAllProductsQueryResponse(dbResult);
 
         await this.OnHanded(request, result, cancellationToken);
         if (cancellationToken.IsCancellationRequested)

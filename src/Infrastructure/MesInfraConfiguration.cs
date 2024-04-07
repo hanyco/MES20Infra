@@ -2,8 +2,8 @@
 using HanyCo.Infra.Security.Model;
 using HanyCo.Infra.Web.Middlewares;
 
+using Library.Data.Ado;
 using Library.Data.SqlServer;
-using Library.Logging;
 using Library.Mapping;
 
 using Microsoft.AspNetCore.Builder;
@@ -18,10 +18,11 @@ public static class MesInfraConfiguration
     {
         var connectionString = configuration.GetConnectionString("ApplicationConnectionString");
         return services.AddMemoryCache()
-                .AddSingleton(new Sql(connectionString))
+                .AddScoped(_ => new Sql(connectionString!))
+                .AddScoped<AdoGenericRepository>()
                 .AddSingleton<IMapper, Mapper>()
                 .AddHttpContextAccessor()
-                .AddMesInfraSecurityServices(ISecurityConfigOptions.New(connectionString))
+                .AddMesInfraSecurityServices(ISecurityConfigOptions.New(connectionString!))
                 ;
     }
 

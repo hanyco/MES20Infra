@@ -41,7 +41,7 @@ internal sealed class CqrsCommandService(
     public Task<CqrsCommandViewModel> CreateAsync(CancellationToken token = default)
         => Task.FromResult(new CqrsCommandViewModel { HasPartialHandler = true, HasPartialOnInitialize = true });
 
-    public async Task<Result> DeleteAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
+    public async Task<Result<int>> DeleteAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(model?.Id);
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
