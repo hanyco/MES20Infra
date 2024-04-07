@@ -4,10 +4,10 @@ namespace Domain.Queries;
 
 public class GetProductByIdQueryRequest
 {
-    public GetProductByIdQueryRequest(ProductDto product)
+    public GetProductByIdQueryRequest(ProductDto? result)
     {
-        this.Product = product;
+        this.Result = result;
     }
 
-    public ProductDto? Product { get; }
+    public ProductDto? Result { get; }
 }

@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
+using System.Reflection;
 
+using Library.CodeGeneration;
 using Library.Dynamic;
 using Library.Interfaces;
 using Library.Results;
@@ -14,19 +17,74 @@ public sealed class Sql(string connectionString) : INew<Sql, string>
     public static object DefaultLogSender { get; } = nameof(Sql);
     public string ConnectionString { get; } = connectionString.ArgumentNotNull();
 
-    public static Task<bool> CanConnectAsync(string? connectionString, CancellationToken cancellationToken = default)
+    public static async Task<bool> CanConnectAsync(string? connectionString, CancellationToken cancellationToken = default)
     {
-        using var conn = new SqlConnection(connectionString);
-        return conn.CanConnectAsync(cancellationToken: cancellationToken);
+        await using var conn = new SqlConnection(connectionString);
+        return await conn.CanConnectAsync(cancellationToken: cancellationToken);
     }
 
-    public static Sql New(string arg) =>
-        new(arg);
+    public static (TypePath Type, string Name)? FindIdColumn<TEntity>()
+        => FindIdColumn(typeof(TEntity));
 
-    public static Task<TryMethodResult> TryConnectAsync(string? connectionString, CancellationToken cancellationToken = default)
+    public static (TypePath Type, string Name)? FindIdColumn(in Type entityType)
     {
-        using var conn = new SqlConnection(connectionString);
-        return conn.TryConnectAsync(cancellationToken: cancellationToken);
+        Check.MustBeArgumentNotNull(entityType);
+        var idColumn = Array.Find(entityType.GetProperties(), x => x.Name.EqualsTo("Id"));
+        return idColumn == null
+            ? default
+            : (idColumn.PropertyType, idColumn.Name);
+    }
+
+    public static (Func<string?> Schema, Func<string> Name, Func<IEnumerable<(string Name, TypePath Type)>> Columns, Func<(TypePath Type, string Name)?> IdColumn) GetTable<TType>()
+        => GetTable(typeof(TType));
+
+    public static (Func<string?> Schema, Func<string> Name, Func<IEnumerable<(string Name, TypePath Type)>> Columns, Func<(TypePath Type, string Name)?> IdColumn) GetTable(Type tableType)
+    {
+        Check.MustBeArgumentNotNull(tableType);
+
+        string? schema()
+        {
+            var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
+            return tableAttribute?.Schema;
+        }
+        string name()
+        {
+            var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
+            return tableAttribute?.Name ?? tableType.Name;
+        }
+        IEnumerable<(string Name, TypePath Type)> columns()
+            => tableType.GetProperties()
+                .Where(x => x.GetCustomAttribute<NotMappedAttribute>() == null)
+                .Select(x =>
+                {
+                    string name;
+                    TypePath type;
+                    int order;
+                    var columnAttribute = x.GetCustomAttribute<ColumnAttribute>();
+                    if (columnAttribute is { } attrib)
+                    {
+                        name = attrib.Name ?? x.Name;
+                        type = attrib.TypeName ?? x!.DeclaringType!.FullName!;
+                        order = attrib.Order;
+                    }
+                    else
+                    {
+                        name = x.Name;
+                        type = x.PropertyType;
+                        order = 0;
+                    }
+                    return (name, type, order);
+                }).OrderBy(x => x.order).Select(x => (x.name, x.type));
+        return (Schema: schema, Name: name, Columns: columns, IdColumn: () => FindIdColumn(tableType));
+    }
+
+    public static Sql New(string arg)
+            => new(arg);
+
+    public static async Task<TryMethodResult> TryConnectAsync(string? connectionString, CancellationToken cancellationToken = default)
+    {
+        await using var conn = new SqlConnection(connectionString);
+        return await conn.TryConnectAsync(cancellationToken: cancellationToken);
     }
 
     public void ExecuteCommand(string cmdText, Action<SqlCommand>? executor = null, Action<SqlParameterCollection>? fillParams = null)
@@ -52,6 +110,13 @@ public sealed class Sql(string connectionString) : INew<Sql, string>
         return result;
     }
 
+    public async Task<int> ExecuteNonQueryAsync(string sql, Action<SqlParameterCollection>? fillParams = null, CancellationToken cancellationToken = default)
+    {
+        var result = 0;
+        await this.ExecuteTransactionalCommandAsync(sql, cmd => result = cmd.ExecuteNonQuery(), fillParams, cancellationToken);
+        return result;
+    }
+
     public SqlDataReader ExecuteReader(string query) =>
         new SqlConnection(this.ConnectionString).ExecuteReader(query, behavior: CommandBehavior.CloseConnection);
 
@@ -65,6 +130,16 @@ public sealed class Sql(string connectionString) : INew<Sql, string>
     {
         object? result = null;
         this.ExecuteTransactionalCommand(sql, cmd => result = cmd.ExecuteScalar(), fillParams);
+        return result;
+    }
+
+    public Task<object?> ExecuteScalarCommandAsync(string sql, CancellationToken cancellationToken = default)
+        => this.ExecuteScalarCommandAsync(sql, null, cancellationToken);
+
+    public async Task<object?> ExecuteScalarCommandAsync(string sql, Action<SqlParameterCollection>? fillParams, CancellationToken cancellationToken = default)
+    {
+        object? result = null;
+        await this.ExecuteTransactionalCommandAsync(sql, cmd => result = cmd.ExecuteScalar(), fillParams, cancellationToken);
         return result;
     }
 
@@ -87,6 +162,33 @@ public sealed class Sql(string connectionString) : INew<Sql, string>
         connection.Open();
         var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
         using var command = new SqlCommand(cmdText.NotNull(), connection, transaction) { CommandTimeout = connection.ConnectionTimeout };
+        fillParams?.Invoke(command.Parameters);
+        try
+        {
+            if (executor != null)
+            {
+                executor(command);
+            }
+            else
+            {
+                _ = command.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    public async Task ExecuteTransactionalCommandAsync(string cmdText, Action<SqlCommand>? executor = null, Action<SqlParameterCollection>? fillParams = null, CancellationToken cancellationToken = default)
+    {
+        await using var connection = new SqlConnection(this.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await using var command = new SqlCommand(cmdText.NotNull(), connection, (SqlTransaction)transaction) { CommandTimeout = connection.ConnectionTimeout };
         fillParams?.Invoke(command.Parameters);
         try
         {
