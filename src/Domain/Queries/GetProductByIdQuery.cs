@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Domain.Queries;
 
-public sealed class GetProductByIdQuery : IRequest<GetProductByIdQueryRequest>
+public sealed class GetProductByIdQuery : IRequest<GetProductByIdQueryResponse>
 {
     public GetProductByIdQuery(long id)
     {
