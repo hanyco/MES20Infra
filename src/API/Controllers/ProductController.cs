@@ -1,12 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-
-using Domain.Commands;
+﻿using Domain.Commands;
 using Domain.Dtos;
 using Domain.Queries;
 
 using Library.Helpers;
-using Library.Types;
 
 using MediatR;
 
@@ -22,9 +18,13 @@ public class ProductController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public ProductController(IMediator mediator)
+    public ProductController(IMediator mediator) => this._mediator = mediator;
+
+    [HttpDelete("{id:long}")]
+    public async Task<Result> Delete(long id)
     {
-        this._mediator = mediator;
+        var result = await this._mediator.Send(new DeleteProductCommand(id));
+        return result;
     }
 
     [HttpGet]
@@ -52,13 +52,6 @@ public class ProductController : ControllerBase
     public async Task<Result> Update(Product product)
     {
         var result = await this._mediator.Send(new UpdateProductCommand(product));
-        return result;
-    }
-
-    [HttpDelete("{id:long}")]
-    public async Task<Result> Delete(long id)
-    {
-        var result = await this._mediator.Send(new DeleteProductCommand(id));
         return result;
     }
 }
