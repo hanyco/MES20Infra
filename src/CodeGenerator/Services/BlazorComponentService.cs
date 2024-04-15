@@ -10,7 +10,6 @@ using Library.Exceptions.Validations;
 using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
-using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +19,7 @@ using CustomButtonViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiCompon
 using UiComponentViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentViewModel;
 using UiPropertyViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiPropertyViewModel;
 
-namespace Services;
+namespace Services.CodeGen;
 
 [Service]
 [Stateless]
@@ -92,12 +91,7 @@ internal sealed class BlazorComponentService(
         return result;
     }
 
-    /// <summary>
-    /// Deletes the asynchronous.
-    /// </summary>
-    /// <param name="model">The identifier.</param>
-    /// <returns></returns>
-    public async Task<Result> DeleteAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<int>> DeleteAsync(UiComponentViewModel model, bool persist = true, CancellationToken token = default)
     {
         var cmpQuery = from c in this._writeDbContext.UiComponents
                        where c.Id == model.Id
@@ -107,7 +101,7 @@ internal sealed class BlazorComponentService(
                            props = c.UiComponentProperties.Select(x => new { x.Id, x.PositionId }),
                            actions = c.UiComponentActions.Select(x => new { x.Id, x.PositionId }),
                        };
-        var cmp = await cmpQuery.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var cmp = await cmpQuery.FirstOrDefaultAsync(cancellationToken: token);
         Check.MustBeNotNull(cmp, () => new NotFoundValidationException("Component not found"));
         _ = this._writeDbContext.RemoveById<UiComponent>(cmp.Id)
             .RemoveById<UiBootstrapPosition>(cmp.props.Select(x => x.PositionId))
@@ -115,16 +109,16 @@ internal sealed class BlazorComponentService(
 
         if (!persist)
         {
-            return Result.Succeed;
+            return Result.Success(-1);
         }
 
         try
         {
-            return await this.SaveChangesAsync(cancellationToken);
+            return await this.SaveChangesAsync(token);
         }
         catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("infra.UiPageComponent") ?? false)
         {
-            return Result.Fail();
+            return Result.Fail<int>();
         }
     }
 
@@ -163,10 +157,10 @@ internal sealed class BlazorComponentService(
     }
 
     public Task<IReadOnlyList<UiComponentViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetAllAsync<UiComponentViewModel, UiComponent>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => this.GetAllAsync<UiComponentViewModel, UiComponent>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<UiComponentViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiComponents
+        => this.GetByIdAsync(id, this._readDbContext.UiComponents
             .Include(x => x.UiComponentActions)
             .Include(x => x.UiComponentProperties)
             .Include(x => x.UiPageComponents)
@@ -193,7 +187,7 @@ internal sealed class BlazorComponentService(
     }
 
     public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-            => DataServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
+            => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
@@ -273,7 +267,7 @@ internal sealed class BlazorComponentService(
         {
             var result = await this.SubmitChangesAsync(persist, token: cancellationToken);
             model.Id = entity.Id;
-            return Result.From<UiComponentViewModel>(result, model);
+            return Result.From(result, model);
         }
     }
 
@@ -286,6 +280,6 @@ internal sealed class BlazorComponentService(
                         select c.Id;
         var duplicate = await nameQuery.AnyAsync(cancellationToken: cancellationToken);
         var isDuplicated = Check.If(duplicate, () => new ObjectDuplicateValidationException(model.Name));
-        return isDuplicated.IsSucceed ? isDuplicated.WithValue(model) : Result.Success<UiComponentViewModel>(model);
+        return isDuplicated.IsSucceed ? isDuplicated.WithValue(model) : Result.Success(model);
     }
 }

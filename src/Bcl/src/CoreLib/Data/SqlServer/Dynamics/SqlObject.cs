@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Dynamic;
+
+using Microsoft.Data.SqlClient;
 
 namespace Library.Data.SqlServer.Dynamics;
 
@@ -9,17 +10,15 @@ namespace Library.Data.SqlServer.Dynamics;
 public abstract class SqlObject<TSqlObject, TOwner> : DynamicObject, ISqlObject
     where TSqlObject : SqlObject<TSqlObject, TOwner>
 {
-    private readonly string? _connectionString;
-
     protected SqlObject(TOwner owner, string name, string? schema = null, string? connectionString = null)
     {
         this.Owner = owner;
         this.Name = name;
-        this._connectionString = connectionString;
+        this.ConnectionString = new SqlConnectionStringBuilder(connectionString).ConnectionString;
         this.Schema = schema;
     }
 
-    public string ConnectionString => new SqlConnectionStringBuilder(this._connectionString).ConnectionString;
+    public string ConnectionString { get; }
 
     public virtual string Name { get; }
 
@@ -32,13 +31,15 @@ public abstract class SqlObject<TSqlObject, TOwner> : DynamicObject, ISqlObject
 
     protected static IEnumerable<DataRow> GetDataRows(string connectionString, string tableName)
     {
-        using var dataSet = GetSql(connectionString).FillDataSetByTableNames(tableName);
+        using var conn = new SqlConnection(connectionString);
+        using var dataSet = conn.FillDataSetByTableNames(tableName);
         return SqlObject<TSqlObject, TOwner>.GetRows(dataSet);
     }
 
     protected static IEnumerable<DataRow> GetQueryItems(string connectionString, string query)
     {
-        using var dataSet = GetSql(connectionString).FillDataSet(query);
+        using var conn = new SqlConnection(connectionString);
+        using var dataSet = conn.FillDataSet(query);
         return GetRows(dataSet);
     }
 
@@ -55,5 +56,5 @@ public abstract class SqlObject<TSqlObject, TOwner> : DynamicObject, ISqlObject
         => GetSql(this.ConnectionString);
 
     private static IEnumerable<DataRow> GetRows(DataSet ds)
-         => ds.Dispose(ds.GetTables().FirstOrDefault()?.Dispose(t => (t?.Select()))) ?? Enumerable.Empty<DataRow>();
+         => ds.Dispose(ds.GetTables().FirstOrDefault()?.Dispose(t => t?.Select())) ?? Enumerable.Empty<DataRow>();
 }

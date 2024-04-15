@@ -1,6 +1,6 @@
 ﻿namespace Domain.Dtos;
 
-public sealed class ProductDto
+public sealed class Product
 {
     public string? Description { get; set; }
 

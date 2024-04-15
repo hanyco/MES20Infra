@@ -33,7 +33,7 @@ internal sealed class CqrsQueryService(
     public Task<CqrsQueryViewModel> CreateAsync(CancellationToken token = default) =>
         Task.FromResult(new CqrsQueryViewModel { Category = CqrsSegregateCategory.Read, HasPartialHandler = true, HasPartialOnInitialize = true });
 
-    public Task<Result> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default) =>
+    public Task<Result<int>> DeleteAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default) =>
         DataServiceHelper.DeleteAsync<CqrsQueryViewModel, CqrsSegregate>(this, this._writeDbContext, model, persist, persist);
 
     public async Task<Result> DeleteByIdAsync(long id, bool persist = true, CancellationToken token = default)

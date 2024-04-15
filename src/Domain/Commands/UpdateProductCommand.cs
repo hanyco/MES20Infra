@@ -8,10 +8,10 @@ namespace Domain.Commands;
 
 public sealed class UpdateProductCommand : IRequest<Result>
 {
-    public UpdateProductCommand(ProductDto product)
+    public UpdateProductCommand(Product product)
     {
         this.Product = product;
     }
 
-    public ProductDto Product { get; }
+    public Product Product { get; }
 }

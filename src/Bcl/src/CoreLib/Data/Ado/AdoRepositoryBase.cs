@@ -10,14 +10,14 @@ using static Library.Data.SqlServer.SqlStatementBuilder;
 
 namespace Library.Data.Ado;
 
-public abstract class AdoRepositoryBase<TEntity>(in Sql sql) where TEntity : new()
+public abstract class AdoRepositoryBase(in Sql sql)
 {
     protected AdoRepositoryBase(in string connectionString)
         : this(Sql.New(connectionString)) { }
 
     protected Sql Sql { get; } = sql;
 
-    protected virtual async Task<Result<int>> OnDeleteAsync(TEntity model, bool persist = true, CancellationToken token = default)
+    protected virtual async Task<Result<int>> OnDeleteAsync<TEntity>(TEntity model, bool persist = true, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(model);
         Check.MustBe(persist, () => new NotSupportedException($"{nameof(persist)} must be true in this content."));
@@ -39,56 +39,59 @@ public abstract class AdoRepositoryBase<TEntity>(in Sql sql) where TEntity : new
     }
 
     [return: NotNull]
-    protected virtual async IAsyncEnumerable<TEntity> OnGetAll([DisallowNull] Func<SqlDataReader, TEntity> mapper, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    protected virtual async IAsyncEnumerable<TEntity> OnGetAll<TEntity>([DisallowNull] Func<SqlDataReader, TEntity> mapper, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var query = Select<TEntity>().WithNoLock().Build();
-        await foreach (var entity in this.InnerGetAll(query, mapper.ArgumentNotNull(), cancellationToken))
+        await foreach (var entity in this.ExecuteReaderAsync(query, mapper.ArgumentNotNull(), cancellationToken))
         {
             yield return entity;
         }
     }
 
     [return: NotNull]
-    protected virtual async IAsyncEnumerable<TEntity> OnGetAll([DisallowNull] string query, [DisallowNull] Func<SqlDataReader, TEntity> mapper, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    protected virtual async IAsyncEnumerable<TEntity> OnGetAll<TEntity>([DisallowNull] string query, [DisallowNull] Func<SqlDataReader, TEntity> mapper, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var entity in this.InnerGetAll(query.ArgumentNotNull(), mapper.ArgumentNotNull(), cancellationToken))
+        await foreach (var entity in this.ExecuteReaderAsync(query.ArgumentNotNull(), mapper.ArgumentNotNull(), cancellationToken))
         {
             yield return entity;
         }
     }
 
     [return: NotNull]
-    protected virtual async IAsyncEnumerable<TEntity> OnGetAll([DisallowNull] string query, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    protected virtual async IAsyncEnumerable<TEntity> OnGetAll<TEntity>([DisallowNull] string query, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TEntity : new()
     {
-        await foreach (var entity in this.InnerGetAll(query.ArgumentNotNull(), r => Mapper(r, typeof(TEntity).GetProperties()), cancellationToken))
+        await foreach (var entity in this.ExecuteReaderAsync(query.ArgumentNotNull(), r => Mapper<TEntity>(r, typeof(TEntity).GetProperties()), cancellationToken))
         {
             yield return entity;
         }
     }
 
     [return: NotNull]
-    protected virtual async IAsyncEnumerable<TEntity> OnGetAll([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    protected virtual async IAsyncEnumerable<TEntity> OnGetAll<TEntity>([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TEntity : new()
     {
         var query = Select<TEntity>().WithNoLock().Build();
-        await foreach (var entity in this.InnerGetAll(query, r => Mapper(r, typeof(TEntity).GetProperties()), cancellationToken))
+        await foreach (var entity in this.ExecuteReaderAsync(query, r => Mapper<TEntity>(r, typeof(TEntity).GetProperties()), cancellationToken))
         {
             yield return entity;
         }
     }
 
-    protected virtual Task<TEntity?> OnGetByIdAsync(object idValue, [DisallowNull] Func<SqlDataReader, TEntity> mapper, CancellationToken cancellationToken = default)
+    protected virtual Task<TEntity?> OnGetByIdAsync<TEntity>(object idValue, [DisallowNull] Func<SqlDataReader, TEntity> mapper, CancellationToken cancellationToken = default)
     {
         var query = Select<TEntity>().Top(1).Where($"{Sql.FindIdColumn<TEntity>()} = {idValue}").WithNoLock().Build();
-        return this.InnerGetAll(query, mapper.ArgumentNotNull(), cancellationToken).FirstOrDefaultAsync();
+        return this.ExecuteReaderAsync(query, mapper.ArgumentNotNull(), cancellationToken).FirstOrDefaultAsync();
     }
 
-    protected virtual Task<TEntity?> OnGetByIdAsync(object idValue, CancellationToken cancellationToken = default)
+    protected virtual Task<TEntity?> OnGetByIdAsync<TEntity>(object idValue, CancellationToken cancellationToken = default)
+        where TEntity : new()
     {
         var query = Select<TEntity>().Top(1).Where($"{Sql.FindIdColumn<TEntity>()} = {idValue}").WithNoLock().Build();
-        return this.InnerGetAll(query, r => Mapper(r, typeof(TEntity).GetProperties()), cancellationToken).FirstOrDefaultAsync();
+        return this.ExecuteReaderAsync(query, r => Mapper<TEntity>(r, typeof(TEntity).GetProperties()), cancellationToken).FirstOrDefaultAsync();
     }
 
-    protected virtual async Task<Result<TEntity>> OnInsertAsync(TEntity model, bool persist = true, CancellationToken cancellationToken = default)
+    protected virtual async Task<Result<TEntity>> OnInsertAsync<TEntity>(TEntity model, bool persist = true, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(model);
         Check.MustBe(persist, () => new NotSupportedException($"{nameof(persist)} must be true in this content."));
@@ -112,24 +115,18 @@ public abstract class AdoRepositoryBase<TEntity>(in Sql sql) where TEntity : new
         }
     }
 
-    private static TEntity Mapper(in SqlDataReader reader, in System.Reflection.PropertyInfo[] properties)
+    private static TEntity Mapper<TEntity>(in SqlDataReader reader, in System.Reflection.PropertyInfo[] properties)
+        where TEntity : new()
     {
         var result = new TEntity();
         foreach (var property in properties)
         {
-            property.SetValue(reader[property.Name], result);
+            property.SetValue(result, reader[property.Name]);
         }
         return result;
     }
 
     [return: NotNull]
-    private async IAsyncEnumerable<TEntity> InnerGetAll([DisallowNull] string query, [DisallowNull] Func<SqlDataReader, TEntity> mapper, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await using var reader = await this.Sql.ExecuteReaderAsync(query, cancellationToken);
-
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            yield return mapper(reader);
-        }
-    }
+    private IAsyncEnumerable<TEntity> ExecuteReaderAsync<TEntity>([DisallowNull] string query, [DisallowNull] Func<SqlDataReader, TEntity> mapper, CancellationToken cancellationToken = default)
+        => this.Sql.ExecuteReaderAsync(query, mapper, cancellationToken);
 }

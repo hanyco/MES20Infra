@@ -28,14 +28,14 @@ internal sealed class PropertyService : IPropertyService
         this._securityService = securityService;
     }
 
-    public async Task<Result> DeleteAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<int>> DeleteAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(model?.Id);
 
         _ = this._writeDbContext.RemoveById<Property>(model.Id.Value);
-        _ = await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
+        var dbResult = await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
 
-        return Result.Succeed;
+        return dbResult;
     }
 
     public async Task<bool> DeleteByParentIdAsync(long parentId, bool persist = true, CancellationToken cancellationToken = default)

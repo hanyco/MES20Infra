@@ -68,11 +68,11 @@ internal sealed class DtoService(
         return result;
     }
 
-    public async Task<Result> DeleteAsync(DtoViewModel model, bool persist, CancellationToken token = default)
+    public async Task<Result<int>> DeleteAsync(DtoViewModel model, bool persist, CancellationToken token = default)
     {
         if (!validate(model, token).TryParse(out var validationResult))
         {
-            return validationResult;
+            return validationResult.WithValue<int>(-1);
         }
 
         try
@@ -87,7 +87,7 @@ internal sealed class DtoService(
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the CQRS Segregate and try again.");
-            return Result.Fail();
+            return Result.Fail<int>();
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_UiComponent_Property"))
         {
@@ -95,7 +95,7 @@ internal sealed class DtoService(
                                                   "Can not delete DTO.",
                                                   "DTO In Use",
                                                   "In order to delete this DTO, delete the UI Component property and try again.");
-            return Result.Fail();
+            return Result.Fail<int>();
         }
 
         static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default)

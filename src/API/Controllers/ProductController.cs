@@ -28,28 +28,28 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IEnumerable<ProductDto>> GetAll()
+    public async Task<IEnumerable<Product>> GetAll()
     {
         var result = await this._mediator.Send(new GetAllProductsQuery());
         return result.Result;
     }
 
     [HttpGet("{id:long}")]
-    public async Task<ProductDto?> GetById(long id)
+    public async Task<Product?> GetById(long id)
     {
         var result = await this._mediator.Send(new GetProductByIdQuery(id));
         return result.Result;
     }
 
     [HttpPost]
-    public async Task<Result<long?>> Insert(ProductDto product)
+    public async Task<Result<long?>> Insert(Product product)
     {
         var result = await this._mediator.Send(new InsertProductCommand(product));
         return result;
     }
 
     [HttpPut]
-    public async Task<Result> Update(ProductDto product)
+    public async Task<Result> Update(Product product)
     {
         var result = await this._mediator.Send(new UpdateProductCommand(product));
         return result;
