@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 
+using HanyCo.Infra.Web.Middlewares;
+
 namespace API.Middlewares;
 
-public class LoggerMiddleware(RequestDelegate next, ILogger<LoggerMiddleware> logger)
+public class LoggerMiddleware(RequestDelegate next, ILogger<LoggerMiddleware> logger):MesMiddlewareBase
 {
     private readonly ILogger<LoggerMiddleware> _logger = logger;
     private readonly RequestDelegate _next = next;

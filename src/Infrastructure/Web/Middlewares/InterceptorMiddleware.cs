@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace HanyCo.Infra.Web.Middlewares;
 
 [ContentGeneratorMiddleware]
-public sealed class InterceptorMiddleware(RequestDelegate next) : InfraMiddlewareBase(next)
+public sealed class InterceptorMiddleware(RequestDelegate next) : MesMiddlewareBase(next)
 {
     protected override async Task OnExecutingAsync(ItemActingEventArgs<HttpContext> e)
     {
