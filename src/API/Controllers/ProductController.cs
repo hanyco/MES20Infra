@@ -2,8 +2,6 @@
 using Domain.Dtos;
 using Domain.Queries;
 
-using Library.Helpers;
-
 using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
@@ -19,13 +17,6 @@ public class ProductController : ControllerBase
     private readonly IMediator _mediator;
 
     public ProductController(IMediator mediator) => this._mediator = mediator;
-
-    [HttpDelete("{id:long}")]
-    public async Task<Result> Delete(long id)
-    {
-        var result = await this._mediator.Send(new DeleteProductCommand(id));
-        return result;
-    }
 
     [HttpGet]
     public async Task<IEnumerable<Product>> GetAll()
@@ -49,9 +40,17 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<Result> Update(Product product)
+    public async Task<Result> Update([FromBody]long id, Product product)
     {
-        var result = await this._mediator.Send(new UpdateProductCommand(product));
+        var result = await this._mediator.Send(new UpdateProductCommand(id, product));
         return result;
     }
+    
+    [HttpDelete("{id:long}")]
+    public async Task<Result> Delete(long id)
+    {
+        var result = await this._mediator.Send(new DeleteProductCommand(id));
+        return result;
+    }
+
 }
