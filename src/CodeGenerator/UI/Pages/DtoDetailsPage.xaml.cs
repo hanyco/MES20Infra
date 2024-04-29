@@ -198,7 +198,7 @@ public partial class DtoDetailsPage
     {
         var dto = this.CqrsExplorerTreeView.SelectedItem.Cast().As<DtoViewModel>();
         Check.MustBeNotNull(dto, () => "Please select a DTO");
-        var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull().Value);
+        var viewModel = await this._service.GetByIdAsync(dto.Id.NotNull());
         this.ViewModel = viewModel.NotNull(() => new NotFoundValidationException("Entity not found."));
         this.EndActionScope();
     }
