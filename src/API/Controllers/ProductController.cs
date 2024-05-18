@@ -39,8 +39,8 @@ public class ProductController : ControllerBase
         return result;
     }
 
-    [HttpPut]
-    public async Task<Result> Update(long id, Product product)
+    [HttpPut("{id}")]
+    public async Task<Result> Update(long id, [FromBody]Product product)
     {
         var result = await this._mediator.Send(new UpdateProductCommand(id, product));
         return result;
