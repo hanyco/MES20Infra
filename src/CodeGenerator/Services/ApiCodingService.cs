@@ -11,9 +11,9 @@ using Services.Helpers;
 
 namespace Services;
 
-internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodeGenerator
+internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodingService
 {
-    public Result<Codes> GenerateCodes(ApiCodingViewModel viewModel, ApiCodingArgs? arguments = null)
+    public Result<Codes?> GenerateCodes(ApiCodingViewModel viewModel, ApiCodingArgs? arguments = null)
     {
         // Validation
         {

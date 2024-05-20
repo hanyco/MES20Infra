@@ -5,7 +5,7 @@ using Library.Interfaces;
 
 namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
-public interface IApiCodeGenerator : IBusinessService, ICodeGenerator<ApiCodingViewModel, ApiCodingArgs>
+public interface IApiCodingService : IBusinessService, ICodeGenerator<ApiCodingViewModel, ApiCodingArgs>
 {
 }
 

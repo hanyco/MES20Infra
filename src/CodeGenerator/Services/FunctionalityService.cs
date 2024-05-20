@@ -33,7 +33,7 @@ internal partial class FunctionalityService(
     IBlazorPageService blazorPageService,
     IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator,
-    IApiCodeGenerator apiCodeGenerator,
+    IApiCodingService apiCodeGenerator,
     ICodeGeneratorEngine generatorEngine)
     : IFunctionalityService
     , IFunctionalityCodeService
@@ -41,7 +41,7 @@ internal partial class FunctionalityService(
     , IAsyncTransactionSave
     , ILoggerContainer
 {
-    private readonly IApiCodeGenerator _apiCodeGenerator = apiCodeGenerator;
+    private readonly IApiCodingService _apiCodeGenerator = apiCodeGenerator;
     private readonly IBlazorComponentCodeService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
     private readonly IBlazorPageCodeService _blazorPageCodeService = blazorPageCodeService;
