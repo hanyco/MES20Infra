@@ -48,10 +48,10 @@ public partial class App : LibApp
             .Save();
 
         addBclServices(services);
-        addDataContext(services, settings);
+        //addDataContext(services, settings);
         addLogger(services);
-        addMesInfraServices(services, config);
-        registerServices(services);
+        //addMesInfraServices(services, config);
+        //registerServices(services);
         addPages(services);
 
         return;
