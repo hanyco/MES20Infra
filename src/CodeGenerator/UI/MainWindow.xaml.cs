@@ -27,10 +27,10 @@ public partial class MainWindow
     private readonly IEventualLogger _logger;
     private readonly InfraWriteDbContext _writeDbContext;
 
-    public MainWindow(InfraWriteDbContext writeDbContext, IEventualLogger logger, IProgressReport reportHost)
+    public MainWindow(IEventualLogger logger, IProgressReport reportHost)
     {
         this.InitializeComponent();
-        this._writeDbContext = writeDbContext;
+        //this._writeDbContext = writeDbContext;
         this._logger = logger;
         reportHost.Reported += this.ReportHost_Reported;
         reportHost.Ended += this.ReportHost_Ended;
@@ -181,15 +181,15 @@ public partial class MainWindow
         try
         {
             this._logger.Debug("Connecting to database...");
-            var created = await this._writeDbContext.Database.EnsureCreatedAsync();
-            if (created)
-            {
-                MsgBox2.Warn(
-                    "Database created.",
-                    "Database not found. But created from schema information.",
-                    footerText: "Please remember to initialize database, if required.",
-                    footerIcon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Warning);
-            }
+            //var created = await this._writeDbContext.Database.EnsureCreatedAsync();
+            //if (created)
+            //{
+            //    MsgBox2.Warn(
+            //        "Database created.",
+            //        "Database not found. But created from schema information.",
+            //        footerText: "Please remember to initialize database, if required.",
+            //        footerIcon: Microsoft.WindowsAPICodePack.Dialogs.TaskDialogStandardIcon.Warning);
+            //}
 
             this._logger.Debug("Ready.");
             this.IsInitiated = true;

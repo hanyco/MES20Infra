@@ -48,10 +48,10 @@ public partial class App : LibApp
             .Save();
 
         addBclServices(services);
-        //addDataContext(services, settings);
+        addDataContext(services, settings);
         addLogger(services);
-        //addMesInfraServices(services, config);
-        //registerServices(services);
+        addMesInfraServices(services, config);
+        registerServices(services);
         addPages(services);
 
         return;
@@ -94,15 +94,16 @@ public partial class App : LibApp
         {
             _ = services
                .AddSingleton<MainWindow>()
-               .AddTransient<SettingsPage>()
-               .AddTransient<DtoDetailsPage>()
-               .AddTransient<CqrsQueryDetailsPage>()
-               .AddTransient<CqrsCommandDetailsPage>()
-               .AddTransient<CodeDetailsPage>()
-               .AddTransient<CreateTableCrudPage>()
-               .AddTransient<BlazorComponentGenertorPage>()
-               .AddTransient<BlazorPageGeneratorPage>()
-               .AddTransient<FunctionalityEditorPage>();
+               //.AddTransient<SettingsPage>()
+               //.AddTransient<DtoDetailsPage>()
+               //.AddTransient<CqrsQueryDetailsPage>()
+               //.AddTransient<CqrsCommandDetailsPage>()
+               //.AddTransient<CodeDetailsPage>()
+               //.AddTransient<CreateTableCrudPage>()
+               //.AddTransient<BlazorComponentGenertorPage>()
+               //.AddTransient<BlazorPageGeneratorPage>()
+               //.AddTransient<FunctionalityEditorPage>()
+               ;
 
             _ = services.AddTransient<SelectCqrsDialog>();
         }
