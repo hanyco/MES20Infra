@@ -56,8 +56,8 @@ public partial class App : LibApp
 
         return;
 
-        static void addBclServices(IServiceCollection services) =>
-            services.AddScoped<ICodeGeneratorEngine, RoslynCodeGenerator>();
+        static void addBclServices(IServiceCollection services)
+            => services.AddScoped<ICodeGeneratorEngine, RoslynCodeGenerator>();
 
         static void addDataContext(IServiceCollection services, SettingsModel settings)
         {
@@ -94,15 +94,15 @@ public partial class App : LibApp
         {
             _ = services
                .AddSingleton<MainWindow>()
-               //.AddTransient<SettingsPage>()
-               //.AddTransient<DtoDetailsPage>()
-               //.AddTransient<CqrsQueryDetailsPage>()
-               //.AddTransient<CqrsCommandDetailsPage>()
-               //.AddTransient<CodeDetailsPage>()
-               //.AddTransient<CreateTableCrudPage>()
-               //.AddTransient<BlazorComponentGenertorPage>()
-               //.AddTransient<BlazorPageGeneratorPage>()
-               //.AddTransient<FunctionalityEditorPage>()
+               .AddTransient<SettingsPage>()
+               .AddTransient<DtoDetailsPage>()
+               .AddTransient<CqrsQueryDetailsPage>()
+               .AddTransient<CqrsCommandDetailsPage>()
+               .AddTransient<CodeDetailsPage>()
+               .AddTransient<CreateTableCrudPage>()
+               .AddTransient<BlazorComponentGenertorPage>()
+               .AddTransient<BlazorPageGeneratorPage>()
+               .AddTransient<FunctionalityEditorPage>()
                ;
 
             _ = services.AddTransient<SelectCqrsDialog>();
