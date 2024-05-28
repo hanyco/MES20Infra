@@ -409,32 +409,36 @@ internal sealed partial class FunctionalityService
             .Then(createDeleteApi)
             .RunAsync(token);
 
-        void initialize(CreationData data) =>
-            data.ViewModel.ApiCodingViewModel
+        void initialize(CreationData data)
+            => data.ViewModel.ApiCodingViewModel
                 .With(x => x.NameSpace = TypePath.Combine(GetRootNameSpace(data), "Controllers"))
-                .With(x => x.CtorParams.Add((MethodArgument.New(TypePath.New<IMediator>()), true)));
+                .With(x => x.ControllerName = string.Concat(data.SourceDtoName, "Controller"));
 
         void createCtor(CreationData data)
+            => data.ViewModel.ApiCodingViewModel.CtorParams.Add((MethodArgument.New(TypePath.New<IMediator>()), true));
+
+        void createGetAllApi(CreationData data)
         {
             var returnType = TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!));
             var getAllApi = ApiMethod.New("GetAll", returnType);
             data.ViewModel.ApiCodingViewModel.Apis.Add(getAllApi);
         }
 
-        void createGetAllApi(CreationData data) =>
-            data.ViewModel.ApiCodingViewModel.GetAllApi.Body = "return Task.CompletedTask;";
+        void createGetByIdApi(CreationData data)
+        {
+        }
 
-        void createGetByIdApi(CreationData data) =>
-            data.ViewModel.ApiCodingViewModel.GetById.Body = "return Task.CompletedTask;";
+        void createInsertApi(CreationData data)
+        {
+        }
 
-        void createInsertApi(CreationData data) =>
-            data.ViewModel.ApiCodingViewModel.Post.Body = "return Task.CompletedTask;";
+        void createUpdateApi(CreationData data)
+        {
+        }
 
-        void createUpdateApi(CreationData data) =>
-            data.ViewModel.ApiCodingViewModel.Put.Body = "return Task.CompletedTask;";
-
-        void createDeleteApi(CreationData data) =>
-            data.ViewModel.ApiCodingViewModel.Delete.Body = "return Task.CompletedTask;";
+        void createDeleteApi(CreationData data)
+        {
+        }
     }
 
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)
