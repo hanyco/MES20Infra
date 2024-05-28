@@ -64,7 +64,7 @@ internal sealed partial class FunctionalityService
             var result = new CreationData(viewModel, viewModel.SourceDto.Name!, tokenSource);
             if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
             {
-                result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "),"Dtos");
+                result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "), "Dtos");
             }
 
             // Return a success result with the result and cancellationTokenSource
@@ -129,10 +129,10 @@ internal sealed partial class FunctionalityService
 
     [DebuggerStepThrough]
     private static string GetMapperNameSpace(CreationData data) =>
-        TypePath.Combine(GetDtosNameSpace(data), "Mapper");
+        TypePath.Combine(GetRootNameSpace(data), "Mapper");
 
     [DebuggerStepThrough]
-    private static string GetDtosNameSpace(CreationData data) =>
+    private static string GetRootNameSpace(CreationData data) =>
         data.ViewModel.SourceDto.NameSpace.TrimEnd(".Dtos").TrimEnd(".Dto");
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
@@ -141,7 +141,7 @@ internal sealed partial class FunctionalityService
         var dto = new DtoViewModel(data.ViewModel.SourceDto.Id, data.ViewModel.Name!)
         {
             Comment = data.COMMENT, // Set DTO comment
-            NameSpace = TypePath.Combine(GetDtosNameSpace(data), "Dtos"), // Set DTO namespace
+            NameSpace = TypePath.Combine(GetRootNameSpace(data), "Dtos"), // Set DTO namespace
             Functionality = data.ViewModel,
             DbObject = data.ViewModel.SourceDto.DbObject
         }
@@ -401,6 +401,7 @@ internal sealed partial class FunctionalityService
     {
         return TaskRunner.StartWith(data)
             .Then(initialize)
+            .Then(createCtor)
             .Then(createGetAllApi)
             .Then(createGetByIdApi)
             .Then(createInsertApi)
@@ -410,8 +411,15 @@ internal sealed partial class FunctionalityService
 
         void initialize(CreationData data) =>
             data.ViewModel.ApiCodingViewModel
-                .With(x => x.DtoType = data.ViewModel.SourceDto.FullName)
-                .With(x => x.NameSpace = TypePath.Combine(GetDtosNameSpace(data), "Controllers"));
+                .With(x => x.NameSpace = TypePath.Combine(GetRootNameSpace(data), "Controllers"))
+                .With(x => x.CtorParams.Add((MethodArgument.New(TypePath.New<IMediator>()), true)));
+
+        void createCtor(CreationData data)
+        {
+            var returnType = TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!));
+            var getAllApi = ApiMethod.New("GetAll", returnType);
+            data.ViewModel.ApiCodingViewModel.Apis.Add(getAllApi);
+        }
 
         void createGetAllApi(CreationData data) =>
             data.ViewModel.ApiCodingViewModel.GetAllApi.Body = "return Task.CompletedTask;";
@@ -446,8 +454,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.DeleteCommandViewModel.Name = $"{name}Command";
             data.ViewModel.DeleteCommandViewModel.Category = CqrsSegregateCategory.Delete;
-            data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Commands");
-            data.ViewModel.DeleteCommandViewModel.DtoNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Dtos");
+            data.ViewModel.DeleteCommandViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Commands");
+            data.ViewModel.DeleteCommandViewModel.DtoNameSpace = TypePath.Combine(GetRootNameSpace(data), "Dtos");
             data.ViewModel.DeleteCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.DeleteCommandViewModel.FriendlyName = data.ViewModel.DeleteCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.DeleteCommandViewModel.Comment = data.COMMENT;
@@ -497,8 +505,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token);
             data.ViewModel.GetAllQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetAllQueryViewModel.Category = CqrsSegregateCategory.Read;
-            data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Queries");
-            data.ViewModel.GetAllQueryViewModel.DtoNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Dtos");
+            data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Queries");
+            data.ViewModel.GetAllQueryViewModel.DtoNameSpace = TypePath.Combine(GetRootNameSpace(data), "Dtos");
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
@@ -550,8 +558,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token);
             data.ViewModel.GetByIdQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetByIdQueryViewModel.Category = CqrsSegregateCategory.Read;
-            data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Queries");
-            data.ViewModel.GetByIdQueryViewModel.DtoNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Dtos");
+            data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Queries");
+            data.ViewModel.GetByIdQueryViewModel.DtoNameSpace = TypePath.Combine(GetRootNameSpace(data), "Dtos");
             data.ViewModel.GetByIdQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.ViewModel.GetByIdQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
@@ -611,8 +619,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.InsertCommandViewModel.Name = $"{name}Command";
             data.ViewModel.InsertCommandViewModel.Category = CqrsSegregateCategory.Create;
-            data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Commands");
-            data.ViewModel.InsertCommandViewModel.DtoNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Dtos");
+            data.ViewModel.InsertCommandViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Commands");
+            data.ViewModel.InsertCommandViewModel.DtoNameSpace = TypePath.Combine(GetRootNameSpace(data), "Dtos");
             data.ViewModel.InsertCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.InsertCommandViewModel.FriendlyName = data.ViewModel.InsertCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.InsertCommandViewModel.Comment = data.COMMENT;
@@ -669,8 +677,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommandViewModel = await this._commandService.CreateAsync(token);
             data.ViewModel.UpdateCommandViewModel.Name = $"{name}Command";
             data.ViewModel.UpdateCommandViewModel.Category = CqrsSegregateCategory.Update;
-            data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Commands");
-            data.ViewModel.UpdateCommandViewModel.DtoNameSpace = TypePath.Combine(GetDtosNameSpace(data), "Dtos");
+            data.ViewModel.UpdateCommandViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Commands");
+            data.ViewModel.UpdateCommandViewModel.DtoNameSpace = TypePath.Combine(GetRootNameSpace(data), "Dtos");
             data.ViewModel.UpdateCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.UpdateCommandViewModel.FriendlyName = data.ViewModel.UpdateCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.UpdateCommandViewModel.Comment = data.COMMENT;
