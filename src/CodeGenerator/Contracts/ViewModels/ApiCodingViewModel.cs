@@ -28,12 +28,9 @@ public sealed class ApiMethod : InfraViewModelBase
         this.Name = name.ArgumentNotNull();
     }
 
+    public HashSet<MethodArgument> Arguments { get; } = [];
     public string? Body { get => _body; set => this.SetProperty(ref this._body, value); }
-
-    public HashSet<MethodArgument> Parameters { get; } = [];
-
     public TypePath? ReturnType { get; set; }
-
     public string? Route { get; set; }
 
     public static ApiMethod New([DisallowNull] in string name, in TypePath returnType) => new(name)
@@ -43,6 +40,15 @@ public sealed class ApiMethod : InfraViewModelBase
 
     public static ApiMethod New([DisallowNull] in string name)
         => new(name);
+
+    public ApiMethod AddArgument(MethodArgument argument)
+    {
+        this.Arguments.Add(argument);
+        return this;
+    }
+
+    public ApiMethod AddArgument(in TypePath type, in string? name)
+        => AddArgument(new(type, name));
 
     public ApiMethod AddBodyLine(string body)
     {

@@ -421,14 +421,21 @@ internal sealed partial class FunctionalityService
         {
             var api = ApiMethod
                 .New("GetAll")
-                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)))
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQueryViewModel}());")
-                .AddBodyLine("return result.Result;");
+                .AddBodyLine("return result.Result;")
+                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)));
             data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createGetByIdApi(CreationData data)
         {
+            var api = ApiMethod
+                .New("GetById")
+                .AddArgument(TypePath.New<long>(), "id")
+                .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQueryViewModel}(id));")
+                .AddBodyLine("return result.Result;")
+                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)));
+            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createInsertApi(CreationData data)
