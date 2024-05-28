@@ -232,12 +232,6 @@ internal sealed partial class FunctionalityService
                         CqrsCommandViewModel => "Command",
                         _ => throw new NotImplementedException()
                     };
-                    //// Generate the codes of CQRS parameters.
-                    //var paramsDtoCode = this._dtoCodeService.GenerateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
-                    //// Generate the codes of CQRS result.
-                    //var resultDtoCode = this._dtoCodeService.GenerateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
-                    //// Generate the codes of CQRS handler.
-                    //var handlerCode = this._cqrsCodeService.GenerateCodes(model);
 
                     // Generate the codes of CQRS parameters.
                     var paramsDtoCode = generateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
