@@ -419,9 +419,12 @@ internal sealed partial class FunctionalityService
 
         void createGetAllApi(CreationData data)
         {
-            var returnType = TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!));
-            var getAllApi = ApiMethod.New("GetAll", returnType);
-            data.ViewModel.ApiCodingViewModel.Apis.Add(getAllApi);
+            var api = ApiMethod
+                .New("GetAll")
+                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)))
+                .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQueryViewModel}());")
+                .AddBodyLine("return result.Result;");
+            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createGetByIdApi(CreationData data)

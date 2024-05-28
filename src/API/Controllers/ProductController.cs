@@ -21,6 +21,13 @@ public class ProductController : ControllerBase
         this._mediator = mediator;
     }
 
+    [HttpDelete("{id:long}")]
+    public async Task<Result> Delete(long id)
+    {
+        var result = await this._mediator.Send(new DeleteProductCommand(id));
+        return result;
+    }
+
     [HttpGet]
     public async Task<IEnumerable<Product>> GetAll()
     {
@@ -43,17 +50,9 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<Result> Update(long id, [FromBody]Product product)
+    public async Task<Result> Update(long id, [FromBody] Product product)
     {
         var result = await this._mediator.Send(new UpdateProductCommand(id, product));
         return result;
     }
-    
-    [HttpDelete("{id:long}")]
-    public async Task<Result> Delete(long id)
-    {
-        var result = await this._mediator.Send(new DeleteProductCommand(id));
-        return result;
-    }
-
 }

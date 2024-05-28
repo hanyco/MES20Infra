@@ -2,6 +2,7 @@
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.Coding;
 using Library.Validations;
 
 namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
@@ -39,4 +40,19 @@ public sealed class ApiMethod : InfraViewModelBase
     {
         ReturnType = returnType
     };
+
+    public static ApiMethod New([DisallowNull] in string name)
+        => new(name);
+
+    public ApiMethod AddBodyLine(string body)
+    {
+        this.Body = string.Join(Environment.NewLine, this.Body, body);
+        return this;
+    }
+
+    public ApiMethod WithBody(string body)
+        => this.With(x => x.Body = body);
+
+    public ApiMethod WithReturnType(TypePath type)
+        => this.With(x => x.ReturnType = type);
 }
