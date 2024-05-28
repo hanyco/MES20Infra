@@ -240,7 +240,7 @@ internal partial class FunctionalityService
         [NotNull]
         internal Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
 
-        internal string? SourceDtoName { get; } = sourceDtoName;
+        internal string? SourceDtoName { get; } = sourceDtoName ?? result.SourceDto.Name;
 
         [NotNull]
         internal FunctionalityViewModel ViewModel { get; } = result.ArgumentNotNull();

@@ -9,6 +9,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Threading;
 using Library.Threading.MultistepProgress;
@@ -434,20 +435,44 @@ internal sealed partial class FunctionalityService
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQueryViewModel}(id));")
                 .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)));
+                .WithReturnType(TypePath.NewTask(data.SourceDtoName!, true));
             data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createInsertApi(CreationData data)
         {
+            var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
+            var api = ApiMethod
+                .New("Insert")
+                .AddArgument(data.SourceDtoName!, argName)
+                .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.InsertCommandViewModel}({argName}));")
+                .AddBodyLine("return result.Result;")
+                .WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [TypePath.New<long?>()])));
+            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createUpdateApi(CreationData data)
         {
+            var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
+            var api = ApiMethod
+                .New("Update")
+                .AddArgument(TypePath.New<long>(), "id")
+                .AddArgument(data.SourceDtoName!, argName)
+                .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommandViewModel}(id, {argName}));")
+                .AddBodyLine("return result.Result;")
+                .WithReturnType(TypePath.NewTask(typeof(Result<>)));
+            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createDeleteApi(CreationData data)
         {
+            var api = ApiMethod
+                .New("Delete")
+                .AddArgument(TypePath.New<long>(), "id")
+                .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommandViewModel}(id));")
+                .AddBodyLine("return result;")
+                .WithReturnType(TypePath.NewTask(typeof(Result)));
+            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
     }
 
