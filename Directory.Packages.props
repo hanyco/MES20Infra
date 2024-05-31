@@ -41,4 +41,22 @@
 		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
 		<PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	</ItemGroup>
+	<ItemGroup>
+		<PackageVersion Include="Blazored.SessionStorage" Version="2.4.0" />
+		<PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.2.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+		<PackageVersion Include="xunit" Version="2.4.2" />
+		<PackageVersion Include="Xunit.DependencyInjection" Version="8.7.1" />
+		<PackageVersion Include="xunit.runner.visualstudio" Version="2.5.6">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageVersion>
+		<PackageVersion Include="coverlet.collector" Version="6.0.0">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageVersion>
+	</ItemGroup>
 </Project>
