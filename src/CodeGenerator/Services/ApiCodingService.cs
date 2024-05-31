@@ -9,6 +9,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
     public Result<Codes?> GenerateCodes(ApiCodingViewModel viewModel, ApiCodingArgs? arguments = null)
     {
         var code = Code.Empty;
+
         return code.ToCodes();
     }
 }
