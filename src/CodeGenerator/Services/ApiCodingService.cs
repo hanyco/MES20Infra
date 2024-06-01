@@ -1,5 +1,7 @@
 ﻿using System.Text;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
@@ -10,13 +12,13 @@ using Library.Validations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Services;
+namespace Services.CodeGen;
 
 internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodingService
 {
     public Result<Codes?> GenerateCodes(ApiCodingViewModel viewModel, ApiCodingArgs? arguments = null)
     {
-        viewModel.ArgumentNotNull();
+        _ = viewModel.ArgumentNotNull();
 
         var vr = viewModel.Check()
             .NotNull(x => x.Name)
@@ -37,7 +39,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             .AddAttribute(typeof(RouteAttribute), (null, "\"[controller]\""));
         if (viewModel.IsAnonymousAllow)
         {
-            controllerClass.AddAttribute(typeof(AllowAnonymousAttribute));
+            _ = controllerClass.AddAttribute(typeof(AllowAnonymousAttribute));
         }
 
         // Add ctor to controller, if required
@@ -46,17 +48,23 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             var ctor = new Method(controllerClass.Name);
             var ctorBody = new StringBuilder();
 
-            foreach (var ctorParam in viewModel.CtorParams)
+            foreach (var (Argument, IsField) in viewModel.CtorParams)
             {
-                ctor.Arguments.Add(ctorParam.Argument);
-                if (ctorParam.IsField)
+                _ = ctor.Arguments.Add(Argument);
+                if (IsField)
                 {
-                    var fieldName = TypeMemberNameHelper.ToFieldName(ctorParam.Argument.Name);
-                    controllerClass.AddField(fieldName, ctorParam.Argument.Type);
-                    ctorBody.AppendLine($"this.{fieldName} = {ctorParam.Argument.Name};");
+                    var fieldName = TypeMemberNameHelper.ToFieldName(Argument.Name);
+                    _ = controllerClass.AddField(fieldName, Argument.Type);
+                    _ = ctorBody.AppendLine($"this.{fieldName} = {Argument.Name};");
                 }
             }
             ctor.Body = ctorBody.ToString();
+            _ = controllerClass.AddMember(ctor);
+        }
+
+        // Add APIs
+        foreach (var api in viewModel.Apis)
+        {
         }
 
         // Generate code
