@@ -43,20 +43,20 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         // Add ctor to controller, if required
         if (viewModel.CtorParams.Count != 0)
         {
+            var ctor = new Method(controllerClass.Name);
             var ctorBody = new StringBuilder();
-            var ctorParams = new List<MethodArgument>();
 
             foreach (var ctorParam in viewModel.CtorParams)
             {
+                ctor.Arguments.Add(ctorParam.Argument);
                 if (ctorParam.IsField)
                 {
                     var fieldName = TypeMemberNameHelper.ToFieldName(ctorParam.Argument.Name);
                     controllerClass.AddField(fieldName, ctorParam.Argument.Type);
                     ctorBody.AppendLine($"this.{fieldName} = {ctorParam.Argument.Name};");
                 }
-                ctorParams.Add(ctorParam.Argument);
             }
-            var cror = IMethod.New(controllerClass.Name).Body
+            ctor.Body = ctorBody.ToString();
         }
 
         // Generate code
