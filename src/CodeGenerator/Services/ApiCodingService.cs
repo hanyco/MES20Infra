@@ -65,6 +65,13 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         // Add APIs
         foreach (var api in viewModel.Apis)
         {
+            var method = new Method(api.Name.NotNull())
+            {
+                Body = api.Body,
+                ReturnType = api.ReturnType
+            };
+            if(!api.Route.IsNullOrEmpty())
+            method.AddAttribute();
         }
 
         // Generate code

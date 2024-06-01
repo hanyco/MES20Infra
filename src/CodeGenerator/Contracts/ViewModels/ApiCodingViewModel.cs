@@ -27,7 +27,8 @@ public sealed class ApiMethod : InfraViewModelBase
 {
     private string? _body;
 
-    public ApiMethod(string name) => this.Name = name.ArgumentNotNull();
+    public ApiMethod(string name) 
+        => this.Name = name.ArgumentNotNull();
 
     public HashSet<MethodArgument> Arguments { get; } = [];
     public string? Body { get => this._body; set => this.SetProperty(ref this._body, value); }
