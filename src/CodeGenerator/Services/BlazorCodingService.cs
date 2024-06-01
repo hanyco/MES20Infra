@@ -308,7 +308,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 foreach (var evt in model.EditFormInfo.Events)
                 {
                     result.Actions.Add(new FormActor(evt.Handler.Name, evt.IsPartial, evt.Handler.Body, evt.Handler.ReturnType?.FullPath ?? "void",
-                        arguments: evt.Handler.Parameters.Select(x => new MethodArgument(x.Type, x.Name)).ToArray()));
+                        arguments: evt.Handler.Arguments.Select(x => new MethodArgument(x.Type, x.Name)).ToArray()));
                 }
             }
         }

@@ -68,7 +68,7 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
                 IsExtension = args.IsExtension,
                 Body = convertSingle_MethodBody(dstType.Name, args.InputArgumentName,
                     args.Destination.Model.Properties.Select(x => x.Name).Intersect(args.Source.Model.Properties.Select(x => x.Name))),
-                Parameters =
+                Arguments =
                 {
                     (srcType, args.InputArgumentName)
                 },
@@ -79,7 +79,7 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
             {
                 IsExtension = args.IsExtension,
                 Body = convertEnumerable_MethodBody(args.MethodName, StringHelper.Pluralize(args.InputArgumentName)),
-                Parameters =
+                Arguments =
                 {
                     (TypePath.New(typeof(IEnumerable<>), [srcType]), StringHelper.Pluralize(args.InputArgumentName))
                 },

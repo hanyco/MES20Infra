@@ -260,7 +260,7 @@ internal sealed partial class FunctionalityService
                                 : new CodeGenProperty(property.Name!, property.TypeFullName);
                             _ = type.AddMember(prop);
                             var argName = TypeMemberNameHelper.ToArgName(prop.Name);
-                            _ = ctor.AddParameter(prop.Type, argName);
+                            _ = ctor.AddArgument(prop.Type, argName);
                             _ = ctorBody.AppendLine($"this.{prop.Name} = {argName};");
                         }
                         if (ctorBody.Length != 0)

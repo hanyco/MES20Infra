@@ -55,7 +55,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         {
             Body = model.ValidatorBody ?? "return ValueTask.CompletedTask;",
             ReturnType = TypePath.New<ValueTask>(),
-        }.AddParameter(model.GetSegregateType("Command").Name, "command");
+        }.AddArgument(model.GetSegregateType("Command").Name, "command");
 
         var commandValidatorBaseType = TypePath.New(typeof(ICommandValidator<>), [model.GetSegregateType("Command").FullPath]);
         var validatorType = new Class(model.GetSegregateValidatorType("Command").Name)
@@ -105,7 +105,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 {
                     AccessModifier = AccessModifier.Public,
                     Body = handlerMethodBody,
-                    Parameters =
+                    Arguments =
                     {
                         (model.GetSegregateType(kind.ToString()).FullPath, kind.ToString().ToLower())
                     },
@@ -154,7 +154,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var ctor = new Method(model.GetSegregateHandlerType(kind.ToString()).Name)
                 {
                     IsConstructor = true,
-                    Parameters =
+                    Arguments =
                     {
                         (cmdPcr, arg(cmdPcr.Name)),
                         (qryPcr, arg(qryPcr.Name)),
@@ -217,7 +217,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 {
                     IsConstructor = true,
                     Body = $"this.{prop.Name} = {arg(prop.Name)};",
-                    Parameters =
+                    Arguments =
                     {
                         (prop.Type, arg(prop.Name))
                     }
@@ -245,7 +245,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 {
                     IsConstructor = true,
                     Body = $"this.{paramsProp.Name} = {arg(paramsProp.Name)};",
-                    Parameters =
+                    Arguments =
                     {
                         (paramsType, arg(paramsProp.Name)) // ex. ({GetAllPeopleParams}, "@params")
                     }
