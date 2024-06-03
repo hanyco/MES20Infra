@@ -16,6 +16,10 @@
 		<WarningLevel>0</WarningLevel>
 		<DebugType>portable</DebugType>
 	</PropertyGroup>
+	<PropertyGroup>
+	  <RootNamespace>Library</RootNamespace>
+	  <AssemblyName>Library.Core</AssemblyName>
+	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="CodeGeneration\HtmlGeneration\**" />
 		<Compile Remove="Collections\Generic\**" />
