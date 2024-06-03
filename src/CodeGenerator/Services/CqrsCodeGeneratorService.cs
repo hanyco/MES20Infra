@@ -107,7 +107,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     Body = handlerMethodBody,
                     Arguments =
                     {
-                        (model.GetSegregateType(kind.ToString()).FullPath, kind.ToString().ToLower())
+                        new(model.GetSegregateType(kind.ToString()).FullPath, kind.ToString().ToLower())
                     },
                     ReturnType = TypePath.New($"{typeof(Task<>).FullName}<{model.GetSegregateResultType(kind.ToString()).FullPath}>")
                 };
@@ -156,9 +156,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     IsConstructor = true,
                     Arguments =
                     {
-                        (cmdPcr, arg(cmdPcr.Name)),
-                        (qryPcr, arg(qryPcr.Name)),
-                        (dal, arg(dal.Name))
+                        new(cmdPcr, arg(cmdPcr.Name)),
+                        new(qryPcr, arg(qryPcr.Name)),
+                        new(dal, arg(dal.Name))
                     },
                     Body = @$"
                         (this.{fld(cmdPcr.Name)}, this.{fld(qryPcr.Name)}) = ({arg(cmdPcr.Name)}, {arg(qryPcr.Name)});
@@ -219,7 +219,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     Body = $"this.{prop.Name} = {arg(prop.Name)};",
                     Arguments =
                     {
-                        (prop.Type, arg(prop.Name))
+                        new(prop.Type, arg(prop.Name))
                     }
                 };
                 var resultType = new Class(resultClassType.Name)
@@ -247,7 +247,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     Body = $"this.{paramsProp.Name} = {arg(paramsProp.Name)};",
                     Arguments =
                     {
-                        (paramsType, arg(paramsProp.Name)) // ex. ({GetAllPeopleParams}, "@params")
+                        new(paramsType, arg(paramsProp.Name)) // ex. ({GetAllPeopleParams}, "@params")
                     }
                 };
                 var segregateClass = new Class(segregateType.Name)

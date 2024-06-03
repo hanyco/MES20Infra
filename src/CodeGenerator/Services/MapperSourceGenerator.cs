@@ -70,7 +70,7 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
                     args.Destination.Model.Properties.Select(x => x.Name).Intersect(args.Source.Model.Properties.Select(x => x.Name))),
                 Arguments =
                 {
-                    (srcType, args.InputArgumentName)
+                    new(srcType, args.InputArgumentName)
                 },
                 ReturnType = dstType
             };
@@ -81,7 +81,7 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
                 Body = convertEnumerable_MethodBody(args.MethodName, StringHelper.Pluralize(args.InputArgumentName)),
                 Arguments =
                 {
-                    (TypePath.New(typeof(IEnumerable<>), [srcType]), StringHelper.Pluralize(args.InputArgumentName))
+                    new(TypePath.New(typeof(IEnumerable<>), [srcType]), StringHelper.Pluralize(args.InputArgumentName))
                 },
                 ReturnType = TypePath.New(typeof(List<>), [dstType])
             };

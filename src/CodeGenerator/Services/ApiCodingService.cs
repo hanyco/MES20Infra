@@ -70,8 +70,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
                 Body = api.Body,
                 ReturnType = api.ReturnType
             };
-            if(!api.Route.IsNullOrEmpty())
-            method.AddAttribute();
+            //if(!api.Route.IsNullOrEmpty())
+            //method.AddAttribute();
         }
 
         // Generate code
