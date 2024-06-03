@@ -33,7 +33,7 @@ public sealed class ApiMethod : InfraViewModelBase
     public HashSet<MethodArgument> Arguments { get; } = [];
     public string? Body { get => this._body; set => this.SetProperty(ref this._body, value); }
     public TypePath? ReturnType { get; set; }
-    public string? Route { get; set; }
+    public string Route { get; set; }
 
     public static ApiMethod New([DisallowNull] in string name, in TypePath returnType) => new(name)
     {

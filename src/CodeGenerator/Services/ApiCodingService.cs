@@ -21,7 +21,6 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         _ = viewModel.ArgumentNotNull();
 
         var vr = viewModel.Check()
-            .NotNull(x => x.Name)
             .NotNull(x => x.ControllerName)
             .Build();
         if (vr.IsFailure)
@@ -69,9 +68,13 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             {
                 Body = api.Body,
                 ReturnType = api.ReturnType
-            };
-            //if(!api.Route.IsNullOrEmpty())
-            //method.AddAttribute();
+            }
+            .With(x => api.Arguments.ForEach(y => x.Arguments.Add(y)));
+            if (!api.Route.IsNullOrEmpty())
+            {
+                _ = method.AddAttribute(api.Route);
+            }
+            _ = controllerClass.AddMember(method);
         }
 
         // Generate code
@@ -80,7 +83,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         {
             return codeStatement.WithValue(Codes.Empty)!;
         }
-        var partCode = Code.New(viewModel.Name!, Languages.CSharp, codeStatement, true);
+        var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true);
 
         var mainCode = Code.Empty;
         return Codes.New(mainCode, partCode);
