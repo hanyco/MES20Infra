@@ -1,13 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
-    <EnablePreviewFeatures>true</EnablePreviewFeatures>
-    <GenerateRequiresPreviewFeaturesAttribute>true</GenerateRequiresPreviewFeaturesAttribute>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyName>HanyCo.Infra.CodeGeneration</AssemblyName>
     <RootNamespace>HanyCo.Infra.CodeGeneration</RootNamespace>
     <Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
