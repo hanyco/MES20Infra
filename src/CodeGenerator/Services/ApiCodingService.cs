@@ -18,11 +18,13 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
 {
     public Result<Codes?> GenerateCodes(ApiCodingViewModel viewModel, ApiCodingArgs? arguments = null)
     {
+        // Validations
         _ = viewModel.ArgumentNotNull();
 
         var vr = viewModel.Check()
             .NotNull(x => x.ControllerName)
             .Build();
+
         if (vr.IsFailure)
         {
             return vr.WithValue(Codes.Empty)!;
@@ -41,41 +43,38 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             _ = controllerClass.AddAttribute(typeof(AllowAnonymousAttribute));
         }
 
-        // Add ctor to controller, if required
-        if (viewModel.CtorParams.Count != 0)
+        // Add ctor to controller
+        var ctor = new Method(controllerClass.Name)
         {
-            var ctor = new Method(controllerClass.Name);
-            var ctorBody = new StringBuilder();
+            IsConstructor = true,
+        };
+        var ctorBody = new StringBuilder();
 
-            foreach (var (Argument, IsField) in viewModel.CtorParams)
+        foreach (var (Argument, IsField) in viewModel.CtorParams)
+        {
+            _ = ctor.Arguments.Add(Argument);
+            if (IsField)
             {
-                _ = ctor.Arguments.Add(Argument);
-                if (IsField)
-                {
-                    var fieldName = TypeMemberNameHelper.ToFieldName(Argument.Name);
-                    _ = controllerClass.AddField(fieldName, Argument.Type);
-                    _ = ctorBody.AppendLine($"this.{fieldName} = {Argument.Name};");
-                }
+                var fieldName = TypeMemberNameHelper.ToFieldName(Argument.Name);
+                _ = controllerClass.AddField(fieldName, Argument.Type);
+                _ = ctorBody.AppendLine($"this.{fieldName} = {Argument.Name};");
             }
-            ctor.Body = ctorBody.ToString();
-            _ = controllerClass.AddMember(ctor);
         }
+        ctor.Body = ctorBody.ToString();
+        _ = controllerClass.AddMember(ctor);
 
         // Add APIs
         foreach (var api in viewModel.Apis)
         {
-            var method = new Method(api.Name.NotNull())
+            var method = new Method(api.Name!)
             {
                 Body = api.Body,
-                ReturnType = api.ReturnType
-            }
-            .With(x => api.Arguments.ForEach(y => x.Arguments.Add(y)));
-            if (!api.Route.IsNullOrEmpty())
-            {
-                _ = method.AddAttribute(api.Route);
-            }
-            _ = controllerClass.AddMember(method);
+                ReturnType = api.ReturnType,
+            };
+            method.Attributes.Add(new CodeGenAttribute())
         }
+
+        _ = ns.AddType(controllerClass);
 
         // Generate code
         var codeStatement = codeGeneratorEngine.Generate(ns);
@@ -84,8 +83,9 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             return codeStatement.WithValue(Codes.Empty)!;
         }
         var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true);
-
         var mainCode = Code.Empty;
+
+        // Return result
         return Codes.New(mainCode, partCode);
     }
 }
