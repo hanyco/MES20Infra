@@ -7,6 +7,8 @@ using Library.CodeGeneration.Models;
 using Library.Coding;
 using Library.Validations;
 
+using Microsoft.AspNetCore.Mvc.Routing;
+
 namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 
 public sealed class ApiCodingViewModel : InfraViewModelBase
@@ -32,8 +34,8 @@ public sealed class ApiMethod : InfraViewModelBase
 
     public HashSet<MethodArgument> Arguments { get; } = [];
     public string? Body { get => this._body; set => this.SetProperty(ref this._body, value); }
+    public ISet<HttpMethodAttribute> HttpMethods { get; } = new HashSet<HttpMethodAttribute>();
     public TypePath? ReturnType { get; set; }
-    public ISet<string> Routes { get; } = new HashSet<string>();
 
     public static ApiMethod New([DisallowNull] in string name, in TypePath returnType) => new(name)
     {
@@ -61,6 +63,24 @@ public sealed class ApiMethod : InfraViewModelBase
         this.Body = string.Join(Environment.NewLine, this.Body, body);
         return this;
     }
+
+    public ApiMethod AddHttpMethod(HttpMethodAttribute httpMethod)
+    {
+        _ = this.HttpMethods.Add(httpMethod);
+        return this;
+    }
+
+    public ApiMethod AddHttpMethod<THttpMethod>([StringSyntax("Route")] string template)
+        where THttpMethod : HttpMethodAttribute
+    {
+        var ctor = typeof(THttpMethod).GetConstructor([typeof(string)]);
+        var method = (THttpMethod)ctor.Invoke([template]);
+        return this.AddHttpMethod(method);
+    }
+
+    public ApiMethod AddHttpMethod<THttpMethod>()
+        where THttpMethod : HttpMethodAttribute, new()
+        => this.AddHttpMethod(new THttpMethod());
 
     public ApiMethod WithBody(string body)
         => this.With(x => x.Body = body);

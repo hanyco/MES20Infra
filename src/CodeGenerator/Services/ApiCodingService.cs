@@ -37,8 +37,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         // Create controller
         var controllerClass = IClass.New(viewModel.ControllerName)
             .AddBaseType(typeof(ControllerBase))
-            .AddAttribute(typeof(ApiControllerAttribute))
-            .AddAttribute(typeof(RouteAttribute), (null, "\"[controller]\""));
+            .AddAttribute(TypePath.New<ApiControllerAttribute>())
+            .AddAttribute<RouteAttribute>((null, "\"[controller]\""));
         if (viewModel.IsAnonymousAllow)
         {
             _ = controllerClass.AddAttribute(typeof(AllowAnonymousAttribute));
@@ -70,14 +70,15 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             var method = new Method(api.Name!)
             {
                 Body = api.Body,
-                ReturnType = api.ReturnType,
+                ReturnType = api.ReturnType is TypePath,
             };
-            _ = controllerClass.AddMember(api.Routes.Select(route => method.AddAttribute(TypePath.New<RouteAttribute>(), (null, route))));
-            //foreach (var route in api.Routes)
-            //{
-            //    _ = method.AddAttribute(TypePath.New<RouteAttribute>(), (null, route));
-            //}
-            //_ = controllerClass.AddMember(method);
+
+            foreach (var httpMethod in api.HttpMethods)
+            {
+                var props = httpMethod.GetType().GetProperties().Select(x => ((string?)x.Name, Value: x.GetValue(httpMethod)?.ToString())).Where(x => !x.Value.IsNullOrEmpty()).ToArray();
+                _ = method.AddAttribute(TypePath.New(httpMethod.GetType()), props!);
+            }
+            _ = controllerClass.AddMember(method);
         }
 
         _ = ns.AddType(controllerClass);

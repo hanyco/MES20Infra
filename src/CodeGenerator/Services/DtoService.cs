@@ -158,7 +158,7 @@ internal sealed class DtoService(
             //}
             foreach (var claim in pvm.SecurityClaims)
             {
-                result.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
+                result.AddAttribute<SecurityAttribute>([("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null")]);
             }
             return result;
         }

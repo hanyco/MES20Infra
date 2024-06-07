@@ -18,6 +18,7 @@ using Library.Validations;
 using MediatR;
 
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Mvc;
 
 using Services.Helpers;
 
@@ -25,7 +26,6 @@ namespace Services;
 
 internal sealed partial class FunctionalityService
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
         if (!this.Validate(viewModel).TryParse(out var validationResult))
@@ -422,21 +422,23 @@ internal sealed partial class FunctionalityService
         {
             var api = ApiMethod
                 .New("GetAll")
+                .AddHttpMethod<HttpGetAttribute>()
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQueryViewModel}());")
                 .AddBodyLine("return result.Result;")
                 .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)));
-            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createGetByIdApi(CreationData data)
         {
             var api = ApiMethod
                 .New("GetById")
+                .AddHttpMethod<HttpGetAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQueryViewModel}(id));")
                 .AddBodyLine("return result.Result;")
                 .WithReturnType(TypePath.NewTask(data.SourceDtoName!, true));
-            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createInsertApi(CreationData data)
@@ -444,11 +446,12 @@ internal sealed partial class FunctionalityService
             var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
             var api = ApiMethod
                 .New("Insert")
+                .AddHttpMethod<HttpPostAttribute>()
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.InsertCommandViewModel}({argName}));")
                 .AddBodyLine("return result.Result;")
                 .WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [TypePath.New<long?>()])));
-            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createUpdateApi(CreationData data)
@@ -456,23 +459,25 @@ internal sealed partial class FunctionalityService
             var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
             var api = ApiMethod
                 .New("Update")
+                .AddHttpMethod<HttpPutAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommandViewModel}(id, {argName}));")
                 .AddBodyLine("return result.Result;")
                 .WithReturnType(TypePath.NewTask(typeof(Result<>)));
-            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
         void createDeleteApi(CreationData data)
         {
             var api = ApiMethod
                 .New("Delete")
+                .AddHttpMethod<HttpDeleteAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommandViewModel}(id));")
                 .AddBodyLine("return result;")
                 .WithReturnType(TypePath.NewTask(typeof(Result)));
-            data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
     }
 
