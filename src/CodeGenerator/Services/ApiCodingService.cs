@@ -2,6 +2,7 @@
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 
+using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
@@ -71,7 +72,12 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
                 Body = api.Body,
                 ReturnType = api.ReturnType,
             };
-            method.Attributes.Add(new CodeGenAttribute())
+            _ = controllerClass.AddMember(api.Routes.Select(route => method.AddAttribute(TypePath.New<RouteAttribute>(), (null, route))));
+            //foreach (var route in api.Routes)
+            //{
+            //    _ = method.AddAttribute(TypePath.New<RouteAttribute>(), (null, route));
+            //}
+            //_ = controllerClass.AddMember(method);
         }
 
         _ = ns.AddType(controllerClass);
