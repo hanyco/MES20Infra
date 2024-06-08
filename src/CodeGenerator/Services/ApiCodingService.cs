@@ -17,7 +17,7 @@ namespace Services.CodeGen;
 
 internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodingService
 {
-    public Result<Codes?> GenerateCodes(ApiCodingViewModel viewModel, ApiCodingArgs? arguments = null)
+    public Result<Codes?> GenerateCodes(ApiCodingViewModel viewModel)
     {
         // Validations
         _ = viewModel.ArgumentNotNull();
