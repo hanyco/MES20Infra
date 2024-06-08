@@ -70,7 +70,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             var method = new Method(api.Name!)
             {
                 Body = api.Body,
-                ReturnType = api.ReturnType is TypePath,
+                ReturnType = api.ReturnType?.ToString() ?? "void",
             };
 
             foreach (var httpMethod in api.HttpMethods)
