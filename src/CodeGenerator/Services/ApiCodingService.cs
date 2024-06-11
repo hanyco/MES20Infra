@@ -75,8 +75,10 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
 
             foreach (var httpMethod in api.HttpMethods)
             {
-                var props = httpMethod.GetType().GetProperties().Select(x => ((string?)x.Name, Value: x.GetValue(httpMethod)?.ToString())).Where(x => !x.Value.IsNullOrEmpty()).ToArray();
-                _ = method.AddAttribute(TypePath.New(httpMethod.GetType()), props!);
+                var route = httpMethod.GetType().GetProperty(nameof(httpMethod.Template))!.GetValue(httpMethod)?.ToString();
+                _ = route.IsNullOrEmpty()
+                    ? method.AddAttribute(TypePath.New(httpMethod.GetType()))
+                    : method.AddAttribute(TypePath.New(httpMethod.GetType()), (null, route));
             }
             _ = controllerClass.AddMember(method);
         }
