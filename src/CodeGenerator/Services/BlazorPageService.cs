@@ -8,7 +8,7 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-using Services.Helpers;
+using Services.CodeGen.Helpers;
 
 namespace Services;
 

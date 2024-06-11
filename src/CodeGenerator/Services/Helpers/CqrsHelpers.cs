@@ -1,6 +1,6 @@
 ﻿using Library.CodeGeneration;
 
-using static Services.Helpers.CommonHelpers;
+using static Services.CodeGen.Helpers.CommonHelpers;
 
 namespace Services.Helpers;
 

@@ -20,6 +20,7 @@ using MediatR;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 
+using Services.CodeGen.Helpers;
 using Services.Helpers;
 
 namespace Services;
@@ -413,7 +414,7 @@ internal sealed partial class FunctionalityService
         void initialize(CreationData data)
             => data.ViewModel.ApiCodingViewModel
                 .With(x => x.NameSpace = TypePath.Combine(GetRootNameSpace(data), "Controllers"))
-                .With(x => x.ControllerName = string.Concat(data.SourceDtoName, "Controller"));
+                .With(x => x.ControllerName = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"));
 
         void createCtor(CreationData data)
             => data.ViewModel.ApiCodingViewModel.CtorParams.Add((MethodArgument.New(TypePath.New<IMediator>()), true));
