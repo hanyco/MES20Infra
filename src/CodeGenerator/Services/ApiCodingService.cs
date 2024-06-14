@@ -51,14 +51,15 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         };
         var ctorBody = new StringBuilder();
 
-        foreach (var (Argument, IsField) in viewModel.CtorParams)
+        foreach (var (argument, isField) in viewModel.CtorParams)
         {
-            _ = ctor.Arguments.Add(Argument);
-            if (IsField)
+            _ = ctor.Arguments.Add(argument);
+            if (isField)
             {
-                var fieldName = TypeMemberNameHelper.ToFieldName(Argument.Name);
-                _ = controllerClass.AddField(fieldName, Argument.Type);
-                _ = ctorBody.AppendLine($"this.{fieldName} = {Argument.Name};");
+                var fieldName = TypeMemberNameHelper.ToFieldName(argument.Name);
+                _ = ns.AddUsingNameSpace(argument.Type.GetNameSpaces());
+                _ = controllerClass.AddField(fieldName, argument.Type);
+                _ = ctorBody.AppendLine($"this.{fieldName} = {argument.Name};");
             }
         }
         ctor.Body = ctorBody.ToString();
@@ -67,10 +68,21 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         // Add APIs
         foreach (var api in viewModel.Apis)
         {
+            string returnType;
+            if (api.ReturnType is not null)
+            {
+                returnType = api.ReturnType;
+                _ = ns.AddUsingNameSpace(api.ReturnType.GetNameSpaces());
+            }
+            else
+            {
+                returnType = "void";
+            }
+
             var method = new Method(api.Name!)
             {
                 Body = api.Body,
-                ReturnType = api.ReturnType?.ToString() ?? "void",
+                ReturnType = api.ReturnType?.ToString() ?? "void"
             };
 
             foreach (var httpMethod in api.HttpMethods)
