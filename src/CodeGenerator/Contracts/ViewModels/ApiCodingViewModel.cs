@@ -17,6 +17,7 @@ public sealed class ApiCodingViewModel : InfraViewModelBase
     private string _controllerRoute;
     private bool _isAnonymousAllow;
     private string _nameSpace;
+    public ISet<string> AdditionalUsings { get; } = new HashSet<string>();
     public HashSet<ApiMethod> Apis { get; } = [];
     public string ControllerName { get => this._controllerName; set => this.SetProperty(ref this._controllerName, value); }
     public string ControllerRoute { get => this._controllerRoute; set => this.SetProperty(ref this._controllerRoute, value); }
@@ -32,10 +33,11 @@ public sealed class ApiMethod : InfraViewModelBase
     public ApiMethod(string name)
         => this.Name = name.ArgumentNotNull();
 
-    public HashSet<MethodArgument> Arguments { get; } = [];
+    public ISet<MethodArgument> Arguments { get; } = new HashSet<MethodArgument>();
     public string? Body { get => this._body; set => this.SetProperty(ref this._body, value); }
     public ISet<HttpMethodAttribute> HttpMethods { get; } = new HashSet<HttpMethodAttribute>();
     public TypePath? ReturnType { get; set; }
+    public bool IsAsync { get; set; }
 
     public static ApiMethod New([DisallowNull] in string name, in TypePath returnType) => new(name)
     {

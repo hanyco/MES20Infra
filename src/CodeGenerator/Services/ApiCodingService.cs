@@ -68,10 +68,11 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         // Add APIs
         foreach (var api in viewModel.Apis)
         {
+            // Parse return type
             string returnType;
             if (api.ReturnType is not null)
             {
-                returnType = api.ReturnType;
+                returnType = api.ReturnType.FullName;
                 _ = ns.AddUsingNameSpace(api.ReturnType.GetNameSpaces());
             }
             else
@@ -79,23 +80,36 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
                 returnType = "void";
             }
 
+            // Create method
             var method = new Method(api.Name!)
             {
                 Body = api.Body,
-                ReturnType = api.ReturnType?.ToString() ?? "void"
+                ReturnType = returnType
             };
 
+            // Add HTTP Methods
             foreach (var httpMethod in api.HttpMethods)
             {
-                var route = httpMethod.GetType().GetProperty(nameof(httpMethod.Template))!.GetValue(httpMethod)?.ToString();
+                var httpType = httpMethod.GetType();
+                var route = httpType.GetProperty(nameof(httpMethod.Template))!.GetValue(httpMethod)?.ToString();
                 _ = route.IsNullOrEmpty()
-                    ? method.AddAttribute(TypePath.New(httpMethod.GetType()))
-                    : method.AddAttribute(TypePath.New(httpMethod.GetType()), (null, route));
+                    ? method.AddAttribute(TypePath.New(httpType))
+                    : method.AddAttribute(TypePath.New(httpType), ((string? Name, string Value))(null, route));
+                _ = ns.AddUsingNameSpace(httpType.Namespace!);
             }
+
+            // Add API to Controller
             _ = controllerClass.AddMember(method);
         }
 
+        // Add Controller to Namespace
         _ = ns.AddType(controllerClass);
+
+        // Add additional usings to namespace
+        foreach (var nameSpace in viewModel.AdditionalUsings)
+        {
+            _ = ns.AddUsingNameSpace(nameSpace);
+        }
 
         // Generate code
         var codeStatement = codeGeneratorEngine.Generate(ns);
@@ -104,6 +118,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             return codeStatement.WithValue(Codes.Empty)!;
         }
         var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true);
+
+        // TODO: Add main part to let the developer to add his/her own code to Controller
         var mainCode = Code.Empty;
 
         // Return result
