@@ -45,7 +45,7 @@ public sealed class ApiMethod : InfraViewModelBase
     public static ApiMethod New([DisallowNull] in string name)
         => new(name);
 
-    public ApiMethod AddArgument(params MethodArgument[] arguments)
+    public ApiMethod AddArgument(params IEnumerable<MethodArgument> arguments)
     {
         foreach (var argument in arguments)
         {

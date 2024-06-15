@@ -21,7 +21,6 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
     {
         // Validations
         _ = viewModel.ArgumentNotNull();
-
         var vr = viewModel.Check()
             .NotNull(x => x.ControllerName)
             .Build();
@@ -36,12 +35,12 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
 
         // Create controller
         var controllerClass = IClass.New(viewModel.ControllerName)
-            .AddBaseType(typeof(ControllerBase))
-            .AddAttribute(TypePath.New<ApiControllerAttribute>())
+            .AddBaseType<ControllerBase>()
+            .AddAttribute<ApiControllerAttribute>()
             .AddAttribute<RouteAttribute>((null, "\"[controller]\""));
         if (viewModel.IsAnonymousAllow)
         {
-            _ = controllerClass.AddAttribute(typeof(AllowAnonymousAttribute));
+            _ = controllerClass.AddAttribute<AllowAnonymousAttribute>();
         }
 
         // Add ctor to controller
@@ -50,14 +49,14 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             IsConstructor = true,
         };
         var ctorBody = new StringBuilder();
-
         foreach (var (argument, isField) in viewModel.CtorParams)
         {
-            _ = ctor.Arguments.Add(argument);
+            _ = ctor.AddArgument(argument);
             if (isField)
             {
-                var fieldName = TypeMemberNameHelper.ToFieldName(argument.Name);
                 _ = ns.AddUsingNameSpace(argument.Type.GetNameSpaces());
+
+                var fieldName = TypeMemberNameHelper.ToFieldName(argument.Name);
                 _ = controllerClass.AddField(fieldName, argument.Type);
                 _ = ctorBody.AppendLine($"this.{fieldName} = {argument.Name};");
             }
@@ -87,14 +86,14 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
                 ReturnType = returnType
             };
 
-            // Add HTTP Methods
+            // Add HTTP methods
             foreach (var httpMethod in api.HttpMethods)
             {
                 var httpType = httpMethod.GetType();
                 var route = httpType.GetProperty(nameof(httpMethod.Template))!.GetValue(httpMethod)?.ToString();
                 _ = route.IsNullOrEmpty()
                     ? method.AddAttribute(TypePath.New(httpType))
-                    : method.AddAttribute(TypePath.New(httpType), ((string? Name, string Value))(null, route));
+                    : method.AddAttribute(TypePath.New(httpType), (null, route));
                 _ = ns.AddUsingNameSpace(httpType.Namespace!);
             }
 
