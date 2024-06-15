@@ -36,13 +36,11 @@ public sealed class ApiMethod : InfraViewModelBase
     public ISet<MethodArgument> Arguments { get; } = new HashSet<MethodArgument>();
     public string? Body { get => this._body; set => this.SetProperty(ref this._body, value); }
     public ISet<HttpMethodAttribute> HttpMethods { get; } = new HashSet<HttpMethodAttribute>();
-    public TypePath? ReturnType { get; set; }
     public bool IsAsync { get; set; }
+    public TypePath? ReturnType { get; set; }
 
-    public static ApiMethod New([DisallowNull] in string name, in TypePath returnType) => new(name)
-    {
-        ReturnType = returnType
-    };
+    public static ApiMethod New([DisallowNull] in string name, in TypePath returnType)
+        => new(name) { ReturnType = returnType };
 
     public static ApiMethod New([DisallowNull] in string name)
         => new(name);
