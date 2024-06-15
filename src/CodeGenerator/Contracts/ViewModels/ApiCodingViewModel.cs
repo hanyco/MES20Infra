@@ -17,7 +17,7 @@ public sealed class ApiCodingViewModel : InfraViewModelBase
     private string _controllerRoute;
     private bool _isAnonymousAllow;
     private string _nameSpace;
-    public ISet<string> AdditionalUsings { get; } = new HashSet<string>();
+    public HashSet<string> AdditionalUsings { get; } = [];
     public HashSet<ApiMethod> Apis { get; } = [];
     public string ControllerName { get => this._controllerName; set => this.SetProperty(ref this._controllerName, value); }
     public string ControllerRoute { get => this._controllerRoute; set => this.SetProperty(ref this._controllerRoute, value); }
