@@ -1,11 +1,13 @@
 ﻿using System.Text;
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
+using Library.DesignPatterns.Markers;
 using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
@@ -15,6 +17,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Services.CodeGen;
 
+[Service]
+[Stateless]
 internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodingService
 {
     public Result<Codes> GenerateCodes(ApiCodingViewModel viewModel)

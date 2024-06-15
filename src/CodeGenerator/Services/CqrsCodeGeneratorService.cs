@@ -1,5 +1,4 @@
-﻿
-using HanyCo.Infra.CodeGeneration.Definitions;
+﻿using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;
@@ -20,13 +19,13 @@ using Services.Helpers;
 
 using ICommand = Library.Cqrs.Models.Commands.ICommand;
 
-namespace Services;
+namespace Services.CodeGen;
 
 [Service]
 [Stateless]
-internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGeneratorEngine, IDtoCodeService dtoCodeService) : ICqrsCodeGeneratorService
+internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGeneratorEngine) : ICqrsCodeGeneratorService
 {
-    public Result<Codes> GenerateCodes(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
+    public Result<Codes?> GenerateCodes(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
     {
         var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
         {
@@ -37,17 +36,17 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         return result;
     }
 
-    private static string arg(in string name) =>
-        TypeMemberNameHelper.ToArgName(name);
+    private static string arg(in string name)
+        => TypeMemberNameHelper.ToArgName(name);
 
-    private static string fld(in string name) =>
-        TypeMemberNameHelper.ToFieldName(name);
+    private static string fld(in string name)
+        => TypeMemberNameHelper.ToFieldName(name);
 
-    private static string prp(in string name) =>
-        TypeMemberNameHelper.ToPropName(name);
+    private static string prp(in string name)
+        => TypeMemberNameHelper.ToPropName(name);
 
-    private static Code toCode(in string? modelName, in string? codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory) =>
-        Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
+    private static Code ToCode(in string? modelName, in string? codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory)
+        => Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
 
     private Result<string> CreateValidator(in CqrsViewModelBase model)
     {
@@ -69,26 +68,22 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         return codeGeneratorEngine.Generate(ns);
     }
-    class FakeReuqest : IRequest<FakeResponse>;
-    class FakeResponse;
+
     private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind)
     {
-        //return Codes.Empty;
         Check.MustBeArgumentNotNull(model?.Name);
 
         var partCodes = generatePartCode(model, kind);
-        //x return partCodes.ToCodes();
         var mainCodes = generateMainCode(model, kind);
-        //x return mainCodes.ToCodes();
-
-        return partCodes.AddRangeImmuted(mainCodes).OrderBy(x => x).ToCodes();
+        
+        return partCodes.AddRangeImmuted(mainCodes).Order().ToCodes();
 
         IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind)
         {
-            yield return toCode(model.Name, "Handler", createHandler(model, kind), false, kind);
+            yield return ToCode(model.Name, "Handler", createHandler(model, kind), false, kind);
             if (kind == CodeCategory.Command && model.ValidatorBody.IsNullOrEmpty())
             {
-                yield return toCode(model.Name, "Validator", this.CreateValidator(model), false, kind);
+                yield return ToCode(model.Name, "Validator", this.CreateValidator(model), false, kind);
             }
 
             Result<string> createHandler(in CqrsViewModelBase model, CodeCategory kind)
@@ -99,6 +94,11 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 {
                     CodeCategory.Query => nameof(IRequestHandler<FakeReuqest, FakeResponse>.Handle),
                     CodeCategory.Command => nameof(IRequestHandler<FakeReuqest, FakeResponse>.Handle),
+                    CodeCategory.Dto => throw new NotImplementedException(),
+                    CodeCategory.Page => throw new NotImplementedException(),
+                    CodeCategory.Component => throw new NotImplementedException(),
+                    CodeCategory.Converter => throw new NotImplementedException(),
+                    CodeCategory.Api => throw new NotImplementedException(),
                     _ => throw new NotImplementedException(),
                 };
                 var handleAsyncMethod = new Method(handlerMethodName)
@@ -136,12 +136,12 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         {
             if (kind == CodeCategory.Command && !model.ValidatorBody.IsNullOrEmpty())
             {
-                yield return toCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
+                yield return ToCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
             }
 
-            yield return toCode(model.Name, "Handler", createQueryHandler(model, kind), true, kind);
-            yield return toCode(model.Name, null, createSegregation(model, kind), true, CodeCategory.Dto);
-            yield return toCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
+            yield return ToCode(model.Name, "Handler", createQueryHandler(model, kind), true, kind);
+            yield return ToCode(model.Name, null, createSegregation(model, kind), true, CodeCategory.Dto);
+            yield return ToCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
 
             Result<string> createQueryHandler(CqrsViewModelBase model, CodeCategory kind)
             {
@@ -180,6 +180,11 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 {
                     CodeCategory.Query => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
                     CodeCategory.Command => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.Dto => throw new NotImplementedException(),
+                    CodeCategory.Page => throw new NotImplementedException(),
+                    CodeCategory.Component => throw new NotImplementedException(),
+                    CodeCategory.Converter => throw new NotImplementedException(),
+                    CodeCategory.Api => throw new NotImplementedException(),
                     _ => throw new NotImplementedException()
                 };
 
@@ -257,8 +262,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                         kind switch
                         {
                             CodeCategory.Query => TypePath.New(typeof(IQuery<>), [model.GetSegregateResultType(kind.ToString())]),
-                            CodeCategory.Command => TypePath.New<ICommand>(),
-                            _ => throw new NotImplementedException() },
+                            CodeCategory.Command => TypePath.New<ICommand>(), CodeCategory.Dto => throw new NotImplementedException(), CodeCategory.Page => throw new NotImplementedException(), CodeCategory.Component => throw new NotImplementedException(), CodeCategory.Converter => throw new NotImplementedException(), CodeCategory.Api => throw new NotImplementedException(), _ => throw new NotImplementedException() },
                     }
                 }.AddMember(ctor).AddMember(paramsProp);
                 var nameSpace = INamespace.New(segregateType.NameSpace)
@@ -270,4 +274,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             }
         }
     }
+
+    private class FakeResponse;
+
+    private class FakeReuqest : IRequest<FakeResponse>;
 }
