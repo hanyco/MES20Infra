@@ -56,7 +56,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             ReturnType = TypePath.New<ValueTask>(),
         }.AddArgument(model.GetSegregateType("Command").Name, "command");
 
-        var commandValidatorBaseType = TypePath.New(typeof(ICommandValidator<>), [model.GetSegregateType("Command").FullPath]);
+        var commandValidatorBaseType = TypePath.New(typeof(ICommandValidator<>).FullName!, [model.GetSegregateType("Command").FullPath]);
         var validatorType = new Class(model.GetSegregateValidatorType("Command").Name)
             .AddBaseType(commandValidatorBaseType)
             .AddMember(validatorMethod);
@@ -75,7 +75,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         var partCodes = generatePartCode(model, kind);
         var mainCodes = generateMainCode(model, kind);
-        
+
         return partCodes.AddRangeImmuted(mainCodes).Order().ToCodes();
 
         IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind)
@@ -261,7 +261,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     {
                         kind switch
                         {
-                            CodeCategory.Query => TypePath.New(typeof(IQuery<>), [model.GetSegregateResultType(kind.ToString())]),
+                            CodeCategory.Query => TypePath.New(typeof(IQuery<>).FullName!, [model.GetSegregateResultType(kind.ToString())]),
                             CodeCategory.Command => TypePath.New<ICommand>(), CodeCategory.Dto => throw new NotImplementedException(), CodeCategory.Page => throw new NotImplementedException(), CodeCategory.Component => throw new NotImplementedException(), CodeCategory.Converter => throw new NotImplementedException(), CodeCategory.Api => throw new NotImplementedException(), _ => throw new NotImplementedException() },
                     }
                 }.AddMember(ctor).AddMember(paramsProp);

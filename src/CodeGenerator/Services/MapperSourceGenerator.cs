@@ -11,7 +11,7 @@ using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
 
-namespace Services;
+namespace Services.CodeGen;
 
 internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEngine) : IMapperSourceGenerator
 {
@@ -54,7 +54,7 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
         var statement = codeGeneratorEngine.Generate(nameSpace);
         var code = new Code(args.ClassName, Languages.CSharp, RoslynHelper.ReformatCode(statement), args.IsPartial, fileName)
             .With(x => x.props().Category = CodeCategory.Converter);
-        return Result.From<Codes>(statement, code.ToCodes());
+        return Result.From(statement, code.ToCodes());
 
         static Class createClass(string name) =>
             new(name)
@@ -81,9 +81,9 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
                 Body = convertEnumerable_MethodBody(args.MethodName, StringHelper.Pluralize(args.InputArgumentName)),
                 Arguments =
                 {
-                    new(TypePath.New(typeof(IEnumerable<>), [srcType]), StringHelper.Pluralize(args.InputArgumentName))
+                    new(TypePath.New(typeof(IEnumerable<>).FullName!, [srcType]), StringHelper.Pluralize(args.InputArgumentName))
                 },
-                ReturnType = TypePath.New(typeof(List<>), [dstType])
+                ReturnType = TypePath.New(typeof(List<>).FullName!, [dstType])
             };
         static string convertEnumerable_MethodBody(string singleConverterMethodName, string argName) =>
             $"return {argName}.Select({singleConverterMethodName}).ToList();";

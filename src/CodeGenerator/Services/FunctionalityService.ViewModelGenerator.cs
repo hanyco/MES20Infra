@@ -451,7 +451,7 @@ internal sealed partial class FunctionalityService
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.InsertCommandViewModel}({argName}));")
                 .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [TypePath.New<long?>()])));
+                .WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [typeof(long?)])));
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 

@@ -43,7 +43,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
             ({ } dc, null) => dc,
             _ => null
         };
-        var componentBaseTypePath = TypePath.New(typeof(ComponentBase<,>),
+        var componentBaseTypePath = TypePath.New(typeof(ComponentBase<,>).FullName!,
             this.IsGrid
                 ? [$"List<{dataContextType.Name}>", this.DataContextType.Name]
                 : [$"{dataContextType?.Name}", $"{this.DataContextType?.Name}"]);
