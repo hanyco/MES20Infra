@@ -426,9 +426,10 @@ internal sealed partial class FunctionalityService
                 .AddHttpMethod<HttpGetAttribute>()
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQueryViewModel}());")
                 .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)));
+                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)))
+                .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
-            data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace);
+            data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace!);
         }
 
         void createGetByIdApi(CreationData data)
