@@ -428,7 +428,7 @@ internal sealed partial class FunctionalityService
                 .AddBodyLine("return result.Result;")
                 .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)));
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
-            data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add()
+            data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace);
         }
 
         void createGetByIdApi(CreationData data)

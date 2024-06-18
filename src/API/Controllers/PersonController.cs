@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using System.Threading.Tasks;
+using HumanResources.Dtos;
 using Library.Types;
 
 namespace HumanResource.Controllers;
