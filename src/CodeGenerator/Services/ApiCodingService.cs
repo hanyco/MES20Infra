@@ -80,16 +80,13 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             {
                 returnType = "void";
             }
-            if (api.IsAsync())
-            {
-                returnType = string.Concat("async ", returnType);
-            }
 
             // Create method
             var method = new Method(api.Name!)
             {
                 Body = api.Body,
-                ReturnType = returnType
+                ReturnType = returnType,
+                IsAsync = true
             };
 
             // Add HTTP methods
