@@ -28,7 +28,6 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         var vr = viewModel.Check()
             .NotNull(x => x.ControllerName)
             .Build();
-
         if (vr.IsFailure)
         {
             return vr.WithValue(Codes.Empty)!;
@@ -58,9 +57,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             _ = ctor.AddArgument(argument);
             if (isField)
             {
-                _ = ns.AddUsingNameSpace(argument.Type.GetNameSpaces());
-
                 var fieldName = TypeMemberNameHelper.ToFieldName(argument.Name);
+                _ = ns.AddUsingNameSpace(argument.Type.GetNameSpaces());
                 _ = controllerClass.AddField(fieldName, argument.Type);
                 _ = ctorBody.AppendLine($"this.{fieldName} = {argument.Name};");
             }

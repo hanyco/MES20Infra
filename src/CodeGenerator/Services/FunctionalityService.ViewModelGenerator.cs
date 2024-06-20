@@ -112,30 +112,27 @@ internal sealed partial class FunctionalityService
     }
 
     private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, ClaimViewModel? parent)
-    {
-        var claim = new ClaimViewModel(key ?? viewModel.Name, value, parent);
-        _ = viewModel.SecurityClaims.Add(claim);
-    }
+        => new ClaimViewModel(key ?? viewModel.Name, value, parent).With(claim => viewModel.SecurityClaims.Add(claim));
 
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, InfraViewModelBase? parent) =>
-        AddClaimViewModel(viewModel, key, value, parent?.SecurityClaims.FirstOrDefault());
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, object? value, InfraViewModelBase? parent)
+        => AddClaimViewModel(viewModel, key, value, parent?.SecurityClaims.FirstOrDefault());
 
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, InfraViewModelBase parent) =>
-        AddClaimViewModel(viewModel, key, null, parent.SecurityClaims.FirstOrDefault());
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, InfraViewModelBase parent)
+        => AddClaimViewModel(viewModel, key, null, parent.SecurityClaims.FirstOrDefault());
 
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, CreationData data) =>
-        AddClaimViewModel(viewModel, key, null, data.ViewModel.SourceDto);
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, string? key, CreationData data)
+        => AddClaimViewModel(viewModel, key, null, data.ViewModel.SourceDto);
 
-    private static void AddClaimViewModel(InfraViewModelBase viewModel, CreationData data) =>
-        AddClaimViewModel(viewModel, viewModel.Name, null, data.ViewModel.SourceDto);
+    private static void AddClaimViewModel(InfraViewModelBase viewModel, CreationData data)
+        => AddClaimViewModel(viewModel, viewModel.Name, null, data.ViewModel.SourceDto);
 
     [DebuggerStepThrough]
-    private static string GetMapperNameSpace(CreationData data) =>
-        TypePath.Combine(GetRootNameSpace(data), "Mapper");
+    private static string GetMapperNameSpace(CreationData data)
+        => TypePath.Combine(GetRootNameSpace(data), "Mapper");
 
     [DebuggerStepThrough]
-    private static string GetRootNameSpace(CreationData data) =>
-        data.ViewModel.SourceDto.NameSpace.TrimEnd(".Dtos").TrimEnd(".Dto");
+    private static string GetRootNameSpace(CreationData data)
+        => data.ViewModel.SourceDto.NameSpace.TrimEnd(".Dtos").TrimEnd(".Dto");
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
@@ -429,7 +426,7 @@ internal sealed partial class FunctionalityService
                 .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)))
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
-            data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace!);
+            _ = data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace!);
         }
 
         void createGetByIdApi(CreationData data)
