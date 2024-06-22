@@ -86,7 +86,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             {
                 Body = api.Body,
                 ReturnType = returnType,
-                IsAsync = true
+                //IsAsync = api.IsAsync()
             };
 
             // Add HTTP methods
