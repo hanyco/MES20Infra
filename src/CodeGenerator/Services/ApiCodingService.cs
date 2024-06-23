@@ -108,10 +108,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         _ = ns.AddType(controllerClass);
 
         // Add additional usings to namespace
-        foreach (var nameSpace in viewModel.AdditionalUsings)
-        {
-            _ = ns.AddUsingNameSpace(nameSpace);
-        }
+        viewModel.AdditionalUsings.ForEach(x => ns.AddUsingNameSpace(x));
 
         // Generate code
         var codeStatement = codeGeneratorEngine.Generate(ns);
@@ -119,8 +116,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         {
             return codeStatement.WithValue(Codes.Empty)!;
         }
-        var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true);
 
+        var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true);
         // TODO: Add main part to let the developer to add his/her own code to Controller
         var mainCode = Code.Empty;
 
