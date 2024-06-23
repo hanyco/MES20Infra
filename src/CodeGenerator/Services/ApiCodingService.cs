@@ -73,7 +73,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             string returnType;
             if (api.ReturnType is not null)
             {
-                returnType = api.ReturnType.FullName;
+                returnType = api.ReturnType.AsKeyword();
                 _ = ns.AddUsingNameSpace(api.ReturnType.GetNameSpaces());
             }
             else
