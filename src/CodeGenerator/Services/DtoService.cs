@@ -449,7 +449,7 @@ internal sealed class DtoService(
         var propsVm = viewModel.Properties.Copy();
         viewModel.Properties.Clear();
         var dto = this._converter.ToDbEntity(viewModel)!;
-        var props = propsVm.Select(x => this._converter.ToDbEntity(x)).Build();
+        var props = propsVm.Select(x => this._converter.ToDbEntity(x)).AsReadOnly();
         return (dto, props!, propsVm);
     }
 }
