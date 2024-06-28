@@ -24,8 +24,8 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
     public Result<Codes> GenerateCodes(ApiCodingViewModel viewModel)
     {
         // Validations
-        _ = viewModel.ArgumentNotNull();
-        var vr = viewModel.Check()
+        var vr = viewModel.ArgumentNotNull()
+            .Check()
             .NotNull(x => x.ControllerName)
             .Build();
         if (vr.IsFailure)
