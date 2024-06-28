@@ -1,9 +1,9 @@
 ﻿//using Microsoft.AspNetCore.Mvc;
 //using MediatR;
+//using System;
 //using System.Threading.Tasks;
 //using HumanResources.Dtos;
 //using Library.Types;
-
 //namespace HumanResource.Controllers;
 //[ApiControllerAttribute()]
 //[RouteAttribute("\"[controller]\"")]
@@ -14,35 +14,30 @@
 //    {
 //        this._mediator = mediator;
 //    }
-
 //    [HttpGetAttribute()]
-//    public Task<IEnumerable<PersonDto>> GetAll()
+//    public async Task<IEnumerable<PersonDto> GetAll()
 //    {
 //        var result = await this._mediator.Send(new GetAllPeopleQuery());
 //        return result.Result;
 //    }
-
 //    [HttpGetAttribute("{id:long}")]
 //    public Task<PersonDto>? GetById()
 //    {
 //        var result = await this._mediator.Send(new GetByIdPersonQuery(id));
 //        return result.Result;
 //    }
-
 //    [HttpPostAttribute()]
-//    public Task<Result< 0 >, Culture =  neutral, PublicKeyToken =  7  cec85d7bea7798e ] ]> Insert()
+//    public Task<Result<Int64>> Insert()
 //    {
 //        var result = await this._mediator.Send(new InsertPersonCommand(personDto));
 //        return result.Result;
 //    }
-
 //    [HttpPutAttribute("{id:long}")]
 //    public Task<Result> Update()
 //    {
 //        var result = await this._mediator.Send(new UpdatePersonCommand(id, personDto));
 //        return result.Result;
 //    }
-
 //    [HttpDeleteAttribute("{id:long}")]
 //    public Task<Result> Delete()
 //    {
