@@ -60,6 +60,7 @@ internal sealed partial class FunctionalityService
         ProgressData getTitle(in string description)
             => new(Description: description, Sender: nameof(FunctionalityService));
 
+        [DebuggerStepThrough]
         static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)
         {
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -75,7 +76,7 @@ internal sealed partial class FunctionalityService
 
         [DebuggerStepThrough]
         MultistepProcessRunner<CreationData> initSteps(in CreationData data)
-        //?! ☠ Don't change the sequence of the steps ☠
+             //?! ☠ Don't change the sequence of the steps ☠
              => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.InitializeWorkspace, getTitle("Initializing…"))
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
