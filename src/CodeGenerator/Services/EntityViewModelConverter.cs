@@ -86,8 +86,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     // TODO: Think about how to load component complexity from database
     //?.IfTrue(model.UiActions.Any() is true, x => x.UiComponentActions = model.UiActions.Select(this.ToDbEntity).ToList()!);
 
-    public Module? ToDbEntity(ModuleViewModel? model) =>
-        model is null ? null : this._mapper.Map<Module>(model);
+    public HanyCo.Infra.Internals.Data.DataSources.Module? ToDbEntity(ModuleViewModel? model) =>
+        model is null ? null : this._mapper.Map<HanyCo.Infra.Internals.Data.DataSources.Module>(model);
 
     public UiBootstrapPosition? ToDbEntity(UiBootstrapPositionViewModel? model) =>
         model is null ? null : this._mapper.Map<UiBootstrapPosition>(model);
@@ -221,7 +221,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         return result;
     }
 
-    public ModuleViewModel? ToViewModel(Module? entity) =>
+    public ModuleViewModel? ToViewModel(HanyCo.Infra.Internals.Data.DataSources.Module? entity) =>
         entity is null ? null : this._mapper.Map<ModuleViewModel>(entity);
 
     public UiBootstrapPositionViewModel? ToViewModel(UiBootstrapPosition? entity) =>

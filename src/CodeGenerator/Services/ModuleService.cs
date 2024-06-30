@@ -18,15 +18,15 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         => (this._readDbContext, this._converter) = (readDbContext, converter);
 
     public Task<IReadOnlyList<ModuleViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetAllAsync<ModuleViewModel, Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetAllAsync<ModuleViewModel, HanyCo.Infra.Internals.Data.DataSources.Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<ModuleViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetByIdAsync<ModuleViewModel, Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetByIdAsync<ModuleViewModel, HanyCo.Infra.Internals.Data.DataSources.Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public IAsyncEnumerable<Module> GetChildEntitiesAsync(Module entity, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<HanyCo.Infra.Internals.Data.DataSources.Module> GetChildEntitiesAsync(HanyCo.Infra.Internals.Data.DataSources.Module entity, CancellationToken cancellationToken = default)
         => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id, cancellationToken);
 
-    public IAsyncEnumerable<Module> GetChildEntitiesByIdAsync(long parentId, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<HanyCo.Infra.Internals.Data.DataSources.Module> GetChildEntitiesByIdAsync(long parentId, CancellationToken cancellationToken = default)
     {
         var query = from child in this._readDbContext.Modules
                     where child.ParentId == parentId
@@ -35,7 +35,7 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         return dbResult;
     }
 
-    public async Task<Module?> GetParentEntityAsync(long childId, CancellationToken cancellationToken = default)
+    public async Task<HanyCo.Infra.Internals.Data.DataSources.Module?> GetParentEntityAsync(long childId, CancellationToken cancellationToken = default)
     {
         var query = from child in this._readDbContext.Modules
                     from parent in this._readDbContext.Modules
@@ -46,7 +46,7 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         return dbResult;
     }
 
-    public IAsyncEnumerable<Module> GetRootEntitiesAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<HanyCo.Infra.Internals.Data.DataSources.Module> GetRootEntitiesAsync(CancellationToken cancellationToken = default)
     {
         var query = from m in this._readDbContext.Modules
                     where m.ParentId == null

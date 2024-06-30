@@ -6,7 +6,7 @@ using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
 
-namespace Services;
+namespace Services.CodeGen;
 
 internal sealed class AdvancedSearchService : IBusinessService, IAdvancedSearchService
 {
@@ -14,7 +14,7 @@ internal sealed class AdvancedSearchService : IBusinessService, IAdvancedSearchS
     {
         if (!args.Check().ArgumentNotNull().Any().TryParse(out var vr))
         {
-            return Result.From<Codes>(vr, Codes.Empty);
+            return Result.From(vr, Codes.Empty);
         }
         var buffer = new StringBuilder();
 

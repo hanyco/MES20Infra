@@ -1,12 +1,11 @@
-﻿
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 
 using Library.Collections;
 using Library.Data.SqlServer.Dynamics;
 using Library.Exceptions.Validations;
 using Library.Validations;
 
-namespace Services;
+namespace Services.CodeGen;
 
 internal sealed class DbTableService : IDbTableService
 {
@@ -37,14 +36,14 @@ internal sealed class DbTableService : IDbTableService
         {
             reporter?.Report(description: "Initializing...");
             var max = db.GetTablesCount() + 1;
-            var tables = db.Tables.Compact<Table>().ToList<Table>();
+            var tables = db.Tables.Compact().ToList();
             var schemas = tables.Select(t => t.Schema).Compact().Distinct().ToList();
             var index = 1;
             foreach (var schema in schemas)
             {
                 schemaNode = new(new(schema));
                 tablesNode = new(new("Tables"));
-                foreach (var table in tables.Where<Table>(x => x.Schema == schema))
+                foreach (var table in tables.Where(x => x.Schema == schema))
                 {
                     var value = DbTableViewModel.FromDbTable(table);
                     reporter?.Report(new(max, index++, $"Reading `{value}`..."));

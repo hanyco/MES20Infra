@@ -40,8 +40,7 @@ internal sealed partial class FunctionalityService
 
         IEnumerable<Result<Codes>> generateCodes(FunctionalityViewModel viewModel, FunctionalityViewModelCodes codes)
         {
-            var max = 14;
-            var index = 0;
+            var (index, max) = (0, 14);
 
             if (viewModel.SourceDto != null)
             {

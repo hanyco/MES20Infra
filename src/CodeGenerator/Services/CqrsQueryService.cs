@@ -59,7 +59,7 @@ internal sealed class CqrsQueryService(
     public CqrsQueryViewModel FillByDbEntity(
         CqrsQueryViewModel @this,
         CqrsSegregate segregate,
-        Module infraModule,
+        HanyCo.Infra.Internals.Data.DataSources.Module infraModule,
         Dto parameterDto,
         IEnumerable<Property> parameterDtoProperties,
         Dto resultDto,

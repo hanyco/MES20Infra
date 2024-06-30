@@ -438,7 +438,8 @@ internal sealed partial class FunctionalityService
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQueryViewModel}(id));")
                 .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(data.SourceDtoName!, true));
+                .WithReturnType(TypePath.NewTask(data.SourceDtoName!))
+                .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
@@ -451,7 +452,8 @@ internal sealed partial class FunctionalityService
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.InsertCommandViewModel}({argName}));")
                 .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [typeof(long?)])));
+                .WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [typeof(long)])))
+                .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
@@ -465,7 +467,8 @@ internal sealed partial class FunctionalityService
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommandViewModel}(id, {argName}));")
                 .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(typeof(Result<>)));
+                .WithReturnType(TypePath.NewTask(typeof(Result<>)))
+                .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
 
@@ -477,7 +480,8 @@ internal sealed partial class FunctionalityService
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommandViewModel}(id));")
                 .AddBodyLine("return result;")
-                .WithReturnType(TypePath.NewTask(typeof(Result)));
+                .WithReturnType(TypePath.NewTask(typeof(Result)))
+                .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
     }
