@@ -27,7 +27,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 {
     public Result<Codes?> GenerateCodes(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
     {
-        var result = new Result<Codes>(viewModel.ArgumentNotNull() switch
+        var result = new Result<Codes?>(viewModel.ArgumentNotNull() switch
         {
             CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.Query),
             CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.Command),
