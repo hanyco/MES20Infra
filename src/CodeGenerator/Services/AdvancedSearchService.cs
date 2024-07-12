@@ -18,7 +18,7 @@ internal sealed class AdvancedSearchService : IBusinessService, IAdvancedSearchS
         }
         var buffer = new StringBuilder();
 
-        var statement = buffer.Build();
+        var statement = buffer.ToString();
         var result = Code.New("Where Clause", Languages.Sql, statement);
         return result.ToCodes();
     }

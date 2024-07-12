@@ -37,68 +37,20 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
         var ns = INamespace.New(viewModel.NameSpace);
 
         // Create controller
-        var controllerClass = IClass.New(viewModel.ControllerName)
-            .AddBaseType<ControllerBase>()
-            .AddAttribute<ApiControllerAttribute>()
-            .AddAttribute<RouteAttribute>((null, "\"[controller]\""));
-        if (viewModel.IsAnonymousAllow)
-        {
-            _ = controllerClass.AddAttribute<AllowAnonymousAttribute>();
-        }
+        var controllerClass = createController(viewModel);
 
         // Add ctor to controller
-        var ctor = new Method(controllerClass.Name)
-        {
-            IsConstructor = true,
-        };
-        var ctorBody = new StringBuilder();
-        foreach (var (argument, isField) in viewModel.CtorParams)
-        {
-            _ = ctor.AddArgument(argument);
-            if (isField)
-            {
-                var fieldName = TypeMemberNameHelper.ToFieldName(argument.Name);
-                _ = ns.AddUsingNameSpace(argument.Type.GetNameSpaces());
-                _ = controllerClass.AddField(fieldName, argument.Type);
-                _ = ctorBody.AppendLine($"this.{fieldName} = {argument.Name};");
-            }
-        }
-        ctor.Body = ctorBody.ToString();
+        var ctor = createConstructor(viewModel, ns, controllerClass);
         _ = controllerClass.AddMember(ctor);
 
         // Add APIs
         foreach (var api in viewModel.Apis)
         {
             // Parse return type
-            string returnType;
-            if (api.ReturnType is not null)
-            {
-                returnType = api.ReturnType.AsKeyword();
-                _ = ns.AddUsingNameSpace(api.ReturnType.GetNameSpaces());
-            }
-            else
-            {
-                returnType = "void";
-            }
+            var returnType = processReturnType(ns, api);
 
             // Create method
-            var method = new Method(api.Name!)
-            {
-                Body = api.Body,
-                ReturnType = returnType,
-                IsAsync = api.IsAsync()
-            };
-
-            // Add HTTP methods
-            foreach (var httpMethod in api.HttpMethods)
-            {
-                var httpType = httpMethod.GetType();
-                var route = httpType.GetProperty(nameof(httpMethod.Template))!.GetValue(httpMethod)?.ToString();
-                _ = route.IsNullOrEmpty()
-                    ? method.AddAttribute(TypePath.New(httpType))
-                    : method.AddAttribute(TypePath.New(httpType), (null, route));
-                _ = ns.AddUsingNameSpace(httpType.Namespace!);
-            }
+            var method = createMethod(ns, api, returnType);
 
             // Add API to Controller
             _ = controllerClass.AddMember(method);
@@ -123,5 +75,80 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
 
         // Return result
         return Codes.New(mainCode, partCode);
+
+        static IClass createController(in ApiCodingViewModel viewModel)
+        {
+            var controllerClass = IClass.New(viewModel.ControllerName)
+                        .AddBaseType<ControllerBase>()
+                        .AddAttribute<ApiControllerAttribute>()
+                        .AddAttribute<RouteAttribute>((null, "\"[controller]\""));
+            if (viewModel.IsAnonymousAllow)
+            {
+                _ = controllerClass.AddAttribute<AllowAnonymousAttribute>();
+            }
+
+            return controllerClass;
+        }
+
+        static Method createConstructor(in ApiCodingViewModel viewModel, in INamespace ns, in IClass controllerClass)
+        {
+            var ctor = new Method(controllerClass.Name)
+            {
+                IsConstructor = true,
+            };
+            var ctorBody = new StringBuilder();
+            foreach (var (argument, isField) in viewModel.CtorParams)
+            {
+                _ = ctor.AddArgument(argument);
+                if (isField)
+                {
+                    var fieldName = TypeMemberNameHelper.ToFieldName(argument.Name);
+                    _ = ns.AddUsingNameSpace(argument.Type.GetNameSpaces());
+                    _ = controllerClass.AddField(fieldName, argument.Type);
+                    _ = ctorBody.AppendLine($"this.{fieldName} = {argument.Name};");
+                }
+            }
+            ctor.Body = ctorBody.ToString();
+            return ctor;
+        }
+
+        static string processReturnType(in INamespace ns, in ApiMethod api)
+        {
+            string returnType;
+            if (api.ReturnType is not null)
+            {
+                returnType = api.ReturnType.AsKeyword();
+                _ = ns.AddUsingNameSpace(api.ReturnType.GetNameSpaces());
+            }
+            else
+            {
+                returnType = "void";
+            }
+
+            return returnType;
+        }
+
+        static Method createMethod(in INamespace ns, in ApiMethod api, in string returnType)
+        {
+            var method = new Method(api.Name!)
+            {
+                Body = api.Body,
+                ReturnType = returnType,
+                IsAsync = api.IsAsync()
+            };
+
+            // Add HTTP methods
+            foreach (var httpMethod in api.HttpMethods)
+            {
+                var httpType = httpMethod.GetType();
+                var route = httpType.GetProperty(nameof(httpMethod.Template))!.GetValue(httpMethod)?.ToString();
+                _ = route.IsNullOrEmpty()
+                    ? method.AddAttribute(TypePath.New(httpType))
+                    : method.AddAttribute(TypePath.New(httpType), (null, route));
+                _ = ns.AddUsingNameSpace(httpType.Namespace!);
+            }
+
+            return method;
+        }
     }
 }

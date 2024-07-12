@@ -148,7 +148,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             _ = buffer.AppendLine("</EditForm>");
         }
 
-        var statement = buffer.Build();
+        var statement = buffer.ToString();
         if (statement.IsNullOrEmpty())
         {
             return Code.Empty;

@@ -94,6 +94,6 @@ internal sealed class MapperSourceGenerator(ICodeGeneratorEngine codeGeneratorEn
                 .AppendAllLines(propNames, propName => $"{propName} = {argName}.{propName},")
                 .AppendLine($"}};")
                 .AppendLine($"return result;")
-                .Build();
+                .ToString();
     }
 }

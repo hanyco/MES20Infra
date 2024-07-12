@@ -43,6 +43,6 @@ public sealed class ValidationMessage : IBlazorComponent
         }
         _ = statement.Append(" />");
 
-        return new(this.Name, Languages.BlazorFront, statement.Build());
+        return new(this.Name, Languages.BlazorFront, statement.ToString());
     }
 }

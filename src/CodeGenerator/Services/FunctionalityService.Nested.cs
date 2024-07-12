@@ -34,7 +34,7 @@ internal partial class FunctionalityService
                 .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{update.GetSegregateType("Command").FullPath}, {update.GetSegregateResultType("Command").FullPath}>(cqParams);")
                 .AppendLine($"}}")
                 .AppendLine($"MessageComponent.Show(\"Save Data\", \"Date saved.\");")
-                .Build();
+                .ToString();
 
         internal static string BlazorListComponent_DeleteButton_OnClick_Body(CqrsCommandViewModel model)
         {
@@ -52,7 +52,7 @@ internal partial class FunctionalityService
                 .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
                 .AppendLine($"this.StateHasChanged();");
 
-            return result.Build();
+            return result.ToString();
         }
 
         internal static string CreateDeleteCommandHandleMethodBody(CqrsCommandViewModel model)
@@ -61,14 +61,14 @@ internal partial class FunctionalityService
             var deleteStatement = SqlStatementBuilder
                 .Delete(model.ParamsDto.DbObject.Name!)
                 .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "command.Params"))
-                .Build()
+                .ToString()
                 .Replace(Environment.NewLine, " ").Replace("  ", " ");
             return new StringBuilder()
                 .AppendLine($"var dbCommand = $@\"{deleteStatement}\";")
                 .AppendLine($"this._sql.ExecuteNonQuery(dbCommand);")
                 .AppendLine($"var result = new DeletePersonCommandResult(new());")
                 .AppendLine($"return Task.FromResult(result);")
-                .Build();
+                .ToString();
         }
 
         internal static string CreateGetAllQueryHandleMethodBody(CqrsQueryViewModel model) =>
@@ -86,7 +86,7 @@ internal partial class FunctionalityService
                 .Values(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
                 .ReturnId()
                 .ForceFormatValues(false)
-                .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
+                .ToString().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
                 .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
@@ -94,7 +94,7 @@ internal partial class FunctionalityService
                 .AppendLine($"int id = Convert.ToInt32(dbResult);")
                 .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new() {{ Id = id }});")
                 .AppendLine($"return Task.FromResult(result);")
-                .Build();
+                .ToString();
             return result;
         }
 
@@ -108,7 +108,7 @@ internal partial class FunctionalityService
                     .AppendLine(".ThrowOnFail();")
                     .AppendLine()
                     .AppendLine("return ValueTask.CompletedTask;")
-                    .Build();
+                    .ToString();
         }
 
         internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model)
@@ -119,14 +119,14 @@ internal partial class FunctionalityService
                 .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
                 .Where(ReplaceVariables(model.ParamsDto, "[ID] = %Id%", "command.Params"))
                 .ForceFormatValues(false)
-                .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
+                .ToString().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
                 .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{updateStatement}\";")
                 .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
                 .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new());")
                 .AppendLine("return Task.FromResult(result);")
-                .Build();
+                .ToString();
             return result;
         }
 
@@ -137,7 +137,7 @@ internal partial class FunctionalityService
                 .AppendLine(".ThrowOnFail();")
                 .AppendLine()
                 .AppendLine("return ValueTask.CompletedTask;")
-                .Build();
+                .ToString();
 
         internal static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
             new StringBuilder()
@@ -161,7 +161,7 @@ internal partial class FunctionalityService
                 .AppendLine("{")
                 .AppendLine("this.DataContext = new();")
                 .AppendLine("}")
-                .Build();
+                .ToString();
 
         internal static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
@@ -174,7 +174,7 @@ internal partial class FunctionalityService
                 .Top(model.ResultDto.IsList ? null : 1)
                 .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact())
                 .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
-                .Build()
+                .ToString()
                 .Replace(Environment.NewLine, " ").Replace("  ", " ");
             // Create body code.
             (var sqlMethod, var toListMethod) = model.ResultDto.IsList
@@ -185,7 +185,7 @@ internal partial class FunctionalityService
                 .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetSegregateResultParamsType("Query").FullPath}>(dbQuery){toListMethod};")
                 .AppendLine($"var result = new {model.GetSegregateResultType("Query").FullPath}(dbResult);")
                 .Append($"return Task.FromResult(result);")
-                .Build();
+                .ToString();
             return result;
         }
 

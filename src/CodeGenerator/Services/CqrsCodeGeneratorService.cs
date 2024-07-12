@@ -92,8 +92,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var handlerMethodBody = model.HandleMethodBody ?? "throw new NotImplementedException();";
                 var handlerMethodName = kind switch
                 {
-                    CodeCategory.Query => nameof(IRequestHandler<FakeReuqest, FakeResponse>.Handle),
-                    CodeCategory.Command => nameof(IRequestHandler<FakeReuqest, FakeResponse>.Handle),
+                    CodeCategory.Query => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
+                    CodeCategory.Command => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
                     CodeCategory.Dto => throw new NotImplementedException(),
                     CodeCategory.Page => throw new NotImplementedException(),
                     CodeCategory.Component => throw new NotImplementedException(),
@@ -146,9 +146,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             Result<string> createQueryHandler(CqrsViewModelBase model, CodeCategory kind)
             {
                 // Initialize
-                var cmdPcr = TypePath.New(typeof(ICommandProcessor));
-                var qryPcr = TypePath.New(typeof(IQueryProcessor));
-                var dal = TypePath.New(typeof(Sql));
+                var cmdPcr = TypePath.New<ICommandProcessor>();
+                var qryPcr = TypePath.New<IQueryProcessor>();
+                var dal = TypePath.New<Sql>();
 
                 // Create constructor
                 var ctor = new Method(model.GetSegregateHandlerType(kind.ToString()).Name)
@@ -277,5 +277,5 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
     private class FakeResponse;
 
-    private class FakeReuqest : IRequest<FakeResponse>;
+    private class FakeRequest : IRequest<FakeResponse>;
 }
