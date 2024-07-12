@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
+using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
@@ -138,7 +139,7 @@ internal sealed class DtoService(
         var nameSpace = INamespace.New(viewModel.NameSpace).AddType(type);
 
         var statement = this._codeGeneratorEngine.Generate(nameSpace);
-        var code = new Code(type.Name, Languages.CSharp, statement.Value).With(x => x.props().Category = CodeCategory.Dto);
+        var code = new Code(type.Name, Languages.CSharp, statement.Value).With(x => x.SetCategory(CodeCategory.Dto));
 
         var result = Result.From<Codes?>(statement, code.ToCodes());
         return result;
@@ -174,7 +175,7 @@ internal sealed class DtoService(
         {
             foreach (var claim in viewModel.SecurityClaims)
             {
-                type.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
+                _ = type.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
             }
         }
     }
