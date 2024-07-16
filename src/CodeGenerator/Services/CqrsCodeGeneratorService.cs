@@ -46,7 +46,11 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         => TypeMemberNameHelper.ToPropName(name);
 
     private static Code ToCode(in string? modelName, in string? codeName, in Result<string> statement, bool isPartial, CodeCategory codeCategory)
-        => Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial).With(x => x.props().Category = codeCategory);
+    {
+        var result = Code.New($"{modelName}{codeName}", Languages.CSharp, statement, isPartial);
+        result.props().Category = codeCategory;
+        return result;
+    }
 
     private Result<string> CreateValidator(in CqrsViewModelBase model)
     {

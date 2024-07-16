@@ -57,7 +57,11 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             var htmlCode = this.GenerateUiCode(category, args);
             if (htmlCode is { } c)
             {
-                codes.Add(c.With(x => x.props().Category = category));
+                codes.Add(c.With(x =>
+                {
+                    x.props().Category = category;
+                    return x;
+                }));
             }
         }
         if (args.GenerateMainCode || args.GeneratePartialCode)
@@ -66,12 +70,20 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
             if (mainCs is { } c2)
             {
-                codes.Add(c2.With(x => x.props().Category = category));
+                codes.Add(c2.With(x =>
+                {
+                    x.props().Category = category;
+                    return x;
+                }));
             }
 
             if (partialCs is { } c3)
             {
-                codes.Add(c3.With(x => x.props().Category = category));
+                codes.Add(c3.With(x =>
+                {
+                    x.props().Category = category;
+                    return x;
+                }));
             }
         }
 
@@ -130,7 +142,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         if (args.IsEditForm)
         {
-            _ = buffer.AppendLine($"<EditForm {args.EditFormAttributes?.Select(x=> $"{x.Key}='{x.Value}' ").Merge().Trim()}>");
+            _ = buffer.AppendLine($"<EditForm {args.EditFormAttributes?.Select(x => $"{x.Key}='{x.Value}' ").Merge().Trim()}>");
             _ = buffer.AppendLine($"{INDENT}<DataAnnotationsValidator />");
             _ = buffer.AppendLine($"{INDENT}<ValidationSummary />");
         }
@@ -493,6 +505,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)
     {
         this.OnInitializingUiCode(arguments);
-        return this.OnGeneratingUiCode(arguments).With(x => x.props().Category = category);
+        var result = this.OnGeneratingUiCode(arguments);
+        result.props().Category = category;
+        return result;
     }
 }
