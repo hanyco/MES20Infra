@@ -134,8 +134,9 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             {
                 Body = api.Body,
                 ReturnType = returnType,
-                IsAsync = api.IsAsync()
+                IsAsync = api.IsAsync(),
             };
+            api.Arguments.ForEach(x => method.AddArgument(x));
 
             // Add HTTP methods
             foreach (var httpMethod in api.HttpMethods)
