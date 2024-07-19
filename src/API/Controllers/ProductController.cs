@@ -1,58 +1,58 @@
-﻿using Domain.Commands;
-using Domain.Dtos;
-using Domain.Queries;
+﻿//using Domain.Commands;
+//using Domain.Dtos;
+//using Domain.Queries;
 
-using MediatR;
+//using MediatR;
 
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Authorization;
+//using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers;
+//namespace API.Controllers;
 
-[ApiController]
-[Route("[controller]")]
-[AllowAnonymous]
-public class ProductController : ControllerBase
-{
-    private readonly IMediator _mediator;
+//[ApiController]
+//[Route("[controller]")]
+//[AllowAnonymous]
+//public class ProductController : ControllerBase
+//{
+//    private readonly IMediator _mediator;
 
-    public ProductController(IMediator mediator)
-    {
-        this._mediator = mediator;
-    }
+//    public ProductController(IMediator mediator)
+//    {
+//        this._mediator = mediator;
+//    }
 
-    [HttpDelete("{id:long}")]
-    public async Task<Result> Delete(long id)
-    {
-        var result = await this._mediator.Send(new DeleteProductCommand(id));
-        return result;
-    }
+//    [HttpDelete("{id:long}")]
+//    public async Task<Result> Delete(long id)
+//    {
+//        var result = await this._mediator.Send(new DeleteProductCommand(id));
+//        return result;
+//    }
 
-    [HttpGet]
-    public async Task<IEnumerable<Product>> GetAll()
-    {
-        var result = await this._mediator.Send(new GetAllProductsQuery());
-        return result.Result;
-    }
+//    [HttpGet]
+//    public async Task<IEnumerable<Product>> GetAll()
+//    {
+//        var result = await this._mediator.Send(new GetAllProductsQuery());
+//        return result.Result;
+//    }
 
-    [HttpGet("{id:long}")]
-    public async Task<Product?> GetById(long id)
-    {
-        var result = await this._mediator.Send(new GetProductByIdQuery(id));
-        return result.Result;
-    }
+//    [HttpGet("{id:long}")]
+//    public async Task<Product?> GetById(long id)
+//    {
+//        var result = await this._mediator.Send(new GetProductByIdQuery(id));
+//        return result.Result;
+//    }
 
-    [HttpPost]
-    public async Task<Result<long?>> Insert(Product product)
-    {
-        var result = await this._mediator.Send(new InsertProductCommand(product));
-        return result;
-    }
+//    [HttpPost]
+//    public async Task<Result<long?>> Insert(Product product)
+//    {
+//        var result = await this._mediator.Send(new InsertProductCommand(product));
+//        return result;
+//    }
 
-    [HttpPut("{id}")]
-    public async Task<Result> Update(long id, [FromBody] Product product)
-    {
-        var result = await this._mediator.Send(new UpdateProductCommand(id, product));
-        return result;
-    }
-}
+//    [HttpPut("{id}")]
+//    public async Task<Result> Update(long id, [FromBody] Product product)
+//    {
+//        var result = await this._mediator.Send(new UpdateProductCommand(id, product));
+//        return result;
+//    }
+//}

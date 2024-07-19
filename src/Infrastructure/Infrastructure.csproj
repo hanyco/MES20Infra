@@ -17,8 +17,8 @@
     <None Remove="Text\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" />
-    <PackageReference Include="Microsoft.DependencyValidation.Analyzers" />
+    <PackageReference Include="Autofac" Version="8.0.0" />
+    <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />

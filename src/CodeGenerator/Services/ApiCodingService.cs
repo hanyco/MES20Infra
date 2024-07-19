@@ -24,10 +24,9 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
     public Result<Codes> GenerateCodes(ApiCodingViewModel viewModel)
     {
         // Validations
-        var vr = viewModel.ArgumentNotNull()
-            .Check()
-            .NotNull(x => x.ControllerName)
-            .Build();
+        var vr = viewModel
+            .ArgumentNotNull().Check()
+            .NotNull(x => x.ControllerName).Build();
         if (vr.IsFailure)
         {
             return vr.WithValue(Codes.Empty)!;
@@ -78,10 +77,11 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
 
         static IClass createController(in ApiCodingViewModel viewModel)
         {
-            var controllerClass = IClass.New(viewModel.ControllerName)
-                        .AddBaseType<ControllerBase>()
-                        .AddAttribute<ApiControllerAttribute>()
-                        .AddAttribute<RouteAttribute>((null, "\"[controller]\""));
+            var controllerClass = IClass
+                .New(viewModel.ControllerName)
+                .AddBaseType<ControllerBase>()
+                .AddAttribute<ApiControllerAttribute>()
+                .AddAttribute<RouteAttribute>((null, "\"[controller]\""));
             if (viewModel.IsAnonymousAllow)
             {
                 _ = controllerClass.AddAttribute<AllowAnonymousAttribute>();
