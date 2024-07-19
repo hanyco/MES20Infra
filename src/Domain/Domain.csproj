@@ -1,11 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>preview</LangVersion>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="MediatR" Version="12.3.0" />
 	</ItemGroup>
-
 	<ItemGroup>
-		<ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
+	  <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
 	</ItemGroup>
+
 
 </Project>
