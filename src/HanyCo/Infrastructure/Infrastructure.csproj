@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>preview</LangVersion>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+	</PropertyGroup>
+	<PropertyGroup>
+    <AssemblyName>HanyCo.Infrastructure</AssemblyName>
+    <RootNamespace>HanyCo.Infra</RootNamespace>
+    <Description>سرویس‌های عمومی مورد استفاده در کل سیستم</Description>
+    <Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Text\**" />
+    <EmbeddedResource Remove="Text\**" />
+    <None Remove="Text\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.7" />
+    <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
+  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\..\Bcl\src\CqrsLib\CqrsLib.csproj" />
+		<ProjectReference Include="..\..\Bcl\src\WebLib\WebLib.csproj" />
+		<ProjectReference Include="..\Security\Security.csproj" />
+	</ItemGroup>
+</Project>

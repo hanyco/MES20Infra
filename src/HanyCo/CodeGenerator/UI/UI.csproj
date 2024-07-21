@@ -1,0 +1,86 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<PropertyGroup>
+		<LangVersion>preview</LangVersion>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+		<OutputType>WinExe</OutputType>
+		<UseWPF>true</UseWPF>
+		<RootNamespace>HanyCo.Infra.UI</RootNamespace>
+		<PackageId>HanyCo.Infra.CodeGenerationUI</PackageId>
+		<Authors>HanyCo Development Team</Authors>
+		<Product>MES Code Generator and Infrastructure</Product>
+		<StartupObject>UI.App</StartupObject>
+		<Copyright>© 2023 Hamoun Nyzeh Company.</Copyright>
+		<MinimumPlatformVersion>8.0</MinimumPlatformVersion>
+		<TargetFramework>net9.0-windows10.0.17763.0</TargetFramework>
+		<AssemblyVersion>0.5.0.0</AssemblyVersion>
+		<FileVersion>0.5.0.0</FileVersion>
+		<Configurations>Debug;Release;Release Infra;Debug Unit Test</Configurations>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<IsPublishable>False</IsPublishable>
+		<Title>MES 2.0 Infrasrtucture</Title>
+		<Company>HanyCo</Company>
+		<Description>HanyCo MES 2.0 Code Generator and Infrastructure 2023</Description>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unit Test|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Infra|AnyCPU'">
+		<DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="Services\**" />
+		<Compile Remove="ViewModels\**" />
+		<EmbeddedResource Remove="Services\**" />
+		<EmbeddedResource Remove="ViewModels\**" />
+		<None Remove="Services\**" />
+		<None Remove="ViewModels\**" />
+		<Page Remove="Services\**" />
+		<Page Remove="ViewModels\**" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Helpers\PropertyTypeHelper.cs" />
+		<Compile Remove="UserControls\DtoEditorUserControl.xaml.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<Page Remove="UserControls\DtoEditorUserControl.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
+
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Engine\Engine.csproj" />
+		<ProjectReference Include="..\Services\Services.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="AppSettings.Development.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="AppSettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="AppSettings.Production.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Bcl\src\CoreLib\CoreLib.csproj" />
+	</ItemGroup>
+</Project>
