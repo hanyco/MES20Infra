@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>preview</LangVersion>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+	</PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<Nullable>annotations</Nullable>
+		<UseWPF>true</UseWPF>
+		<Configurations>Debug;Release;Debug Unit Test</Configurations>
+		<AssemblyName>HanyCo.Infra.CodeGen.$(MSBuildProjectName)</AssemblyName>
+		<RootNamespace>HanyCo.Infra.CodeGen.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="Services\ISecurityDescriptorService.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Services\ISecurityDescriptorService.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Bcl\src\CoreLib\CoreLib.csproj" />
+		<ProjectReference Include="..\..\..\Bcl\src\WpfLib\WpfLib.csproj" />
+		<ProjectReference Include="..\Data\Data.csproj" />
+		<ProjectReference Include="..\Engine\Engine.csproj" />
+	</ItemGroup>
+</Project>
