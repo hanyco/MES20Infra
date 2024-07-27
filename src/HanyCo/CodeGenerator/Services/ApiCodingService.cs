@@ -70,7 +70,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
 
         var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true);
         // TODO: Add main part to let the developer to add his/her own code to the controller.
-        var mainCode = Code.Empty;
+        var mainCode = Code.New(viewModel.ControllerName, Languages.CSharp, "// Working on it... To be back soon.", false);
 
         // Return result
         return Codes.New(mainCode, partCode);
