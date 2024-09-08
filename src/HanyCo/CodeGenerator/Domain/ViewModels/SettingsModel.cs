@@ -10,6 +10,7 @@ public sealed class SettingsModel : NotifyPropertyChanged
     private string? _connectionString;
     private string? _dtosPath;
     private string? _convertersPath;
+    private string? _controllersPath;
     private string? _productName;
     private string? _projectSourceRootPath;
     private string? _queriesPath;
@@ -51,6 +52,11 @@ public sealed class SettingsModel : NotifyPropertyChanged
         set => this.SetProperty(ref this._convertersPath, value);
     }
 
+    public string? controllersPath
+    {
+        get => this._controllersPath;
+        set => this.SetProperty(ref this._controllersPath, value);
+    }
     public string? productName
     {
         get => this._productName;

@@ -1,6 +1,8 @@
 ﻿using System.Text;
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.CodeGeneration.Definitions;
+using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;
@@ -68,9 +70,9 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             return codeStatement.WithValue(Codes.Empty)!;
         }
 
-        var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true);
+        var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true).SetCategory(CodeCategory.Api);
         // TODO: Add main part to let the developer to add his/her own code to the controller.
-        var mainCode = Code.New(viewModel.ControllerName, Languages.CSharp, "// Working on it... To be back soon.", false);
+        var mainCode = Code.New(viewModel.ControllerName, Languages.CSharp, "// Working on it... To be back soon.", false).SetCategory(CodeCategory.Api);
 
         // Return result
         return Codes.New(mainCode, partCode);

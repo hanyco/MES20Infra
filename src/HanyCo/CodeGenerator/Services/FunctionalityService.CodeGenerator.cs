@@ -5,6 +5,8 @@ using System.Text;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
+using HanyCo.Infra.CodeGeneration.Definitions;
+using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -35,6 +37,7 @@ internal sealed partial class FunctionalityService
             return result;
         }
         this._reporter.End(result.ToString());
+        var cats = result.Value.Select(x => x.GetCategory());
         scope.End(result);
         return result;
 
@@ -270,7 +273,7 @@ internal sealed partial class FunctionalityService
 
                         var ns = INamespace.New(dto.NameSpace).AddType(type);
                         var codeStatement = this._generatorEngine.Generate(ns);
-                        var code = Code.New(typeName, Languages.CSharp, codeStatement);
+                        var code = Code.New(typeName, Languages.CSharp, codeStatement).SetCategory(CodeCategory.Dto);
                         return code;
                     }
                 }

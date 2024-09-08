@@ -11,6 +11,7 @@ using Library.Windows;
 
 namespace Library.Helpers;
 
+[DebuggerStepThrough]
 public static class ResultHelper
 {
     /// <summary>

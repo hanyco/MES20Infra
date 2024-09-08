@@ -6,6 +6,7 @@ using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGeneration.Definitions;
+using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
 
@@ -244,6 +245,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 CodeCategory.Page => settings.blazorPagesPath ?? "UI/Pages",
                 CodeCategory.Component => settings.blazorComponentsPath ?? "UI/Components",
                 CodeCategory.Converter => settings.convertersPath ?? "Converters",
+                CodeCategory.Api => settings.controllersPath?? "Controllers",
                 _ => Result.Fail(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
             relativePath.ThrowOnFail().End();
