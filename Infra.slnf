@@ -1,0 +1,18 @@
+{
+  "solution": {
+    "path": "MES.sln",
+    "projects": [
+      "src\\Bcl\\src\\CoreLib\\CoreLib.csproj",
+      "src\\Bcl\\src\\CqrsLib\\CqrsLib.csproj",
+      "src\\Bcl\\src\\WpfLib\\WpfLib.csproj",
+      "src\\HanyCo\\CodeGenerator\\Data\\Data.csproj",
+      "src\\HanyCo\\CodeGenerator\\Domain\\Domain.csproj",
+      "src\\HanyCo\\CodeGenerator\\Engine\\Engine.csproj",
+      "src\\HanyCo\\CodeGenerator\\Services\\Services.csproj",
+      "src\\HanyCo\\CodeGenerator\\UI\\UI.csproj",
+      "src\\HanyCo\\Domain\\Domain.csproj",
+      "src\\HanyCo\\Infrastructure\\Infrastructure.csproj",
+      "src\\HanyCo\\Security\\Security.csproj"
+    ]
+  }
+}

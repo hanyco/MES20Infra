@@ -2,16 +2,18 @@
   "solution": {
     "path": "MES.sln",
     "projects": [
-      "src\\API\\API.csproj",
       "src\\Application\\Application.csproj",
       "src\\Bcl\\src\\CoreLib\\CoreLib.csproj",
       "src\\Bcl\\src\\CqrsLib\\CqrsLib.csproj",
       "src\\Bcl\\src\\WebLib\\WebLib.csproj",
-      "src\\Bcl\\src\\WpfLib\\WpfLib.csproj",
-      "src\\Contracts\\Contracts.csproj",
       "src\\Domain\\Domain.csproj",
+      "src\\HanyCo\\Domain\\Domain.csproj",
+      "src\\HanyCo\\Infrastructure\\Infrastructure.csproj",
+      "src\\HanyCo\\Security\\Security.csproj",
       "src\\Infrastructure\\Infrastructure.csproj",
-      "src\\Security\\Security.csproj"
+      "src\\Presentation\\API\\API.csproj",
+      "src\\Presentation\\UI\\UI.Client\\UI.Client.csproj",
+      "src\\Presentation\\UI\\UI\\UI.csproj"
     ]
   }
 }

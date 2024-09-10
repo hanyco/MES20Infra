@@ -208,26 +208,24 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             return Result.Fail<string>("No source code found. Please press <Generate Sources> button.", string.Empty);
         }
         var settings = SettingsService.Get();
+        var dir = settings.projectSourceRoot;
+        if (Directory.Exists(dir) && Directory.GetFileSystemEntries(dir).Any())
         {
-            var dir = settings.projectSourceRoot;
-            if (Directory.Exists(dir) && Directory.GetFileSystemEntries(dir).Any())
+            try
             {
-                try
+                var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
+                if (resp == TaskDialogResult.Cancel)
                 {
-                    var resp = MsgBox2.AskWithCancel("Source root folder is not empty.", $"{dir} has already some  content. Do you want to delete it's contents?", "Source folder not empty");
-                    if (resp == TaskDialogResult.Cancel)
-                    {
-                        return Result.Fail<string>(new OperationCancelledException());
-                    }
-                    if (resp == TaskDialogResult.Yes)
-                    {
-                        Directory.Delete(dir, true);
-                    }
+                    return Result.Fail<string>(new OperationCancelledException());
                 }
-                finally
+                if (resp == TaskDialogResult.Yes)
                 {
-                    await Task.Delay(750);
+                    Directory.Delete(dir, true);
                 }
+            }
+            finally
+            {
+                await Task.Delay(750);
             }
         }
         var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
@@ -239,13 +237,22 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             Result<string?> relativePath = code.props().Category switch
             {
-                CodeCategory.Dto => settings.dtosPath ?? "Dtos",
-                CodeCategory.Query => settings.queriesPath ?? "Queries",
-                CodeCategory.Command => settings.commandsPath ?? "Commands",
+                // TODO: Add additional folders to `settings`
+                CodeCategory.Dto => settings.dtosPath ?? "Domain/Dtos",
+                CodeCategory.QueryDto => settings.queriesPath ?? "Domain/Queries",
+                CodeCategory.CommandDto => settings.commandsPath ?? "Domain/Commands",
+                
+                CodeCategory.QueryHandler => settings.queriesPath ?? "Application/Queries/Handlers",
+                CodeCategory.CommandHandler => settings.commandsPath ?? "Application/Commands/Handlers",
+                
+                CodeCategory.ViewModel => settings.blazorPagesPath ?? "UI/ViewModels",
                 CodeCategory.Page => settings.blazorPagesPath ?? "UI/Pages",
                 CodeCategory.Component => settings.blazorComponentsPath ?? "UI/Components",
-                CodeCategory.Converter => settings.convertersPath ?? "Converters",
-                CodeCategory.Api => settings.controllersPath?? "Controllers",
+                
+                CodeCategory.Api => settings.controllersPath?? "Api/Controllers",
+
+                CodeCategory.Converter => settings.convertersPath ?? "Infrastructure/Converters",
+                
                 _ => Result.Fail(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
             relativePath.ThrowOnFail().End();

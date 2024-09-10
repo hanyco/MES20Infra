@@ -29,8 +29,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
     {
         var result = new Result<Codes?>(viewModel.ArgumentNotNull() switch
         {
-            CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.Query),
-            CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.Command),
+            CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.QueryDto),
+            CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.CommandDto),
             _ => throw new NotSupportedException()
         });
         return result;
@@ -85,7 +85,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind)
         {
             yield return ToCode(model.Name, "Handler", createHandler(model, kind), false, kind);
-            if (kind == CodeCategory.Command && model.ValidatorBody.IsNullOrEmpty())
+            if (kind == CodeCategory.CommandHandler && model.ValidatorBody.IsNullOrEmpty())
             {
                 yield return ToCode(model.Name, "Validator", this.CreateValidator(model), false, kind);
             }
@@ -96,8 +96,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var handlerMethodBody = model.HandleMethodBody ?? "throw new NotImplementedException();";
                 var handlerMethodName = kind switch
                 {
-                    CodeCategory.Query => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
-                    CodeCategory.Command => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
+                    CodeCategory.QueryHandler => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
+                    CodeCategory.CommandHandler => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
                     CodeCategory.Dto => throw new NotImplementedException(),
                     CodeCategory.Page => throw new NotImplementedException(),
                     CodeCategory.Component => throw new NotImplementedException(),
@@ -138,7 +138,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind)
         {
-            if (kind == CodeCategory.Command && !model.ValidatorBody.IsNullOrEmpty())
+            if (kind == CodeCategory.CommandHandler && !model.ValidatorBody.IsNullOrEmpty())
             {
                 yield return ToCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
             }
@@ -182,8 +182,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var resultType = model.GetSegregateResultType(kind.ToString());
                 var baseType = kind switch
                 {
-                    CodeCategory.Query => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
-                    CodeCategory.Command => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.QueryHandler => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.CommandHandler => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
                     CodeCategory.Dto => throw new NotImplementedException(),
                     CodeCategory.Page => throw new NotImplementedException(),
                     CodeCategory.Component => throw new NotImplementedException(),
@@ -265,8 +265,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     {
                         kind switch
                         {
-                            CodeCategory.Query => TypePath.New(typeof(IQuery<>).FullName!, [model.GetSegregateResultType(kind.ToString())]),
-                            CodeCategory.Command => TypePath.New<ICommand>(), CodeCategory.Dto => throw new NotImplementedException(), CodeCategory.Page => throw new NotImplementedException(), CodeCategory.Component => throw new NotImplementedException(), CodeCategory.Converter => throw new NotImplementedException(), CodeCategory.Api => throw new NotImplementedException(), _ => throw new NotImplementedException() },
+                            CodeCategory.QueryDto => TypePath.New(typeof(IQuery<>).FullName!, [model.GetSegregateResultType(kind.ToString())]),
+                            CodeCategory.CommandDto => TypePath.New<ICommand>(), CodeCategory.Dto => throw new NotImplementedException(), CodeCategory.Page => throw new NotImplementedException(), CodeCategory.Component => throw new NotImplementedException(), CodeCategory.Converter => throw new NotImplementedException(), CodeCategory.Api => throw new NotImplementedException(), _ => throw new NotImplementedException() },
                     }
                 }.AddMember(ctor).AddMember(paramsProp);
                 var nameSpace = INamespace.New(segregateType.NameSpace)

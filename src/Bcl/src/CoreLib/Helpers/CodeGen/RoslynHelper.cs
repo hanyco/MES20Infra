@@ -1,6 +1,4 @@
-﻿using System;
-
-using Library.CodeGeneration;
+﻿using Library.CodeGeneration;
 using Library.DesignPatterns.Markers;
 using Library.Validations;
 
@@ -65,16 +63,13 @@ public static class RoslynHelper
         return member.WithAttributeLists(member.AttributeLists.Add(attributeList));
     }
 
-    public static AttributeSyntax Attribute(NameSyntax name, AttributeArgumentListSyntax? argumentList)
-    {
-        return SyntaxFactory.Attribute(name, argumentList);
-    }
+    public static AttributeSyntax Attribute(NameSyntax name, AttributeArgumentListSyntax? argumentList) => SyntaxFactory.Attribute(name, argumentList);
 
     public static RosClass AddBase(this RosClass type, string baseClassName)
     {
         Checker.MustBeArgumentNotNull(type);
 
-        return type.WithBaseList(BaseList(new SeparatedSyntaxList<BaseTypeSyntax>().Add(SimpleBaseType(ParseTypeName(baseClassName)))));
+        return type.WithBaseList(BaseList([SimpleBaseType(ParseTypeName(baseClassName))]));
     }
 
     public static RosClass AddConstructor(this RosClass type, IEnumerable<MethodParameterInfo>? parameters = null, string? body = null, IEnumerable<SyntaxKind>? modifiers = null) =>
@@ -305,7 +300,7 @@ public static class RoslynHelper
         var result = InnerCreatePropertyBase(propertyInfo);
         if (propertyInfo.GetAccessor.Has || propertyInfo.SetAccessor.Has)
         {
-            var accessors =List<AccessorDeclarationSyntax>();
+            var accessors = List<AccessorDeclarationSyntax>();
             if (propertyInfo.GetAccessor.Has)
             {
                 accessors = accessors.Add(AccessorDeclaration(

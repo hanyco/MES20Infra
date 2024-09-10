@@ -2,7 +2,5 @@
 
 namespace HanyCo.Infra.Exceptions
 {
-    public interface IMesException : IException
-    {
-    }
+    public interface IMesException : IException;
 }

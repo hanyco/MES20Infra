@@ -8,9 +8,9 @@
     xmlns:pages="clr-namespace:HanyCo.Infra.UI.Pages"
     xmlns:usercontrols="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=HanyCo.Infra.CodeGen.Contracts.CodeGen"
-    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
     x:Name="Me"
     Title="Functionality Editor"
+    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Loaded="Me_Loaded"
@@ -34,8 +34,8 @@
             </Button>
             <Button
                 Name="EditFunctionalityButton"
-                Style="{StaticResource IconButton}"
                 Click="EditFunctionalityButton_Click"
+                Style="{StaticResource IconButton}"
                 ToolTip="Edit Functionality">
                 <Path Style="{StaticResource Edit}" />
             </Button>
@@ -128,7 +128,7 @@
                             DataContext="{Binding Path=SourceDto}"
                             IsEnabled="False" />
                     </GroupBox>
-                    
+
                 </Grid>
             </TabItem>
             <TabItem Header="Result">

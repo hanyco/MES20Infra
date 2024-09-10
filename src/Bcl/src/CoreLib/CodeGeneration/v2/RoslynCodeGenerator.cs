@@ -17,7 +17,7 @@ public sealed class RoslynCodeGenerator : ICodeGeneratorEngine
     {
         Check.MustBeArgumentNotNull(property);
 
-        var prop = CreateRosProperty(RoslynHelper.CreateRoot(), property);
+        var prop = CreateRosProperty(CreateRoot(), property);
         return prop.Root.AddMembers(prop.Member).GenerateCode();
     }
 
@@ -31,17 +31,17 @@ public sealed class RoslynCodeGenerator : ICodeGeneratorEngine
         }
 
         // Create compilation unit
-        var root = RoslynHelper.CreateRoot();
+        var root = CreateRoot();
 
         // Create namespace
-        var rosNameSpace = RoslynHelper.CreateNamespace(nameSpace.Name);
+        var rosNameSpace = CreateNamespace(nameSpace.Name);
 
         // Add types
         foreach (var type in nameSpace.Types)
         {
             var modifiers = GeneratorHelper.ToModifiers(type.AccessModifier, type.InheritanceModifier);
             // Create type
-            var rosType = RoslynHelper.CreateType(TypePath.New(type.Name), modifiers);
+            var rosType = CreateType(TypePath.New(type.Name), modifiers);
 
             // Add base class or interfaces to type
             foreach (var baseType in type.BaseTypes)
@@ -109,7 +109,7 @@ public sealed class RoslynCodeGenerator : ICodeGeneratorEngine
     private static (MemberDeclarationSyntax Member, CompilationUnitSyntax Root) CreateRosField(CompilationUnitSyntax root, IField member)
     {
         var modifiers = GeneratorHelper.ToModifiers(member.AccessModifier, member.InheritanceModifier);
-        var result = RoslynHelper.CreateField(new(member.Name, member.Type, modifiers));
+        var result = CreateField(new(member.Name, member.Type, modifiers));
         member.Type.GetNameSpaces().ForEach(x => root = root.AddUsingNameSpace(x));
         return (result, root);
     }
@@ -118,8 +118,8 @@ public sealed class RoslynCodeGenerator : ICodeGeneratorEngine
     {
         var modifiers = GeneratorHelper.ToModifiers(method.AccessModifier, method.InheritanceModifier);
         var result = method.IsConstructor || method.Name == className
-            ? RoslynHelper.CreateConstructor(TypePath.GetName(className), modifiers, method.Arguments.Select(x => (x.Type, x.Name)), method.Body)
-            : RoslynHelper.CreateMethod(new(method.Name, modifiers, method.IsAsync, method.ReturnType, method.Arguments.Select(x => (x.Type, x.Name)), method.Body, method.IsExtension));
+            ? CreateConstructor(TypePath.GetName(className), modifiers, method.Arguments.Select(x => (x.Type, x.Name)), method.Body)
+            : CreateMethod(new(method.Name, modifiers, method.IsAsync, method.ReturnType, method.Arguments.Select(x => (x.Type, x.Name)), method.Body, method.IsExtension));
         method.GetNameSpaces().ForEach(x => root = root.AddUsingNameSpace(x));
 
         foreach (var attribute in method.Attributes.Compact())
@@ -138,8 +138,8 @@ public sealed class RoslynCodeGenerator : ICodeGeneratorEngine
     {
         var propertyInfo = new RosPropertyInfo(member.Name, member.Type, (IEnumerable<SyntaxKind>?)GeneratorHelper.ToModifiers(member.AccessModifier, member.InheritanceModifier), (member.Getter is not null, GeneratorHelper.ToModifiers(member.Getter?.AccessModifier, null)), (member.Setter is not null, GeneratorHelper.ToModifiers(member.Setter?.AccessModifier, null)));
         var prop = member.BackingFieldName.IsNullOrEmpty()
-            ? RoslynHelper.CreateProperty(propertyInfo)
-            : RoslynHelper.CreatePropertyWithBackingField(propertyInfo, new RosFieldInfo(member.BackingFieldName, member.Type)).Property;
+            ? CreateProperty(propertyInfo)
+            : CreatePropertyWithBackingField(propertyInfo, new RosFieldInfo(member.BackingFieldName, member.Type)).Property;
         member.Type.GetNameSpaces().ForEach(x => root = root.AddUsingNameSpace(x));
         var result = AddAttributes(prop, root, member);
         return result;

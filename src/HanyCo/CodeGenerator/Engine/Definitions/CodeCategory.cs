@@ -3,8 +3,11 @@
 public enum CodeCategory
 {
     Dto,
-    Query,
-    Command,
+    ViewModel,
+    QueryDto,
+    QueryHandler,
+    CommandDto,
+    CommandHandler,
     Page,
     Component,
     Converter,

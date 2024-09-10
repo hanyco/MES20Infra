@@ -7,7 +7,7 @@ using Library.Threading.MultistepProgress;
 
 namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 
-public interface IDbTableService : IService
+public interface IDbTableService : IBusinessService
 {
     Task<IEnumerable<DbColumnViewModel>> GetColumnsAsync(string connectionString, string tableName, CancellationToken token = default);
 
