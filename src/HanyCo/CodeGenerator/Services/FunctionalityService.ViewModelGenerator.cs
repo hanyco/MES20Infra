@@ -551,7 +551,7 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CreationData data, CancellationToken token)
         {
-            data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token: token);
+            data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(cancellationToken: token);
             data.ViewModel.GetAllQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetAllQueryViewModel.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Queries");
@@ -559,7 +559,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
-            data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, cancellationToken: token);
             data.ViewModel.GetAllQueryViewModel.MapperNameSpace = GetMapperNameSpace(data);
         }
 
@@ -604,7 +604,7 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CancellationToken token)
         {
-            data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(token: token);
+            data.ViewModel.GetByIdQueryViewModel = await this._queryService.CreateAsync(cancellationToken: token);
             data.ViewModel.GetByIdQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetByIdQueryViewModel.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetByIdQueryViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Queries");
@@ -612,7 +612,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetByIdQueryViewModel.FriendlyName = data.ViewModel.GetByIdQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetByIdQueryViewModel.Comment = data.COMMENT;
-            data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.GetByIdQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, cancellationToken: token);
         }
 
         void createParams()
@@ -731,7 +731,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommandViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.UpdateCommandViewModel.FriendlyName = data.ViewModel.UpdateCommandViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.UpdateCommandViewModel.Comment = data.COMMENT;
-            data.ViewModel.UpdateCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token: token);
+            data.ViewModel.UpdateCommandViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, cancellationToken: token);
         }
 
         void createParamsAsync(CreationData data)

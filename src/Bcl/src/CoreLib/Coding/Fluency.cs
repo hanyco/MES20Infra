@@ -4,8 +4,7 @@ using Library.Exceptions.Validations;
 
 namespace Library.Coding;
 
-[DebuggerStepThrough]
-[StackTraceHidden]
+[DebuggerStepThrough, StackTraceHidden]
 public readonly struct Fluency<T>(T value) : IEquatable<T>//, IConvertible<Fluency<T>, T>, IConvertible<T, Fluency<T>>
 , IEquatable<Fluency<T>>
 {

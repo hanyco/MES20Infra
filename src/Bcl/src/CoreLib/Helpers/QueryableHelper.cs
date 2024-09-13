@@ -68,8 +68,8 @@ public static class QueryableHelper
     /// <summary>
     /// Asynchronously locks a queryable and returns a list of results.
     /// </summary>
-    public static Task<List<TResult>> ToListLockAsync<TResult>(this IQueryable<TResult> query, IAsyncLock asyncLock)
-        => asyncLock.ArgumentNotNull().LockAsync(async () => await query.ToListAsync());
+    public static Task<List<TResult>> ToListLockAsync<TResult>(this IQueryable<TResult> query, IAsyncLock asyncLock, CancellationToken cancellationToken = default)
+        => asyncLock.ArgumentNotNull().LockAsync(async () => await query.ToListAsync(cancellationToken));
 
     /// <summary>
     /// Gets a paged list of items from a queryable source.

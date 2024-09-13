@@ -27,12 +27,13 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 {
     public Result<Codes?> GenerateCodes(CqrsViewModelBase viewModel, CqrsCodeGenerateCodesConfig? config = null)
     {
-        var result = new Result<Codes?>(viewModel.ArgumentNotNull() switch
+        var code = viewModel.ArgumentNotNull() switch
         {
-            CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.QueryDto),
-            CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.CommandDto),
+            CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.Query),
+            CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.Command),
             _ => throw new NotSupportedException()
-        });
+        };
+        var result = new Result<Codes?>(code);
         return result;
     }
 
@@ -85,7 +86,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind)
         {
             yield return ToCode(model.Name, "Handler", createHandler(model, kind), false, kind);
-            if (kind == CodeCategory.CommandHandler && model.ValidatorBody.IsNullOrEmpty())
+            if (kind == CodeCategory.Command && model.ValidatorBody.IsNullOrEmpty())
             {
                 yield return ToCode(model.Name, "Validator", this.CreateValidator(model), false, kind);
             }
@@ -96,8 +97,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var handlerMethodBody = model.HandleMethodBody ?? "throw new NotImplementedException();";
                 var handlerMethodName = kind switch
                 {
-                    CodeCategory.QueryHandler => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
-                    CodeCategory.CommandHandler => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
+                    CodeCategory.Query => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
+                    CodeCategory.Command => nameof(IRequestHandler<FakeRequest, FakeResponse>.Handle),
                     CodeCategory.Dto => throw new NotImplementedException(),
                     CodeCategory.Page => throw new NotImplementedException(),
                     CodeCategory.Component => throw new NotImplementedException(),
@@ -138,16 +139,16 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind)
         {
-            if (kind == CodeCategory.CommandHandler && !model.ValidatorBody.IsNullOrEmpty())
+            if (kind == CodeCategory.Command && !model.ValidatorBody.IsNullOrEmpty())
             {
                 yield return ToCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
             }
 
-            yield return ToCode(model.Name, "Handler", createQueryHandler(model, kind), true, kind);
-            yield return ToCode(model.Name, null, createSegregation(model, kind), true, CodeCategory.Dto);
+            yield return ToCode(model.Name, "Handler", createHandler(model, kind), true, kind);
+            yield return ToCode(model.Name, "CqrsDto", createSegregation(model, kind), true, CodeCategory.Dto);
             yield return ToCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
 
-            Result<string> createQueryHandler(CqrsViewModelBase model, CodeCategory kind)
+            Result<string> createHandler(CqrsViewModelBase model, CodeCategory kind)
             {
                 // Initialize
                 var cmdPcr = TypePath.New<ICommandProcessor>();
@@ -182,14 +183,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var resultType = model.GetSegregateResultType(kind.ToString());
                 var baseType = kind switch
                 {
-                    CodeCategory.QueryHandler => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
-                    CodeCategory.CommandHandler => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
-                    CodeCategory.Dto => throw new NotImplementedException(),
-                    CodeCategory.Page => throw new NotImplementedException(),
-                    CodeCategory.Component => throw new NotImplementedException(),
-                    CodeCategory.Converter => throw new NotImplementedException(),
-                    CodeCategory.Api => throw new NotImplementedException(),
-                    _ => throw new NotImplementedException()
+                    CodeCategory.Query => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.Command => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    _ => throw new NotSupportedException()
                 };
 
                 // Add members
@@ -265,10 +261,13 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     {
                         kind switch
                         {
-                            CodeCategory.QueryDto => TypePath.New(typeof(IQuery<>).FullName!, [model.GetSegregateResultType(kind.ToString())]),
-                            CodeCategory.CommandDto => TypePath.New<ICommand>(), CodeCategory.Dto => throw new NotImplementedException(), CodeCategory.Page => throw new NotImplementedException(), CodeCategory.Component => throw new NotImplementedException(), CodeCategory.Converter => throw new NotImplementedException(), CodeCategory.Api => throw new NotImplementedException(), _ => throw new NotImplementedException() },
+                            CodeCategory.Query => TypePath.New(typeof(IQuery<>).FullName!, [model.GetSegregateResultType(kind.ToString())]),
+                            CodeCategory.Command => TypePath.New<ICommand>(),
+                            _ => throw new NotImplementedException(),
+                        },
                     }
-                }.AddMember(ctor).AddMember(paramsProp);
+                }.AddMember(ctor)
+                .AddMember(paramsProp);
                 var nameSpace = INamespace.New(segregateType.NameSpace)
                     .AddUsingNameSpace(paramsProp.Type.GetNameSpaces())
                     .AddType(segregateClass);
@@ -279,7 +278,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         }
     }
 
-    private class FakeResponse;
-
     private class FakeRequest : IRequest<FakeResponse>;
+
+    private class FakeResponse;
 }

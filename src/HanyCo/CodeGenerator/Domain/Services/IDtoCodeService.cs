@@ -8,13 +8,13 @@ using Library.Interfaces;
 namespace HanyCo.Infra.CodeGen.Contracts.Services;
 
 public interface IDtoCodeService : IBusinessService
-    , ICodeGenerator<DtoViewModel, DtoCodeServiceGenerateCodesParameters>
+    , ICodeGenerator<DtoViewModel, DtoCodeServiceAsyncCodeGeneratorArgs>
 {
 
 }
 
 [Immutable]
-public sealed record DtoCodeServiceGenerateCodesParameters(string? TypeName = null,
+public sealed record DtoCodeServiceAsyncCodeGeneratorArgs(string? TypeName = null,
     /// <summary>
     /// A flag indicating whether to generate the main code.
     /// </summary>

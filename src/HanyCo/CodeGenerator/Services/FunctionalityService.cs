@@ -17,7 +17,7 @@ namespace Services;
 
 [Service]
 [Stateless]
-internal partial class FunctionalityService(
+internal sealed partial class FunctionalityService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
@@ -39,7 +39,7 @@ internal partial class FunctionalityService(
     : IFunctionalityService
     , IFunctionalityCodeService
     , IValidator<FunctionalityViewModel>
-    , IAsyncTransactionSave
+    , IAsyncTransactionalSave
     , ILoggerContainer
 {
     private readonly IApiCodingService _apiCodeGenerator = apiCodeGenerator;

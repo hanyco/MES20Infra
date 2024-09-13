@@ -253,8 +253,6 @@ internal partial class FunctionalityService
         }
     }
 
-    //    return result.AsNoTracking().AsSplitQuery();
-    //}
     public async Task<Result<FunctionalityViewModel>> UpdateAsync(long id, FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         CheckPersistence(persist);

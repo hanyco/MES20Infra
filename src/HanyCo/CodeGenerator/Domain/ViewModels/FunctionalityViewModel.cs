@@ -3,12 +3,6 @@ using HanyCo.Infra.Internals.Data.DataSources;
 
 namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
-/// <summary>
-/// This class represents a functionality-specific view model. It inherits from InfraViewModelBase
-/// and is designed to store various components and codes related to a specific functionality. This
-/// class is closely related to the FunctionalityViewModelCodes class for storing
-/// functionality-specific codes.
-/// </summary>
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
     private DtoViewModel _sourceDto;

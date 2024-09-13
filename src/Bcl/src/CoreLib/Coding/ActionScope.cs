@@ -1,4 +1,6 @@
-﻿using Library.DesignPatterns.Markers;
+﻿using System.Diagnostics;
+
+using Library.DesignPatterns.Markers;
 using Library.Logging;
 using Library.Results;
 using Library.Validations;
@@ -6,6 +8,7 @@ using Library.Validations;
 namespace Library.Coding;
 
 [Immutable]
+[DebuggerStepThrough, StackTraceHidden]
 public sealed class ActionScope : IDisposable
 {
     public const string BEGININGMESSAGE = null;

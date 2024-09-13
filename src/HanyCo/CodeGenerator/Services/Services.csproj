@@ -13,9 +13,17 @@
     <Configurations>Debug;Release;Debug Unit Test</Configurations>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="FunctionalityService.CodeGenerator.new.cs" />
+    <Compile Remove="FunctionalityService.CRUD.new.cs" />
+    <Compile Remove="FunctionalityService.Nested.new.cs" />
+    <Compile Remove="FunctionalityService.ViewModelGenerator.new.cs" />
     <Compile Remove="SecurityDescriptorService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="FunctionalityService.CodeGenerator.new.cs" />
+    <None Include="FunctionalityService.CRUD.new.cs" />
+    <None Include="FunctionalityService.Nested.new.cs" />
+    <None Include="FunctionalityService.ViewModelGenerator.new.cs" />
     <None Include="SecurityDescriptorService.cs" />
   </ItemGroup>
   <ItemGroup>

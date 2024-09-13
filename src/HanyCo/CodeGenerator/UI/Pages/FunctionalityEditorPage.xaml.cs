@@ -6,7 +6,6 @@ using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGeneration.Definitions;
-using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
 
@@ -125,6 +124,16 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         await this.BindDataAsync();
     }
 
+    private async void EditFunctionalityButton_Click(object sender, RoutedEventArgs e)
+    {
+        var id = this.FunctionalityTreeView.SelectedItem.Check()
+            .NotNull(() => "No functionality is selected.")
+            .NotNull(x => x!.Id).ThrowOnFail().Value!.Id!.Value;
+        var viewModel = await this._service.GetByIdAsync(id);
+        this.ViewModel = viewModel;
+        await this.BindDataAsync();
+    }
+
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
         await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
@@ -135,7 +144,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     {
         await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
         this.PrepareViewModel();
-        this.ViewModel = await this._codeService.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
+        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
     }
 
     private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
@@ -237,22 +246,19 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             Result<string?> relativePath = code.props().Category switch
             {
-                // TODO: Add additional folders to `settings`
                 CodeCategory.Dto => settings.dtosPath ?? "Domain/Dtos",
-                CodeCategory.QueryDto => settings.queriesPath ?? "Domain/Queries",
-                CodeCategory.CommandDto => settings.commandsPath ?? "Domain/Commands",
-                
-                CodeCategory.QueryHandler => settings.queriesPath ?? "Application/Queries/Handlers",
-                CodeCategory.CommandHandler => settings.commandsPath ?? "Application/Commands/Handlers",
-                
+
+                CodeCategory.Query => settings.queriesPath ?? "Application/Queries",
+                CodeCategory.Command => settings.commandsPath ?? "Application/Commands",
+
                 CodeCategory.ViewModel => settings.blazorPagesPath ?? "UI/ViewModels",
                 CodeCategory.Page => settings.blazorPagesPath ?? "UI/Pages",
                 CodeCategory.Component => settings.blazorComponentsPath ?? "UI/Components",
-                
-                CodeCategory.Api => settings.controllersPath?? "Api/Controllers",
+
+                CodeCategory.Api => settings.controllersPath ?? "API/Controllers",
 
                 CodeCategory.Converter => settings.convertersPath ?? "Infrastructure/Converters",
-                
+
                 _ => Result.Fail(new NotSupportedException("Code category is null or not supported."), string.Empty)
             };
             relativePath.ThrowOnFail().End();
@@ -328,15 +334,5 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.SelectRootDtoByTableButton.IsEnabled = true;
         }
-    }
-
-    private async void EditFunctionalityButton_Click(object sender, RoutedEventArgs e)
-    {
-        var id = this.FunctionalityTreeView.SelectedItem.Check()
-            .NotNull(() => "No functionality is selected.")
-            .NotNull(x => x!.Id).ThrowOnFail().Value!.Id!.Value;
-        var viewModel = await this._service.GetByIdAsync(id);
-        this.ViewModel = viewModel;
-        await this.BindDataAsync();
     }
 }

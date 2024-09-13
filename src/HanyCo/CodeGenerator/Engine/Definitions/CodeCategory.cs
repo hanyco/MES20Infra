@@ -4,12 +4,15 @@ public enum CodeCategory
 {
     Dto,
     ViewModel,
-    QueryDto,
-    QueryHandler,
-    CommandDto,
-    CommandHandler,
+    
+    Query,
+
+    Command,
+    
     Page,
     Component,
+    
     Converter,
+    
     Api,
 }

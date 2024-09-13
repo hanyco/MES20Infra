@@ -117,7 +117,7 @@ internal sealed class DtoService(
         return await this.DeleteAsync(dto!, persist, token);
     }
 
-    public Result<Codes?> GenerateCodes(DtoViewModel viewModel, DtoCodeServiceGenerateCodesParameters? arguments = null)
+    public Result<Codes?> GenerateCodes(DtoViewModel viewModel, DtoCodeServiceAsyncCodeGeneratorArgs? arguments = null)
     {
         if (!validate(viewModel).TryParse(out var validationResult))
         {

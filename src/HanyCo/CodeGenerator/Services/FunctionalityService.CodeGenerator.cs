@@ -19,7 +19,7 @@ using Services.Helpers;
 
 namespace Services;
 
-internal sealed partial class FunctionalityService
+internal partial class FunctionalityService
 {
     public Result<Codes?> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null)
     {

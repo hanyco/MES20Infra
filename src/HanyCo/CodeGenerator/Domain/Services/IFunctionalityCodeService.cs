@@ -9,9 +9,6 @@ using Library.Results;
 
 namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 
-public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>
-{
-    Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync([DisallowNull] FunctionalityViewModel model, CancellationToken token = default);
-}
+public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>;
 
 public sealed record FunctionalityCodeServiceAsyncCodeGeneratorArgs(bool UpdateModelView, CancellationToken Token = default);

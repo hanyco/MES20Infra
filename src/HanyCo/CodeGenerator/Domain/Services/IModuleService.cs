@@ -8,6 +8,6 @@ namespace HanyCo.Infra.CodeGen.Contracts.Services;
 public interface IModuleService
     : IBusinessService
     , IAsyncRead<ModuleViewModel>
-    , IHierarchicalDbEntityActor<Module>
+    //, IHierarchicalDbEntityActor<Module>
 {
 }
