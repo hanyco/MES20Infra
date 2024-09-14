@@ -11,6 +11,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
+	  <ProjectReference Include="..\Bcl\src\CqrsLib\CqrsLib.csproj" />
 	</ItemGroup>
 
 

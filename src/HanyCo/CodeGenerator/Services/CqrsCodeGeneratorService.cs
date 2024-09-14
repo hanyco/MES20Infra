@@ -19,7 +19,7 @@ using Services.Helpers;
 
 using ICommand = Library.Cqrs.Models.Commands.ICommand;
 
-namespace Services.CodeGen;
+namespace Services;
 
 [Service]
 [Stateless]
@@ -29,8 +29,8 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
     {
         var code = viewModel.ArgumentNotNull() switch
         {
-            CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.Query),
-            CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.Command),
+            CqrsQueryViewModel model => this.GenerateSegregation(model, CodeCategory.Query, config ?? new()),
+            CqrsCommandViewModel model => this.GenerateSegregation(model, CodeCategory.Command, config ?? new()),
             _ => throw new NotSupportedException()
         };
         var result = new Result<Codes?>(code);
@@ -74,18 +74,22 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         return codeGeneratorEngine.Generate(ns);
     }
 
-    private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind)
+    private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind, CqrsCodeGenerateCodesConfig config)
     {
         Check.MustBeArgumentNotNull(model?.Name);
 
-        var partCodes = generatePartCode(model, kind);
-        var mainCodes = generateMainCode(model, kind);
+        var partCodes = generatePartCode(model, kind, config);
+        var mainCodes = generateMainCode(model, kind, config);
 
         return partCodes.AddRangeImmuted(mainCodes).Order().ToCodes();
 
-        IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind)
+        IEnumerable<Code> generateMainCode(CqrsViewModelBase model, CodeCategory kind, CqrsCodeGenerateCodesConfig config)
         {
-            yield return ToCode(model.Name, "Handler", createHandler(model, kind), false, kind);
+            if (config.ShouldGenerateHandler)
+            {
+                yield return ToCode(model.Name, "Handler", createHandler(model, kind), false, kind);
+            }
+
             if (kind == CodeCategory.Command && model.ValidatorBody.IsNullOrEmpty())
             {
                 yield return ToCode(model.Name, "Validator", this.CreateValidator(model), false, kind);
@@ -137,16 +141,26 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             }
         }
 
-        IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind)
+        IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind, CqrsCodeGenerateCodesConfig config)
         {
             if (kind == CodeCategory.Command && !model.ValidatorBody.IsNullOrEmpty())
             {
                 yield return ToCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
             }
+            if (config.ShouldGenerateHandler)
+            {
+                yield return ToCode(model.Name, "Handler", createHandler(model, kind), true, kind);
+            }
 
-            yield return ToCode(model.Name, "Handler", createHandler(model, kind), true, kind);
-            yield return ToCode(model.Name, "CqrsDto", createSegregation(model, kind), true, CodeCategory.Dto);
-            yield return ToCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
+            if (config.ShouldGenerateParams)
+            {
+                yield return ToCode(model.Name, "CqrsDto", createSegregation(model, kind), true, CodeCategory.Dto);
+            }
+
+            if (config.ShouldGenerateResult)
+            {
+                yield return ToCode(model.Name, "Result", createResult(model, kind), true, CodeCategory.Dto);
+            }
 
             Result<string> createHandler(CqrsViewModelBase model, CodeCategory kind)
             {

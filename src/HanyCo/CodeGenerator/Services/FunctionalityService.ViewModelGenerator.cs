@@ -79,12 +79,13 @@ internal sealed partial class FunctionalityService
              //?! ☠ Don't change the sequence of the steps ☠
              => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.InitializeWorkspace, getTitle("Initializing…"))
+                
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
-
                 .AddStep(this.CreateInsertCommand, getTitle($"Creating `Insert{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
+                
                 .AddStep(this.CreateController, getTitle($"Creating `{data.ViewModel.Name}Controller`…"))
 
                 .AddStep(this.CreateBlazorListPage, getTitle($"Creating {data.ViewModel.Name} Blazor List Page…"))
@@ -411,6 +412,8 @@ internal sealed partial class FunctionalityService
 
         void initialize(CreationData data)
             => data.ViewModel.ApiCodingViewModel
+                .With(x => x.AdditionalUsings.Add(data.ViewModel.GetAllQueryViewModel.CqrsNameSpace))
+                .With(x => x.AdditionalUsings.Add(data.ViewModel.GetAllQueryViewModel.DtoNameSpace))
                 .With(x => x.NameSpace = TypePath.Combine(GetRootNameSpace(data), "Controllers"))
                 .With(x => x.ControllerName = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"));
 

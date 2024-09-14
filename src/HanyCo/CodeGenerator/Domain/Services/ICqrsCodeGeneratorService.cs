@@ -11,9 +11,6 @@ public interface ICqrsCodeGeneratorService : IBusinessService, ICodeGenerator<Cq
 }
 
 public sealed record CqrsCodeGenerateCodesConfig(
-    bool ShouldGenerateGetAll = true,
-    bool ShouldGenerateGetById = true,
-    bool ShouldGenerateCreate = true,
-    bool ShouldGenerateUpdate = true,
-    bool ShouldGenerateDelete = true,
-    bool ShouldGenerateValidators = true);
+    bool ShouldGenerateParams = true,
+    bool ShouldGenerateHandler = true,
+    bool ShouldGenerateResult = true);

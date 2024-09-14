@@ -15,7 +15,4 @@ global using Library.Wpf.Media;
 global using static Library.Coding.CodeHelper;
 
 //x [ModuleInitializer]
-public static class WpfLibModule
-{
-
-}
+public static class WpfLibModule;

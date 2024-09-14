@@ -58,7 +58,7 @@ internal partial class FunctionalityService
 
             if (viewModel.GetAllQueryViewModel != null)
             {
-                var codeGenRes = generateAllCodes(viewModel.GetAllQueryViewModel);
+                var codeGenRes = generateCqrsCodes(viewModel.GetAllQueryViewModel);
                 codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetAllQueryViewModel)}");
                 yield return codes.GetAllQueryCodes;
@@ -70,7 +70,7 @@ internal partial class FunctionalityService
 
             if (viewModel.GetByIdQueryViewModel != null)
             {
-                var codeGenRes = generateAllCodes(viewModel.GetByIdQueryViewModel);
+                var codeGenRes = generateCqrsCodes(viewModel.GetByIdQueryViewModel);
                 codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetByIdQueryViewModel)}");
                 yield return codes.GetByIdQueryCodes;
@@ -82,7 +82,7 @@ internal partial class FunctionalityService
 
             if (viewModel.InsertCommandViewModel != null)
             {
-                var codeGenRes = generateAllCodes(viewModel.InsertCommandViewModel);
+                var codeGenRes = generateCqrsCodes(viewModel.InsertCommandViewModel);
                 codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, null);
                 yield return codes.InsertCommandCodes;
@@ -94,7 +94,7 @@ internal partial class FunctionalityService
 
             if (viewModel.UpdateCommandViewModel != null)
             {
-                var codeGenRes = generateAllCodes(viewModel.UpdateCommandViewModel);
+                var codeGenRes = generateCqrsCodes(viewModel.UpdateCommandViewModel);
                 codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.UpdateCommandViewModel)}");
                 yield return codes.UpdateCommandCodes;
@@ -106,7 +106,7 @@ internal partial class FunctionalityService
 
             if (viewModel.DeleteCommandViewModel != null)
             {
-                var codeGenRes = generateAllCodes(viewModel.DeleteCommandViewModel);
+                var codeGenRes = generateCqrsCodes(viewModel.DeleteCommandViewModel);
                 codes.DeleteCommandCodes = codeGenRes.Select(x => x.Value).ToCodes();
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.DeleteCommandViewModel)}");
                 yield return codes.DeleteCommandCodes;
@@ -222,7 +222,7 @@ internal partial class FunctionalityService
                 }
             }
 
-            ImmutableArray<Result<Codes>> generateAllCodes(CqrsViewModelBase cqrsViewModel)
+            ImmutableArray<Result<Codes>> generateCqrsCodes(CqrsViewModelBase cqrsViewModel)
             {
                 return gather(cqrsViewModel).ToImmutableArray();
 
@@ -240,7 +240,7 @@ internal partial class FunctionalityService
                     // Generate the codes of CQRS result.
                     var resultDtoCode = generateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
                     // Generate the codes of CQRS handler.
-                    var handlerCode = this._cqrsCodeService.GenerateCodes(model);
+                    var handlerCode = this._cqrsCodeService.GenerateCodes(model, new(false, true, false));
 
                     yield return paramsDtoCode.ToCodes();
                     yield return resultDtoCode.ToCodes();
@@ -248,7 +248,10 @@ internal partial class FunctionalityService
 
                     Code generateCodes(DtoViewModel dto, string typeName)
                     {
-                        var type = new Class(typeName);
+                        var type = new Class(typeName)
+                        {
+                            InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
+                        };
                         if (dto.BaseType is not null)
                         {
                             _ = type.AddBaseType(dto.BaseType);
@@ -270,10 +273,11 @@ internal partial class FunctionalityService
                             ctor.Body = ctorBody.ToString();
                             _ = type.AddMember(ctor);
                         }
-
+                        var defCtor = new Method(typeName).With(x => x.Body = "// Default constructor");
+                        _ = type.AddMember(defCtor);
                         var ns = INamespace.New(dto.NameSpace).AddType(type);
                         var codeStatement = this._generatorEngine.Generate(ns);
-                        var code = Code.New(typeName, Languages.CSharp, codeStatement).SetCategory(CodeCategory.Dto);
+                        var code = Code.New(typeName, Languages.CSharp, codeStatement, true).SetCategory(CodeCategory.Dto);
                         return code;
                     }
                 }
