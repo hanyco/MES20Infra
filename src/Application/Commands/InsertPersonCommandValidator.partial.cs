@@ -1,9 +1,9 @@
 using Library.Cqrs.Models.Commands;
-using HumanResource.Dtos;
+using HumanResources.Dtos;
 using System.Threading.Tasks;
 using Library.Validations;
 
-namespace HumanResource.Commands;
+namespace HumanResources.Commands;
 public sealed class InsertPersonCommandValidator : ICommandValidator<InsertPersonCommand>
 {
     public ValueTask ValidateAsync(InsertPersonCommand command)

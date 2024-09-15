@@ -12,15 +12,15 @@ internal static class CqrsHelpers
 
     // GetAllPeople
     public static TypePath GetSegregateParamsType(this CqrsViewModelBase model, string? kind) =>
-        TypePath.New($"{model.ParamsDto.Name}", model.ParamsDto.NameSpace);
+        TypePath.New($"{Purify(model.ParamsDto.Name)}", model.ParamsDto.NameSpace);
 
     // GetAllPeopleResult
     public static TypePath GetSegregateResultParamsType(this CqrsViewModelBase model, string? kind) =>
-        TypePath.New($"{model.ResultDto.Name}", model.ResultDto.NameSpace);
+        TypePath.New($"{Purify(model.ResultDto.Name)}Result", model.ResultDto.NameSpace);
 
     // GetAllPeopleQueryResult
     public static TypePath GetSegregateResultType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New($"{Purify(model.Name)}{kind}Result", model.DtoNameSpace?? model.ResultDto?.NameSpace);
+        TypePath.New($"{Purify(model.Name)}{kind}Result", model.DtoNameSpace ?? model.ResultDto?.NameSpace);
 
     // GetAllPeopleQuery
     public static TypePath GetSegregateType(this CqrsViewModelBase model, string kind) =>

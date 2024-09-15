@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using HumanResource.Dtos;
+using HumanResources.Dtos;
 
-namespace HumanResource.Commands;
+namespace HumanResources.Commands;
 public sealed partial class InsertPersonCommandHandler
 {
     public Task<InsertPersonCommandResult> Handle(InsertPersonCommand command)

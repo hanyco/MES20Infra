@@ -205,13 +205,13 @@ internal static class CqrsCodeCompileUnitCreatorEngine
         in CodeNamespace nameSpace,
         string? dtoNameSpace)
     {
-        var segInterfaces = segregate.GetInterfaces(cqrsName).Select(i => CodeGenType.New(i.TrimEnd(".")));
+        var segInterfaces = segregate.GetInterfaces(cqrsName).Select(i => CodeGenType.New(i.TrimSuffix(".")));
         var interfaceNameSpaces = segInterfaces.Select(ns => ns.Namespaces).SelectAll();
         foreach (var ns in interfaceNameSpaces)
         {
             if (!ns.IsNullOrEmpty())
             {
-                _ = nameSpace.UseNameSpace(ns.TrimEnd("."));
+                _ = nameSpace.UseNameSpace(ns.TrimSuffix("."));
             }
         }
 

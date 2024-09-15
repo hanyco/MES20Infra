@@ -128,13 +128,11 @@ internal sealed partial class FunctionalityService
     private static void AddClaimViewModel(InfraViewModelBase viewModel, CreationData data)
         => AddClaimViewModel(viewModel, viewModel.Name, null, data.ViewModel.SourceDto);
 
-    [DebuggerStepThrough]
     private static string GetMapperNameSpace(CreationData data)
-        => TypePath.Combine(GetRootNameSpace(data), "Mapper");
+        => TypePath.Combine(GetRootNameSpace(data), "Mappers");
 
-    [DebuggerStepThrough]
     private static string GetRootNameSpace(CreationData data)
-        => data.ViewModel.SourceDto.NameSpace.TrimEnd(".Dtos").TrimEnd(".Dto");
+        => data.ViewModel.SourceDto.NameSpace.TrimSuffix(".Dtos").TrimSuffix(".Dto");
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {

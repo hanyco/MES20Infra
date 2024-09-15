@@ -1,9 +1,9 @@
 using Library.Cqrs.Models.Queries;
-using HumanResource.Dtos;
+using HumanResources.Dtos;
 using Library.Cqrs.Models.Commands;
 using Library.Data.SqlServer;
 
-namespace HumanResource.Queries;
+namespace HumanResources.Queries;
 public sealed partial class GetByIdPersonQueryHandler : IQueryHandler<GetByIdPersonQuery, GetByIdPersonQueryResult>
 {
     private readonly ICommandProcessor _commandProcessor;

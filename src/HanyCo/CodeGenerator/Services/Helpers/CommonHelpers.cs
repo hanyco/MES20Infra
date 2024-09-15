@@ -16,6 +16,7 @@ internal static class CommonHelpers
         var suffixes = new string[]
         {
             "Dto",
+            "Dtos",
             "Params",
             "Result",
             "Query",

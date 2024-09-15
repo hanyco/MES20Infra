@@ -272,9 +272,9 @@ internal partial class FunctionalityService
                         {
                             ctor.Body = ctorBody.ToString();
                             _ = type.AddMember(ctor);
+                            var defCtor = new Method(typeName).With(x => x.Body = "// Default constructor");
+                            _ = type.AddMember(defCtor);
                         }
-                        var defCtor = new Method(typeName).With(x => x.Body = "// Default constructor");
-                        _ = type.AddMember(defCtor);
                         var ns = INamespace.New(dto.NameSpace).AddType(type);
                         var codeStatement = this._generatorEngine.Generate(ns);
                         var code = Code.New(typeName, Languages.CSharp, codeStatement, true).SetCategory(CodeCategory.Dto);

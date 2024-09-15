@@ -924,7 +924,7 @@ public static class StringHelper
 
         var result = new StringBuilder(s);
         items.ForEach(item => result.Append($"{item}{delimiter}"));
-        return result.ToString().TrimEnd(delimiter);
+        return result.ToString().TrimSuffix(delimiter);
     }
 
     /// <summary>
@@ -1487,11 +1487,11 @@ public static class StringHelper
     /// the original input string.
     /// </returns>
     [return: NotNullIfNotNull(nameof(s))]
-    public static string? TrimEnd(this string? s, string trim, StringComparison comparisonType = StringComparison.Ordinal) =>
+    public static string? TrimSuffix(this string? s, string trim, StringComparison comparisonType = StringComparison.Ordinal) =>
         s.IsNullOrEmpty() ? s : trim.IsNullOrEmpty() ? s : s.EndsWith(trim, comparisonType) ? s[..^trim.Length] : s;
 
     [return: NotNullIfNotNull(nameof(s))]
-    public static string? TrimStart(this string? s, string trim, StringComparison comparisonType = StringComparison.Ordinal) =>
+    public static string? TrimPrefix(this string? s, string trim, StringComparison comparisonType = StringComparison.Ordinal) =>
         s.IsNullOrEmpty() ? s : trim.IsNullOrEmpty() ? s : s.StartsWith(trim, comparisonType) ? s[trim.Length..] : s;
 
     /// <summary>

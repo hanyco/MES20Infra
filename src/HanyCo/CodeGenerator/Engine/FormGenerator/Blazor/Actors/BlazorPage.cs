@@ -58,7 +58,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 
         return result;
 
-        static string purify(string pageName) => pageName.NotNull().TrimStart('/').TrimEnd('/').TrimEnd("Page").Trim();
+        static string purify(string pageName) => pageName.NotNull().TrimStart('/').TrimEnd('/').TrimSuffix("Page").Trim();
         static string merge(string s, IEnumerable<string> items)
         {
             var result = new StringBuilder(s);

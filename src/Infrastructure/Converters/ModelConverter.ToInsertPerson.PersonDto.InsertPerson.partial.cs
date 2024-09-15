@@ -1,9 +1,8 @@
-using HumanResource.Dtos;
 using HumanResources.Dtos;
 using System.Collections.Generic;
 using System;
 
-namespace HumanResource.Mapper;
+namespace HumanResources.Mappers;
 public static partial class ModelConverter
 {
     public static InsertPerson ToInsertPerson(this PersonDto model)

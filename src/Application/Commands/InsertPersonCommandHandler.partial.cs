@@ -1,9 +1,9 @@
 using Library.Cqrs.Models.Commands;
-using HumanResource.Dtos;
+using HumanResources.Dtos;
 using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
 
-namespace HumanResource.Commands;
+namespace HumanResources.Commands;
 public sealed partial class InsertPersonCommandHandler : ICommandHandler<InsertPersonCommand, InsertPersonCommandResult>
 {
     private readonly ICommandProcessor _commandProcessor;

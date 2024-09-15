@@ -1,8 +1,7 @@
-using HumanResource.Dtos;
-using System.Collections.Generic;
 using HumanResources.Dtos;
+using System.Collections.Generic;
 
-namespace HumanResource.Mapper;
+namespace HumanResources.Mappers;
 public static partial class ModelConverter
 {
     public static PersonDto ToViewModel(this GetAllPeopleQueryResult model)

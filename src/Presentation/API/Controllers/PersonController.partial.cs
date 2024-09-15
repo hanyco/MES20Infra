@@ -2,11 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using System;
 using System.Threading.Tasks;
+using HumanResources.Queries;
 using HumanResources.Dtos;
-using HumanResource.Dtos;
-using Library.Results;
 
-namespace HumanResource.Controllers;
+namespace HumanResources.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("\"[controller]\"")]
 public sealed class PersonController : ControllerBase
@@ -18,7 +17,7 @@ public sealed class PersonController : ControllerBase
     }
 
     [HttpGetAttribute()]
-    public async Task<GetAllPeopleQueryResult> GetAll()
+    public async Task<IEnumerable<PersonDto>> GetAll()
     {
         var result = await this._mediator.Send(new GetAllPeopleQuery());
         return result.Result;
@@ -27,14 +26,14 @@ public sealed class PersonController : ControllerBase
     [HttpGetAttribute("{id:long}")]
     public async Task<PersonDto> GetById(Int64 id)
     {
-        var result = await this._mediator.Send(new GetByIdPersonQuery(new(id)));
+        var result = await this._mediator.Send(new GetByIdPersonQuery(id));
         return result.Result;
     }
 
     [HttpPostAttribute()]
     public async Task<Result<long>> Insert(PersonDto personDto)
     {
-        var result = await this._mediator.Send(new InsertPersonCommand(new(personDto)));
+        var result = await this._mediator.Send(new InsertPersonCommand(personDto));
         return result.Result;
     }
 
