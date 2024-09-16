@@ -236,9 +236,9 @@ internal partial class FunctionalityService
                     };
 
                     // Generate the codes of CQRS parameters.
-                    var paramsDtoCode = generateCodes(model.ParamsDto, new(model.GetSegregateParamsType(kind).Name));
+                    var paramsDtoCode = generateCodes(model.ParamsDto, model.ParamsDto.Name);
                     // Generate the codes of CQRS result.
-                    var resultDtoCode = generateCodes(model.ResultDto, new(model.GetSegregateResultParamsType(kind).Name));
+                    var resultDtoCode = generateCodes(model.ResultDto, model.ResultDto.Name);
                     // Generate the codes of CQRS handler.
                     var handlerCode = this._cqrsCodeService.GenerateCodes(model, new(false, true, false));
 
