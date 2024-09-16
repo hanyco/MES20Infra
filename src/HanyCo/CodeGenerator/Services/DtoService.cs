@@ -149,7 +149,7 @@ internal sealed class DtoService(
             var typeFullName = pvm.TypeFullName.NotNull();
 
             var type = (pvm.IsList ?? false
-                ? TypePath.New(typeof(List<>).FullName!, typeFullName)
+                ? TypePath.New(typeof(List<>).FullName!, [typeFullName])
                 : TypePath.New(typeFullName))
                 .WithNullable(pvm.IsNullable ?? false);
             var result = new CodeGenProperty(pvm.Name!, type);

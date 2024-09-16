@@ -15,18 +15,15 @@ public interface IType : IValidatable, IHasAttributes
 }
 
 [Immutable]
-public abstract class TypeBase : IType
+public abstract class TypeBase(in string name) : IType
 {
-    protected TypeBase(in string name) =>
-        this.Name = name;
-
     public virtual AccessModifier AccessModifier { get; init; } = AccessModifier.Public;
     public ISet<ICodeGenAttribute> Attributes { get; } = new HashSet<ICodeGenAttribute>();
     public virtual ISet<TypePath> BaseTypes { get; } = new HashSet<TypePath>();
     public virtual InheritanceModifier InheritanceModifier { get; init; } = InheritanceModifier.Sealed;
     public virtual ISet<IMember> Members { get; } = new HashSet<IMember>();
-    public virtual string Name { get; }
-    public virtual ISet<string> UsingNamesSpaces { get; } = new HashSet<string>(new[] { nameof(System), nameof(System.Linq), nameof(System.Threading.Tasks), });
+    public virtual string Name { get; } = name;
+    public virtual ISet<string> UsingNamesSpaces { get; } = new HashSet<string>([typeof(string).Namespace, typeof(Enumerable).Namespace, typeof(Task).Namespace,]);
 
     public virtual Result Validate() =>
         Check.IfIsNull(this.Name).TryParse(out var vr1)
@@ -44,7 +41,7 @@ public static class TypeExtensions
         return type;
     }
 
-    public static IClass AddBaseType<TBaseType>(this IClass type) 
+    public static IClass AddBaseType<TBaseType>(this IClass type)
         => AddBaseType(type, typeof(TBaseType));
 
     public static TType AddField<TType>(this TType type, string name, TypePath typePath, AccessModifier? accessModifier = IField.DefaultAccessModifier) where TType : IType =>

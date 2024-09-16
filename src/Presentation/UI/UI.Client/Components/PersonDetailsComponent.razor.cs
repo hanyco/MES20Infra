@@ -1,6 +1,6 @@
-namespace HumanResources.Dtos
+namespace HumanResources
 {
-    using HumanResource.Mapper;
+    using HumanResources.Mappers;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -12,13 +12,13 @@ namespace HumanResources.Dtos
             if (this.EntityId is { } entityId)
             {
                 // Setup segregation parameters
-                var @params = new HumanResource.Dtos.GetByIdPerson()
+                var @params = new HumanResources.Dtos.GetByIdPerson()
                 {
                     Id = entityId,
                 };
-                var cqParams = new HumanResource.Dtos.GetByIdPersonQuery(@params);
+                var cqParams = new HumanResources.Dtos.GetByIdPersonQuery(@params);
                 // Invoke the query handler to retrieve all entities
-                var cqResult = await this._queryProcessor.ExecuteAsync<HumanResource.Dtos.GetByIdPersonQueryResult>(cqParams);
+                var cqResult = await this._queryProcessor.ExecuteAsync<HumanResources.Dtos.GetByIdPersonQueryResult>(cqParams);
                 // Now, set the data context.
                 this.DataContext = cqResult.Result.ToViewModel();
             }

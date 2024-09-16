@@ -1,9 +1,9 @@
-using HumanResources.Dtos.PersonDto ? . System . Collections . Generic;
+using System.Collections.Generic;
 using HumanResources.Dtos;
 
 namespace HumanResources.Dtos;
 public sealed class PersonViewModel
 {
-    public List? PeopleListDto { get; set; }
+    public List<PersonDto?>? PeopleListDto { get; set; }
     public PersonDto? PersonDetailsDto { get; set; }
 }

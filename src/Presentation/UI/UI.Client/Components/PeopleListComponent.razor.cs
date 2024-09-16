@@ -1,8 +1,8 @@
-namespace HumanResources.Dtos
+namespace HumanResources
 {
-    using HumanResource.Mapper;
-    using HumanResource.Queries;
-    using HumanResource.Dtos;
+    using HumanResources.Mappers;
+    using HumanResources.Queries;
+    using HumanResources.Dtos;
     using System;
     using System.Linq;
     using System.Threading.Tasks;

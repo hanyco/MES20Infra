@@ -6,9 +6,9 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace HumanResources.Dtos
+namespace HumanResources
 {
-    using HumanResource.Mapper;
+    using HumanResources.Mappers;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -33,14 +33,14 @@ namespace HumanResources.Dtos
             if (DataContext.Id == default)
             {
                 var @params = this.DataContext.ToInsertPerson();
-                var cqParams = new HumanResource.Dtos.InsertPersonCommand(@params);
-                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResource.Dtos.InsertPersonCommand, HumanResource.Dtos.InsertPersonCommandResult>(cqParams);
+                var cqParams = new HumanResources.Dtos.InsertPersonCommand(@params);
+                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.InsertPersonCommand, HumanResources.Dtos.InsertPersonCommandResult>(cqParams);
             }
             else
             {
                 var @params = this.DataContext.ToUpdatePerson();
-                var cqParams = new HumanResource.Dtos.UpdatePersonCommand(@params);
-                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResource.Dtos.UpdatePersonCommand, HumanResource.Dtos.UpdatePersonCommandResult>(cqParams);
+                var cqParams = new HumanResources.Dtos.UpdatePersonCommand(@params);
+                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.UpdatePersonCommand, HumanResources.Dtos.UpdatePersonCommandResult>(cqParams);
             }
 
             MessageComponent.Show("Save Data", "Date saved.");

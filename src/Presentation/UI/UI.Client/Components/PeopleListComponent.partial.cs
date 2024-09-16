@@ -6,11 +6,11 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-namespace HumanResources.Dtos
+namespace HumanResources
 {
-    using HumanResource.Mapper;
-    using HumanResource.Queries;
-    using HumanResource.Dtos;
+    using HumanResources.Mappers;
+    using HumanResources.Queries;
+    using HumanResources.Dtos;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -37,13 +37,13 @@ namespace HumanResources.Dtos
         public async void DeleteButton_OnClick(Int64 id)
         {
             // Setup segregation parameters
-            var cmdParams = new HumanResource.Dtos.DeletePerson()
+            var cmdParams = new HumanResources.Dtos.DeletePerson()
             {
                 Id = id,
             };
-            var cmd = new HumanResource.Dtos.DeletePersonCommand(cmdParams);
+            var cmd = new HumanResources.Dtos.DeletePersonCommand(cmdParams);
             // Invoke the command handler to apply changes.
-            var cqResult = await this._commandProcessor.ExecuteAsync<HumanResource.Dtos.DeletePersonCommand, HumanResource.Dtos.DeletePersonCommandResult>(cmd);
+            var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.DeletePersonCommand, HumanResources.Dtos.DeletePersonCommandResult>(cmd);
             // Now, set let UI know that the state is changed
             await OnInitializedAsync();
             MessageComponent.Show("Delete Entity", "Entity deleted.");
@@ -53,10 +53,10 @@ namespace HumanResources.Dtos
         protected override async Task OnInitializedAsync()
         {
             // Setup segregation parameters
-            var @params = new HumanResource.Dtos.GetAllPeopleQuery();
-            var cqParams = new HumanResource.Dtos.GetAllPeopleQuery(@params);
+            var @params = new HumanResources.Dtos.GetAllPeople();
+            var cqParams = new HumanResources.Dtos.GetAllPeopleQuery(@params);
             // Invoke the query handler to retrieve all entities
-            var cqResult = await this._queryProcessor.ExecuteAsync<HumanResource.Dtos.GetAllPeopleQueryResult>(cqParams);
+            var cqResult = await this._queryProcessor.ExecuteAsync<HumanResources.Dtos.GetAllPeopleQueryResult>(cqParams);
             // Now, set the data context.
             this.DataContext = cqResult.Result.ToViewModel();
             // Call developer's method.

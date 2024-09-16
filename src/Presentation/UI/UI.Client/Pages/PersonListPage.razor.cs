@@ -1,4 +1,4 @@
-namespace HumanResources.Dtos.Pages
+namespace HumanResources.Pages
 {
     using System;
     using System.Linq;
