@@ -412,6 +412,8 @@ internal sealed partial class FunctionalityService
             => data.ViewModel.ApiCodingViewModel
                 .With(x => x.AdditionalUsings.Add(data.ViewModel.GetAllQueryViewModel.CqrsNameSpace))
                 .With(x => x.AdditionalUsings.Add(data.ViewModel.GetAllQueryViewModel.DtoNameSpace))
+                .With(x => x.AdditionalUsings.Add(typeof(Result).Namespace!))
+                .With(x => x.AdditionalUsings.Add(typeof(Result<>).Namespace!))
                 .With(x => x.NameSpace = TypePath.Combine(GetRootNameSpace(data), "Controllers"))
                 .With(x => x.ControllerName = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"));
 
