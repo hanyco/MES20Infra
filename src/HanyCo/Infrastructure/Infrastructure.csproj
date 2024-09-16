@@ -24,8 +24,8 @@
     <None Remove="Text\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.7" />
+    <PackageReference Include="Autofac" Version="8.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.8" />
     <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
   </ItemGroup>
 	<ItemGroup>

@@ -554,7 +554,7 @@ internal sealed partial class FunctionalityService
 
         async Task createViewModel(CreationData data, CancellationToken token)
         {
-            data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(cancellationToken: token);
+            data.ViewModel.GetAllQueryViewModel = await this._queryService.CreateAsync(token);
             data.ViewModel.GetAllQueryViewModel.Name = $"{name}Query";
             data.ViewModel.GetAllQueryViewModel.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetAllQueryViewModel.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Queries");
@@ -562,7 +562,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQueryViewModel.DbObject = data.ViewModel.SourceDto.DbObject;
             data.ViewModel.GetAllQueryViewModel.FriendlyName = data.ViewModel.GetAllQueryViewModel.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQueryViewModel.Comment = data.COMMENT;
-            data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, cancellationToken: token);
+            data.ViewModel.GetAllQueryViewModel.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token);
             data.ViewModel.GetAllQueryViewModel.MapperNameSpace = GetMapperNameSpace(data);
         }
 
