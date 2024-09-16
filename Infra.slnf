@@ -4,6 +4,7 @@
     "projects": [
       "src\\Bcl\\src\\CoreLib\\CoreLib.csproj",
       "src\\Bcl\\src\\CqrsLib\\CqrsLib.csproj",
+      "src\\Bcl\\src\\WebLib\\WebLib.csproj",
       "src\\Bcl\\src\\WpfLib\\WpfLib.csproj",
       "src\\HanyCo\\CodeGenerator\\Data\\Data.csproj",
       "src\\HanyCo\\CodeGenerator\\Domain\\Domain.csproj",

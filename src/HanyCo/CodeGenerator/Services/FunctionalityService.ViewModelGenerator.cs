@@ -577,7 +577,7 @@ internal sealed partial class FunctionalityService
         void createResult(CreationData data)
         {
             data.ViewModel.GetAllQueryViewModel.ResultDto = RawDto(data, false);
-            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = $"{name}QueryResult";
+            data.ViewModel.GetAllQueryViewModel.ResultDto.Name = CqrsHelpers.GetSegregateResultType(data.ViewModel.GetAllQueryViewModel, "Query");// $"{name}QueryResult";
             data.ViewModel.GetAllQueryViewModel.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQueryViewModel.ResultDto.Properties.Add(new(StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName!)), PropertyType.Dto)
             {
