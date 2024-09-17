@@ -1,4 +1,6 @@
-﻿using Library.CodeGeneration;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+
+using Library.CodeGeneration;
 
 using static Services.CodeGen.Helpers.CommonHelpers;
 
@@ -6,17 +8,23 @@ namespace Services.Helpers;
 
 internal static class CqrsHelpers
 {
-    // GetAllPeopleQueryHandle
+    // PersonDto
+    public static TypePath GetSourceDtoType(this DtoViewModel dto) =>
+        TypePath.New(dto.Name!, dto.NameSpace);
+
+    // GetAllPeopleQueryHandler
     public static TypePath GetSegregateHandlerType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New($"{Purify(model.Name)}{kind}Handler", model.CqrsNameSpace);
+        TypePath.New(model.Name!, model.CqrsNameSpace);
 
-    // GetAllPeople
+    // GetAllPeopleQuery
     public static TypePath GetSegregateParamsType(this CqrsViewModelBase model, string? kind) =>
-        TypePath.New($"{Purify(model.ParamsDto.Name)}", model.ParamsDto.NameSpace);
+        TypePath.New(model.ParamsDto.Name!, model.ParamsDto.NameSpace ?? model.CqrsNameSpace);
 
-    // GetAllPeopleResult
+    // GetAllPeopleQueryResult
     public static TypePath GetSegregateResultParamsType(this CqrsViewModelBase model, string? kind) =>
-        TypePath.New($"{Purify(model.ResultDto.Name)}Result", model.ResultDto.NameSpace);
+        TypePath.New(model.ResultDto.Name!, model.ResultDto.NameSpace ?? model.CqrsNameSpace);
+
+
 
     // GetAllPeopleQueryResult
     public static TypePath GetSegregateResultType(this CqrsViewModelBase model, string kind) =>

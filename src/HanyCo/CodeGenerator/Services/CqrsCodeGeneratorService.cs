@@ -15,7 +15,11 @@ using Library.Validations;
 
 using MediatR;
 
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 using Services.Helpers;
+
+using System.Text;
 
 using ICommand = Library.Cqrs.Models.Commands.ICommand;
 
@@ -230,7 +234,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var resultParamsType = TypePath.New(model.ResultDto.IsList
                     ? $"List<{model.GetSegregateResultParamsType(kind.ToString()).FullPath}>"
                     : $"{model.GetSegregateResultParamsType(kind.ToString()).FullPath}");
-
                 var prop = new CodeGenProperty($"{prp("Result")}", resultParamsType);
                 var ctor = new Method(resultClassType.Name)
                 {

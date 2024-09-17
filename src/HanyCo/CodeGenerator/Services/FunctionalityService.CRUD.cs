@@ -103,11 +103,11 @@ internal partial class FunctionalityService
             return er.WithValue(model);
         }
         var result = await TaskRunner.StartWith(model)
-            .Then(x => saveQuery(x.GetAllQueryViewModel, token))
-            .Then(x => saveQuery(x.GetByIdQueryViewModel, token))
-            .Then(x => saveCommand(x.InsertCommandViewModel, token))
-            .Then(x => saveCommand(x.UpdateCommandViewModel, token))
-            .Then(x => saveCommand(x.DeleteCommandViewModel, token))
+            .Then(x => saveQuery(x.GetAllQuery, token))
+            .Then(x => saveQuery(x.GetByIdQuery, token))
+            .Then(x => saveCommand(x.InsertCommand, token))
+            .Then(x => saveCommand(x.UpdateCommand, token))
+            .Then(x => saveCommand(x.DeleteCommand, token))
             .Then(x => saveDto(x.SourceDto, token))
             .Then(x => saveFunctionality(x, token))
             .RunAsync(token)
@@ -127,21 +127,21 @@ internal partial class FunctionalityService
         static Result<FunctionalityViewModel> validateModel(FunctionalityViewModel model) =>
             BasicChecks(model)
             .NotNull(x => x!.SourceDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetAllQueryViewModel, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetAllQueryViewModel.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetAllQueryViewModel.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetByIdQueryViewModel, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetByIdQueryViewModel.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetByIdQueryViewModel.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.InsertCommandViewModel, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.InsertCommandViewModel.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.InsertCommandViewModel.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.UpdateCommandViewModel, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.UpdateCommandViewModel.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.UpdateCommandViewModel.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.DeleteCommandViewModel, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.DeleteCommandViewModel.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.DeleteCommandViewModel.ResultDto, () => "ViewModel is not initiated.");
+            .NotNull(x => x!.GetAllQuery, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQuery.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQuery.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQuery, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQuery.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQuery.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommand, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommand.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommand.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommand, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommand.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommand.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommand, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommand.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommand.ResultDto, () => "ViewModel is not initiated.");
         async Task<Result> saveQuery(CqrsQueryViewModel model, CancellationToken token)
         {
             //model.ParamsDto.Functionality = model.ResultDto.Functionality = functionality;
@@ -224,27 +224,27 @@ internal partial class FunctionalityService
             {
                 return Result.Fail()!;
             }
-            exists = await this._queryService.AnyByNameAsync(model.GetAllQueryViewModel.Name!);
+            exists = await this._queryService.AnyByNameAsync(model.GetAllQuery.Name!);
             if (exists)
             {
                 return Result.Fail()!;
             }
-            exists = await this._queryService.AnyByNameAsync(model.GetByIdQueryViewModel.Name!);
+            exists = await this._queryService.AnyByNameAsync(model.GetByIdQuery.Name!);
             if (exists)
             {
                 return Result.Fail()!;
             }
-            exists = await this._commandService.AnyByNameAsync(model.InsertCommandViewModel.Name!);
+            exists = await this._commandService.AnyByNameAsync(model.InsertCommand.Name!);
             if (exists)
             {
                 return Result.Fail()!;
             }
-            exists = await this._commandService.AnyByNameAsync(model.UpdateCommandViewModel.Name!);
+            exists = await this._commandService.AnyByNameAsync(model.UpdateCommand.Name!);
             if (exists)
             {
                 return Result.Fail()!;
             }
-            exists = await this._commandService.AnyByNameAsync(model.DeleteCommandViewModel.Name!);
+            exists = await this._commandService.AnyByNameAsync(model.DeleteCommand.Name!);
             if (exists)
             {
                 return Result.Fail()!;
@@ -271,27 +271,27 @@ internal partial class FunctionalityService
         {
             return actionResult.WithValue(model);
         }
-        actionResult = await this._queryService.UpdateAsync(model.GetAllQueryViewModel.Id!.Value, model.GetAllQueryViewModel, false, cancellationToken);
+        actionResult = await this._queryService.UpdateAsync(model.GetAllQuery.Id!.Value, model.GetAllQuery, false, cancellationToken);
         if (!actionResult.IsSucceed)
         {
             return actionResult.WithValue(model);
         }
-        actionResult = await this._queryService.UpdateAsync(model.GetByIdQueryViewModel.Id!.Value, model.GetByIdQueryViewModel, false, cancellationToken);
+        actionResult = await this._queryService.UpdateAsync(model.GetByIdQuery.Id!.Value, model.GetByIdQuery, false, cancellationToken);
         if (!actionResult.IsSucceed)
         {
             return actionResult.WithValue(model);
         }
-        actionResult = await this._commandService.UpdateAsync(model.InsertCommandViewModel.Id!.Value, model.InsertCommandViewModel, false, cancellationToken);
+        actionResult = await this._commandService.UpdateAsync(model.InsertCommand.Id!.Value, model.InsertCommand, false, cancellationToken);
         if (!actionResult.IsSucceed)
         {
             return actionResult.WithValue(model);
         }
-        actionResult = await this._commandService.UpdateAsync(model.UpdateCommandViewModel.Id!.Value, model.UpdateCommandViewModel, false, cancellationToken);
+        actionResult = await this._commandService.UpdateAsync(model.UpdateCommand.Id!.Value, model.UpdateCommand, false, cancellationToken);
         if (!actionResult.IsSucceed)
         {
             return actionResult.WithValue(model);
         }
-        actionResult = await this._commandService.UpdateAsync(model.DeleteCommandViewModel.Id!.Value, model.DeleteCommandViewModel, false, cancellationToken);
+        actionResult = await this._commandService.UpdateAsync(model.DeleteCommand.Id!.Value, model.DeleteCommand, false, cancellationToken);
         if (!actionResult.IsSucceed)
         {
             return actionResult.WithValue(model);

@@ -19,17 +19,17 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public FunctionalityViewModelCodes Codes { get; } = new();
 
-    public CqrsCommandViewModel DeleteCommandViewModel { get; set; }
+    public CqrsCommandViewModel DeleteCommand { get; set; }
 
-    public CqrsQueryViewModel GetAllQueryViewModel { get; set; }
+    public CqrsQueryViewModel GetAllQuery { get; set; }
 
-    public CqrsQueryViewModel GetByIdQueryViewModel { get; set; }
+    public CqrsQueryViewModel GetByIdQuery { get; set; }
 
-    public CqrsCommandViewModel InsertCommandViewModel { get; set; }
+    public CqrsCommandViewModel InsertCommand { get; set; }
 
     public MapperGeneratorViewModel MapperGeneratorViewModel { get; } = new();
 
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
-    public CqrsCommandViewModel UpdateCommandViewModel { get; set; }
+    public CqrsCommandViewModel UpdateCommand { get; set; }
 }

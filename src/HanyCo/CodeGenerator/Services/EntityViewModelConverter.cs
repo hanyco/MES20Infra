@@ -164,11 +164,11 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             result.Id = model.Id.Value;
         }
 
-        result.GetAllQuery = this.ToDbEntity(model.GetAllQueryViewModel.NotNull());
-        result.GetByIdQuery = this.ToDbEntity(model.GetByIdQueryViewModel.NotNull());
-        result.InsertCommand = this.ToDbEntity(model.InsertCommandViewModel.NotNull());
-        result.UpdateCommand = this.ToDbEntity(model.UpdateCommandViewModel.NotNull());
-        result.DeleteCommand = this.ToDbEntity(model.DeleteCommandViewModel.NotNull());
+        result.GetAllQuery = this.ToDbEntity(model.GetAllQuery.NotNull());
+        result.GetByIdQuery = this.ToDbEntity(model.GetByIdQuery.NotNull());
+        result.InsertCommand = this.ToDbEntity(model.InsertCommand.NotNull());
+        result.UpdateCommand = this.ToDbEntity(model.UpdateCommand.NotNull());
+        result.DeleteCommand = this.ToDbEntity(model.DeleteCommand.NotNull());
         result.SourceDto = this.ToDbEntity(model.SourceDto);
         result.Module = this.ToDbEntity(model.SourceDto.Module);
         result.ModuleId = result.Module?.Id;
@@ -301,11 +301,11 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public FunctionalityViewModel? ToViewModel(Functionality? entity)
         => entity == null ? null : this._mapper.Map<FunctionalityViewModel>(entity)
             .ForMember(x => x.SourceDto = this.ToViewModel(entity.SourceDto))
-            .ForMember(x => x.GetAllQueryViewModel = this.ToQueryViewModel(entity.GetAllQuery))
-            .ForMember(x => x.GetByIdQueryViewModel = this.ToQueryViewModel(entity.GetByIdQuery))
-            .ForMember(x => x.InsertCommandViewModel = this.ToCommandViewModel(entity.InsertCommand))
-            .ForMember(x => x.UpdateCommandViewModel = this.ToCommandViewModel(entity.UpdateCommand))
-            .ForMember(x => x.DeleteCommandViewModel = this.ToCommandViewModel(entity.DeleteCommand));
+            .ForMember(x => x.GetAllQuery = this.ToQueryViewModel(entity.GetAllQuery))
+            .ForMember(x => x.GetByIdQuery = this.ToQueryViewModel(entity.GetByIdQuery))
+            .ForMember(x => x.InsertCommand = this.ToCommandViewModel(entity.InsertCommand))
+            .ForMember(x => x.UpdateCommand = this.ToCommandViewModel(entity.UpdateCommand))
+            .ForMember(x => x.DeleteCommand = this.ToCommandViewModel(entity.DeleteCommand));
 
     [return: NotNullIfNotNull(nameof(entity))]
     public ClaimViewModel? ToViewModel(SecurityClaim? entity)
