@@ -71,13 +71,13 @@ internal partial class FunctionalityService
                 .ToString();
         }
 
-        internal static string CreateGetAllQueryHandleMethodBody(CqrsQueryViewModel model) =>
+        internal static string CreateGetAllQueryHandleMethodBody(CqrsViewModelBase model) =>
             CreateQueryHandleMethodBody(model);
 
-        internal static string CreateGetByIdQueryHandleMethodBody(CqrsQueryViewModel model) =>
+        internal static string CreateGetByIdQueryHandleMethodBody(CqrsViewModelBase model) =>
             CreateQueryHandleMethodBody(model, "[ID] = %Id%");
 
-        internal static string CreateInsertCommandHandleMethodBody(CqrsCommandViewModel model)
+        internal static string CreateInsertCommandHandleMethodBody(CqrsViewModelBase model)
         {
             var values = GetValues(model.ParamsDto.Properties).ToImmutableArray();
             var insertStatement = SqlStatementBuilder
@@ -166,7 +166,7 @@ internal partial class FunctionalityService
         internal static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
 
-        private static string CreateQueryHandleMethodBody(CqrsQueryViewModel model, string? additionalWhereClause = null)
+        private static string CreateQueryHandleMethodBody(CqrsViewModelBase model, string? additionalWhereClause = null)
         {
             // Create query to be used inside the body code.
             var bodyQuery = SqlStatementBuilder

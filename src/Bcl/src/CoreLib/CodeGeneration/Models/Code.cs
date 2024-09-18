@@ -160,19 +160,31 @@ public static class SourceCodeHelpers
     public static bool IsNullOrEmpty([NotNullWhen(false)] this Code? code) =>
         code is null || code.Equals(Code.Empty);
 
+    [return: NotNull]
     public static Codes ToCodes(this IEnumerable<Code> codes) =>
         new(codes);
 
+    [return: NotNull]
+    public static Codes ToCodes(params Code[] codes) =>
+        new(codes);
+
+    [return: NotNull]
     public static Codes ToCodes(this IEnumerable<Codes> codes) =>
+         new(codes);
+
+    [return: NotNull]
+    public static Codes ToCodes(params Codes[] codes) =>
          new(codes);
 
     [return: NotNull]
     public static Codes ToCodes(this Code code) =>
         new(code);
 
+    [return: NotNull]
     public static Result<Codes> ToCodesResult(this Result<Code> code) =>
-        Result.From<Codes>(code.ArgumentNotNull(), code.Value.ToCodes());
+        Result.From(code.ArgumentNotNull(), code.Value.ToCodes());
 
+    [return: NotNull]
     public static Code WithStatement(this Code code, [DisallowNull] string statement) =>
         new(code) { Statement = statement };
 }
