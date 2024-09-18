@@ -8,13 +8,9 @@ namespace Services.Helpers;
 
 internal static class CqrsHelpers
 {
-    // PersonDto
-    public static TypePath GetSourceDtoType(this DtoViewModel dto) =>
-        TypePath.New(dto.Name!, dto.NameSpace);
-
     // GetAllPeopleQueryHandler
     public static TypePath GetSegregateHandlerType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New(model.Name!, model.CqrsNameSpace);
+        TypePath.New(model.Name!.EndsWith("Handler") ? model.Name : $"{model.Name}Handler", model.CqrsNameSpace);
 
     // GetAllPeopleQuery
     public static TypePath GetSegregateParamsType(this CqrsViewModelBase model, string? kind) =>
@@ -23,8 +19,6 @@ internal static class CqrsHelpers
     // GetAllPeopleQueryResult
     public static TypePath GetSegregateResultParamsType(this CqrsViewModelBase model, string? kind) =>
         TypePath.New(model.ResultDto.Name!, model.ResultDto.NameSpace ?? model.CqrsNameSpace);
-
-
 
     // GetAllPeopleQueryResult
     public static TypePath GetSegregateResultType(this CqrsViewModelBase model, string kind) =>
@@ -35,5 +29,9 @@ internal static class CqrsHelpers
         TypePath.New($"{Purify(model.Name)}{kind}", model.DtoNameSpace ?? model.ParamsDto?.NameSpace);
 
     public static TypePath GetSegregateValidatorType(this CqrsViewModelBase model, string kind) =>
-        TypePath.New($"{Purify(model.Name)}{kind}Validator", model.DtoNameSpace);
+            TypePath.New($"{Purify(model.Name)}{kind}Validator", model.DtoNameSpace);
+
+    // PersonDto
+    public static TypePath GetSourceDtoType(this DtoViewModel dto) =>
+        TypePath.New(dto.Name!, dto.NameSpace);
 }

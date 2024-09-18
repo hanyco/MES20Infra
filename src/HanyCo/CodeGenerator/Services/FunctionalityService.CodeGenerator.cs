@@ -38,7 +38,7 @@ internal partial class FunctionalityService
             return result;
         }
         this._reporter.End(result.ToString());
-        var cats = result.Value.Select(x => x.GetCategory());
+        var cats = result.Value!.Select(x => x!.GetCategory());
         scope.End(result);
         return result;
 
@@ -59,7 +59,7 @@ internal partial class FunctionalityService
 
             if (viewModel.GetAllQuery != null)
             {
-                var codeGenRes = generateCqrsCodes(viewModel.GetAllQuery);
+                var codeGenRes = GenerateCqrsCodes(viewModel.GetAllQuery);
                 codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetAllQuery)}");
                 yield return codes.GetAllQueryCodes;
@@ -71,7 +71,7 @@ internal partial class FunctionalityService
 
             if (viewModel.GetByIdQuery != null)
             {
-                var codeGenRes = generateCqrsCodes(viewModel.GetByIdQuery);
+                var codeGenRes = GenerateCqrsCodes(viewModel.GetByIdQuery);
                 codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetByIdQuery)}");
                 yield return codes.GetByIdQueryCodes;
@@ -83,7 +83,7 @@ internal partial class FunctionalityService
 
             if (viewModel.InsertCommand != null)
             {
-                var codeGenRes = generateCqrsCodes(viewModel.InsertCommand);
+                var codeGenRes = GenerateCqrsCodes(viewModel.InsertCommand);
                 codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, null);
                 yield return codes.InsertCommandCodes;
@@ -95,7 +95,7 @@ internal partial class FunctionalityService
 
             if (viewModel.UpdateCommand != null)
             {
-                var codeGenRes = generateCqrsCodes(viewModel.UpdateCommand);
+                var codeGenRes = GenerateCqrsCodes(viewModel.UpdateCommand);
                 codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.UpdateCommand)}");
                 yield return codes.UpdateCommandCodes;
@@ -107,7 +107,7 @@ internal partial class FunctionalityService
 
             if (viewModel.DeleteCommand != null)
             {
-                var codeGenRes = generateCqrsCodes(viewModel.DeleteCommand);
+                var codeGenRes = GenerateCqrsCodes(viewModel.DeleteCommand);
                 codes.DeleteCommandCodes = codeGenRes.Select(x => x.Value).ToCodes();
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.DeleteCommand)}");
                 yield return codes.DeleteCommandCodes;
@@ -222,22 +222,6 @@ internal partial class FunctionalityService
                     yield break;
                 }
             }
-
-            ImmutableArray<Result<Codes>> generateCqrsCodes(CqrsViewModelBase cqrsViewModel)
-            {
-                return gather(cqrsViewModel).ToImmutableArray();
-
-                IEnumerable<Result<Codes>> gather(CqrsViewModelBase model)
-                {
-                    var paramsDtoCode = CreateParams(model);
-                    var resultDtoCode = this.CreateResult(model);
-                    var handlerCode = this.CreateHandler(model);
-
-                    yield return paramsDtoCode.ToCodes();
-                    yield return resultDtoCode.ToCodes();
-                    yield return handlerCode.ToCodes();
-                }
-            }
         }
         static Result<Codes?> aggregatedResults(IReadOnlyList<Result<Codes>> results)
         {
@@ -259,22 +243,42 @@ internal partial class FunctionalityService
         }
     }
 
+    private ImmutableArray<Result<Codes>> GenerateCqrsCodes(in CqrsViewModelBase cqrsViewModel)
+    {
+        return gather(cqrsViewModel).ToImmutableArray();
+
+        IEnumerable<Result<Codes>> gather(CqrsViewModelBase model)
+        {
+            var paramsDtoCode = this.CreateParams(model);
+            var resultDtoCode = this.CreateResult(model);
+            var handlerCode = this.CreateHandler(model);
+
+            yield return paramsDtoCode.ToCodes();
+            yield return resultDtoCode.ToCodes();
+            yield return handlerCode.ToCodes();
+        }
+    }
+
     private static string arg(in string name) => TypeMemberNameHelper.ToArgName(name);
 
     private static string fld(in string name) => TypeMemberNameHelper.ToFieldName(name);
 
-    private static string prp(in string name) => TypeMemberNameHelper.ToPropName(name);
-
-    private Code CreateHandler(CqrsViewModelBase model)
+    private Code CreateHandler(in CqrsViewModelBase model)
     {
+        // Detect the segregation type, using type pattern matching
         var category = model switch
         {
             CqrsQueryViewModel => CodeCategory.Query,
             CqrsCommandViewModel => CodeCategory.Command,
             _ => throw new NotSupportedException()
         };
+
+
+        // Create Handler TypePath
         var handlerType = model.GetSegregateHandlerType(null!);
-        var handlerClass = new Class(handlerType)
+        
+        // Create Handler class
+        var handlerClass = new Class(handlerType.Name)
         {
             AccessModifier = AccessModifier.Internal,
             InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
@@ -324,26 +328,31 @@ internal partial class FunctionalityService
         var ns = INamespace.New(model.CqrsNameSpace)
             .AddType(handlerClass)
             .AddUsingNameSpace(usings);
-        
+
         var codeStatement = this._generatorEngine.Generate(ns);
         var code = Code.New(handlerClass.Name, Languages.CSharp, codeStatement, true).SetCategory(category);
         return code;
     }
 
-    private Code CreateParams(CqrsViewModelBase model)
+    private Code CreateParams(in CqrsViewModelBase model)
     {
+        // Create segregation TypePath
         var segregateType = model.GetSegregateParamsType(null);
 
+        // Create Command/Query class
         var segregateClass = new Class(segregateType.Name)
         {
             InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
         }.AddBaseType(TypePath.New(typeof(IQuery<>).FullName!, [model.ResultDto.FullName]));
 
+        // Convert model's properties to TypePath
         var props = model.ParamsDto.Properties.Select(x => (Name: x.Name!, Type: x.IsList is true ? TypePath.New(typeof(List<>).FullName!, [x.TypeFullName]) : TypePath.New(x.TypeFullName))).ToList();
         if (props.Any())
         {
+            // Add model's property to Command/Query class
             props.ForEach(x => segregateClass.AddProperty(x.Name, x.Type));
 
+            // Create ctor and initialize this properties
             var ctor = new Method(segregateType.Name) { IsConstructor = true };
             props.ForEach(x => ctor.AddArgument(x.Type, arg(x.Name)));
             var body = new StringBuilder();
@@ -352,21 +361,24 @@ internal partial class FunctionalityService
             _ = segregateClass.AddMember(ctor);
         }
 
+        // Gather `using` namespaces
         var usings = segregateType.GetNameSpaces()
             .AddRangeImmuted(segregateClass.BaseTypes.Select(x => x.GetNameSpaces()).SelectAll())
             .AddRangeImmuted(props.Select(x => x.Type.GetNameSpaces()).SelectAll())
             .Except([segregateType.NameSpace]);
 
+        // Gather everything together
         var ns = INamespace.New(segregateType.NameSpace)
             .AddUsingNameSpace(usings)
             .AddType(segregateClass);
 
+        // Generate code and result it.
         var codeStatement = this._generatorEngine.Generate(ns);
         var code = Code.New(segregateType.Name, Languages.CSharp, codeStatement, true).SetCategory(CodeCategory.Dto);
         return code;
     }
 
-    private Code CreateResult(CqrsViewModelBase mode)
+    private Code CreateResult(in CqrsViewModelBase mode)
     {
         var segregateType = mode.GetSegregateResultParamsType(null);
         var segregateClass = new Class(segregateType.Name)
