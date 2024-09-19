@@ -12,8 +12,8 @@
       "src\\HanyCo\\Security\\Security.csproj",
       "src\\Infrastructure\\Infrastructure.csproj",
       "src\\Presentation\\API\\API.csproj",
-      "src\\Presentation\\UI\\UI.Client\\UI.Client.csproj",
-      "src\\Presentation\\UI\\UI\\UI.csproj"
+      "src\\Presentation\\Web.UI\\Web.UI.Client\\Web.UI.Client.csproj",
+      "src\\Presentation\\Web.UI\\Web.UI\\Web.UI.csproj"
     ]
   }
 }
