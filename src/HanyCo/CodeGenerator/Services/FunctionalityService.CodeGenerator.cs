@@ -247,7 +247,65 @@ internal partial class FunctionalityService
 
     private static string fld(in string name) => TypeMemberNameHelper.ToFieldName(name);
 
-    private Code CreateMainHandler(in CqrsViewModelBase model)
+    private Code CreateMainHandler(CqrsViewModelBase model)
+    {
+        var handlerType = model.GetSegregateHandlerType();
+        // Detect the segregation type, using type pattern matching
+        var category = model switch
+        {
+            CqrsQueryViewModel => CodeCategory.Query,
+            CqrsCommandViewModel => CodeCategory.Command,
+            _ => throw new NotSupportedException()
+        };
+
+        var segregateClass = new Class(handlerType.Name)
+        {
+            InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
+        };
+
+        var ns = INamespace.New(handlerType.NameSpace).AddType(segregateClass);
+
+        var codeStatement = this._generatorEngine.Generate(ns);
+        var code = Code.New(handlerType.Name, Languages.CSharp, codeStatement).SetCategory(category);
+        return code;
+    }
+
+    private Code CreateMainParams(in CqrsViewModelBase model)
+    {
+        // Create segregation TypePath
+        var segregateType = model.GetSegregateParamsType(null);
+
+        // Create Command/Query class
+        var segregateClass = new Class(segregateType.Name)
+        {
+            InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
+        };
+
+        // Gather everything together
+        var ns = INamespace.New(segregateType.NameSpace).AddType(segregateClass);
+
+        // Generate code and result it.
+        var codeStatement = this._generatorEngine.Generate(ns);
+        var code = Code.New(segregateType.Name, Languages.CSharp, codeStatement).SetCategory(CodeCategory.Dto);
+        return code;
+    }
+
+    private Code CreateMainResult(in CqrsViewModelBase model)
+    {
+        var segregateType = model.GetSegregateResultParamsType(null);
+        var segregateClass = new Class(segregateType.Name)
+        {
+            InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
+        };
+
+        var ns = INamespace.New(segregateType.NameSpace).AddType(segregateClass);
+
+        var codeStatement = this._generatorEngine.Generate(ns);
+        var code = Code.New(segregateType.Name, Languages.CSharp, codeStatement).SetCategory(CodeCategory.Dto);
+        return code;
+    }
+
+    private Code CreatePartHandler(in CqrsViewModelBase model)
     {
         // Detect the segregation type, using type pattern matching
         var category = model switch
@@ -258,7 +316,7 @@ internal partial class FunctionalityService
         };
 
         // Create Handler TypePath
-        var handlerType = model.GetSegregateHandlerType(null!);
+        var handlerType = model.GetSegregateHandlerType();
 
         // Create Handler class
         var handlerClass = new Class(handlerType.Name)
@@ -314,41 +372,6 @@ internal partial class FunctionalityService
 
         var codeStatement = this._generatorEngine.Generate(ns);
         var code = Code.New(handlerClass.Name, Languages.CSharp, codeStatement, true).SetCategory(category);
-        return code;
-    }
-
-    private Code CreateMainParams(in CqrsViewModelBase model)
-    {
-        // Create segregation TypePath
-        var segregateType = model.GetSegregateParamsType(null);
-
-        // Create Command/Query class
-        var segregateClass = new Class(segregateType.Name)
-        {
-            InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
-        };
-
-        // Gather everything together
-        var ns = INamespace.New(segregateType.NameSpace).AddType(segregateClass);
-
-        // Generate code and result it.
-        var codeStatement = this._generatorEngine.Generate(ns);
-        var code = Code.New(segregateType.Name, Languages.CSharp, codeStatement).SetCategory(CodeCategory.Dto);
-        return code;
-    }
-
-    private Code CreateMainResult(in CqrsViewModelBase mode)
-    {
-        var segregateType = mode.GetSegregateResultParamsType(null);
-        var segregateClass = new Class(segregateType.Name)
-        {
-            InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
-        };
-
-        var ns = INamespace.New(segregateType.NameSpace).AddType(segregateClass);
-
-        var codeStatement = this._generatorEngine.Generate(ns);
-        var code = Code.New(segregateType.Name, Languages.CSharp, codeStatement).SetCategory(CodeCategory.Dto);
         return code;
     }
 
@@ -440,11 +463,12 @@ internal partial class FunctionalityService
             var mainParamsDtoCode = this.CreateMainParams(model);
             var partResultDtoCode = this.CreatePartResult(model);
             var mainResultDtoCode = this.CreateMainResult(model);
-            var partHandlerCode = this.CreateMainHandler(model);
+            var partHandlersCode = this.CreatePartHandler(model);
+            var mainHandlersCode = this.CreateMainHandler(model);
 
             yield return SourceCodeHelpers.ToCodes(mainParamsDtoCode, partParamsDtoCode);
             yield return SourceCodeHelpers.ToCodes(mainResultDtoCode, partResultDtoCode);
-            yield return SourceCodeHelpers.ToCodes(partHandlerCode);
+            yield return SourceCodeHelpers.ToCodes(mainHandlersCode, partHandlersCode);
         }
     }
 }

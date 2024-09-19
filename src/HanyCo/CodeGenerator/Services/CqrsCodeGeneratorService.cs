@@ -126,7 +126,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 };
 
                 // Create `QueryHandler` class
-                var handlerClass = new Class(model.GetSegregateHandlerType(kind.ToString()))
+                var handlerClass = new Class(model.GetSegregateHandlerType())
                 {
                     AccessModifier = AccessModifier.Public,
                     InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
@@ -174,7 +174,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var dal = TypePath.New<Sql>();
 
                 // Create constructor
-                var ctor = new Method(model.GetSegregateHandlerType(kind.ToString()).Name)
+                var ctor = new Method(model.GetSegregateHandlerType().Name)
                 {
                     IsConstructor = true,
                     Arguments =
@@ -190,7 +190,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 };
 
                 // Create `QueryHandler` class
-                var handlerClass = new Class(model.GetSegregateHandlerType(kind.ToString()).Name)
+                var handlerClass = new Class(model.GetSegregateHandlerType().Name)
                 {
                     AccessModifier = AccessModifier.Public,
                     InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial

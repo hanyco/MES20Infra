@@ -9,7 +9,7 @@ namespace Services.Helpers;
 internal static class CqrsHelpers
 {
     // GetAllPeopleQueryHandler
-    public static TypePath GetSegregateHandlerType(this CqrsViewModelBase model, string kind) =>
+    public static TypePath GetSegregateHandlerType(this CqrsViewModelBase model) =>
         TypePath.New(model.Name!.EndsWith("Handler") ? model.Name : $"{model.Name}Handler", model.CqrsNameSpace);
 
     // GetAllPeopleQuery
