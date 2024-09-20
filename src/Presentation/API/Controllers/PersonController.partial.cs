@@ -18,37 +18,37 @@ public sealed class PersonController : ControllerBase
     }
 
     [HttpGetAttribute()]
-    public async Task<IEnumerable<PersonDto>> GetAll()
+    public async Task<IActionResult> GetAll()
     {
         var result = await this._mediator.Send(new GetAllPeopleQuery());
-        return result.Result;
+        return this.Ok(result);
     }
 
     [HttpGetAttribute("{id:long}")]
-    public async Task<PersonDto> GetById(Int64 id)
+    public async Task<IActionResult> GetById(Int64 id)
     {
         var result = await this._mediator.Send(new GetByIdPersonQuery(id));
         return this.Ok(result);
     }
 
     [HttpPostAttribute()]
-    public async Task<Result<long>> Insert(PersonDto personDto)
+    public async Task<IActionResult> Insert(PersonDto personDto)
     {
         var result = await this._mediator.Send(new InsertPersonCommand(personDto));
-        return result.Result;
+        return this.Ok(result);
     }
 
     [HttpPutAttribute("{id:long}")]
-    public async Task<Result> Update(Int64 id, PersonDto personDto)
+    public async Task<IActionResult> Update(Int64 id, PersonDto personDto)
     {
         var result = await this._mediator.Send(new UpdatePersonCommand(id, personDto));
-        return result.Result;
+        return this.Ok(result);
     }
 
     [HttpDeleteAttribute("{id:long}")]
-    public async Task<Result> Delete(Int64 id)
+    public async Task<IActionResult> Delete(Int64 id)
     {
         var result = await this._mediator.Send(new DeletePersonCommand(id));
-        return result;
+        return this.Ok(result);
     }
 }

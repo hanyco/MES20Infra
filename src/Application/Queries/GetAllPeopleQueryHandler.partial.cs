@@ -1,17 +1,18 @@
 using Library.Cqrs.Models.Queries;
-using Library.Cqrs.Models.Commands;
+using MediatR;
 using Library.Data.SqlServer;
 using HumanResources.Dtos;
 
 namespace HumanResources.Queries;
-internal sealed partial class GetAllPeopleQueryHandler : IQueryHandler<GetAllPeopleQuery, GetAllPeopleQueryResult>
+internal sealed partial class GetAllPeopleQueryHandler : IRequestHandler<GetAllPeopleQuery, GetAllPeopleQueryResult>
 {
-    private readonly ICommandProcessor _commandProcessor;
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IMediator _mediator;
     private readonly Sql _sql;
-    public GetAllPeopleQueryHandler(ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, Sql sql)
+    public GetAllPeopleQueryHandler(IMediator mediator, Sql sql)
     {
-        (this._commandProcessor, this._queryProcessor) = (commandProcessor, queryProcessor);
+        this._mediator )  =  mediator ; 
         this._sql = sql;
     }
+
+    public Task<GetAllPeopleQueryResult> Handle(GetAllPeopleQuery request, CancellationToken cancellationToken) => throw new NotImplementedException();
 }

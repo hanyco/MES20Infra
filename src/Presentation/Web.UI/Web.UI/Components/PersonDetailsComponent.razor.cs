@@ -16,9 +16,9 @@ namespace HumanResources
                 {
                     Id = entityId,
                 };
-                var cqParams = new HumanResources.Dtos.GetByIdPersonQueryHandlerQuery(@params);
+                var cqParams = new HumanResources.Dtos.GetByIdPersonQuery(@params);
                 // Invoke the query handler to retrieve all entities
-                var cqResult = await this._queryProcessor.ExecuteAsync<HumanResources.Dtos.GetByIdPersonQueryHandlerQueryResult>(cqParams);
+                var cqResult = await this._queryProcessor.ExecuteAsync<HumanResources.Dtos.GetByIdPersonQueryResult>(cqParams);
                 // Now, set the data context.
                 this.DataContext = cqResult.Result.ToViewModel();
             }
