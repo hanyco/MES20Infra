@@ -152,7 +152,7 @@ internal sealed partial class FunctionalityService
         Type = PropertyType.Dto,
     };
 
-    private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
+    private static DtoViewModel RawDto(CreationData data)
     {
         // Create an initial DTO based on the input data
         var dto = new DtoViewModel(data.ViewModel.SourceDto.Id, data.ViewModel.Name!)
@@ -164,16 +164,7 @@ internal sealed partial class FunctionalityService
         }
         .With(x => x.Module.Id = data.ViewModel.SourceDto.Module.Id); // Set DTO module ID
 
-        // If the addTableColumns parameter is true, add table columns to the DTO
-        return addTableColumns ? AddColumns(data, dto) : dto;
-
-        // Internal method for adding table columns to DTO
-        static DtoViewModel AddColumns(CreationData data, DtoViewModel dto)
-        {
-            // Add columns to DTO
-            _ = dto.Properties.ClearAndAddRange(data.ViewModel.SourceDto.Properties.Select(x => new PropertyViewModel(x) { Comment = data.COMMENT }));
-            return dto;
-        }
+        return  dto;
     }
 
     [DebuggerStepThrough]
@@ -551,7 +542,7 @@ internal sealed partial class FunctionalityService
 
         void createParams(CreationData data)
         {
-            data.ViewModel.DeleteCommand.ParamsDto = RawDto(data, false);
+            data.ViewModel.DeleteCommand.ParamsDto = RawDto(data);
             data.ViewModel.DeleteCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.DeleteCommand.ParamsDto.IsParamsDto = true;
             data.ViewModel.DeleteCommand.ParamsDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
@@ -559,7 +550,7 @@ internal sealed partial class FunctionalityService
 
         void createResult(CreationData data)
         {
-            data.ViewModel.DeleteCommand.ResultDto = RawDto(data, false);
+            data.ViewModel.DeleteCommand.ResultDto = RawDto(data);
             data.ViewModel.DeleteCommand.ResultDto.Name = $"{name}CommandResult";
             data.ViewModel.DeleteCommand.ResultDto.IsResultDto = true;
         }
@@ -602,7 +593,7 @@ internal sealed partial class FunctionalityService
 
         void createParams(CreationData data)
         {
-            data.ViewModel.GetAllQuery.ParamsDto = RawDto(data, false);
+            data.ViewModel.GetAllQuery.ParamsDto = RawDto(data);
             data.ViewModel.GetAllQuery.ParamsDto.Name = $"{name}Query";
             data.ViewModel.GetAllQuery.ParamsDto.BaseType = TypePath.New<IRequest>([data.ViewModel.GetAllQuery.ResultDto.Name!]);
             data.ViewModel.GetAllQuery.ParamsDto.IsParamsDto = true;
@@ -610,7 +601,7 @@ internal sealed partial class FunctionalityService
 
         void createResult(CreationData data)
         {
-            data.ViewModel.GetAllQuery.ResultDto = RawDto(data, false);
+            data.ViewModel.GetAllQuery.ResultDto = RawDto(data);
             data.ViewModel.GetAllQuery.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetAllQuery.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQuery.ResultDto.Properties.Add(GetPluralizedSourceDtoAsPropertyModel(data));
@@ -651,7 +642,7 @@ internal sealed partial class FunctionalityService
 
         void createParams()
         {
-            data.ViewModel.GetByIdQuery.ParamsDto = RawDto(data, false);
+            data.ViewModel.GetByIdQuery.ParamsDto = RawDto(data);
             data.ViewModel.GetByIdQuery.ParamsDto.Name = $"{name}Query";
             data.ViewModel.GetByIdQuery.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQuery.ParamsDto.BaseType = TypePath.New<IRequest>([data.ViewModel.GetByIdQuery.ResultDto.Name!]);
@@ -660,7 +651,7 @@ internal sealed partial class FunctionalityService
 
         void createResult()
         {
-            data.ViewModel.GetByIdQuery.ResultDto = RawDto(data, true);
+            data.ViewModel.GetByIdQuery.ResultDto = RawDto(data);
             data.ViewModel.GetByIdQuery.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetByIdQuery.ResultDto.IsResultDto = true;
             data.ViewModel.GetByIdQuery.ResultDto.Properties.Add(SourceDtoToProperty(data));
@@ -714,7 +705,7 @@ internal sealed partial class FunctionalityService
 
         void createParams(CreationData data)
         {
-            data.ViewModel.InsertCommand.ParamsDto = RawDto(data, true);
+            data.ViewModel.InsertCommand.ParamsDto = RawDto(data);
             data.ViewModel.InsertCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.InsertCommand.ParamsDto.IsParamsDto = true;
             data.ViewModel.InsertCommand.ParamsDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
@@ -722,7 +713,7 @@ internal sealed partial class FunctionalityService
 
         void createResult(CreationData data)
         {
-            data.ViewModel.InsertCommand.ResultDto = RawDto(data, false);
+            data.ViewModel.InsertCommand.ResultDto = RawDto(data);
             data.ViewModel.InsertCommand.ResultDto.Name = $"{name}CommandResult";
             data.ViewModel.InsertCommand.ResultDto.IsResultDto = true;
             data.ViewModel.InsertCommand.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
@@ -768,16 +759,16 @@ internal sealed partial class FunctionalityService
 
         void createParams(CreationData data)
         {
-            data.ViewModel.UpdateCommand.ParamsDto = RawDto(data, true);
+            data.ViewModel.UpdateCommand.ParamsDto = RawDto(data);
             data.ViewModel.UpdateCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.UpdateCommand.ParamsDto.IsParamsDto = true;
-            data.ViewModel.UpdateCommand.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
-            data.ViewModel.UpdateCommand.ResultDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
+            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
         }
 
         void createResult(CreationData data)
         {
-            data.ViewModel.UpdateCommand.ResultDto = RawDto(data, false);
+            data.ViewModel.UpdateCommand.ResultDto = RawDto(data);
             data.ViewModel.UpdateCommand.ResultDto.Name = $"{name}CommandResult";
             data.ViewModel.UpdateCommand.ResultDto.IsResultDto = true;            
         }

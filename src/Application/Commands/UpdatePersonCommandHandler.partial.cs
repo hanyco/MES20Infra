@@ -9,7 +9,7 @@ internal sealed partial class UpdatePersonCommandHandler : IRequestHandler<Updat
     private readonly Sql _sql;
     public UpdatePersonCommandHandler(IMediator mediator, Sql sql)
     {
-        this._mediator =  mediator ; 
+        this._mediator = mediator;
         this._sql = sql;
     }
 }

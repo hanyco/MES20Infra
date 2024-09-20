@@ -9,7 +9,7 @@ internal sealed partial class DeletePersonCommandHandler : IRequestHandler<Delet
     private readonly Sql _sql;
     public DeletePersonCommandHandler(IMediator mediator, Sql sql)
     {
-        this._mediator =  mediator ; 
+        this._mediator = mediator;
         this._sql = sql;
     }
 }

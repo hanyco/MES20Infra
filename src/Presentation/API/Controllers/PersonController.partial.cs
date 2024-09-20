@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using System;
 using System.Threading.Tasks;
+using HumanResources.Queries;
 using HumanResources.Dtos;
 using Library.Results;
 

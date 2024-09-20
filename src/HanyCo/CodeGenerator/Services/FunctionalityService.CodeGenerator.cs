@@ -341,7 +341,7 @@ internal partial class FunctionalityService
                 new(dal, arg(dal.Name))
             },
             Body = $"""
-                this.{fld(qryPcr.Name)}) = {arg(qryPcr.Name)};
+                this.{fld(qryPcr.Name)} = {arg(qryPcr.Name)};
                 this.{fld(dal.Name)} = {arg(dal.Name)};
                 """
         };

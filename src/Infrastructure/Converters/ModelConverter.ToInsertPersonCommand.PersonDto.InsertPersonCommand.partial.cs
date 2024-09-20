@@ -9,11 +9,6 @@ public static partial class ModelConverter
     {
         var result = new InsertPersonCommand
         {
-            Id = model.Id,
-            FirstName = model.FirstName,
-            LastName = model.LastName,
-            DateOfBirth = model.DateOfBirth,
-            Height = model.Height,
         };
         return result;
     }
