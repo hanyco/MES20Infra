@@ -1,5 +1,6 @@
 using MediatR;
 using Library.Data.SqlServer;
+using System.Threading.Tasks;
 using HumanResources.Dtos;
 
 namespace HumanResources.Commands;
@@ -11,5 +12,10 @@ internal sealed partial class DeletePersonCommandHandler : IRequestHandler<Delet
     {
         this._mediator = mediator;
         this._sql = sql;
+    }
+
+    public async Task<DeletePersonCommandResult> Handle(DeletePersonCommand request, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -5,6 +5,10 @@ using System;
 namespace HumanResources.Dtos;
 public sealed partial class GetByIdPersonQuery : IRequest<GetByIdPersonQueryResult>
 {
+    public GetByIdPersonQuery()
+    {
+    }
+
     public Int64 Id { get; set; }
 
     public GetByIdPersonQuery(Int64 id)

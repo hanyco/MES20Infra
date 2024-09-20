@@ -425,7 +425,6 @@ internal sealed partial class FunctionalityService
 
         void initialize(CreationData data)
             => data.ViewModel.ApiCodingViewModel
-                .With(x => x.AdditionalUsings.Add(data.ViewModel.GetAllQuery.CqrsNameSpace))
                 .With(x => x.AdditionalUsings.Add(data.ViewModel.GetAllQuery.DtoNameSpace))
                 .With(x => x.AdditionalUsings.Add(typeof(Result).Namespace!))
                 .With(x => x.AdditionalUsings.Add(typeof(Result<>).Namespace!))

@@ -1,5 +1,6 @@
 using MediatR;
 using Library.Data.SqlServer;
+using System.Threading.Tasks;
 using HumanResources.Dtos;
 
 namespace HumanResources.Queries;
@@ -11,5 +12,10 @@ internal sealed partial class GetByIdPersonQueryHandler : IRequestHandler<GetByI
     {
         this._mediator = mediator;
         this._sql = sql;
+    }
+
+    public async Task<GetByIdPersonQueryResult> Handle(GetByIdPersonQuery request, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

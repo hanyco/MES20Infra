@@ -357,6 +357,18 @@ internal partial class FunctionalityService
             .AddMember(new Field(fld(dal.Name), dal) { AccessModifier = IField.DefaultAccessModifier });
         _ = handlerClass.AddMember(ctor);
 
+        var handleMethod = new Method("Handle") { 
+            AccessModifier = AccessModifier.Public,
+            Body = "throw new NotImplementedException();",
+            IsAsync = true,
+            ReturnType = TypePath.NewTask(model.ResultDto.Name!)
+        }
+        .AddArgument(model.ParamsDto.Name!, "request")
+        .AddArgument(typeof(CancellationToken).Name, "cancellationToken");
+
+
+        handlerClass.AddMember(handleMethod);
+
         // Gather and add `using`s
         var usings = handlerType.GetNameSpaces()
             .AddRangeImmuted(qryPcr.GetNameSpaces())
@@ -385,6 +397,14 @@ internal partial class FunctionalityService
         {
             InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
         }.AddBaseType(baseType);
+
+        // Add default ctor
+        var defCtor = new Method(segregateType.Name)
+        {
+            IsConstructor = true,
+            Body = "// Default constructor",
+        };
+        segregateClass.AddMember(defCtor);
 
         //Find properties
         var props = model.ParamsDto.Properties.Select(x => (Name: x.Name!, Type: TypePath.New(x.TypeFullName)));

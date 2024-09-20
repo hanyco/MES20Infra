@@ -5,6 +5,10 @@ using System;
 namespace HumanResources.Dtos;
 public sealed partial class UpdatePersonCommand : IRequest<UpdatePersonCommandResult>
 {
+    public UpdatePersonCommand()
+    {
+    }
+
     public Int64 Id { get; set; }
     public PersonDto Person { get; set; }
 
