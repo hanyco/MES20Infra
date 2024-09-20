@@ -13,6 +13,8 @@ using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Validations;
 
+using MediatR;
+
 using Services.Helpers;
 
 using System.Collections.Immutable;
@@ -325,8 +327,10 @@ internal partial class FunctionalityService
             InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
         };
 
-        var cmdPcr = TypePath.New<ICommandProcessor>();
-        var qryPcr = TypePath.New<IQueryProcessor>();
+        //var cmdPcr = TypePath.New<ICommandProcessor>();
+        //var qryPcr = TypePath.New<IQueryProcessor>();
+        var cmdPcr = TypePath.New<IMediator>();
+        var qryPcr = TypePath.New<IMediator>();
         var dal = TypePath.New<Sql>();
 
         var ctor = new Method(handlerType.Name)

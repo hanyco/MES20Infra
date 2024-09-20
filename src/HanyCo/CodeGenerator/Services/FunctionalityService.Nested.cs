@@ -98,9 +98,10 @@ internal partial class FunctionalityService
             return result;
         }
 
-        internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model)
+        internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model, InfraViewModelBase paramDto)
         {
-            var checks = model.ParamsDto.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
+            //var checks = model.ParamsDto.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
+            var checks = model.
             return !checks.Any()
                 ? string.Empty
                 : new StringBuilder("_ = command.ArgumentNotNull().Params.Check()")

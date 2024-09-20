@@ -426,8 +426,10 @@ internal sealed partial class FunctionalityService
                 .New("GetAll")
                 .AddHttpMethod<HttpGetAttribute>()
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQuery}());")
-                .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)))
+                //.AddBodyLine("return result.Result;")
+                .AddBodyLine("return this.Ok(result);")
+                //.WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)))
+                .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
             _ = data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace!);
@@ -440,8 +442,10 @@ internal sealed partial class FunctionalityService
                 .AddHttpMethod<HttpGetAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQuery}(id));")
-                .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(data.SourceDtoName!))
+                //.AddBodyLine("return result.Result;")
+                .AddBodyLine("return this.Ok(result);")
+                //.WithReturnType(TypePath.NewTask(data.SourceDtoName!))
+                .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
@@ -454,8 +458,10 @@ internal sealed partial class FunctionalityService
                 .AddHttpMethod<HttpPostAttribute>()
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.InsertCommand}({argName}));")
-                .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [typeof(long)])))
+                //.AddBodyLine("return result.Result;")
+                .AddBodyLine("return this.Ok(result);")
+                //.WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [typeof(long)])))
+                .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
@@ -469,8 +475,10 @@ internal sealed partial class FunctionalityService
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommand}(id, {argName}));")
-                .AddBodyLine("return result.Result;")
-                .WithReturnType(TypePath.NewTask(typeof(Result<>)))
+                //.AddBodyLine("return result.Result;")
+                .AddBodyLine("return this.Ok(result);")
+                //.WithReturnType(TypePath.NewTask(typeof(Result<>)))
+                .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
@@ -482,8 +490,10 @@ internal sealed partial class FunctionalityService
                 .AddHttpMethod<HttpDeleteAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommand}(id));")
-                .AddBodyLine("return result;")
-                .WithReturnType(TypePath.NewTask(typeof(Result)))
+                //.AddBodyLine("return result;")
+                .AddBodyLine("return this.Ok(result);")
+                //.WithReturnType(TypePath.NewTask(typeof(Result)))
+                .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
         }
@@ -608,7 +618,7 @@ internal sealed partial class FunctionalityService
         async Task createHandler(CancellationToken token)
         {
             data.ViewModel.GetByIdQuery = await this._queryService.CreateAsync(cancellationToken: token);
-            data.ViewModel.GetByIdQuery.Name = $"{name}QueryHandler";
+            data.ViewModel.GetByIdQuery.Name = $"{name}Query";
             data.ViewModel.GetByIdQuery.Category = CqrsSegregateCategory.Read;
             data.ViewModel.GetByIdQuery.CqrsNameSpace = TypePath.Combine(GetRootNameSpace(data), "Queries");
             data.ViewModel.GetByIdQuery.DtoNameSpace = TypePath.Combine(GetRootNameSpace(data), "Dtos");
@@ -654,7 +664,7 @@ internal sealed partial class FunctionalityService
     {
         var name = $"Insert{CommonHelpers.Purify(data.SourceDtoName)}";
         return TaskRunner.StartWith(data)
-            .Then(createHandler)
+            .Then(createModel)
             .Then(createResult)
             .Then(createParams)
             .Then(createValidator)
@@ -668,7 +678,7 @@ internal sealed partial class FunctionalityService
             _ = data.ViewModel.InsertCommand.ValidatorAdditionalUsings.Add(typeof(ValidationExtensions).Namespace);
         }
 
-        async Task createHandler(CreationData data, CancellationToken token)
+        async Task createModel(CreationData data, CancellationToken token)
         {
             data.ViewModel.InsertCommand = await this._commandService.CreateAsync(token);
             data.ViewModel.InsertCommand.Name = $"{name}Command";

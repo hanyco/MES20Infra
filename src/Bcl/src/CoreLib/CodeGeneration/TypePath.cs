@@ -184,6 +184,9 @@ public sealed class TypePath : IEquatable<TypePath>
     public static TypePath NewTask()
         => New<Task>();
 
+    public static TypePath NewTask<TResult>()
+        => New<Task>([typeof(TResult)]);
+
     [return: NotNull]
     public static TypePath NewTask(in TypePath generic)
         => New(typeof(Task<>).FullName!, [generic.FullName]);
