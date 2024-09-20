@@ -4,6 +4,7 @@ using System.Text;
 
 using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.CodeGeneration;
 using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;
 using Library.Results;
@@ -240,7 +241,9 @@ internal partial class FunctionalityService
         [NotNull]
         internal Result<FunctionalityViewModel> Result => this._result ??= new(this.ViewModel);
 
-        internal string? SourceDtoName { get; } = sourceDtoName ?? result.SourceDto.Name;
+        internal string SourceDtoName { get; } = sourceDtoName ?? result.SourceDto.Name!;
+
+        internal TypePath SourceDtoType => this.ViewModel.SourceDto.GetSourceDtoType();
 
         [NotNull]
         internal FunctionalityViewModel ViewModel { get; } = result.ArgumentNotNull();

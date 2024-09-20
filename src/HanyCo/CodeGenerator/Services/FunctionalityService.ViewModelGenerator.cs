@@ -1,8 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Xml.Linq;
-
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -22,6 +18,10 @@ using Microsoft.AspNetCore.Mvc;
 
 using Services.CodeGen.Helpers;
 using Services.Helpers;
+
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace Services;
 
@@ -79,13 +79,13 @@ internal sealed partial class FunctionalityService
              //?! ☠ Don't change the sequence of the steps ☠
              => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
                 .AddStep(this.InitializeWorkspace, getTitle("Initializing…"))
-                
+
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
                 .AddStep(this.CreateInsertCommand, getTitle($"Creating `Insert{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateUpdateCommand, getTitle($"Creating `Update{data.ViewModel.Name}Command`…"))
                 .AddStep(this.CreateDeleteCommand, getTitle($"Creating `Delete{data.ViewModel.Name}Command`…"))
-                
+
                 .AddStep(this.CreateController, getTitle($"Creating `{data.ViewModel.Name}Controller`…"))
 
                 .AddStep(this.CreateBlazorListPage, getTitle($"Creating {data.ViewModel.Name} Blazor List Page…"))
@@ -131,8 +131,26 @@ internal sealed partial class FunctionalityService
     private static string GetMapperNameSpace(CreationData data)
         => TypePath.Combine(GetRootNameSpace(data), "Mappers");
 
-    private static string GetRootNameSpace(CreationData data)
-        => data.ViewModel.SourceDto.NameSpace.TrimSuffix(".Dtos").TrimSuffix(".Dto");
+    private static PropertyViewModel GetPluralizedSourceDtoAsPropertyModel(CreationData data) => new(StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName!)), PropertyType.Dto)
+    {
+        Comment = data.COMMENT,
+        IsList = true,
+        TypeFullName = data.ViewModel.SourceDto.FullName,
+        Dto = data.ViewModel.SourceDto,
+        Type = PropertyType.Dto,
+    };
+
+    private static string GetRootNameSpace(CreationData data) => 
+        data.ViewModel.SourceDto.NameSpace.TrimSuffix(".Dtos").TrimSuffix(".Dto");
+
+    private static PropertyViewModel GetSourceDtoAsPropertyModel(CreationData data) => new(CommonHelpers.Purify(data.SourceDtoName!), PropertyType.Dto)
+    {
+        Comment = data.COMMENT,
+        IsList = false,
+        TypeFullName = data.ViewModel.SourceDto.FullName,
+        Dto = data.ViewModel.SourceDto,
+        Type = PropertyType.Dto,
+    };
 
     private static DtoViewModel RawDto(CreationData data, bool addTableColumns = false)
     {
@@ -175,6 +193,12 @@ internal sealed partial class FunctionalityService
         }
         return result;
     }
+
+    private static IEnumerable<PropertyViewModel> SourceDtoPropertiesToProperties(CreationData data) =>
+        data.ViewModel.SourceDto.Properties;
+
+    private static PropertyViewModel SourceDtoToProperty(CreationData data) =>
+        new() { Comment = data.COMMENT, Name = data.SourceDtoName, Type = PropertyType.Dto, TypeFullName = data.SourceDtoType };
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
@@ -589,13 +613,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQuery.ResultDto = RawDto(data, false);
             data.ViewModel.GetAllQuery.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetAllQuery.ResultDto.IsResultDto = true;
-            data.ViewModel.GetAllQuery.ResultDto.Properties.Add(new(StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName!)), PropertyType.Dto)
-            {
-                IsList = true,
-                IsNullable = true,
-                TypeFullName = data.ViewModel.SourceDto.FullName,
-            });
+            data.ViewModel.GetAllQuery.ResultDto.Properties.Add(GetPluralizedSourceDtoAsPropertyModel(data));
         }
+
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.GetAllQuery.HandleMethodBody = CodeSnippets.CreateGetAllQueryHandleMethodBody(data.ViewModel.GetAllQuery);
 
@@ -606,8 +626,9 @@ internal sealed partial class FunctionalityService
     private Task CreateGetByIdQuery(CreationData data, CancellationToken token)
     {
         var name = $"GetById{CommonHelpers.Purify(data.SourceDtoName)}";
+
         return TaskRunner.StartWith(data)
-            .Then(createHandler)
+            .Then(createModel)
             .Then(createResult)
             .Then(createParams)
             .Then(createHandleMethodBody)
@@ -615,7 +636,7 @@ internal sealed partial class FunctionalityService
             .Then(createConverters)
             .RunAsync(token);
 
-        async Task createHandler(CancellationToken token)
+        async Task createModel(CancellationToken token)
         {
             data.ViewModel.GetByIdQuery = await this._queryService.CreateAsync(cancellationToken: token);
             data.ViewModel.GetByIdQuery.Name = $"{name}Query";
@@ -642,7 +663,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQuery.ResultDto = RawDto(data, true);
             data.ViewModel.GetByIdQuery.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetByIdQuery.ResultDto.IsResultDto = true;
-            //data.ViewModel.GetByIdQuery.ResultDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
+            data.ViewModel.GetByIdQuery.ResultDto.Properties.Add(SourceDtoToProperty(data));
         }
 
         void setupSecurity(CreationData data) =>
@@ -696,11 +717,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommand.ParamsDto = RawDto(data, true);
             data.ViewModel.InsertCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.InsertCommand.ParamsDto.IsParamsDto = true;
-            var idProp = data.ViewModel.InsertCommand.ParamsDto.Properties.FirstOrDefault(y => y.Name?.EqualsTo("id") is true);
-            if (idProp != null)
-            {
-                _ = data.ViewModel.InsertCommand.ParamsDto.Properties.Remove(idProp);
-            }
+            data.ViewModel.InsertCommand.ParamsDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
         }
 
         void createResult(CreationData data)
@@ -754,14 +771,15 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommand.ParamsDto = RawDto(data, true);
             data.ViewModel.UpdateCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.UpdateCommand.ParamsDto.IsParamsDto = true;
+            data.ViewModel.UpdateCommand.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.UpdateCommand.ResultDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
         }
 
         void createResult(CreationData data)
         {
             data.ViewModel.UpdateCommand.ResultDto = RawDto(data, false);
             data.ViewModel.UpdateCommand.ResultDto.Name = $"{name}CommandResult";
-            data.ViewModel.UpdateCommand.ResultDto.IsResultDto = true;
-            data.ViewModel.UpdateCommand.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.UpdateCommand.ResultDto.IsResultDto = true;            
         }
 
         void setupSecurity(CreationData data) =>

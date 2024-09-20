@@ -1,4 +1,4 @@
 namespace HumanResources.Queries;
-public sealed partial class GetAllPeopleQueryHandler
+internal sealed partial class GetAllPeopleQueryHandler
 {
 }

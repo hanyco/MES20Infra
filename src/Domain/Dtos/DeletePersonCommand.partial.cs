@@ -1,13 +1,14 @@
-using Library.Cqrs.Models.Queries;
+using MediatR;
 using HumanResources.Dtos;
+using System;
 
 namespace HumanResources.Dtos;
-public sealed partial class DeletePersonCommand : IQuery<DeletePersonCommandResult>
+public sealed partial class DeletePersonCommand : IRequest<DeletePersonCommandResult>
 {
-    public PersonDto PersonDto { get; set; }
+    public Int64 Id { get; set; }
 
-    public DeletePersonCommand(PersonDto personDto)
+    public DeletePersonCommand(Int64 id)
     {
-        this.PersonDto = personDto;
+        this.Id = id;
     }
 }

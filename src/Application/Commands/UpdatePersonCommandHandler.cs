@@ -1,4 +1,4 @@
 namespace HumanResources.Commands;
-public sealed partial class UpdatePersonCommandHandler
+internal sealed partial class UpdatePersonCommandHandler
 {
 }

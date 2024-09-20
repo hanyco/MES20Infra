@@ -7,8 +7,6 @@ using HanyCo.Infra.CodeGeneration.Helpers;
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2.Back;
-using Library.Cqrs.Models.Commands;
-using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;
 using Library.Results;
@@ -62,7 +60,7 @@ internal partial class FunctionalityService
 
             if (viewModel.GetAllQuery != null)
             {
-                var codeGenRes = this.GenerateCqrsCodes(viewModel.GetAllQuery, viewModel.SourceDto);
+                var codeGenRes = this.GenerateCqrsCodes(viewModel.GetAllQuery);
                 codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetAllQuery)}");
                 yield return codes.GetAllQueryCodes;
@@ -74,7 +72,7 @@ internal partial class FunctionalityService
 
             if (viewModel.GetByIdQuery != null)
             {
-                var codeGenRes = this.GenerateCqrsCodes(viewModel.GetByIdQuery, viewModel.SourceDto);
+                var codeGenRes = this.GenerateCqrsCodes(viewModel.GetByIdQuery);
                 codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetByIdQuery)}");
                 yield return codes.GetByIdQueryCodes;
@@ -86,7 +84,7 @@ internal partial class FunctionalityService
 
             if (viewModel.InsertCommand != null)
             {
-                var codeGenRes = this.GenerateCqrsCodes(viewModel.InsertCommand, viewModel.SourceDto);
+                var codeGenRes = this.GenerateCqrsCodes(viewModel.InsertCommand);
                 codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, null);
                 yield return codes.InsertCommandCodes;
@@ -98,7 +96,7 @@ internal partial class FunctionalityService
 
             if (viewModel.UpdateCommand != null)
             {
-                var codeGenRes = this.GenerateCqrsCodes(viewModel.UpdateCommand, viewModel.SourceDto);
+                var codeGenRes = this.GenerateCqrsCodes(viewModel.UpdateCommand);
                 codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.UpdateCommand)}");
                 yield return codes.UpdateCommandCodes;
@@ -110,7 +108,7 @@ internal partial class FunctionalityService
 
             if (viewModel.DeleteCommand != null)
             {
-                var codeGenRes = this.GenerateCqrsCodes(viewModel.DeleteCommand, viewModel.SourceDto);
+                var codeGenRes = this.GenerateCqrsCodes(viewModel.DeleteCommand);
                 codes.DeleteCommandCodes = codeGenRes.Select(x => x.Value).ToCodes();
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.DeleteCommand)}");
                 yield return codes.DeleteCommandCodes;
@@ -376,7 +374,7 @@ internal partial class FunctionalityService
         return code;
     }
 
-    private Code CreatePartParams(in CqrsViewModelBase model, in DtoViewModel? paramDto)
+    private Code CreatePartParams(in CqrsViewModelBase model)
     {
         // Create segregation TypePath
         var segregateType = model.GetSegregateParamsType(null);
@@ -388,22 +386,22 @@ internal partial class FunctionalityService
             InheritanceModifier = InheritanceModifier.Sealed | InheritanceModifier.Partial
         }.AddBaseType(baseType);
 
-        // Convert model's properties to TypePath
-        //x var props = model.ParamsDto.Properties.Select(x => (Name: x.Name!, Type: x.IsList is true ? TypePath.New(typeof(List<>).FullName!, [x.TypeFullName]) : TypePath.New(x.TypeFullName))).ToList();
-        var props = paramDto is not null
-            ? EnumerableHelper.AsEnumerable((Name: paramDto.Name!, Type: paramDto.GetSourceDtoType()))
-            : [];
-        if (props.Any())
+        //Find properties
+        var props = model.ParamsDto.Properties.Select(x => (Name: x.Name!, Type: TypePath.New(x.TypeFullName)));
+        // Any property?
+        if (props.Any()) // So create a proper ctor to initialize them.
         {
-            // Add model's property to Command/Query class
+            // Add properties to Command/Query class
             props.ForEach(x => segregateClass.AddProperty(x.Name, x.Type));
 
-            // Create ctor and initialize this properties
+            // Create ctor and initialize these properties
             var ctor = new Method(segregateType.Name) { IsConstructor = true };
             props.ForEach(x => ctor.AddArgument(x.Type, arg(x.Name)));
             var body = new StringBuilder();
             props.ForEach(x => body.AppendLine($"this.{x.Name} = {arg(x.Name)};"));
             ctor.Body = body.ToString();
+
+            // Add ctor
             _ = segregateClass.AddMember(ctor);
         }
 
@@ -458,13 +456,13 @@ internal partial class FunctionalityService
         return code;
     }
 
-    private ImmutableArray<Result<Codes>> GenerateCqrsCodes(in CqrsViewModelBase cqrsViewModel, DtoViewModel? sourceDto)
+    private ImmutableArray<Result<Codes>> GenerateCqrsCodes(in CqrsViewModelBase cqrsViewModel)
     {
         return gather(cqrsViewModel).ToImmutableArray();
 
         IEnumerable<Result<Codes>> gather(CqrsViewModelBase model)
         {
-            var partParamsDtoCode = this.CreatePartParams(model, sourceDto);
+            var partParamsDtoCode = this.CreatePartParams(model);
             var mainParamsDtoCode = this.CreateMainParams(model);
             var partResultDtoCode = this.CreatePartResult(model);
             var mainResultDtoCode = this.CreateMainResult(model);

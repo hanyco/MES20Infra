@@ -1,13 +1,14 @@
-using Library.Cqrs.Models.Queries;
+using MediatR;
 using HumanResources.Dtos;
+using System;
 
 namespace HumanResources.Dtos;
-public sealed partial class GetByIdPersonQuery : IQuery<GetByIdPersonQueryResult>
+public sealed partial class GetByIdPersonQuery : IRequest<GetByIdPersonQueryResult>
 {
-    public PersonDto PersonDto { get; set; }
+    public Int64 Id { get; set; }
 
-    public GetByIdPersonQuery(PersonDto personDto)
+    public GetByIdPersonQuery(Int64 id)
     {
-        this.PersonDto = personDto;
+        this.Id = id;
     }
 }

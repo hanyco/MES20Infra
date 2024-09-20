@@ -1,13 +1,11 @@
-using Library.Cqrs.Models.Queries;
+using MediatR;
 using HumanResources.Dtos;
+using System;
 
 namespace HumanResources.Dtos;
-public sealed partial class InsertPersonCommand : IQuery<InsertPersonCommandResult>
+public sealed partial class InsertPersonCommand : IRequest<InsertPersonCommandResult>
 {
-    public PersonDto PersonDto { get; set; }
-
     public InsertPersonCommand(PersonDto personDto)
     {
-        this.PersonDto = personDto;
     }
 }

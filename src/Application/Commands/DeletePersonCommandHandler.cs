@@ -1,4 +1,4 @@
 namespace HumanResources.Commands;
-public sealed partial class DeletePersonCommandHandler
+internal sealed partial class DeletePersonCommandHandler
 {
 }
