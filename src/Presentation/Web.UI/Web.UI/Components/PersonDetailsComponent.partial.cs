@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 namespace HumanResources
 {
-    using HumanResources.Mappers;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -28,25 +27,12 @@ namespace HumanResources
             await this.OnLoadAsync();
         }
 
-        async Task SaveData()
+        Task SaveData()
         {
-            if (DataContext.Id == default)
-            {
-                var @params = this.DataContext.ToInsertPersonCommand();
-                var cqParams = new HumanResources.Dtos.InsertPersonCommand(@params);
-                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.InsertPersonCommand, HumanResources.Dtos.InsertPersonCommandResult>(cqParams);
-            }
-            else
-            {
-                var @params = this.DataContext.ToUpdatePersonCommand();
-                var cqParams = new HumanResources.Dtos.UpdatePersonCommand(@params);
-                var cqResult = await this._commandProcessor.ExecuteAsync<HumanResources.Dtos.UpdatePersonCommand, HumanResources.Dtos.UpdatePersonCommandResult>(cqParams);
-            }
-
-            MessageComponent.Show("Save Data", "Date saved.");
+            return Task.CompletedTask;
         }
 
-        public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
+        public Web.UI.Components.Shared.MessageComponent MessageComponent { get; set; }
 
         [Microsoft.AspNetCore.Components.Parameter]
         public long? EntityId { get; set; }
