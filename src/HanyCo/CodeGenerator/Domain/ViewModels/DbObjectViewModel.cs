@@ -32,5 +32,5 @@ public class DbObjectViewModel : InfraViewModelBase
     }
 
     public override string ToString() =>
-        this.Schema is not null ? $"{this.Schema}.{this.Name ?? "No Name!"}" : this.Name ?? "No Name!";
+        this.Schema is not null ? $"[{this.Schema}].[{this.Name ?? "No Name!"}]" : $"[{this.Name ?? "No Name!"}]";
 }

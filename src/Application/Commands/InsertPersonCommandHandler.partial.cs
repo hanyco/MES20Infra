@@ -16,6 +16,15 @@ internal sealed partial class InsertPersonCommandHandler : IRequestHandler<Inser
 
     public async Task<InsertPersonCommandResult> Handle(InsertPersonCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var id = request.Person.Id.ToString();
+        var firstName = request.Person.FirstName?.ToString().IsNullOrEmpty() ?? true ? "null" : $"N'{request.Person.FirstName.ToString()}'";
+        var lastName = $"N'{request.Person.LastName.ToString()}'";
+        var dateOfBirth = $"N'{SqlTypeHelper.FormatDate(request.Person.DateOfBirth)}'";
+        var height = request.Person.Height?.ToString() ?? "null";
+        var dbCommand = $@"INSERT INTO [dbo].[Person]   ([Id], [FirstName], [LastName], [DateOfBirth], [Height])   VALUES ({id}, {firstName}, {lastName}, {dateOfBirth}, {height}); SELECT SCOPE_IDENTITY();";
+        var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);
+        int returnValue = Convert.ToInt32(dbResult);
+        var result = new InsertPersonCommandResult(returnValue);
+        return result;
     }
 }

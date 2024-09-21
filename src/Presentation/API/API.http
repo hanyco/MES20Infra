@@ -3,5 +3,19 @@
 GET {{API_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### GetAll
 GET {{API_HostAddress}}/person
+
+### GetById
+GET {{API_HostAddress}}/person/2
+
+
+### Insert
+POST {{API_HostAddress}}/person
+Content-Type: application/json
+{
+  "firstName": "Mohammad",
+    "lastName": "Mohammadi",
+    "dateOfBirth": "1980-03-03T00:00:00",
+    "height": 180
+}

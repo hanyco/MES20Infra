@@ -45,7 +45,8 @@ public sealed class PropertyViewModel : InfraViewModelBase
 
     public DbObjectViewModel? DbObject
     {
-        get => this._dbObject ?? (this.DbObject = new(this.Name, type: this._type.ToDbTypeName()));
+        //get => this._dbObject ?? (this.DbObject = new(this.Name, type: this._type.ToDbTypeName()));
+        get => this._dbObject;
         set => this.SetProperty(ref this._dbObject, value);
     }
 

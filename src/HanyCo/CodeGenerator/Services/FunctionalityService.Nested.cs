@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
@@ -56,52 +57,46 @@ internal partial class FunctionalityService
             return result.ToString();
         }
 
-        internal static string CreateDeleteCommandHandleMethodBody(CqrsCommandViewModel model)
+        internal static string CreateDeleteCommandHandleMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
         {
-            var additionalWhereClause = "[ID] = %Id%";
+            var additionalWhereClause = "[Id] = %Id%";
             var deleteStatement = SqlStatementBuilder
-                .Delete(model.ParamsDto.DbObject.Name!)
+                .Delete(entityModel.DbObject.ToString())
                 .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "command.Params"))
-                .ToString()
+                .Build()
                 .Replace(Environment.NewLine, " ").Replace("  ", " ");
             return new StringBuilder()
                 .AppendLine($"var dbCommand = $@\"{deleteStatement}\";")
-                .AppendLine($"this._sql.ExecuteNonQuery(dbCommand);")
-                .AppendLine($"var result = new DeletePersonCommandResult(new());")
-                .AppendLine($"return Task.FromResult(result);")
+                .AppendLine($"await this._sql.ExecuteNonQueryAsync(dbCommand, cancellationToken: cancellationToken);")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Command")}();")
+                .AppendLine($"return result;")
                 .ToString();
         }
 
-        internal static string CreateGetAllQueryHandleMethodBody(CqrsViewModelBase model) =>
-            CreateQueryHandleMethodBody(model);
-
-        internal static string CreateGetByIdQueryHandleMethodBody(CqrsViewModelBase model) =>
-            CreateQueryHandleMethodBody(model, "[ID] = %Id%");
-
-        internal static string CreateInsertCommandHandleMethodBody(CqrsViewModelBase model)
+        internal static string CreateInsertCommandHandleMethodBody(CqrsViewModelBase model, DtoViewModel entityModel)
         {
-            var values = GetValues(model.ParamsDto.Properties).ToImmutableArray();
+            var values = GetValues(entityModel.Properties).ToImmutableArray();
             var insertStatement = SqlStatementBuilder
                 .Insert()
-                .Into(model.ParamsDto.DbObject.Name!)
+                .Into(entityModel.DbObject.ToString())
                 .Values(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
                 .ReturnId()
                 .ForceFormatValues(false)
-                .ToString().Replace(Environment.NewLine, " ").Replace("  ", " ");
+                .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
                 .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
-                .AppendLine($"var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
+                .AppendLine($"var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);")
                 .AppendLine($"int id = Convert.ToInt32(dbResult);")
-                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new() {{ Id = id }});")
-                .AppendLine($"return Task.FromResult(result);")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(id);")
+                .AppendLine($"return result;")
                 .ToString();
             return result;
         }
 
-        internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model)
+        internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
         {
-            var checks = model.ParamsDto.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
+            var checks = entityModel.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
             return !checks.Any()
                 ? string.Empty
                 : new StringBuilder("_ = command.ArgumentNotNull().Params.Check()")
@@ -112,21 +107,21 @@ internal partial class FunctionalityService
                     .ToString();
         }
 
-        internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model)
+        internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
         {
-            var values = GetValues(model.ParamsDto.Properties.ExcludeId()).ToImmutableArray();
+            var values = GetValues(entityModel.Properties.ExcludeId()).ToImmutableArray();
             var updateStatement = SqlStatementBuilder
-                .Update(model.ParamsDto.DbObject.Name!)
+                .Update(entityModel.DbObject.ToString())
                 .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
-                .Where(ReplaceVariables(model.ParamsDto, "[ID] = %Id%", "command.Params"))
+                .Where(ReplaceVariables(entityModel, "[Id] = %Id%", "command.Params"))
                 .ForceFormatValues(false)
-                .ToString().Replace(Environment.NewLine, " ").Replace("  ", " ");
+                .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
                 .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{updateStatement}\";")
-                .AppendLine("var dbResult = this._sql.ExecuteScalarCommand(dbCommand);")
-                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(new());")
-                .AppendLine("return Task.FromResult(result);")
+                .AppendLine("var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}();")
+                .AppendLine("return result;")
                 .ToString();
             return result;
         }
@@ -167,25 +162,25 @@ internal partial class FunctionalityService
         internal static string NavigateTo(string url) =>
             $"this._navigationManager.NavigateTo({url});";
 
-        private static string CreateQueryHandleMethodBody(CqrsViewModelBase model, string? additionalWhereClause = null)
+        public static string CreateQueryHandleMethodBody(CqrsViewModelBase model, DtoViewModel entityModel, string? additionalWhereClause = null)
         {
             // Create query to be used inside the body code.
             var bodyQuery = SqlStatementBuilder
-                .Select(model.ParamsDto.DbObject.Name!)
+                .Select(entityModel.DbObject.ToString())
                 .Top(model.ResultDto.IsList ? null : 1)
-                .Columns(model.ResultDto.Properties.Select(x => x.DbObject?.Name).Compact())
+                .Columns(entityModel.Properties.Select(x => x.DbObject?.Name).Compact())
                 .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
-                .ToString()
+                .Build()
                 .Replace(Environment.NewLine, " ").Replace("  ", " ");
             // Create body code.
             (var sqlMethod, var toListMethod) = model.ResultDto.IsList
-                ? (nameof(Sql.Select), ".ToList()")
-                : (nameof(Sql.FirstOrDefault), string.Empty);
+                ? (nameof(Sql.SelectAsync), $".{nameof(EnumerableHelper.ToListAsync)}(cancellationToken)")
+                : (nameof(Sql.FirstOrDefaultAsync), string.Empty);
             var result = new StringBuilder()
                 .AppendLine($"var dbQuery = $@\"{bodyQuery}\";")
-                .AppendLine($"var dbResult = this._sql.{sqlMethod}<{model.GetSegregateResultParamsType("Query").FullPath}>(dbQuery){toListMethod};")
-                .AppendLine($"var result = new {model.GetSegregateResultType("Query").FullPath}(dbResult);")
-                .Append($"return Task.FromResult(result);")
+                .AppendLine($"var dbResult = await this._sql.{sqlMethod}<{entityModel.Name}>(dbQuery){toListMethod};")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Query").Name}(dbResult);")
+                .Append($"return result;")
                 .ToString();
             return result;
         }

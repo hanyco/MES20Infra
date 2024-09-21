@@ -13,7 +13,7 @@ namespace HanyCo.Infra.UI.Helpers;
 public static class SourceCodeHelper
 {
     public static readonly Action<Result<string?>> ShowDiskOperationResult = result =>
-        MsgBox2.Inform(result.Message, controls: ButtonInfo.ToButtons(
+        MsgBox2.Inform(result.Message??"Saved successfully.", controls: ButtonInfo.ToButtons(
                 new("OK", (e1, e2) => MsgBox2.GetOnButtonClick(e1, e2).Parent.Close()),
                 new("Open Containing Folder…", (e1, e2) => { _ = Process.Start("explorer.exe", result.Value!); })).ToArray());
 

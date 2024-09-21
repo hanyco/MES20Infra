@@ -12,7 +12,6 @@ public interface ISelectStatement : IStatementOnTable, IWhereClause
 
     bool WithNoLock { get; set; }
 
-    //! For .NET 8.0
-    //? static implicit operator string(in ISelectStatement statement)
-    //?     => statement.Build();
+    string ToString() =>
+        this.Build();
 }

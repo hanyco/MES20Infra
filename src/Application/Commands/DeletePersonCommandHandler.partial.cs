@@ -16,6 +16,9 @@ internal sealed partial class DeletePersonCommandHandler : IRequestHandler<Delet
 
     public async Task<DeletePersonCommandResult> Handle(DeletePersonCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var dbCommand = $@"DELETE FROM [dbo].[Person]   WHERE [Id] = {request.Id}";
+        await this._sql.ExecuteNonQueryAsync(dbCommand, cancellationToken: cancellationToken);
+        var result = new DeletePersonCommandResult();
+        return result;
     }
 }

@@ -16,6 +16,9 @@ internal sealed partial class GetByIdPersonQueryHandler : IRequestHandler<GetByI
 
     public async Task<GetByIdPersonQueryResult> Handle(GetByIdPersonQuery request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var dbQuery = $@"SELECT TOP (1) [Id], [FirstName], [LastName], [DateOfBirth], [Height]   FROM [dbo].[Person]   WHERE [Id] = {request.Id}";
+        var dbResult = await this._sql.FirstOrDefaultAsync<PersonDto>(dbQuery);
+        var result = new GetByIdPersonQueryResult(dbResult);
+        return result;
     }
 }

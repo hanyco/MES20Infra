@@ -83,7 +83,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
                 .New(viewModel.ControllerName)
                 .AddBaseType<ControllerBase>()
                 .AddAttribute<ApiControllerAttribute>()
-                .AddAttribute<RouteAttribute>((null, "\"[controller]\""));
+                .AddAttribute<RouteAttribute>((null, "[controller]"));
             if (viewModel.IsAnonymousAllow)
             {
                 _ = controllerClass.AddAttribute<AllowAnonymousAttribute>();

@@ -318,6 +318,14 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return Select<T>(conn.ExecuteReader(query, behavior: CommandBehavior.CloseConnection)).FirstOrDefault();
     }
 
+    public async Task<T?> FirstOrDefaultAsync<T>(string query, CancellationToken cancellation = default)
+        where T : new()
+    {
+        using var conn = new SqlConnection(this.ConnectionString);
+        this._logTo?.Invoke(query);
+        return Select<T>(await conn.ExecuteReaderAsync(query, behavior: CommandBehavior.CloseConnection, cancellationToken: cancellation)).FirstOrDefault();
+    }
+
     public IEnumerable<T> Select<T>(string query, Func<SqlDataReader, T> rowFiller)
     {
         using var conn = new SqlConnection(this.ConnectionString);
@@ -348,14 +356,6 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return Select<T>(conn.ExecuteReader(query, behavior: CommandBehavior.CloseConnection)).ToList();
     }
 
-    public async Task<IEnumerable<T>> SelectAsync<T>(string query)
-        where T : new()
-    {
-        using var conn = new SqlConnection(this.ConnectionString);
-        this._logTo?.Invoke(query);
-        return Select<T>(await conn.ExecuteReaderAsync(query, behavior: CommandBehavior.CloseConnection)).ToList();
-    }
-
     public IEnumerable<dynamic> Select(string query)
     {
         var columns = new List<string>();
@@ -383,6 +383,14 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
     {
         this._logTo?.Invoke(query);
         return Execute<IEnumerable<dynamic>>(this.ConnectionString, conn => Select(conn, query, rowFiller).ToList());
+    }
+
+    public async Task<IEnumerable<T>> SelectAsync<T>(string query)
+                where T : new()
+    {
+        using var conn = new SqlConnection(this.ConnectionString);
+        this._logTo?.Invoke(query);
+        return Select<T>(await conn.ExecuteReaderAsync(query, behavior: CommandBehavior.CloseConnection)).ToList();
     }
 
     private static TResult Execute<TResult>(string connectionString, Func<SqlConnection, TResult> func)

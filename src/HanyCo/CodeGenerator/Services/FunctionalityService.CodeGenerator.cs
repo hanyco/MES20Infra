@@ -359,7 +359,7 @@ internal partial class FunctionalityService
 
         var handleMethod = new Method("Handle") { 
             AccessModifier = AccessModifier.Public,
-            Body = "throw new NotImplementedException();",
+            Body = model.HandleMethodBody??"throw new NotImplementedException();",
             IsAsync = true,
             ReturnType = TypePath.NewTask(model.ResultDto.Name!)
         }
