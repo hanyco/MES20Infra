@@ -1,15 +1,11 @@
 @namespace HumanResources
 
 @using HanyCo.Infra.Blazor
-@using Library.Cqrs.Models.Queries
-@using Library.Cqrs.Models.Commands
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
 @using HumanResources.Dtos
 @using Web.UI.Components.Shared
 
-@inject IQueryProcessor _queryProcessor
-@inject ICommandProcessor _commandProcessor
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
 

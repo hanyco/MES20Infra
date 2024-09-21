@@ -5,7 +5,6 @@ using Web.UI.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
@@ -13,6 +12,8 @@ builder.Services
     .AddAuthorization()
     .AddAuthentication();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
