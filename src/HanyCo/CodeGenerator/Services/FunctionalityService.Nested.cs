@@ -59,10 +59,10 @@ internal partial class FunctionalityService
 
         internal static string CreateDeleteCommandHandleMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
         {
-            var additionalWhereClause = "[Id] = %Id%";
+            var additionalWhereClause = "[Id] = {request.Id}";
             var deleteStatement = SqlStatementBuilder
                 .Delete(entityModel.DbObject.ToString())
-                .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "command.Params"))
+                .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, $"request.{model.DbObject.Name}"))
                 .Build()
                 .Replace(Environment.NewLine, " ").Replace("  ", " ");
             return new StringBuilder()
@@ -75,7 +75,7 @@ internal partial class FunctionalityService
 
         internal static string CreateInsertCommandHandleMethodBody(CqrsViewModelBase model, DtoViewModel entityModel)
         {
-            var values = GetValues(entityModel.Properties).ToImmutableArray();
+            var values = GetValues(entityModel.Properties, model.DbObject.Name).ToImmutableArray();
             var insertStatement = SqlStatementBuilder
                 .Insert()
                 .Into(entityModel.DbObject.ToString())
@@ -87,8 +87,8 @@ internal partial class FunctionalityService
                 .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
                 .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
                 .AppendLine($"var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);")
-                .AppendLine($"int id = Convert.ToInt32(dbResult);")
-                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(id);")
+                .AppendLine($"int returnValue = Convert.ToInt32(dbResult);")
+                .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(returnValue);")
                 .AppendLine($"return result;")
                 .ToString();
             return result;
@@ -109,11 +109,11 @@ internal partial class FunctionalityService
 
         internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
         {
-            var values = GetValues(entityModel.Properties.ExcludeId()).ToImmutableArray();
+            var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name).ToImmutableArray();
             var updateStatement = SqlStatementBuilder
                 .Update(entityModel.DbObject.ToString())
                 .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
-                .Where(ReplaceVariables(entityModel, "[Id] = %Id%", "command.Params"))
+                .Where(ReplaceVariables(entityModel, "[Id] = %Id%", $"request.{model.DbObject.Name}"))
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
@@ -185,7 +185,7 @@ internal partial class FunctionalityService
             return result;
         }
 
-        private static IEnumerable<(string ColumnName, object VariableName, string VariableStatement)> GetValues(IEnumerable<PropertyViewModel> properties)
+        private static IEnumerable<(string ColumnName, object VariableName, string VariableStatement)> GetValues(IEnumerable<PropertyViewModel> properties, string requestParamName)
         {
             foreach (var p in properties.Compact())
             {
@@ -202,26 +202,26 @@ internal partial class FunctionalityService
                     or PropertyType.Long
                     or PropertyType.Short
                     or PropertyType.Float
-                    or PropertyType.Byte => numericColumn(dbColumn),
-                    PropertyType.Boolean => commonColumn(dbColumn),
-                    PropertyType.DateTime => dateColumn(dbColumn),
-                    _ => commonColumn(dbColumn),
+                    or PropertyType.Byte => numericColumn(dbColumn, requestParamName),
+                    PropertyType.Boolean => commonColumn(dbColumn, requestParamName),
+                    PropertyType.DateTime => dateColumn(dbColumn, requestParamName),
+                    _ => commonColumn(dbColumn, requestParamName),
                 };
                 yield return (dbColumn.Name, TypeMemberNameHelper.ToArgName(dbColumn.Name), statement);
             }
 
-            static string commonColumn(DbColumnViewModel dbColumn) =>
+            static string commonColumn(DbColumnViewModel dbColumn, string requestParamName) =>
                 dbColumn.IsNullable
-                    ? $"command.Params.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N'{{command.Params.{dbColumn.Name}.ToString()}}'\""
-                    : $"$\"N'{{command.Params.{dbColumn.Name}.ToString()}}'\"";
-            static string dateColumn(DbColumnViewModel dbColumn) =>
+                    ? $"request.{requestParamName}.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N'{{request.{requestParamName}.{dbColumn.Name}.ToString()}}'\""
+                    : $"$\"N'{{request.{requestParamName}.{dbColumn.Name}.ToString()}}'\"";
+            static string dateColumn(DbColumnViewModel dbColumn, string requestParamName) =>
                 dbColumn.IsNullable
-                    ? $"command.Params.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N'{{SqlTypeHelper.FormatDate(command.Params.{dbColumn.Name})}}'\";"
-                    : $"$\"N'{{SqlTypeHelper.FormatDate(command.Params.{dbColumn.Name})}}'\"";
-            static string numericColumn(DbColumnViewModel dbColumn) =>
+                    ? $"request.{requestParamName}.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N'{{SqlTypeHelper.FormatDate(request.{requestParamName}.{dbColumn.Name})}}'\";"
+                    : $"$\"N'{{SqlTypeHelper.FormatDate(request.{requestParamName}.{dbColumn.Name})}}'\"";
+            static string numericColumn(DbColumnViewModel dbColumn, string requestParamName) =>
                 dbColumn.IsNullable
-                    ? $"command.Params.{dbColumn.Name}?.ToString() ?? \"null\""
-                    : $"command.Params.{dbColumn.Name}.ToString()";
+                    ? $"request.{requestParamName}.{dbColumn.Name}?.ToString() ?? \"null\""
+                    : $"request.{requestParamName}.{dbColumn.Name}.ToString()";
         }
     }
 
