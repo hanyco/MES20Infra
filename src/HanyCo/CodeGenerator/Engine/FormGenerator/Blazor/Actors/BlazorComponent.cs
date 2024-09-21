@@ -31,8 +31,6 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
     {
         var injections = new[]
         {
-            TypePath.New<IQueryProcessor>(),
-            TypePath.New<ICommandProcessor>(),
             TypePath.New<IMemoryCache>(),
             //TypePath.New<IUserContext>(),
             TypePath.New<NavigationManager>(),

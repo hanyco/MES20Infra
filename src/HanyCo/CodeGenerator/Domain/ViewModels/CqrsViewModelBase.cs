@@ -77,6 +77,7 @@ public abstract class CqrsViewModelBase : InfraViewModelBase
         set => this.SetProperty(ref this._hasPartialOnInitialize, value);
     }
 
+    [Obsolete("Mappers are no longer used in this project", true)]
     public string MapperNameSpace
     {
         get => this._mapperNameSpace;

@@ -14,12 +14,6 @@ namespace Library.Web.Bases;
 
 public abstract class ApiControllerBase : ControllerBase
 {
-    //private ICommandProcessor? _commandProcessor;
-    //private IQueryProcessor? _queryProcessor;
-
-    //protected virtual IQueryProcessor QueryProcessor => this._queryProcessor ??= this.GetService<IQueryProcessor>();
-    //protected virtual ICommandProcessor CommandProcessor => this._commandProcessor ??= this.GetService<ICommandProcessor>();
-
     protected virtual IApiResult Succees()
         => ApiResult.New(HttpStatusCode.OK.Cast().ToInt());
 

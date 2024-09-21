@@ -128,6 +128,7 @@ internal sealed partial class FunctionalityService
     private static void AddClaimViewModel(InfraViewModelBase viewModel, CreationData data)
         => AddClaimViewModel(viewModel, viewModel.Name, null, data.ViewModel.SourceDto);
 
+    [Obsolete("Mappers are no longer used in this project", true)]
     private static string GetMapperNameSpace(CreationData data)
         => TypePath.Combine(GetRootNameSpace(data), "Mappers");
 
@@ -199,7 +200,7 @@ internal sealed partial class FunctionalityService
             .Then(setupEditForm)
             .Then(addActions)
             .Then(addParameters)
-            .Then(createConverters)
+            //.Then(createConverters)
             .Then(setupSecurity)
             .RunAsync(token);
 
@@ -212,8 +213,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorDetailsPageViewModel.DataContext;
             data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponentViewModel.Attributes.Add(new("@bind-EntityId", "this.Id"));
-            data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
-            data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);
+            data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
+            //data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);            
         }
 
         void addActions(CreationData data)
@@ -282,6 +284,7 @@ internal sealed partial class FunctionalityService
             }));
         }
 
+        [Obsolete("Mappers are no longer used in this project", true)] 
         void createConverters(CreationData data)
         {
             var mapperNameSpace = GetMapperNameSpace(data);
@@ -341,7 +344,8 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponentViewModel.IsGrid = true;
             data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.BlazorListPageViewModel.DataContext;
             data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorListPageViewModel.DataContext.Properties.First(x => x.IsList == true);
-            data.ViewModel.BlazorListComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            data.ViewModel.BlazorListComponentViewModel.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
+            //data.ViewModel.BlazorListComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             data.ViewModel.BlazorListPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
         }
 
@@ -536,7 +540,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommand.FriendlyName = data.ViewModel.DeleteCommand.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.DeleteCommand.Comment = data.COMMENT;
             data.ViewModel.DeleteCommand.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token);
-            data.ViewModel.DeleteCommand.MapperNameSpace = GetMapperNameSpace(data);
+            //data.ViewModel.DeleteCommand.MapperNameSpace = GetMapperNameSpace(data);
         }
 
         void createParams(CreationData data)
@@ -587,7 +591,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQuery.FriendlyName = data.ViewModel.GetAllQuery.Name.SplitCamelCase().Merge(" ");
             data.ViewModel.GetAllQuery.Comment = data.COMMENT;
             data.ViewModel.GetAllQuery.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token);
-            data.ViewModel.GetAllQuery.MapperNameSpace = GetMapperNameSpace(data);
+            //data.ViewModel.GetAllQuery.MapperNameSpace = GetMapperNameSpace(data);
         }
 
         void createParams(CreationData data)
@@ -624,7 +628,7 @@ internal sealed partial class FunctionalityService
             .Then(createParams)
             .Then(createHandleMethodBody)
             .Then(setupSecurity)
-            .Then(createConverters)
+            //.Then(createConverters)
             .RunAsync(token);
 
         async Task createModel(CancellationToken token)
@@ -663,6 +667,7 @@ internal sealed partial class FunctionalityService
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.GetByIdQuery.HandleMethodBody = CodeSnippets.CreateQueryHandleMethodBody(data.ViewModel.GetByIdQuery, data.ViewModel.SourceDto, "[Id] = {request.Id}");
 
+        [Obsolete("Mappers are no longer used in this project", true)]
         void createConverters(CreationData data)
         {
             var mapperNameSpace = GetMapperNameSpace(data);

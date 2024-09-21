@@ -1,4 +1,7 @@
 using HanyCo.Infra.Security.Client.Providers;
+
+using Library.Validations;
+
 using Microsoft.AspNetCore.Components.Authorization;
 
 using Web.UI.Components;
@@ -15,9 +18,12 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 
 builder.Services.AddMemoryCache();
 
+var baseAddress = builder.Configuration["ApiSettings:BaseAddress"].ArgumentNotNull();
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress!) });
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();

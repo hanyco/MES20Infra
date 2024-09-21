@@ -82,7 +82,9 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
             processBackendActions(model, component);
             processFrontActions(model, component);
             addParameters(model, component);
-            var codes = component.GenerateCodes(CodeCategory.Component, arguments).AddRange(this.GenerateModelConverterCode());
+            var codes = component.GenerateCodes(CodeCategory.Component, arguments)
+                //.AddRange(this.GenerateModelConverterCode())
+                ;
             return Result.Success<Codes>(codes);
         }
         catch (Exception ex)
@@ -289,7 +291,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                         result.Actions.Add(new(Keyword_AddToOnInitializedAsync, true, body: ExecuteCqrs_MethodBody(load.CqrsSegregate)));
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.CqrsNameSpace);
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.DtoNameSpace);
-                        _ = result.AdditionalUsings.Add(load.CqrsSegregate.MapperNameSpace);
+                        //_ = result.AdditionalUsings.Add(load.CqrsSegregate.MapperNameSpace);
                         break;
 
                     case CqrsLoadViewModel load:
@@ -396,6 +398,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
          //.NotNull(x => x.Route)
          .Build();
 
+    [Obsolete("Mappers are no longer used in this project", true)]
     private IEnumerable<Code> GenerateModelConverterCode()
     {
         while (this._conversionSubjects.TryDequeue(out var conversionSubject))

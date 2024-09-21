@@ -87,8 +87,6 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
         {
             var injections = new[]
             {
-                TypePath.New<IQueryProcessor>(),
-                TypePath.New<ICommandProcessor>(),
                 TypePath.New<IMemoryCache>(),
                 //TypePath.New<IUserContext>(),
                 TypePath.New<NavigationManager>(),

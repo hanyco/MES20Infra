@@ -5,8 +5,6 @@ using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
-using Library.Cqrs.Models.Commands;
-using Library.Cqrs.Models.Queries;
 using Library.Data.SqlServer;
 using Library.DesignPatterns.Markers;
 using Library.Helpers.CodeGen;
@@ -56,28 +54,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
         result.props().Category = codeCategory;
         return result;
     }
-
-    private Result<string> CreateValidator(in CqrsViewModelBase model)
-    {
-        var validatorMethod = new Method(nameof(ICommandValidator<ICommand>.ValidateAsync))
-        {
-            Body = model.ValidatorBody ?? "return ValueTask.CompletedTask;",
-            ReturnType = TypePath.New<ValueTask>(),
-        }.AddArgument(model.GetSegregateType("Command").Name, "command");
-
-        var commandValidatorBaseType = TypePath.New(typeof(ICommandValidator<>).FullName!, [model.GetSegregateType("Command").FullPath]);
-        var validatorType = new Class(model.GetSegregateValidatorType("Command").Name)
-            .AddBaseType(commandValidatorBaseType)
-            .AddMember(validatorMethod);
-        var ns = INamespace.New(model.CqrsNameSpace)
-            .AddUsingNameSpace(model.DtoNameSpace)
-            .AddUsingNameSpace(commandValidatorBaseType.GetNameSpaces())
-            .AddUsingNameSpace(model.ValidatorAdditionalUsings)
-            .AddType(validatorType);
-
-        return codeGeneratorEngine.Generate(ns);
-    }
-
+        
     private Codes GenerateSegregation(in CqrsViewModelBase model, in CodeCategory kind, CqrsCodeGenerateCodesConfig config)
     {
         Check.MustBeArgumentNotNull(model?.Name);
@@ -92,11 +69,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             if (config.ShouldGenerateHandler)
             {
                 yield return ToCode(model.Name, "Handler", createHandler(model, kind), false, kind);
-            }
-
-            if (kind == CodeCategory.Command && model.ValidatorBody.IsNullOrEmpty())
-            {
-                yield return ToCode(model.Name, "Validator", this.CreateValidator(model), false, kind);
             }
 
             Result<string> createHandler(in CqrsViewModelBase model, CodeCategory kind)
@@ -147,10 +119,10 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
 
         IEnumerable<Code> generatePartCode(CqrsViewModelBase model, CodeCategory kind, CqrsCodeGenerateCodesConfig config)
         {
-            if (kind == CodeCategory.Command && !model.ValidatorBody.IsNullOrEmpty())
-            {
-                yield return ToCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
-            }
+            //if (kind == CodeCategory.Command && !model.ValidatorBody.IsNullOrEmpty())
+            //{
+            //    yield return ToCode(model.Name, "Validator", this.CreateValidator(model), true, kind);
+            //}
             if (config.ShouldGenerateHandler)
             {
                 yield return ToCode(model.Name, "Handler", createHandler(model, kind), true, kind);
@@ -169,8 +141,6 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
             Result<string> createHandler(CqrsViewModelBase model, CodeCategory kind)
             {
                 // Initialize
-                var cmdPcr = TypePath.New<ICommandProcessor>();
-                var qryPcr = TypePath.New<IQueryProcessor>();
                 var dal = TypePath.New<Sql>();
 
                 // Create constructor
@@ -179,14 +149,9 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     IsConstructor = true,
                     Arguments =
                     {
-                        new(cmdPcr, arg(cmdPcr.Name)),
-                        new(qryPcr, arg(qryPcr.Name)),
                         new(dal, arg(dal.Name))
                     },
-                    Body = @$"
-                        (this.{fld(cmdPcr.Name)}, this.{fld(qryPcr.Name)}) = ({arg(cmdPcr.Name)}, {arg(qryPcr.Name)});
-                        this.{fld(dal.Name)} = {arg(dal.Name)};
-                        "
+                    Body = $"""this.{fld(dal.Name)} = {arg(dal.Name)};"""
                 };
 
                 // Create `QueryHandler` class
@@ -201,22 +166,18 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                 var resultType = model.GetSegregateResultType(kind.ToString());
                 var baseType = kind switch
                 {
-                    CodeCategory.Query => TypePath.New(typeof(IQueryHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
-                    CodeCategory.Command => TypePath.New(typeof(ICommandHandler<,>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.Query => TypePath.New(typeof(IRequestHandler<>).FullName!, [paramsType.FullPath, resultType.FullPath]),
+                    CodeCategory.Command => TypePath.New(typeof(IRequestHandler<>).FullName!, [paramsType.FullPath, resultType.FullPath]),
                     _ => throw new NotSupportedException()
                 };
 
                 // Add members
                 _ = handlerClass.AddBaseType(baseType)
-                    .AddMember(new Field(fld(cmdPcr.Name), cmdPcr) { AccessModifier = IField.DefaultAccessModifier })
-                    .AddMember(new Field(fld(qryPcr.Name), qryPcr) { AccessModifier = IField.DefaultAccessModifier })
                     .AddMember(new Field(fld(dal.Name), dal) { AccessModifier = IField.DefaultAccessModifier });
                 _ = handlerClass.AddMember(ctor);
 
                 // Create namespace
                 var ns = INamespace.New(model.CqrsNameSpace)
-                    .AddUsingNameSpace(cmdPcr.GetNameSpaces())
-                    .AddUsingNameSpace(qryPcr.GetNameSpaces())
                     .AddUsingNameSpace(dal.GetNameSpaces())
                     .AddUsingNameSpace(paramsType.GetNameSpaces())
                     .AddUsingNameSpace(resultType.GetNameSpaces())
@@ -278,7 +239,7 @@ internal sealed class CqrsCodeGeneratorService(ICodeGeneratorEngine codeGenerato
                     {
                         kind switch
                         {
-                            CodeCategory.Query => TypePath.New(typeof(IQuery<>).FullName!, [model.GetSegregateResultType(kind.ToString())]),
+                            CodeCategory.Query => TypePath.New(typeof(IRequest<>).FullName!, [model.GetSegregateResultType(kind.ToString())]),
                             CodeCategory.Command => TypePath.New<ICommand>(),
                             _ => throw new NotImplementedException(),
                         },

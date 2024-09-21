@@ -8,16 +8,16 @@
 @using HumanResources.Dtos
 @using Web.UI.Components.Shared
 
-@inject IQueryProcessor _queryProcessor
-@inject ICommandProcessor _commandProcessor
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
+@inject HttpClient _httpClient;
 
 @inherits HanyCo.Infra.Blazor.ComponentBase<PersonDto, PersonViewModel>
 
 
 <MessageComponent @ref="MessageComponent" />
-<EditForm OnValidSubmit='SaveData' Model='@this.DataContext'>
+
+<EditForm Model='@this.DataContext' FormName="MainForm" id="MainForm" OnSubmit="SaveData">
     <DataAnnotationsValidator />
     <ValidationSummary />
 <div class='row'>
@@ -48,7 +48,7 @@
     <ValidationMessage For="@(() => this.DataContext.Height)" Class="error-message" />
 </div>
 <div class='row'>
-    <Button id='SaveButton' name='SaveButton' class='col-2 offset-2 btn btn-success' type='submit'>Save</Button>
+    <Button id='SaveButton' name='SaveButton' class='col-2 offset-2 btn btn-success' type='submit' form="MainForm">Save</Button>
     <Button id='BackButton' name='BackButton' class='col-2 offset-2 btn btn-success' type='button' @onclick='BackButton_OnClick'>Back</Button>
 </div>
 </EditForm>

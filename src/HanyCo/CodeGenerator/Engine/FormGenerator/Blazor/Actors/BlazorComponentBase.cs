@@ -42,7 +42,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public string Name { get; init; }
     public string? NameSpace { get; set; }
     public IList<MethodArgument> Parameters { get; } = new List<MethodArgument>();
-    public virtual string PartialCodeFileExtension { get; } = "partial.cs";
+    public virtual string PartialCodeFileExtension { get; } = "razor.partial.cs";
     public IList<string> PartialCodeUsingNameSpaces { get; } = new List<string>();
     public BootstrapPosition Position { get => this._position ??= new(); set => this._position = value; }
     public IList<PropertyActor> Properties { get; } = new List<PropertyActor>();
@@ -459,7 +459,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         void addParametersToPartClass(in CodeTypeDeclaration partClassType)
         {
-            _ = partClassType.AddProperty("BlazorApp.Shared.MessageComponent",
+            _ = partClassType.AddProperty("Web.UI.Components.Shared.MessageComponent",
                                           "MessageComponent",
                                           getter: new(true, false),
                                           setter: new(true, false));
