@@ -26,7 +26,7 @@ namespace HumanResources.Pages
             await this.OnLoadAsync();
         }
 
-        public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
+        public Web.UI.Components.Shared.MessageComponent MessageComponent { get; set; }
 
         [Microsoft.AspNetCore.Components.Parameter]
         public System.Int64? Id { get; set; }

@@ -26,6 +26,6 @@ namespace HumanResources.Pages
             await this.OnLoadAsync();
         }
 
-        public BlazorApp.Shared.MessageComponent MessageComponent { get; set; }
+        public Web.UI.Components.Shared.MessageComponent MessageComponent { get; set; }
     }
 }

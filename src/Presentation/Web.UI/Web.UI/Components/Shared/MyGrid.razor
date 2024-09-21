@@ -1,0 +1,29 @@
+﻿@typeparam TItem
+
+<table>
+    <thead>
+        <tr>@GridHeader</tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ItemList)
+        {
+            <tr>@GridRow(item)</tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public RenderFragment GridHeader { get; set; }
+    [Parameter]
+    public RenderFragment<TItem> GridRow { get; set; }
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; }
+
+    private IEnumerable<TItem> ItemList;
+
+    protected override void OnParametersSet()
+    {
+        ItemList = Items;
+    }
+}

@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 namespace HumanResources
 {
-    using HumanResources.Mappers;
     using HumanResources.Queries;
     using HumanResources.Dtos;
     using System;
