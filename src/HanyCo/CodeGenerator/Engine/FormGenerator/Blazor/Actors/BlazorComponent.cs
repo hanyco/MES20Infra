@@ -51,6 +51,7 @@ public sealed class BlazorComponent(in string name) : BlazorComponentBase<Blazor
             .AppendAllLines(componentBaseTypePath.GetNameSpaces(), x => $"@using {x}")
             .AppendAllLines(injections, x => $"@using {x.NameSpace}")
             .AppendLine($"@using {this.DataContextType?.NameSpace}")
+            .AppendLine("@using Web.UI.Components.Shared")
             .AppendLine()
             .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
             .AppendLine()

@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 namespace HumanResources
 {
+    using Web.UI.Components.Shared;
     using HumanResources.Queries;
     using HumanResources.Dtos;
     using System;
@@ -25,12 +26,12 @@ namespace HumanResources
 
         public void NewButton_OnClick()
         {
-            this._navigationManager.NavigateTo("/HumanResources/Person/details");
+            
         }
 
         public void EditButton_OnClick(Int64 id)
         {
-            this._navigationManager.NavigateTo($"/HumanResources/Person/details/{id.ToString()}");
+            
         }
 
         public async void DeleteButton_OnClick(Int64 id)
@@ -38,9 +39,9 @@ namespace HumanResources
             
         }
 
-        protected override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
-            return base.OnInitializedAsync();
+            
         }
 
         public Web.UI.Components.Shared.MessageComponent MessageComponent { get; set; }

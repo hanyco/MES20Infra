@@ -1,8 +1,6 @@
 @namespace HumanResources
 
 @using HanyCo.Infra.Blazor
-@using Library.Cqrs.Models.Queries
-@using Library.Cqrs.Models.Commands
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
 @using HumanResources.Dtos
@@ -10,14 +8,12 @@
 
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
-@inject HttpClient _httpClient;
 
 @inherits HanyCo.Infra.Blazor.ComponentBase<PersonDto, PersonViewModel>
 
 
 <MessageComponent @ref="MessageComponent" />
-
-<EditForm Model='@this.DataContext' FormName="MainForm" id="MainForm" OnSubmit="SaveData">
+<EditForm OnValidSubmit='SaveData' Model='@this.DataContext'>
     <DataAnnotationsValidator />
     <ValidationSummary />
 <div class='row'>
@@ -48,7 +44,7 @@
     <ValidationMessage For="@(() => this.DataContext.Height)" Class="error-message" />
 </div>
 <div class='row'>
-    <Button id='SaveButton' name='SaveButton' class='col-2 offset-2 btn btn-success' type='submit' form="MainForm">Save</Button>
+    <Button id='SaveButton' name='SaveButton' class='col-2 offset-2 btn btn-success' type='submit'>Save</Button>
     <Button id='BackButton' name='BackButton' class='col-2 offset-2 btn btn-success' type='button' @onclick='BackButton_OnClick'>Back</Button>
 </div>
 </EditForm>

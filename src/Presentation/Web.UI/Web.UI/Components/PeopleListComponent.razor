@@ -8,7 +8,6 @@
 
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
-@inject HttpClient _httpClient;
 
 @inherits HanyCo.Infra.Blazor.ComponentBase<List<PersonDto>, PersonViewModel>
 
@@ -16,7 +15,7 @@
 <MessageComponent @ref="MessageComponent" />
 
 <div class="row">
-<Button id='NewButton' name='NewButton' class='col-1 btn btn-success' @onclick="NewButton_OnClick">New</Button>
+<Button id='NewButton' name='NewButton' class='col-1 btn btn-success' @onclick='NewButton_OnClick'>New</Button>
 </div>
 <div class="row">
 <table class="table">

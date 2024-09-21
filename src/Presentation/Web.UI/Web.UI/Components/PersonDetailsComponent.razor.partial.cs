@@ -8,14 +8,13 @@
 //------------------------------------------------------------------------------
 namespace HumanResources
 {
+    using Web.UI.Components.Shared;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
     using Library.DesignPatterns.Behavioral.Observation;
     using Microsoft.Extensions.Caching.Memory;
     using Library.Interfaces;
-    using HumanResources.Dtos;
-    using System.Net.Http;
 
     public sealed partial class PersonDetailsComponent
     {
@@ -31,27 +30,8 @@ namespace HumanResources
 
         async Task SaveData()
         {
-            var dto = this.DataContext;
-            HttpResponseMessage response;
-            if (DataContext.Id == default)
-            {
-                response = await _httpClient.PostAsJsonAsync("person", dto);
-            }
-            else
-            {
-                response = await _httpClient.PutAsJsonAsync($"person/{DataContext.Id}", dto);
-            }
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<UpdatePersonCommandResult>();
-                MessageComponent.Show("Save Data", "Data updated successfully.");
-            }
-            else
-            {
-                MessageComponent.Show("Error", "Failed to update data.");
-            }
+            
         }
-
 
         public Web.UI.Components.Shared.MessageComponent MessageComponent { get; set; }
 
