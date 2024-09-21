@@ -13,7 +13,7 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     , IEnumerable<Code?>
     , IAdditionOperators<Codes, Codes, Codes>
     , IIndexable<string, Code?>
-    , INew<Codes, IEnumerable<Code>>
+    , IFactory<Codes, IEnumerable<Code>>
     , IEmpty<Codes>
 {
     private static Codes? _empty;

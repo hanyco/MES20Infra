@@ -14,7 +14,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Library.Data.SqlServer;
 
-public sealed class Sql(string connectionString, Action<string>? logTo = null) : INew<Sql, string>
+public sealed class Sql(string connectionString, Action<string>? logTo = null) : IFactory<Sql, string>
 {
     private readonly Action<string>? _logTo = logTo;
 
@@ -346,6 +346,14 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         using var conn = new SqlConnection(this.ConnectionString);
         this._logTo?.Invoke(query);
         return Select<T>(conn.ExecuteReader(query, behavior: CommandBehavior.CloseConnection)).ToList();
+    }
+
+    public async Task<IEnumerable<T>> SelectAsync<T>(string query)
+        where T : new()
+    {
+        using var conn = new SqlConnection(this.ConnectionString);
+        this._logTo?.Invoke(query);
+        return Select<T>(await conn.ExecuteReaderAsync(query, behavior: CommandBehavior.CloseConnection)).ToList();
     }
 
     public IEnumerable<dynamic> Select(string query)

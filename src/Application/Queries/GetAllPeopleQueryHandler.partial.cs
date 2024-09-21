@@ -2,6 +2,8 @@ using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
 using HumanResources.Dtos;
+using Microsoft.EntityFrameworkCore;
+using Library.Helpers;
 
 namespace HumanResources.Queries;
 internal sealed partial class GetAllPeopleQueryHandler : IRequestHandler<GetAllPeopleQuery, GetAllPeopleQueryResult>
@@ -16,6 +18,8 @@ internal sealed partial class GetAllPeopleQueryHandler : IRequestHandler<GetAllP
 
     public async Task<GetAllPeopleQueryResult> Handle(GetAllPeopleQuery request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var dbResult = await _sql.SelectAsync<PersonDto>("SELECT * FROM [dbo].[Person]").ToListAsync(cancellationToken);
+        var response = new GetAllPeopleQueryResult(dbResult);
+        return response;
     }
 }

@@ -1,4 +1,8 @@
 
+using Library.Data.SqlServer;
+
+using Microsoft.AspNetCore.Hosting;
+
 namespace API;
 
 public class Program
@@ -7,10 +11,16 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        var connectionString = builder.Configuration.GetConnectionString("ApplicationConnectionString")!;
+
+        builder.Services.AddScoped(_ => new Sql(connectionString));
+
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(DomainModule).Assembly));
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(ApplicationModule).Assembly));
 
         builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 

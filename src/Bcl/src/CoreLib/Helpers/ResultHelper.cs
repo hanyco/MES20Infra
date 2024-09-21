@@ -39,7 +39,7 @@ public static class ResultHelper
 
     [return: NotNullIfNotNull(nameof(results))]
     public static TResult? Combine<TResult>(this IEnumerable<TResult> results)
-        where TResult : ResultBase, INew<TResult, TResult>, ICombinable<TResult>
+        where TResult : ResultBase, IFactory<TResult, TResult>, ICombinable<TResult>
     {
         if (results == null || !results.Any())
         {

@@ -7,7 +7,7 @@ using Library.Results;
 
 namespace HumanResources.Controllers;
 [ApiControllerAttribute()]
-[RouteAttribute("\"[controller]\"")]
+[RouteAttribute("[controller]")]
 public sealed class PersonController : ControllerBase
 {
     private IMediator _mediator;

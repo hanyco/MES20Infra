@@ -77,7 +77,7 @@ public readonly struct FieldInfo(
 }
 
 [Immutable]
-public readonly struct MethodArgument(in TypePath type, in string? name) : IEquatable<MethodArgument>, INew<MethodArgument, TypePath>
+public readonly struct MethodArgument(in TypePath type, in string? name) : IEquatable<MethodArgument>, IFactory<MethodArgument, TypePath>
 {
     public string Name { get; } = name ?? TypeMemberNameHelper.ToArgName(type.ArgumentNotNull().Name);
     public TypePath Type { get; } = type;

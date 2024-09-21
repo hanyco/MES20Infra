@@ -76,7 +76,7 @@ public enum WhereClauseCreatorFieldOperator
     IsNotNull,
 }
 
-public sealed class WhereClauseCreatorModel : INew<WhereClauseCreatorModel>
+public sealed class WhereClauseCreatorModel : IFactory<WhereClauseCreatorModel>
 {
     private WhereClauseCreatorModel()
     {

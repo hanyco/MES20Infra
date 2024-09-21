@@ -15,7 +15,7 @@ public class Result<TValue> : ResultBase, IResult<TValue>
     , IAdditionOperators<Result<TValue>, Result<TValue>, Result<TValue>>
     , IEquatable<Result<TValue>>
     , ICombinable<Result<TValue>>
-    , INew<Result<TValue>, Result<TValue>>
+    , IFactory<Result<TValue>, Result<TValue>>
 {
     public Result(
         TValue value,

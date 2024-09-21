@@ -8,9 +8,9 @@ namespace Library.Collections;
 public sealed class FluentList<TItem>
     : FluentListBase<TItem, FluentList<TItem>>
     , IFluentList<FluentList<TItem>, TItem>
-    , INew<FluentList<TItem>>
-    , INew<FluentList<TItem>, List<TItem>>
-    , INew<FluentList<TItem>, IEnumerable<TItem>>
+    , IFactory<FluentList<TItem>>
+    , IFactory<FluentList<TItem>, List<TItem>>
+    , IFactory<FluentList<TItem>, IEnumerable<TItem>>
 {
     /// <summary>
     /// Constructor for FluentList class.

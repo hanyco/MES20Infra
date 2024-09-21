@@ -1781,6 +1781,17 @@ public static class EnumerableHelper
         return result;
     }
 
+    public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> itemsTask, CancellationToken cancellationToken = default)
+    {
+        var result = new List<T>();
+        var items = await itemsTask;
+        foreach (var item in items)
+        {
+            result.Add(item);
+        }
+        return result;
+    }
+
     /// <summary>
     /// Returns a list of non-null items from the given async enumerable.
     /// </summary>
