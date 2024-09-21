@@ -18,9 +18,9 @@ internal sealed partial class UpdatePersonCommandHandler : IRequestHandler<Updat
     {
         var firstName = request.Person.FirstName?.ToString().IsNullOrEmpty() ?? true ? "null" : $"N'{request.Person.FirstName.ToString()}'";
         var lastName = $"N'{request.Person.LastName.ToString()}'";
-        var dateOfBirth = $"N'{SqlTypeHelper.FormatDate(request.Person.DateOfBirth)}'";
+        var dateOfBirth = $"N{SqlTypeHelper.FormatDate(request.Person.DateOfBirth)}";
         var height = request.Person.Height?.ToString() ?? "null";
-        var dbCommand = $@"UPDATE [dbo].[Person]   SET [FirstName] = {firstName}, [LastName] = {lastName}, [DateOfBirth] = {dateOfBirth}, [Height] = {height}   WHERE [Id] = {request.Person.Id}";
+        var dbCommand = $@"UPDATE [dbo].[Person]   SET [FirstName] = {firstName}, [LastName] = {lastName}, [DateOfBirth] = {dateOfBirth}, [Height] = {height}   WHERE [Id] = {request.Id}";
         var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);
         var result = new UpdatePersonCommandResult();
         return result;

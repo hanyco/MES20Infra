@@ -4,7 +4,7 @@
 GET {{API_HostAddress}}/person
 
 ### GetById
-GET {{API_HostAddress}}/person/2
+GET {{API_HostAddress}}/person/4
 
 
 ### Insert
@@ -16,3 +16,16 @@ Content-Type: application/json
     "dateOfBirth": "1980-03-03T00:00:00",
     "height": 180
 }
+
+### Update
+PUT {{API_HostAddress}}/person/3
+Content-Type: application/json
+{
+  "firstName": "Mohammad",
+    "lastName": "Mohammadi zade ardabili",
+    "dateOfBirth": "1980-06-03T00:00:00",
+    "height": 180
+}
+
+### Delete
+DELETE {{API_HostAddress}}/person/4

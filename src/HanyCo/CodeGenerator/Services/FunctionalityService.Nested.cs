@@ -75,7 +75,7 @@ internal partial class FunctionalityService
 
         internal static string CreateInsertCommandHandleMethodBody(CqrsViewModelBase model, DtoViewModel entityModel)
         {
-            var values = GetValues(entityModel.Properties, model.DbObject.Name).ToImmutableArray();
+            var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name).ToImmutableArray();
             var insertStatement = SqlStatementBuilder
                 .Insert()
                 .Into(entityModel.DbObject.ToString())
@@ -113,7 +113,7 @@ internal partial class FunctionalityService
             var updateStatement = SqlStatementBuilder
                 .Update(entityModel.DbObject.ToString())
                 .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
-                .Where(ReplaceVariables(entityModel, "[Id] = %Id%", $"request.{model.DbObject.Name}"))
+                .Where("[Id] = {request.Id}")
                 .ForceFormatValues(false)
                 .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
             var result = new StringBuilder()
@@ -216,8 +216,8 @@ internal partial class FunctionalityService
                     : $"$\"N'{{request.{requestParamName}.{dbColumn.Name}.ToString()}}'\"";
             static string dateColumn(DbColumnViewModel dbColumn, string requestParamName) =>
                 dbColumn.IsNullable
-                    ? $"request.{requestParamName}.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N'{{SqlTypeHelper.FormatDate(request.{requestParamName}.{dbColumn.Name})}}'\";"
-                    : $"$\"N'{{SqlTypeHelper.FormatDate(request.{requestParamName}.{dbColumn.Name})}}'\"";
+                    ? $"request.{requestParamName}.{dbColumn.Name}?.ToString().IsNullOrEmpty() ?? true ? \"null\" : $\"N{{SqlTypeHelper.FormatDate(request.{requestParamName}.{dbColumn.Name})}}\";"
+                    : $"$\"N{{SqlTypeHelper.FormatDate(request.{requestParamName}.{dbColumn.Name})}}\"";
             static string numericColumn(DbColumnViewModel dbColumn, string requestParamName) =>
                 dbColumn.IsNullable
                     ? $"request.{requestParamName}.{dbColumn.Name}?.ToString() ?? \"null\""
