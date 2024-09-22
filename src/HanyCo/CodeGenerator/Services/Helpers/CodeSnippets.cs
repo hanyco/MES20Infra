@@ -72,6 +72,13 @@ internal static class CodeSnippets
         return result.ToString();
     }
 
+    internal static string BlazorListComponent_LoadPage_Body(Dto string httClientInstanceName = "_http", )
+    {
+        var result = new StringBuilder()
+            .AppendLine("");
+        return result.ToString();
+    }
+
     internal static string CreateDeleteCommandHandleMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
     {
         var additionalWhereClause = "[Id] = {request.Id}";
