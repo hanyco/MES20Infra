@@ -168,24 +168,6 @@ internal sealed partial class FunctionalityService
         return  dto;
     }
 
-    [DebuggerStepThrough]
-    private static string? ReplaceVariables(in DtoViewModel paramsDto, in string? statement, in string paramName)
-    {
-        if (statement.IsNullOrEmpty())
-        {
-            return string.Empty;
-        }
-
-        var result = statement;
-        foreach (var p in paramsDto.Properties)
-        {
-            result = result
-                .Replace($"%{p!.DbObject?.Name}%", $"{{{paramName}.{p.Name}}}")
-                .Replace($"^{p!.DbObject?.Name}^", p.Name);
-        }
-        return result;
-    }
-
     private static IEnumerable<PropertyViewModel> SourceDtoPropertiesToProperties(CreationData data) =>
         data.ViewModel.SourceDto.Properties;
 
@@ -612,7 +594,7 @@ internal sealed partial class FunctionalityService
         }
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetAllQuery.HandleMethodBody = CodeSnippets.CreateQueryHandleMethodBody(data.ViewModel.GetAllQuery, data.ViewModel.SourceDto);
+            data.ViewModel.GetAllQuery.HandleMethodBody = CodeSnippets.GenerateQueryHandleMethodBody(data.ViewModel.GetAllQuery, data.ViewModel.SourceDto);
 
         void setupSecurity(CreationData data) =>
             AddClaimViewModel(data.ViewModel.GetAllQuery, data);
@@ -665,7 +647,7 @@ internal sealed partial class FunctionalityService
             AddClaimViewModel(data.ViewModel.GetAllQuery, data);
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetByIdQuery.HandleMethodBody = CodeSnippets.CreateQueryHandleMethodBody(data.ViewModel.GetByIdQuery, data.ViewModel.SourceDto, "[Id] = {request.Id}");
+            data.ViewModel.GetByIdQuery.HandleMethodBody = CodeSnippets.GenerateQueryHandleMethodBody(data.ViewModel.GetByIdQuery, data.ViewModel.SourceDto, "[Id] = {request.Id}");
 
         [Obsolete("Mappers are no longer used in this project", true)]
         void createConverters(CreationData data)
