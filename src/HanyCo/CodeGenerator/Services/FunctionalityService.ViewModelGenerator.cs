@@ -242,7 +242,7 @@ internal sealed partial class FunctionalityService
             };
             var onLoad = new UiComponentCustomLoad
             {
-                CodeStatement = CodeSnippets.GetById_LoadMethodBody(data.ViewModel.GetByIdQuery),
+                CodeStatement = CodeSnippets.BlazorDetailsComponent_LoadPage_Body(data.ViewModel.GetByIdQuery),
             };
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
@@ -545,7 +545,7 @@ internal sealed partial class FunctionalityService
         }
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.DeleteCommand.HandleMethodBody = CodeSnippets.CreateDeleteCommandHandleMethodBody(data.ViewModel.DeleteCommand, data.ViewModel.SourceDto);
+            data.ViewModel.DeleteCommand.HandleMethodBody = CodeSnippets.DeleteCommandHandler_Handle_Body(data.ViewModel.DeleteCommand, data.ViewModel.SourceDto);
 
         void setupSecurity(CreationData data) =>
             AddClaimViewModel(data.ViewModel.DeleteCommand, data);
@@ -594,7 +594,7 @@ internal sealed partial class FunctionalityService
         }
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetAllQuery.HandleMethodBody = CodeSnippets.GenerateQueryHandleMethodBody(data.ViewModel.GetAllQuery, data.ViewModel.SourceDto);
+            data.ViewModel.GetAllQuery.HandleMethodBody = CodeSnippets.QueryHandler_Handle_Body(data.ViewModel.GetAllQuery, data.ViewModel.SourceDto);
 
         void setupSecurity(CreationData data) =>
             AddClaimViewModel(data.ViewModel.GetAllQuery, data);
@@ -647,7 +647,7 @@ internal sealed partial class FunctionalityService
             AddClaimViewModel(data.ViewModel.GetAllQuery, data);
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.GetByIdQuery.HandleMethodBody = CodeSnippets.GenerateQueryHandleMethodBody(data.ViewModel.GetByIdQuery, data.ViewModel.SourceDto, "[Id] = {request.Id}");
+            data.ViewModel.GetByIdQuery.HandleMethodBody = CodeSnippets.QueryHandler_Handle_Body(data.ViewModel.GetByIdQuery, data.ViewModel.SourceDto, "[Id] = {request.Id}");
 
         [Obsolete("Mappers are no longer used in this project", true)]
         void createConverters(CreationData data)
@@ -673,7 +673,7 @@ internal sealed partial class FunctionalityService
 
         static void createValidator(CreationData data)
         {
-            data.ViewModel.InsertCommand.ValidatorBody = CodeSnippets.CreateInsertCommandValidatorMethodBody(data.ViewModel.InsertCommand, data.ViewModel.SourceDto);
+            data.ViewModel.InsertCommand.ValidatorBody = CodeSnippets.InsertCommandValidator_Handle_Body(data.ViewModel.InsertCommand, data.ViewModel.SourceDto);
             _ = data.ViewModel.InsertCommand.ValidatorAdditionalUsings.Add(typeof(ValidationExtensions).Namespace);
         }
 
@@ -710,7 +710,7 @@ internal sealed partial class FunctionalityService
             AddClaimViewModel(data.ViewModel.InsertCommand, data);
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.InsertCommand.HandleMethodBody = CodeSnippets.CreateInsertCommandHandleMethodBody(data.ViewModel.InsertCommand, data.ViewModel.SourceDto);
+            data.ViewModel.InsertCommand.HandleMethodBody = CodeSnippets.InsertCommandHandler_Handle_Body(data.ViewModel.InsertCommand, data.ViewModel.SourceDto);
     }
 
     private Task CreateUpdateCommand(CreationData data, CancellationToken token)
@@ -727,7 +727,7 @@ internal sealed partial class FunctionalityService
 
         static void createValidator(CreationData data)
         {
-            data.ViewModel.UpdateCommand.ValidatorBody = CodeSnippets.CreateUpdateCommandValidatorMethodBody(data.ViewModel.UpdateCommand);
+            data.ViewModel.UpdateCommand.ValidatorBody = CodeSnippets.UpdateCommandValidator_Handle_Body(data.ViewModel.UpdateCommand);
             _ = data.ViewModel.UpdateCommand.ValidatorAdditionalUsings.Add(typeof(ValidationExtensions).Namespace);
         }
 
@@ -764,7 +764,7 @@ internal sealed partial class FunctionalityService
             AddClaimViewModel(data.ViewModel.UpdateCommand, data);
 
         static void createHandleMethodBody(CreationData data) =>
-            data.ViewModel.UpdateCommand.HandleMethodBody = CodeSnippets.CreateUpdateCommandHandleMethodBody(data.ViewModel.UpdateCommand, data.ViewModel.SourceDto);
+            data.ViewModel.UpdateCommand.HandleMethodBody = CodeSnippets.UpdateCommandHandler_Handle_Body(data.ViewModel.UpdateCommand, data.ViewModel.SourceDto);
     }
 
     private Task InitializeWorkspace(CreationData data, CancellationToken token)

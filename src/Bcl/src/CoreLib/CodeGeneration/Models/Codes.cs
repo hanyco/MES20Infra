@@ -14,6 +14,7 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     , IAdditionOperators<Codes, Codes, Codes>
     , IIndexable<string, Code?>
     , IFactory<Codes, IEnumerable<Code>>
+    , IFactory<Codes, IEnumerable<Codes>>
     , IEmpty<Codes>
 {
     private static Codes? _empty;
@@ -84,21 +85,6 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
 
     public Codes AddRange(IEnumerable<Code> codes) =>
         new(this.AddRangeImmuted(codes));
-
-    /// <summary>
-    /// Composes all Code items in the Codes collection into a single Code.
-    /// </summary>
-    /// <param name="separator">The separator to be used between Code statements.</param>
-    /// <returns>A composed Code item representing all Code items in the Codes collection.</returns>
-    public Code ComposeAll(string? separator = null)
-    {
-        var result = Code.Empty;
-        foreach (var code in this.Compact())
-        {
-            result = new(code.Name, code.Language, string.Concat(result.Statement, separator, code.Statement));
-        }
-        return result;
-    }
 
     public override string? ToString() =>
         this.Count == 1 ? this[0]!.ToString() : $"{nameof(Codes)} ({this.Count})";

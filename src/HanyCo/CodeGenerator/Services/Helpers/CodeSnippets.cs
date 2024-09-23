@@ -1,18 +1,24 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+﻿using System.Net.Http;                // HttpClient
+using System.Net.Http.Json;           // GetFromJsonAsync, PostAsJsonAsync
+using Microsoft.AspNetCore.Components; // برای اجزای Blazor
+
+using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;
 
 using System.Collections.Immutable;
+using System.Net.Http;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace Services.Helpers;
 
 //[DebuggerStepThrough]
 internal static class CodeSnippets
 {
-    public static string GenerateQueryHandleMethodBody(CqrsViewModelBase model, DtoViewModel entityModel, string? additionalWhereClause = null)
+    public static string QueryHandler_Handle_Body(in CqrsViewModelBase model, in DtoViewModel entityModel, in string? additionalWhereClause = null)
     {
         // Create query to be used inside the body code.
         var bodyQuery = SqlStatementBuilder
@@ -22,7 +28,7 @@ internal static class CodeSnippets
             .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, "query.Params"))
             .Build()
             .Replace(Environment.NewLine, " ").Replace("  ", " ");
-        
+
         // Create body code.
         (var sqlMethod, var toListMethod) = model.ResultDto.IsList
             ? (nameof(Sql.SelectAsync), $".{nameof(EnumerableHelper.ToListAsync)}(cancellationToken)")
@@ -36,8 +42,20 @@ internal static class CodeSnippets
         return result;
     }
 
-    internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(CqrsCommandViewModel insert, CqrsCommandViewModel update) =>
-            new StringBuilder()
+    internal static string BlazorDetailsComponent_LoadPage_Body(in CqrsViewModelBase cqrsViewModel) =>
+        new StringBuilder()
+            .AppendLine("if (this.EntityId is { } entityId)")
+            .AppendLine("{")
+            
+            .AppendLine("}")
+            .AppendLine("else")
+            .AppendLine("{")
+            .AppendLine("this.DataContext = new();")
+            .AppendLine("}")
+            .ToString();
+
+    internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(in CqrsCommandViewModel insert, in CqrsCommandViewModel update) =>
+        new StringBuilder()
             .AppendLine($"if (DataContext.Id == default)")
             .AppendLine($"{{")
             .AppendLine($"    var @params = this.DataContext.To{insert.GetSegregateParamsType("Command").Name}();")
@@ -53,7 +71,7 @@ internal static class CodeSnippets
             .AppendLine($"MessageComponent.Show(\"Save Data\", \"Date saved.\");")
             .ToString();
 
-    internal static string BlazorListComponent_DeleteButton_OnClick_Body(CqrsCommandViewModel model)
+    internal static string BlazorListComponent_DeleteButton_OnClick_Body(in CqrsCommandViewModel model)
     {
         var result = new StringBuilder()
             .AppendLine($"// Setup segregation parameters")
@@ -72,14 +90,15 @@ internal static class CodeSnippets
         return result.ToString();
     }
 
-    internal static string BlazorListComponent_LoadPage_Body(Dto string httClientInstanceName = "_http", )
+    internal static string BlazorListComponent_LoadPage_Body(in DtoViewModel resultDto, in DtoViewModel sourceDto, in string httClientInstanceName = "_http")
     {
         var result = new StringBuilder()
-            .AppendLine("");
+            .AppendLine($"""var apiResult = await {httClientInstanceName}.GetFromJsonAsync<{resultDto.Name}>("{sourceDto.Name}");""")
+            .AppendLine($"""this.DataContext = apiResult;""");
         return result.ToString();
     }
 
-    internal static string CreateDeleteCommandHandleMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
+    internal static string DeleteCommandHandler_Handle_Body(in CqrsCommandViewModel model, in DtoViewModel entityModel)
     {
         var additionalWhereClause = "[Id] = {request.Id}";
         var deleteStatement = SqlStatementBuilder
@@ -95,13 +114,13 @@ internal static class CodeSnippets
             .ToString();
     }
 
-    internal static string CreateInsertCommandHandleMethodBody(CqrsViewModelBase model, DtoViewModel entityModel)
+    internal static string InsertCommandHandler_Handle_Body(in CqrsViewModelBase model, in DtoViewModel entityModel)
     {
-        var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name).ToImmutableArray();
+        var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name!).ToImmutableArray();
         var insertStatement = SqlStatementBuilder
             .Insert()
             .Into(entityModel.DbObject.ToString())
-            .Values(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
+            .Values(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}"))!)
             .ReturnId()
             .ForceFormatValues(false)
             .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
@@ -116,7 +135,7 @@ internal static class CodeSnippets
         return result;
     }
 
-    internal static string CreateInsertCommandValidatorMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
+    internal static string InsertCommandValidator_Handle_Body(in CqrsCommandViewModel model, in DtoViewModel entityModel)
     {
         var checks = entityModel.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})").ToImmutableArray();
         return !checks.Any()
@@ -129,9 +148,12 @@ internal static class CodeSnippets
                 .ToString();
     }
 
-    internal static string CreateUpdateCommandHandleMethodBody(CqrsCommandViewModel model, DtoViewModel entityModel)
+    internal static string NavigateTo(in string url) =>
+        $"this._navigationManager.NavigateTo({url});";
+
+    internal static string UpdateCommandHandler_Handle_Body(in CqrsCommandViewModel model, in DtoViewModel entityModel)
     {
-        var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name).ToImmutableArray();
+        var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name!).ToImmutableArray();
         var updateStatement = SqlStatementBuilder
             .Update(entityModel.DbObject.ToString())
             .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
@@ -148,7 +170,7 @@ internal static class CodeSnippets
         return result;
     }
 
-    internal static string CreateUpdateCommandValidatorMethodBody(CqrsCommandViewModel model) =>
+    internal static string UpdateCommandValidator_Handle_Body(in CqrsCommandViewModel model) =>
         new StringBuilder("_ = command.ArgumentNotNull().Params.Check()")
             .AppendLine(".RuleFor(x => x.Id > 0, () => \"Id cannot be null, zero or less than zero.\")")
             .AppendAllLines(model.ParamsDto.Properties.ExcludeId().Where(x => !(x.IsNullable ?? true)).Select(x => $".NotNull(x => x.{x.Name})"))
@@ -156,33 +178,6 @@ internal static class CodeSnippets
             .AppendLine()
             .AppendLine("return ValueTask.CompletedTask;")
             .ToString();
-
-    internal static string GetById_LoadMethodBody(CqrsViewModelBase cqrsViewModel) =>
-        new StringBuilder()
-            .AppendLine("if (this.EntityId is { } entityId)")
-            .AppendLine("{")
-            .AppendLine($"// Setup segregation parameters")
-            .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").FullPath}()")
-            .AppendLine("{")
-            .AppendLine("    Id = entityId,")
-            .AppendLine("};")
-            .AppendLine("")
-            .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query").FullPath}(@params);")
-            .AppendLine($"// Invoke the query handler to retrieve all entities")
-            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetSegregateResultType("Query").FullPath}>(cqParams);")
-            .AppendLine($"")
-            .AppendLine($"")
-            .AppendLine($"// Now, set the data context.")
-            .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
-            .AppendLine("}")
-            .AppendLine("else")
-            .AppendLine("{")
-            .AppendLine("this.DataContext = new();")
-            .AppendLine("}")
-            .ToString();
-
-    internal static string NavigateTo(string url) =>
-        $"this._navigationManager.NavigateTo({url});";
 
     private static IEnumerable<(string ColumnName, object VariableName, string VariableStatement)> GetValues(IEnumerable<PropertyViewModel> properties, string requestParamName)
     {
@@ -240,5 +235,59 @@ internal static class CodeSnippets
         return result;
     }
 
+    private static string GenerateApiCallCode(
+        in string controllerName,
+        in HttpMethod method = HttpMethod.Get,
+        in string returnStatement = "var apiResult",
+        in string httpClientInstanceName = "_http",
+        in string? nameSpace = null,
+        in IEnumerable<string>? queryParams = null,
+        in IEnumerable<(string Key, string Value)>? keyValueQueryParams = null,
+        in string? paramVarName = null,
+        in string? resultTypeName = null
+        )
+    {
+        string httpClientMethodName = (method) switch
+        {
+            HttpMethod.Get => nameof(HttpClientJsonExtensions.GetFromJsonAsync),
+            HttpMethod.Post => nameof(HttpClientJsonExtensions.PostAsJsonAsync),
+            HttpMethod.Put => nameof(HttpClientJsonExtensions.PutAsJsonAsync),
+            HttpMethod.Delete => nameof(HttpClientJsonExtensions.DeleteFromJsonAsync),
+            _ => throw new NotImplementedException()
+        };
+        
+        // Example:
+        // person = await Http.GetFromJsonAsync<PersonDto>($"http://localhost:1544/mes/HumanResources/person/{personId}");
+        // var response = await Http.PostAsJsonAsync("http://localhost:1544/mes/HumanResources/person", newPerson);
 
+        // var apiResult = await _http.GetFromJsonAsync
+        var sb = new StringBuilder($"{returnStatement} = await {httpClientInstanceName.Trim('.')}.{httpClientMethodName}")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>
+            .Append(resultTypeName!.TrimStart('<').TrimEnd('>') is { } value?$"<{value}>":"")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""
+            .Append("($\"\"\"")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/
+            .Append(nameSpace?.Trim('/') is { } ns ? $"{ns}/" : null)
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/
+            .Append($"{controllerName.Trim('/')}/")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/
+            .AppendAll(queryParams.Compact().Select(qp => $"{qp.Trim('/')}/"))
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"humanresources/person/123456/name=ali&age=5
+            .Append(keyValueQueryParams.Compact(kv => kv is { Key: not null } and { Value: not null }).Select(kv => $"{kv.Key}={kv.Value}").Merge('&'))
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/name=ali&age=5"""
+            .Append("\"\"\"\"")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/name=ali&age=5""", newPerson
+            .Append(paramVarName.IsNullOrEmpty()?null:$", {paramVarName}")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/name=ali&age=5""", newPerson)
+            .Append(')');
+        return sb.ToString();
+    }
+
+    enum HttpMethod
+    {
+        Get,
+        Post,
+        Put,
+        Delete
+    }
 }
