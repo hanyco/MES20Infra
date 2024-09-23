@@ -242,7 +242,7 @@ internal sealed partial class FunctionalityService
             };
             var onLoad = new UiComponentCustomLoad
             {
-                CodeStatement = CodeSnippets.BlazorDetailsComponent_LoadPage_Body(data.ViewModel.GetByIdQuery),
+                CodeStatement = CodeSnippets.BlazorDetailsComponent_LoadPage_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
             };
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);

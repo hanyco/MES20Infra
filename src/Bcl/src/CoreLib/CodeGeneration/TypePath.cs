@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Frozen;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -9,7 +10,7 @@ using Library.Validations;
 
 namespace Library.CodeGeneration;
 
-//[DebuggerStepThrough, StackTraceHidden]
+[DebuggerStepThrough, StackTraceHidden]
 [Immutable]
 public sealed class TypePath : IEquatable<TypePath>
 {
@@ -35,7 +36,7 @@ public sealed class TypePath : IEquatable<TypePath>
     private readonly TypeData _data;
     private string? _fullName;
     private string? _fullPath;
-    private FrozenSet<TypePath>? _generics;
+    private TypePath[]? _generics;
 
     public TypePath([DisallowNull] in string fullPath, in IEnumerable<string>? generics, bool? isNullable = null)
         : this(TypeData.Parse(fullPath, generics, isNullable))
@@ -57,7 +58,7 @@ public sealed class TypePath : IEquatable<TypePath>
     public string FullPath => this._fullPath ??= this.GetFullPath();
 
     [NotNull]
-    public IEnumerable<TypePath> Generics => this._generics ??= this._data.Generics.Select(x => new TypePath(x)).ToFrozenSet();
+    public IEnumerable<TypePath> Generics => this._generics ??= this._data.Generics.Select(x => new TypePath(x)).ToArray();
 
     public bool IsGeneric => this.Generics.Any();
 
@@ -107,7 +108,7 @@ public sealed class TypePath : IEquatable<TypePath>
 
     [return: NotNullIfNotNull(nameof(typeInfo))]
     public static implicit operator string?(in TypePath? typeInfo)
-        => typeInfo?.FullPath;
+        => typeInfo?.FullName;
 
     [return: NotNullIfNotNull(nameof(typeInfo))]
     public static implicit operator TypePath?(in string? typeInfo)
@@ -174,6 +175,10 @@ public sealed class TypePath : IEquatable<TypePath>
 
     [return: NotNull]
     public static TypePath NewEnumerable(in TypePath generic)
+        => New(typeof(IEnumerable<>).FullName!, [generic]);
+
+    [return: NotNull]
+    public static TypePath NewEnumerable(in string generic)
         => New(typeof(IEnumerable<>).FullName!, [generic]);
 
     [return: NotNull]

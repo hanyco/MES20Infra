@@ -1,16 +1,14 @@
-﻿using System.Net.Http;                // HttpClient
-using System.Net.Http.Json;           // GetFromJsonAsync, PostAsJsonAsync
-using Microsoft.AspNetCore.Components; // برای اجزای Blazor
-
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.CodeGeneration;
 using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;
 
 using System.Collections.Immutable;
-using System.Net.Http;
+using System.Net.Http.Json;           // GetFromJsonAsync, PostAsJsonAsync
 using System.Text;
+
 using static System.Net.WebRequestMethods;
 
 namespace Services.Helpers;
@@ -42,15 +40,17 @@ internal static class CodeSnippets
         return result;
     }
 
-    internal static string BlazorDetailsComponent_LoadPage_Body(in CqrsViewModelBase cqrsViewModel) =>
+    internal static string BlazorDetailsComponent_LoadPage_Body(in string controllerName, in string sourceDtoName) =>
         new StringBuilder()
             .AppendLine("if (this.EntityId is { } entityId)")
             .AppendLine("{")
-            
+            // var apiResult = await Http.GetFromJsonAsync<IEnumerable<PersonDto>>($"HumanResources/person/");
+            .AppendLine(GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName)))
+            .AppendLine("   this.DataContext = apiResult;")
             .AppendLine("}")
             .AppendLine("else")
             .AppendLine("{")
-            .AppendLine("this.DataContext = new();")
+            .AppendLine("   this.DataContext = new();")
             .AppendLine("}")
             .ToString();
 
@@ -179,6 +179,57 @@ internal static class CodeSnippets
             .AppendLine("return ValueTask.CompletedTask;")
             .ToString();
 
+    private static string GenerateApiCallCode(
+        in string controllerName,
+        in string returnVarStatement = "var apiResult",
+        in string? resultTypeName = null,
+        in string httpClientInstanceName = "_http",
+        in HttpMethod method = HttpMethod.Get,
+        in string? nameSpace = null,
+        in IEnumerable<string>? queryParams = null,
+        in IEnumerable<(string Key, string Value)>? keyValueQueryParams = null,
+        in string? paramVarName = null
+        )
+    {
+        var httpClientMethodName = method switch
+        {
+            HttpMethod.Get => nameof(HttpClientJsonExtensions.GetFromJsonAsync),
+            HttpMethod.Post => nameof(HttpClientJsonExtensions.PostAsJsonAsync),
+            HttpMethod.Put => nameof(HttpClientJsonExtensions.PutAsJsonAsync),
+            HttpMethod.Delete => nameof(HttpClientJsonExtensions.DeleteFromJsonAsync),
+            _ => throw new NotImplementedException()
+        };
+
+        // Examples: person = await
+        // Http.GetFromJsonAsync<PersonDto>($"HumanResources/person/{personId}"); var apiResult =
+        // await Http.PostAsJsonAsync("HumanResources/person", newPerson);
+
+        // var apiResult = await _http.GetFromJsonAsync
+        var returnStatement = returnVarStatement.IsNullOrEmpty() ? "" : $"{returnVarStatement} = ";
+        var sb = new StringBuilder($"{returnStatement} await {httpClientInstanceName.Trim('.')}.{httpClientMethodName}")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>
+            .Append(resultTypeName is { } value ? $"<{value}>" : "")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"
+            .Append("(\"")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/
+            .Append(nameSpace?.Trim('/') is { } ns ? $"{ns}/" : null)
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/
+            .Append($"{controllerName.TrimSuffix("Controller").Trim('/').ToLower()}/")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/
+            .AppendAll(queryParams.Compact().Select(qp => $"{qp.Trim('/')}/"))
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5
+            .Append(keyValueQueryParams.Compact(kv => kv is { Key: not null } and { Value: not null }).Select(kv => $"{kv.Key}={kv.Value}").Merge('&'))
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5"
+            .Append('"')
+            // var apiResult = await
+            // _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson
+            .Append(paramVarName.IsNullOrEmpty() ? null : $", {paramVarName}")
+            // var apiResult = await  _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson);
+            .Append(");");
+        var result = sb.ToString();
+        return result;
+    }
+
     private static IEnumerable<(string ColumnName, object VariableName, string VariableStatement)> GetValues(IEnumerable<PropertyViewModel> properties, string requestParamName)
     {
         foreach (var p in properties.Compact())
@@ -235,55 +286,7 @@ internal static class CodeSnippets
         return result;
     }
 
-    private static string GenerateApiCallCode(
-        in string controllerName,
-        in HttpMethod method = HttpMethod.Get,
-        in string returnStatement = "var apiResult",
-        in string httpClientInstanceName = "_http",
-        in string? nameSpace = null,
-        in IEnumerable<string>? queryParams = null,
-        in IEnumerable<(string Key, string Value)>? keyValueQueryParams = null,
-        in string? paramVarName = null,
-        in string? resultTypeName = null
-        )
-    {
-        string httpClientMethodName = (method) switch
-        {
-            HttpMethod.Get => nameof(HttpClientJsonExtensions.GetFromJsonAsync),
-            HttpMethod.Post => nameof(HttpClientJsonExtensions.PostAsJsonAsync),
-            HttpMethod.Put => nameof(HttpClientJsonExtensions.PutAsJsonAsync),
-            HttpMethod.Delete => nameof(HttpClientJsonExtensions.DeleteFromJsonAsync),
-            _ => throw new NotImplementedException()
-        };
-        
-        // Example:
-        // person = await Http.GetFromJsonAsync<PersonDto>($"http://localhost:1544/mes/HumanResources/person/{personId}");
-        // var response = await Http.PostAsJsonAsync("http://localhost:1544/mes/HumanResources/person", newPerson);
-
-        // var apiResult = await _http.GetFromJsonAsync
-        var sb = new StringBuilder($"{returnStatement} = await {httpClientInstanceName.Trim('.')}.{httpClientMethodName}")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>
-            .Append(resultTypeName!.TrimStart('<').TrimEnd('>') is { } value?$"<{value}>":"")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""
-            .Append("($\"\"\"")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/
-            .Append(nameSpace?.Trim('/') is { } ns ? $"{ns}/" : null)
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/
-            .Append($"{controllerName.Trim('/')}/")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/
-            .AppendAll(queryParams.Compact().Select(qp => $"{qp.Trim('/')}/"))
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"humanresources/person/123456/name=ali&age=5
-            .Append(keyValueQueryParams.Compact(kv => kv is { Key: not null } and { Value: not null }).Select(kv => $"{kv.Key}={kv.Value}").Merge('&'))
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/name=ali&age=5"""
-            .Append("\"\"\"\"")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/name=ali&age=5""", newPerson
-            .Append(paramVarName.IsNullOrEmpty()?null:$", {paramVarName}")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"""humanresources/person/123456/name=ali&age=5""", newPerson)
-            .Append(')');
-        return sb.ToString();
-    }
-
-    enum HttpMethod
+    private enum HttpMethod
     {
         Get,
         Post,
