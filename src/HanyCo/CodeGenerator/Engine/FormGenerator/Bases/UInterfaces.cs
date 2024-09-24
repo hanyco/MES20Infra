@@ -6,7 +6,7 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 public interface IActionCodesGenerate
 {
-    IEnumerable<CodeTypeMembers>? GenerateCodeTypeMembers();
+    IEnumerable<ClassMembers>? GenerateCodeTypeMembers();
 }
 
 public interface IBlazorComponent : IHtmlElement

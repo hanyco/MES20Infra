@@ -78,7 +78,7 @@ public interface IQueryCqrsSegregation : ICqrsSegregation
 /// </summary>
 public interface ISupportsBehindCodeMember
 {
-    IEnumerable<CodeTypeMembers> GenerateTypeMembers(GenerateCodesParameters arguments);
+    IEnumerable<ClassMembers> GenerateTypeMembers(GenerateCodesParameters arguments);
 }
 
 /// <summary>

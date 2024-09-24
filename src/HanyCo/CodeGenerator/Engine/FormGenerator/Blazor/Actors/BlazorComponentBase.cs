@@ -229,7 +229,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         return result.ToString();
     }
 
-    private static IEnumerable<CodeTypeMembers> GetActionCodes(IHtmlElement element)
+    private static IEnumerable<ClassMembers> GetActionCodes(IHtmlElement element)
     {
         if (element is null)
         {
@@ -271,12 +271,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         }
     }
 
-    private static IEnumerable<CodeTypeMembers> GetCodeTypeMembers(IHtmlElement element, GenerateCodesParameters arguments)
+    private static IEnumerable<ClassMembers> GetCodeTypeMembers(IHtmlElement element, GenerateCodesParameters arguments)
     {
         if (element is ISupportsBehindCodeMember b)
         {
-            var codes = b.GenerateTypeMembers(arguments);
-            foreach (var code in codes)
+            var members = b.GenerateTypeMembers(arguments);
+            foreach (var code in members)
             {
                 yield return code;
             }
@@ -329,7 +329,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             ? this.CodeGenerator.Generate(partNameSpace, this.Name, Languages.CSharp, true, partCodeFileName)
             : null;
 
-        return new(mainClassCode, partClassCode);
+        return new(mainClassCode.Value, partClassCode.Value);
 
         CodeTypeDeclaration createMainClassType(in CodeCompileUnit mainUnit)
         {
@@ -346,25 +346,17 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         Class createMainClassTypeR(in INamespace mainNameSpace)
         {
-            _ = mainNameSpace.AddUsingNameSpace(this.AdditionalUsings);
-            var mainClassType = createMainClassR(mainNameSpace);
-            foreach (var ns in this.MainCodeUsingNameSpaces)
-            {
-                _ = mainNameSpace.AddUsingNameSpace(ns);
-            }
-
-            return mainClassType;
-        }
-
-        Class createMainClassR(in INamespace mainNameSpace)
-        {
-            var mainClass = new Class(this.Name) { InheritanceModifier = InheritanceModifier.Partial };
-            mainNameSpace.AddUsingNameSpace(typeof(string).Namespace!)
+            _ = mainNameSpace.AddUsingNameSpace(this.AdditionalUsings)
+                .AddUsingNameSpace(this.MainCodeUsingNameSpaces)
+                .AddUsingNameSpace(typeof(string).Namespace!)
                 .AddUsingNameSpace(typeof(Enumerable).Namespace!)
-                .AddUsingNameSpace(typeof(Task).Namespace!)
-                .AddType(mainClass);
+                .AddUsingNameSpace(typeof(Task).Namespace!);
+            var mainClass =  new Class(this.Name) { InheritanceModifier = InheritanceModifier.Partial };
+            mainNameSpace.AddType(mainClass);
+
             return mainClass;
-        }
+
+        }        
 
         (CodeNamespace, CodeTypeDeclaration) createPartClassType(in CodeCompileUnit partUnit)
         {
@@ -540,7 +532,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             }
         }
 
-        void addChildren(in GenerateCodesParameters arguments, in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType)
+        void addChildren(in GenerateCodesParameters arguments, in Class mainClass, in Class partClass)
         {
             if (this is BlazorPage)
             {
@@ -558,14 +550,14 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 var actionCodes = BlazorComponentBase<TBlazorComponent>.GetActionCodes(child);
                 foreach (var (mainMember, partMember) in actionCodes)
                 {
-                    if (mainMember is not null && !mainClassType.Members.Cast<CodeTypeMember>().Any(x => x.Name == mainMember.Name))
+                    if (mainMember is not null && !mainClass.Members.Any(x => x.Name == mainMember.Name))
                     {
-                        _ = mainClassType.Members.Add(mainMember);
+                        _ = mainClass.Members.Add(mainMember);
                     }
 
-                    if (partMember is not null && !partClassType.Members.Cast<CodeTypeMember>().Any(x => x.Name == partMember.Name))
+                    if (partMember is not null && !partClass.Members.Any(x => x.Name == partMember.Name))
                     {
-                        _ = partClassType.Members.Add(partMember);
+                        _ = partClass.Members.Add(partMember);
                     }
                 }
 
@@ -574,12 +566,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 {
                     if (mainMember is not null)
                     {
-                        _ = mainClassType.Members.Add(mainMember);
+                        _ = mainClass.Members.Add(mainMember);
                     }
 
                     if (partMember is not null)
                     {
-                        _ = partClassType.Members.Add(partMember);
+                        _ = partClass.Members.Add(partMember);
                     }
                 }
             }
