@@ -21,7 +21,7 @@ public sealed class BlazorCqrsButton(
 {
     private readonly string? _onClickReturnType = onClickReturnType;
 
-    public IEnumerable<CodeTypeMembers> GenerateCodeTypeMembers()
+    public IEnumerable<ClassMembers> GenerateCodeTypeMembers()
     {
         if (this.Action is null)
         {
