@@ -48,7 +48,16 @@ public sealed class Method(string name) : Member(name), IMethod
 public static class MethodExtensions
 {
     public static TMethod AddArgument<TMethod>(this TMethod method, string Type, string Name) where TMethod : IMethod
-        => AddArgument(method, new(Type, Name));
+        => AddArgument(method, new MethodArgument(Type, Name));
+
+    public static TMethod AddArgument<TMethod>(this TMethod method, params IEnumerable<(TypePath Type, string Name)> arguments) where TMethod : IMethod
+    {
+        foreach (var argument in arguments)
+        {
+            _ = AddArgument(method, new MethodArgument(argument.Type, argument.Name));
+        }
+        return method;
+    }
 
     public static TMethod AddArgument<TMethod>(this TMethod method, MethodArgument argument) where TMethod : IMethod
         => method.Fluent(method.Arguments.Add(argument));

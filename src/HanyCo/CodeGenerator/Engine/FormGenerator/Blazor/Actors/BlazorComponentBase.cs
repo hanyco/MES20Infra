@@ -311,7 +311,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 
         addConstructorR(partClassType);
 
-        addMethodsToMainClass(mainClassType);
+        addMethodsToMainClassR(mainClassType);
         addMethodsToPartClass(partClassType);
 
         addPropertiesToPartClass(partClassType);
@@ -442,7 +442,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             var ctor = new Method(codeType.Name)
             {
                 IsConstructor = true,
-            }
+            };
         }
 
         void addMethodsToPartClass(in CodeTypeDeclaration partClassType)
@@ -458,6 +458,33 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, ReturnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
             }
         }
+        void addMethodsToPartClassR(in Class partClass)
+        {
+            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
+            {
+                var m = new Method(method.EventHandlerName ?? method.Name.NotNull())
+                {
+                    Body = method.Body,
+                    InheritanceModifier = InheritanceModifier.Partial,
+                    ReturnType = method.ReturnType is not null ? TypePath.New(method.ReturnType) : null
+                }.AddArgument((method.Arguments ?? []).Select(x => (x.Type, x.Name)));
+                partClass.AddMethod(m);
+            }
+            var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == true))?.Body);
+            var onInitializedAsyncMethod = new Method("OnInitializedAsync")
+            {
+                Body = onInitializedAsyncBody,
+                AccessModifier = AccessModifier.Protected,
+                InheritanceModifier = InheritanceModifier.Override,
+                ReturnType = "async Task"
+            };
+            partClass.AddMethod(onInitializedAsyncMethod);
+
+            foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is null or true))
+            {
+                _ = partClass.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, ReturnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
+            }
+        }
         void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
@@ -466,6 +493,31 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             }
             var onInitializedAsyncBody = this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == false))?.Body;
             _ = mainClassType.AddMethod("OnLoadAsync", body: onInitializedAsyncBody ?? DefaultTaskMethodBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
+            foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is not true))
+            {
+            }
+        }
+
+        void addMethodsToMainClassR(in Class mainClass)
+        {
+            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
+            {
+                var m = new Method(method.EventHandlerName ?? method.Name.NotNull())
+                {
+                    Body = method.Body,
+                    InheritanceModifier = method.IsPartial == true ? InheritanceModifier.Partial : InheritanceModifier.None,
+                    ReturnType = method.ReturnType is not null ? TypePath.New(method.ReturnType) : null
+                }.AddArgument((method.Arguments ?? []).Select(x => (x.Type, x.Name)));
+                mainClass.AddMethod(m);
+            }
+            var OnLoadAsyncBody = this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == false))?.Body;
+            var OnLoadAsyncMethod = new Method("OnLoadAsync") 
+            {
+                AccessModifier = AccessModifier.Protected,
+                InheritanceModifier = InheritanceModifier.Override,
+                Body = OnLoadAsyncBody ?? DefaultTaskMethodBody,
+                ReturnType = "async Task"
+            };
             foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is not true))
             {
             }

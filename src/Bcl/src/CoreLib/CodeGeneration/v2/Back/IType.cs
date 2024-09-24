@@ -47,29 +47,49 @@ public static class TypeExtensions
     public static TType AddField<TType>(this TType type, string name, TypePath typePath, AccessModifier? accessModifier = IField.DefaultAccessModifier) where TType : IType =>
         AddMember(type, IField.New(name, typePath, AccessModifier.Private));
 
-    public static TType AddMember<TType>(this TType type, params IMember[] members)
-            where TType : IType
-    {
-        if (members?.Any() == true)
-        {
-            foreach (var member in members)
-            {
-                _ = type.Members.Add(member);
-            }
-        }
+    //public static TType AddMember<TType>(this TType type, params IMember[] members)
+    //        where TType : IType
+    //{
+    //    if (members?.Any() == true)
+    //    {
+    //        foreach (var member in members)
+    //        {
+    //            _ = type.Members.Add(member);
+    //        }
+    //    }
 
+    //    return type;
+    //}
+
+    public static TType AddMember<TType>(this TType type, params IEnumerable<IMember> members) where TType : IType
+    {
+            if (members?.Any() == true)
+            {
+                foreach (var member in members)
+                {
+                    _ = type.Members.Add(member);
+                }
+            }
+
+            return type;
+    }
+
+    public static TType AddMember<TType>(this TType type, IMember member) where TType : IType
+    {
+        _ = type.Members.Add(member);
         return type;
     }
 
-    public static TType AddMember<TType>(this TType type, IEnumerable<IMember> members) where TType : IType =>
-        AddMember(type, members.ToArray());
 
-    public static TType AddMethod<TType>(this TType type, string name, string? body = null, IEnumerable<(TypePath Type, string Name)>? parameters = null, TypePath? returnType = null) where TType : IType
-        => AddMember(type, IMethod.New(name, body, parameters?.Select(x => new Models.MethodArgument(x.Type, x.Name)), returnType));
+    public static TType AddMethod<TType>(this TType type, Method method) where TType : IType => 
+        AddMember(type, method);
 
-    public static TType AddProperty<TType>(this TType type, string name, TypePath typePath) where TType : IType
-            => AddMember(type, IProperty.New(name, typePath));
+    public static TType AddMethod<TType>(this TType type, string name, string? body = null, IEnumerable<(TypePath Type, string Name)>? parameters = null, TypePath? returnType = null) where TType : IType        => 
+        AddMember(type, IMethod.New(name, body, parameters?.Select(x => new Models.MethodArgument(x.Type, x.Name)), returnType));
 
-    public static TType AddProperty<TType>(this TType type, string name, TypePath typePath, string backingFieldName) where TType : IType
-        => AddMember(type, IProperty.New(name, typePath, backingFieldName));
+    public static TType AddProperty<TType>(this TType type, string name, TypePath typePath) where TType : IType => 
+        AddMember(type, IProperty.New(name, typePath));
+
+    public static TType AddProperty<TType>(this TType type, string name, TypePath typePath, string backingFieldName) where TType : IType => 
+        AddMember(type, IProperty.New(name, typePath, backingFieldName));
 }
