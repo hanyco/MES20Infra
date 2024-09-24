@@ -5,6 +5,7 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Helpers.CodeGen;
@@ -17,15 +18,16 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 
 [Immutable]
 [Fluent]
-public sealed class BlazorComponent(in string name) : BlazorComponentBase<BlazorComponent>(name), IBlazorComponent
+public sealed class BlazorComponent(in string name, ICodeGeneratorEngine codeGenerator) 
+    : BlazorComponentBase<BlazorComponent>(name, codeGenerator), IBlazorComponent
 {
     public Dictionary<string, string?> BlazorAttributes { get; } = [];
     public (TypePath Type, string Name)? DataContextProperty { get; set; }
     
     public bool ShouldGenerateFullUiCode { get; internal set; } = true;
 
-    public static BlazorComponent New(in string name) =>
-        new(name);
+    public static BlazorComponent New(in string name, in ICodeGeneratorEngine codeGenerator) =>
+        new(name, codeGenerator);
 
     protected override StringBuilder OnGeneratingHtmlCode(StringBuilder codeStringBuilder)
     {

@@ -43,7 +43,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     public virtual string MainCodeFileExtension { get; } = "razor.cs";
     public IList<string> MainCodeUsingNameSpaces { get; } = [];
     public string Name { get; init; }
-    public required string NameSpace { get; set; }
+    public string NameSpace { get; set; }
     public IList<MethodArgument> Parameters { get; } = [];
     public virtual string PartialCodeFileExtension { get; } = "razor.partial.cs";
     public IList<string> PartialCodeUsingNameSpaces { get; } = [];
@@ -329,7 +329,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             ? this.CodeGenerator.Generate(partNameSpace, this.Name, Languages.CSharp, true, partCodeFileName)
             : null;
 
-        return new(mainClassCode.Value, partClassCode.Value);
+        return new(mainClassCode!.Value, partClassCode!.Value);
 
         CodeTypeDeclaration createMainClassType(in CodeCompileUnit mainUnit)
         {

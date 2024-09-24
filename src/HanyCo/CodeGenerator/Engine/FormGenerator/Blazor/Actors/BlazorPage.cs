@@ -7,6 +7,7 @@ using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2;
 using Library.Cqrs.Models.Commands;
 using Library.Cqrs.Models.Queries;
 using Library.Helpers.CodeGen;
@@ -21,7 +22,8 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 [Fluent]
 public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 {
-    private BlazorPage(in string name, in string? moduleName = null, in IEnumerable<string>? pageRoutes = null) : base(name)
+    private BlazorPage(in string name, in ICodeGeneratorEngine codeGenerator, in string? moduleName = null, in IEnumerable<string>? pageRoutes = null) 
+        : base(name, codeGenerator)
     {
         _ = this.SetPageRoutes(pageRoutes);
         this.ModuleName = moduleName;
@@ -68,12 +70,12 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
     }
 
     [return: NotNull]
-    public static BlazorPage NewByModuleName([DisallowNull] in string name, [DisallowNull] in string moduleName) =>
-        new(name.NotNull(), moduleName: moduleName.NotNull());
+    public static BlazorPage NewByModuleName([DisallowNull] in string name, [DisallowNull] in string moduleName, in ICodeGeneratorEngine codeGenerator) =>
+        new(name.NotNull(), codeGenerator, moduleName: moduleName.NotNull());
 
     [return: NotNull]
-    public static BlazorPage NewByPageRoute([DisallowNull] in string name, [DisallowNull] in IEnumerable<string> pageRoutes) =>
-        new(name.NotNull(), pageRoutes: pageRoutes);
+    public static BlazorPage NewByPageRoute([DisallowNull] in string name, [DisallowNull] in IEnumerable<string> pageRoutes, in ICodeGeneratorEngine codeGenerator) =>
+        new(name.NotNull(), codeGenerator, pageRoutes: pageRoutes);
 
     public BlazorPage SetPageRoutes(IEnumerable<string>? value) =>
         this.Fluent(() => this.PageRoutes = value);

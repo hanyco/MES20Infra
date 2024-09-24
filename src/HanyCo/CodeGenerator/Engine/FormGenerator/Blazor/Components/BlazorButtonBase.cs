@@ -4,6 +4,7 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2.Back;
 using Library.Helpers.CodeGen;
 
 using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
@@ -96,15 +97,17 @@ public abstract class BlazorButtonBase<TSelf, TAction> : HtmlElementBase<TSelf>,
         }
     }
 
-    public IEnumerable<CodeTypeMembers> GenerateTypeMembers(GenerateCodesParameters arguments)
+    public IEnumerable<ClassMembers> GenerateTypeMembers(GenerateCodesParameters arguments)
     {
         if (this.OnClick.IsNullOrEmpty() || this.Action is not null)
         {
-            return Enumerable.Empty<CodeTypeMembers>();
+            return [];
         }
 
-        var main = CodeDomHelper.NewMethod(this.OnClick, accessModifiers: DEFAULT_ACCESS_MODIFIER);
-        return EnumerableHelper.AsEnumerable(new CodeTypeMembers(main, null));
+        var main = new Method(this.OnClick) { 
+            AccessModifier = AccessModifier.Private,
+        };
+        return EnumerableHelper.AsEnumerable(new ClassMembers(main, null));
     }
 
     protected override TSelf CodeGenAddAttributes(in StringBuilder statement) =>

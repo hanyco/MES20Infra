@@ -11,6 +11,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2;
 using Library.Exceptions.Validations;
 using Library.Results;
 using Library.Validations;
@@ -110,8 +111,8 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 return (dataContextType, dataContextPropType);
             }
 
-            static BlazorComponent getNewComponent(UiViewModel model, TypePath dataContextType) =>
-                BlazorComponent.New(model.Name!)
+            static BlazorComponent getNewComponent(UiViewModel model, TypePath dataContextType, ICodeGeneratorEngine codeGenerator) =>
+                BlazorComponent.New(model.Name!, codeGenerator)
                     .With(x => x.NameSpace = model.NameSpace)
                     .With(x => x.IsGrid = model.IsGrid)
                     .With(x => x.DataContextType = dataContextType)
@@ -361,8 +362,8 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
         return Result.Success<Codes>(result);
 
-        static IHtmlElement toHtmlElement(UiViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty) =>
-            BlazorComponent.New(component.Name!)
+        static IHtmlElement toHtmlElement(UiViewModel component, string? dataContextType, (TypePath Type, string Name)? dataContextTypeProperty, ICodeGeneratorEngine codeGenerator) =>
+            BlazorComponent.New(component.Name!, codeGenerator)
                 .With(x => x.NameSpace = component.NameSpace)
                 .With(x => x.DataContextType = dataContextType)
                 .With(x => x.DataContextProperty = dataContextTypeProperty)
