@@ -9,8 +9,6 @@ using System.Collections.Immutable;
 using System.Net.Http.Json;           // GetFromJsonAsync, PostAsJsonAsync
 using System.Text;
 
-using static System.Net.WebRequestMethods;
-
 namespace Services.Helpers;
 
 //[DebuggerStepThrough]
@@ -44,8 +42,7 @@ internal static class CodeSnippets
         new StringBuilder()
             .AppendLine("if (this.EntityId is { } entityId)")
             .AppendLine("{")
-            // var apiResult = await Http.GetFromJsonAsync<IEnumerable<PersonDto>>($"HumanResources/person/");
-            .AppendLine(GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName)))
+            .AppendLine(GenerateApiCallCode(controllerName, queryParams: ["entityId"], resultTypeName: TypePath.New(sourceDtoName)))
             .AppendLine("   this.DataContext = apiResult;")
             .AppendLine("}")
             .AppendLine("else")
@@ -54,35 +51,24 @@ internal static class CodeSnippets
             .AppendLine("}")
             .ToString();
 
-    internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(in CqrsCommandViewModel insert, in CqrsCommandViewModel update) =>
+    internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(in string controllerName, in string sourceDtoName) =>
         new StringBuilder()
-            .AppendLine($"if (DataContext.Id == default)")
+            .AppendLine($"if (this.DataContext.Id == default)")
             .AppendLine($"{{")
-            .AppendLine($"    var @params = this.DataContext.To{insert.GetSegregateParamsType("Command").Name}();")
-            .AppendLine($"    var cqParams = new {insert.GetSegregateType("Command").FullPath}(@params);")
-            .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{insert.GetSegregateType("Command").FullPath}, {insert.GetSegregateResultType("Command").FullPath}>(cqParams);")
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Post, paramVarName: sourceDtoName))
             .AppendLine($"}}")
             .AppendLine($"else")
             .AppendLine($"{{")
-            .AppendLine($"    var @params = this.DataContext.To{update.GetSegregateParamsType("Command").Name}();")
-            .AppendLine($"    var cqParams = new {update.GetSegregateType("Command").FullPath}(@params);")
-            .AppendLine($"    var cqResult = await this._commandProcessor.ExecuteAsync<{update.GetSegregateType("Command").FullPath}, {update.GetSegregateResultType("Command").FullPath}>(cqParams);")
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Put, paramVarName: sourceDtoName))
             .AppendLine($"}}")
             .AppendLine($"MessageComponent.Show(\"Save Data\", \"Date saved.\");")
             .ToString();
 
-    internal static string BlazorListComponent_DeleteButton_OnClick_Body(in CqrsCommandViewModel model)
+    internal static string BlazorListComponent_DeleteButton_OnClick_Body(in string controllerName, in string sourceDtoName)
     {
         var result = new StringBuilder()
-            .AppendLine($"// Setup segregation parameters")
-            .AppendLine($"var cmdParams = new {model.GetSegregateParamsType("Command").FullPath}()")
-            .AppendLine($"{{")
-            .AppendLine($"    Id = id,")
-            .AppendLine($"}};")
-            .AppendLine($"var cmd = new {model.GetSegregateType("Command").FullPath}(cmdParams);")
-            .AppendLine($"// Invoke the command handler to apply changes.")
-            .AppendLine($"var cqResult = await this._commandProcessor.ExecuteAsync<{model.GetSegregateType("Command").FullPath}, {model.GetSegregateResultType("Command").FullPath}>(cmd);")
-            .AppendLine($"// Now, set let UI know that the state is changed")
+            .AppendLine($"var id = this.DataContext.Id;")
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, paramVarName: "id"))
             .AppendLine($"await OnInitializedAsync();")
             .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
             .AppendLine($"this.StateHasChanged();");
@@ -90,10 +76,10 @@ internal static class CodeSnippets
         return result.ToString();
     }
 
-    internal static string BlazorListComponent_LoadPage_Body(in DtoViewModel resultDto, in DtoViewModel sourceDto, in string httClientInstanceName = "_http")
+    internal static string BlazorListComponent_LoadPage_Body(in string controllerName, in string resultDtoName, in string sourceDtoName, in string httClientInstanceName = "_http")
     {
         var result = new StringBuilder()
-            .AppendLine($"""var apiResult = await {httClientInstanceName}.GetFromJsonAsync<{resultDto.Name}>("{sourceDto.Name}");""")
+            .AppendLine(GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName)))
             .AppendLine($"""this.DataContext = apiResult;""");
         return result.ToString();
     }
@@ -127,7 +113,7 @@ internal static class CodeSnippets
         var result = new StringBuilder()
             .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
             .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
-            .AppendLine($"var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);")
+            .AppendLine($"var dbResult = await this._sql.{nameof(Sql.ExecuteScalarCommandAsync)}(dbCommand, cancellationToken);")
             .AppendLine($"int returnValue = Convert.ToInt32(dbResult);")
             .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(returnValue);")
             .AppendLine($"return result;")
@@ -224,7 +210,8 @@ internal static class CodeSnippets
             // var apiResult = await
             // _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson
             .Append(paramVarName.IsNullOrEmpty() ? null : $", {paramVarName}")
-            // var apiResult = await  _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson);
+            // var apiResult = await
+            // _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson);
             .Append(");");
         var result = sb.ToString();
         return result;

@@ -141,7 +141,7 @@ internal sealed partial class FunctionalityService
         Type = PropertyType.Dto,
     };
 
-    private static string GetRootNameSpace(CreationData data) => 
+    private static string GetRootNameSpace(CreationData data) =>
         data.ViewModel.SourceDto.NameSpace.TrimSuffix(".Dtos").TrimSuffix(".Dto");
 
     private static PropertyViewModel GetSourceDtoAsPropertyModel(CreationData data) => new(CommonHelpers.Purify(data.SourceDtoName!), PropertyType.Dto)
@@ -153,6 +153,7 @@ internal sealed partial class FunctionalityService
         Type = PropertyType.Dto,
     };
 
+    [DebuggerStepThrough]
     private static DtoViewModel RawDto(CreationData data)
     {
         // Create an initial DTO based on the input data
@@ -165,11 +166,8 @@ internal sealed partial class FunctionalityService
         }
         .With(x => x.Module.Id = data.ViewModel.SourceDto.Module.Id); // Set DTO module ID
 
-        return  dto;
+        return dto;
     }
-
-    private static IEnumerable<PropertyViewModel> SourceDtoPropertiesToProperties(CreationData data) =>
-        data.ViewModel.SourceDto.Properties;
 
     private static PropertyViewModel SourceDtoToProperty(CreationData data) =>
         new() { Comment = data.COMMENT, Name = data.SourceDtoName, Type = PropertyType.Dto, TypeFullName = data.SourceDtoType };
@@ -188,25 +186,26 @@ internal sealed partial class FunctionalityService
 
         void createViewModel(CreationData data)
         {
-            data.ViewModel.BlazorDetailsComponentViewModel = this._blazorComponentService.CreateViewModel(data.ViewModel.SourceDto);
-            data.ViewModel.BlazorDetailsComponentViewModel.Name = $"{name}DetailsComponent";
-            data.ViewModel.BlazorDetailsComponentViewModel.ClassName = $"{name}DetailsComponent";
-            data.ViewModel.BlazorDetailsComponentViewModel.IsGrid = false;
-            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContext = data.ViewModel.BlazorDetailsPageViewModel.DataContext;
-            data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorDetailsPageViewModel.DataContext.Properties.First(x => x.IsList != true);
-            data.ViewModel.BlazorDetailsComponentViewModel.Attributes.Add(new("@bind-EntityId", "this.Id"));
-            data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
-            //data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
-            data.ViewModel.BlazorDetailsPageViewModel.Components.Add(data.ViewModel.BlazorDetailsComponentViewModel);            
+            data.ViewModel.BlazorDetailsComponent = this._blazorComponentService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorDetailsComponent.Name = $"{name}DetailsComponent";
+            data.ViewModel.BlazorDetailsComponent.ClassName = $"{name}DetailsComponent";
+            data.ViewModel.BlazorDetailsComponent.IsGrid = false;
+            data.ViewModel.BlazorDetailsComponent.PageDataContext = data.ViewModel.BlazorDetailsPage.DataContext;
+            data.ViewModel.BlazorDetailsComponent.PageDataContextProperty = data.ViewModel.BlazorDetailsPage.DataContext.Properties.First(x => x.IsList != true);
+            data.ViewModel.BlazorDetailsComponent.Attributes.Add(new("@bind-EntityId", "this.Id"));
+            data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
+            //data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            data.ViewModel.BlazorDetailsPage.Components.Add(data.ViewModel.BlazorDetailsComponent);
         }
 
         void addActions(CreationData data)
         {
             var pageRoute = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
-            data.ViewModel.BlazorListPageViewModel.Routes.Add(pageRoute);
+            data.ViewModel.BlazorListPage.Routes.Add(pageRoute);
             // The Save button
             var saveButton = new UiComponentCustomButton()
             {
+                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
                 Caption = "Save",
                 ButtonType = ButtonType.Submit,
                 Guid = Guid.NewGuid(),
@@ -221,7 +220,7 @@ internal sealed partial class FunctionalityService
                     Row = 1,
                 }
             };
-            AddClaimViewModel(saveButton, "Save", data.ViewModel.BlazorDetailsComponentViewModel);
+            AddClaimViewModel(saveButton, "Save", data.ViewModel.BlazorDetailsComponent);
 
             // The Back button. Same as the cancel button.
             var cancelButton = new UiComponentCustomButton()
@@ -244,49 +243,30 @@ internal sealed partial class FunctionalityService
             {
                 CodeStatement = CodeSnippets.BlazorDetailsComponent_LoadPage_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
             };
-            data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(saveButton);
-            data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(cancelButton);
-            data.ViewModel.BlazorDetailsComponentViewModel.Actions.Add(onLoad);
+            data.ViewModel.BlazorDetailsComponent.Actions.Add(saveButton);
+            data.ViewModel.BlazorDetailsComponent.Actions.Add(cancelButton);
+            data.ViewModel.BlazorDetailsComponent.Actions.Add(onLoad);
         }
 
         static void addParameters(CreationData data)
         {
-            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("long"), "EntityId"));
-            data.ViewModel.BlazorDetailsComponentViewModel.Parameters.Add(new(TypePath.New("Microsoft.AspNetCore.Components.EventCallback<long?>"), "EntityIdChanged"));
+            data.ViewModel.BlazorDetailsComponent.Parameters.Add(new(TypePath.New("long"), "EntityId"));
+            data.ViewModel.BlazorDetailsComponent.Parameters.Add(new(TypePath.New("Microsoft.AspNetCore.Components.EventCallback<long?>"), "EntityIdChanged"));
         }
 
         void setupEditForm(CreationData data)
         {
-            var info = data.ViewModel.BlazorDetailsComponentViewModel.EditFormInfo;
+            var info = data.ViewModel.BlazorDetailsComponent.EditFormInfo;
             info.IsEditForm = true;
             _ = info.Events.Add(new(nameof(EditForm.OnValidSubmit), new Library.CodeGeneration.v2.Back.Method("SaveData")
             {
-                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.InsertCommand, data.ViewModel.UpdateCommand),
+                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
                 ReturnType = "async Task"
             }));
         }
 
-        [Obsolete("Mappers are no longer used in this project", true)] 
-        void createConverters(CreationData data)
-        {
-            var mapperNameSpace = GetMapperNameSpace(data);
-            var dataContext = data.ViewModel.BlazorDetailsComponentViewModel.PageDataContextProperty!.Dto!;
-
-            var insert = data.ViewModel.InsertCommand;
-            var insertDstTypePath = insert.GetSegregateParamsType("Command");
-            var args = new MapperSourceGeneratorArguments((dataContext, null), (insert.ParamsDto, insertDstTypePath), mapperNameSpace, MethodName: $"To{insertDstTypePath.Name}");
-            data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
-
-            var update = data.ViewModel.UpdateCommand;
-            var updateDstTypePath = update.GetSegregateParamsType("Command");
-            args = new MapperSourceGeneratorArguments((dataContext, null), (update.ParamsDto, updateDstTypePath), mapperNameSpace, MethodName: $"To{updateDstTypePath.Name}");
-            data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
-
-            data.ViewModel.BlazorDetailsComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
-        }
-
         void setupSecurity(CreationData data)
-            => AddClaimViewModel(data.ViewModel.BlazorDetailsComponentViewModel, $"{name}Details", data);
+            => AddClaimViewModel(data.ViewModel.BlazorDetailsComponent, $"{name}Details", data);
     }
 
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
@@ -299,14 +279,14 @@ internal sealed partial class FunctionalityService
             .RunAsync(token);
 
         void createPageViewModel(CreationData data) =>
-            data.ViewModel.BlazorDetailsPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
+            data.ViewModel.BlazorDetailsPage = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
                 .With(x => x.Name = name)
                 .With(x => x.ClassName = name);
         static void addParameters(CreationData data) =>
-            data.ViewModel.BlazorDetailsPageViewModel.Parameters.Add(new(TypePath.New<long>(), "Id"));
+            data.ViewModel.BlazorDetailsPage.Parameters.Add(new(TypePath.New<long>(), "Id"));
 
         void setupSecurity(CreationData data) =>
-            AddClaimViewModel(data.ViewModel.BlazorDetailsPageViewModel, $"{name}Details", data);
+            AddClaimViewModel(data.ViewModel.BlazorDetailsPage, $"{name}Details", data);
     }
 
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
@@ -320,15 +300,15 @@ internal sealed partial class FunctionalityService
 
         void createViewModel(CreationData data)
         {
-            data.ViewModel.BlazorListComponentViewModel = this._blazorComponentService.CreateViewModel(data.ViewModel.SourceDto);
-            data.ViewModel.BlazorListComponentViewModel.Name = $"{name}ListComponent";
-            data.ViewModel.BlazorListComponentViewModel.ClassName = $"{name}ListComponent";
-            data.ViewModel.BlazorListComponentViewModel.IsGrid = true;
-            data.ViewModel.BlazorListComponentViewModel.PageDataContext = data.ViewModel.BlazorListPageViewModel.DataContext;
-            data.ViewModel.BlazorListComponentViewModel.PageDataContextProperty = data.ViewModel.BlazorListPageViewModel.DataContext.Properties.First(x => x.IsList == true);
-            data.ViewModel.BlazorListComponentViewModel.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
-            //data.ViewModel.BlazorListComponentViewModel.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
-            data.ViewModel.BlazorListPageViewModel.Components.Add(data.ViewModel.BlazorListComponentViewModel);
+            data.ViewModel.BlazorListComponent = this._blazorComponentService.CreateViewModel(data.ViewModel.SourceDto);
+            data.ViewModel.BlazorListComponent.Name = $"{name}ListComponent";
+            data.ViewModel.BlazorListComponent.ClassName = $"{name}ListComponent";
+            data.ViewModel.BlazorListComponent.IsGrid = true;
+            data.ViewModel.BlazorListComponent.PageDataContext = data.ViewModel.BlazorListPage.DataContext;
+            data.ViewModel.BlazorListComponent.PageDataContextProperty = data.ViewModel.BlazorListPage.DataContext.Properties.First(x => x.IsList == true);
+            data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
+            //data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            data.ViewModel.BlazorListPage.Components.Add(data.ViewModel.BlazorListComponent);
         }
 
         void addActions(CreationData data)
@@ -336,7 +316,7 @@ internal sealed partial class FunctionalityService
             var pageName = $"{CommonHelpers.Purify(data.ViewModel.SourceDto.Name!)}/details";
             var pureRoute = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null);
             var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null, "{Id:long}");
-            _ = data.ViewModel.BlazorDetailsPageViewModel.Routes.AddRange(pureRoute, routeWithId);
+            _ = data.ViewModel.BlazorDetailsPage.Routes.AddRange(pureRoute, routeWithId);
 
             var newButton = new UiComponentCustomButton
             {
@@ -360,7 +340,7 @@ internal sealed partial class FunctionalityService
             };
             var deleteButton = new UiComponentCustomButton
             {
-                CodeStatement = CodeSnippets.BlazorListComponent_DeleteButton_OnClick_Body(data.ViewModel.DeleteCommand),
+                CodeStatement = CodeSnippets.BlazorListComponent_DeleteButton_OnClick_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
                 Caption = "Delete",
                 EventHandlerName = "DeleteButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -369,15 +349,15 @@ internal sealed partial class FunctionalityService
                 Description = $"Deletes selected {name}",
                 ReturnType = "async void"
             };
-            var onLoad = new UiComponentCqrsLoadViewModel
+            var onLoad = new UiComponentCustomLoad
             {
-                CqrsSegregate = data.ViewModel.GetAllQuery
+                CodeStatement = CodeSnippets.BlazorListComponent_LoadPage_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName, data.SourceDtoName)
             };
-            _ = data.ViewModel.BlazorListComponentViewModel.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
+            _ = data.ViewModel.BlazorListComponent.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
         }
 
         void setupSecurity(CreationData data) =>
-            AddClaimViewModel(data.ViewModel.BlazorListComponentViewModel, $"{name}List", data);
+            AddClaimViewModel(data.ViewModel.BlazorListComponent, $"{name}List", data);
     }
 
     private Task CreateBlazorListPage(CreationData data, CancellationToken token)
@@ -389,12 +369,12 @@ internal sealed partial class FunctionalityService
             .RunAsync(token);
 
         void createPageViewModel(CreationData data) =>
-            data.ViewModel.BlazorListPageViewModel = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
+            data.ViewModel.BlazorListPage = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
                 .With(x => x.Name = name)
                 .With(x => x.ClassName = name);
 
         void setupSecurity(CreationData data) =>
-            AddClaimViewModel(data.ViewModel.BlazorListPageViewModel, $"{name}List", data);
+            AddClaimViewModel(data.ViewModel.BlazorListPage, $"{name}List", data);
     }
 
     private Task CreateController(CreationData data, CancellationToken token)
@@ -648,15 +628,6 @@ internal sealed partial class FunctionalityService
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.GetByIdQuery.HandleMethodBody = CodeSnippets.QueryHandler_Handle_Body(data.ViewModel.GetByIdQuery, data.ViewModel.SourceDto, "[Id] = {request.Id}");
-
-        [Obsolete("Mappers are no longer used in this project", true)]
-        void createConverters(CreationData data)
-        {
-            var mapperNameSpace = GetMapperNameSpace(data);
-            var getByIdQueryViewModel = data.ViewModel.GetByIdQuery;
-            var args = new MapperSourceGeneratorArguments(getByIdQueryViewModel.ResultDto, getByIdQueryViewModel.ResultDto, mapperNameSpace);
-            data.ViewModel.MapperGeneratorViewModel.Arguments.Add(args);
-        }
     }
 
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
@@ -757,7 +728,7 @@ internal sealed partial class FunctionalityService
         {
             data.ViewModel.UpdateCommand.ResultDto = RawDto(data);
             data.ViewModel.UpdateCommand.ResultDto.Name = $"{name}CommandResult";
-            data.ViewModel.UpdateCommand.ResultDto.IsResultDto = true;            
+            data.ViewModel.UpdateCommand.ResultDto.IsResultDto = true;
         }
 
         void setupSecurity(CreationData data) =>

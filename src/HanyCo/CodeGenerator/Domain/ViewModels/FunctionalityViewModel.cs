@@ -9,13 +9,13 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public ApiCodingViewModel ApiCodingViewModel { get; set; } = new();
 
-    public UiComponentViewModel BlazorDetailsComponentViewModel { get; set; }
+    public UiComponentViewModel BlazorDetailsComponent { get; set; }
 
-    public UiPageViewModel BlazorDetailsPageViewModel { get; set; }
+    public UiPageViewModel BlazorDetailsPage { get; set; }
 
-    public UiComponentViewModel BlazorListComponentViewModel { get; set; }
+    public UiComponentViewModel BlazorListComponent { get; set; }
 
-    public UiPageViewModel BlazorListPageViewModel { get; set; }
+    public UiPageViewModel BlazorListPage { get; set; }
 
     public FunctionalityViewModelCodes Codes { get; } = new();
 

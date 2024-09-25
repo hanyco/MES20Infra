@@ -118,11 +118,11 @@ internal partial class FunctionalityService
                 }
             }
 
-            if (viewModel.BlazorListPageViewModel != null)
+            if (viewModel.BlazorListPage != null)
             {
-                var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPageViewModel);
+                var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorListPage);
                 codes.BlazorListPageCodes = codeGenRes;
-                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPageViewModel)}");
+                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPage)}");
                 yield return codes.BlazorListPageCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
@@ -130,11 +130,11 @@ internal partial class FunctionalityService
                 }
             }
 
-            if (viewModel.BlazorListPageViewModel?.DataContext != null)
+            if (viewModel.BlazorListPage?.DataContext != null)
             {
-                var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorListPageViewModel.DataContext);
+                var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorListPage.DataContext);
                 codes.BlazorListPageDataContextCodes = codeGenRes;
-                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPageViewModel.DataContext)}");
+                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListPage.DataContext)}");
                 yield return codes.BlazorListPageDataContextCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
@@ -142,11 +142,11 @@ internal partial class FunctionalityService
                 }
             }
 
-            if (viewModel.BlazorDetailsPageViewModel != null)
+            if (viewModel.BlazorDetailsPage != null)
             {
-                var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel);
+                var codeGenRes = this._blazorPageCodeService.GenerateCodes(viewModel.BlazorDetailsPage);
                 codes.BlazorDetailsPageCodes = codeGenRes;
-                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPageViewModel)}");
+                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPage)}");
                 yield return codes.BlazorDetailsPageCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
@@ -154,11 +154,11 @@ internal partial class FunctionalityService
                 }
             }
 
-            if (viewModel.BlazorDetailsPageViewModel?.DataContext != null)
+            if (viewModel.BlazorDetailsPage?.DataContext != null)
             {
-                var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPageViewModel.DataContext);
+                var codeGenRes = this._dtoCodeService.GenerateCodes(viewModel.BlazorDetailsPage.DataContext);
                 codes.BlazorListPageDataContextCodes = codeGenRes;
-                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPageViewModel.DataContext)}");
+                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsPage.DataContext)}");
                 yield return codes.BlazorListPageDataContextCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
@@ -166,11 +166,11 @@ internal partial class FunctionalityService
                 }
             }
 
-            if (viewModel.BlazorListComponentViewModel != null)
+            if (viewModel.BlazorListComponent != null)
             {
-                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponentViewModel);
+                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorListComponent);
                 codes.BlazorListComponentCodes = codeGenRes;
-                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListComponentViewModel)}");
+                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorListComponent)}");
                 yield return codes.BlazorListComponentCodes!;
                 if (!codeGenRes.IsSucceed)
                 {
@@ -178,16 +178,16 @@ internal partial class FunctionalityService
                 }
             }
 
-            if (viewModel.BlazorDetailsComponentViewModel != null)
+            if (viewModel.BlazorDetailsComponent != null)
             {
-                var editForm = viewModel.BlazorDetailsComponentViewModel.EditFormInfo;
+                var editForm = viewModel.BlazorDetailsComponent.EditFormInfo;
                 var args = new GenerateCodesParameters(
                     IsEditForm: editForm.IsEditForm,
                     EditFormAttributes: editForm.Events.Select(x => (x.Name, x.Handler.Name)).AddImmuted(("Model", editForm.Model))
                     );
-                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponentViewModel, args);
+                var codeGenRes = this._blazorComponentCodeService.GenerateCodes(viewModel.BlazorDetailsComponent, args);
                 codes.BlazorDetailsComponentCodes = codeGenRes;
-                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsComponentViewModel)}");
+                this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.BlazorDetailsComponent)}");
                 yield return codes.BlazorDetailsComponentCodes!;
                 if (!codeGenRes.IsSucceed)
                 {

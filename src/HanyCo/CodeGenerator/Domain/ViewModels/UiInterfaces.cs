@@ -1,16 +1,10 @@
 ﻿namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
-public interface BackElement
-{
-}
+public interface BackElement;
 
-public interface FrontElement
-{
-}
+public interface FrontElement;
 
-public interface IUiComponentContent
-{
-}
+public interface IUiComponentContent;
 
 public interface IUiComponentCqrsContent : IUiComponentContent
 {
