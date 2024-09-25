@@ -301,21 +301,21 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         this.OnInitializingBehindCode(args);
 
         var mainNameSpace = INamespace.New(this.NameSpace);
-        var mainClassType = createMainClassTypeR(mainNameSpace);
+        var mainClassType = createMainClassType(mainNameSpace);
         
         var partNameSpace = INamespace.New(this.NameSpace);
-        var partClassType = createPartClassTypeR(partNameSpace);
+        var partClassType = createPartClassType(partNameSpace);
 
-        addFieldsToMainClassR(mainClassType);
-        addFieldsToPartClassR(partClassType);
+        addFieldsToMainClass(mainClassType);
+        addFieldsToPartClass(partClassType);
                 
-        addConstructorR(partClassType);
+        addConstructor(partClassType);
 
-        addMethodsToMainClassR(mainClassType);
-        addMethodsToPartClassR(partClassType);
+        addMethodsToMainClass(mainClassType);
+        addMethodsToPartClass(partClassType);
 
-        addPropertiesToPartClassR(partClassType);
-        addParametersToPartClassR(partClassType);
+        addPropertiesToPartClass(partClassType);
+        addParametersToPartClass(partClassType);
 
         addChildren(args, mainClassType, partClassType);
 
@@ -331,20 +331,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         return new(mainClassCode!.Value, partClassCode!.Value);
 
-        CodeTypeDeclaration createMainClassType(in CodeCompileUnit mainUnit)
-        {
-            var mainNameSpace = mainUnit.AddNewNameSpace(this.NameSpace);
-            _ = mainNameSpace.UseNameSpace(this.AdditionalUsings);
-            var mainClassType = createMainClass(mainNameSpace);
-            foreach (var ns in this.MainCodeUsingNameSpaces)
-            {
-                _ = mainNameSpace.UseNameSpace(ns);
-            }
-
-            return mainClassType;
-        }
-
-        Class createMainClassTypeR(in INamespace mainNameSpace)
+        Class createMainClassType(in INamespace mainNameSpace)
         {
             _ = mainNameSpace.AddUsingNameSpace(this.AdditionalUsings)
                 .AddUsingNameSpace(this.MainCodeUsingNameSpaces)
@@ -358,26 +345,12 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
 
         }        
 
-        (CodeNamespace, CodeTypeDeclaration) createPartClassType(in CodeCompileUnit partUnit)
-        {
-            var partNameSpace = partUnit.AddNewNameSpace(this.NameSpace);
-            _ = partNameSpace.UseNameSpace(this.AdditionalUsings);
-
-            var partClassType = createPartialClass(partNameSpace);
-            foreach (var ns in this.PartialCodeUsingNameSpaces)
-            {
-                _ = partNameSpace.UseNameSpace(ns);
-            }
-
-            return (partNameSpace, partClassType);
-        }
-
-        Class createPartClassTypeR(in INamespace partNamespace)
+        Class createPartClassType(in INamespace partNamespace)
         {
             partNameSpace.AddUsingNameSpace(this.NameSpace)
                 .AddUsingNameSpace(this.AdditionalUsings);
 
-            var partClassType = createPartialClassR(partNameSpace);
+            var partClassType = createPartialClass(partNameSpace);
             foreach (var ns in this.PartialCodeUsingNameSpaces)
             {
                 _ = partNameSpace.AddUsingNameSpace(ns);
@@ -386,14 +359,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             return partClassType;
         }
         
-        void addFieldsToPartClass(in CodeTypeDeclaration partClassType)
-        {
-            foreach (var field in this.Fields.Where(m => m.IsPartial))
-            {
-                _ = partClassType.AddField(field.Type, field.Name, field.Comment, field.AccessModifier, field.IsReadOnly, field.IsPartial);
-            }
-        }
-        void addFieldsToPartClassR(in Class partClass)
+        void addFieldsToPartClass(in Class partClass)
         {
             foreach (var field in this.Fields.Where(m => m.IsPartial))
             {
@@ -401,15 +367,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             }
         }
 
-        void addPropertiesToPartClass(in CodeTypeDeclaration partClassType)
-        {
-            foreach (var property in this.Properties.Where(x => x.Caption.IsNullOrEmpty()))
-            {
-                _ = partClassType.AddProperty(property.ToPropertyInfo());
-            }
-        }
-
-        void addPropertiesToPartClassR(in Class partClass)
+        void addPropertiesToPartClass(in Class partClass)
         {
             foreach (var property in this.Properties.Where(x => x.Caption.IsNullOrEmpty()))
             {
@@ -420,15 +378,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             }
         }
 
-        void addFieldsToMainClass(in CodeTypeDeclaration mainClassType)
-        {
-            foreach (var field in this.Fields.Where(m => !m.IsPartial))
-            {
-                _ = mainClassType.AddField(field.Type, field.Name, field.Comment, field.AccessModifier, field.IsReadOnly, field.IsPartial);
-            }
-        }
-
-        void addFieldsToMainClassR(in Class mainClass)
+        void addFieldsToMainClass(in Class mainClass)
         {
             foreach (var field in this.Fields.Where(m => !m.IsPartial))
             {
@@ -437,10 +387,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             
         }
 
-        void addConstructor(in CodeTypeDeclaration codeType, in CodeNamespace codeNs)
-            => codeType.AddConstructor(Enumerable.Empty<(string, string, string)>());
-
-        void addConstructorR(in Class codeType)
+        void addConstructor(in Class codeType)
         {
             var ctor = new Method(codeType.Name)
             {
@@ -448,20 +395,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             };
         }
 
-        void addMethodsToPartClass(in CodeTypeDeclaration partClassType)
-        {
-            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
-            {
-                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, ReturnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
-            }
-            var onInitializedAsyncBody = Component_OnInitializedAsync_MethodBody(this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == true))?.Body);
-            _ = partClassType.AddMethod("OnInitializedAsync", body: onInitializedAsyncBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
-            foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is null or true))
-            {
-                _ = partClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, ReturnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
-            }
-        }
-        void addMethodsToPartClassR(in Class partClass)
+        void addMethodsToPartClass(in Class partClass)
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == true || !m.Body.IsNullOrEmpty()))
             {
@@ -494,20 +428,8 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 _ = partClass.AddMethod(m);
             }
         }
-        void addMethodsToMainClass(in CodeTypeDeclaration mainClassType)
-        {
-            foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
-            {
-                _ = mainClassType.AddMethod(method.EventHandlerName ?? method.Name.NotNull(), method.Body, ReturnType(method.ReturnType), method.AccessModifier, method.IsPartial == true, (method.Arguments ?? []).Select(x => (x.Type.FullPath, x.Name)).ToArray());
-            }
-            var onInitializedAsyncBody = this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == false))?.Body;
-            _ = mainClassType.AddMethod("OnLoadAsync", body: onInitializedAsyncBody ?? DefaultTaskMethodBody, accessModifiers: MemberAttributes.Family | MemberAttributes.Override, returnType: "async Task");
-            foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is not true))
-            {
-            }
-        }
 
-        void addMethodsToMainClassR(in Class mainClass)
+        void addMethodsToMainClass(in Class mainClass)
         {
             foreach (var method in this.Actions.OfType<ButtonActor>().Where(m => m.IsPartial == false && m.Body.IsNullOrEmpty()))
             {
@@ -577,24 +499,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             }
         }
 
-        void addParametersToPartClass(in CodeTypeDeclaration partClassType)
-        {
-            _ = partClassType.AddProperty("Web.UI.Components.Shared.MessageComponent",
-                                          "MessageComponent",
-                                          getter: new(true, false),
-                                          setter: new(true, false));
-            foreach (var parameter in this.Parameters)
-            {
-                _ = partClassType.AddProperty(parameter.Type.FullPath,
-                                              parameter.Name,
-                                              getter: new(true, false),
-                                              setter: new(true, false),
-                                              isNullable: true,
-                                              attributes: _parameterAttributes);
-            }
-        }
-
-        void addParametersToPartClassR(in Class partClass)
+        void addParametersToPartClass(in Class partClass)
         {
             var messageComponent = new CodeGenProperty("MessageComponent", "Web.UI.Components.Shared.MessageComponent", setter: new(), getter: new());
             _ = partClass.AddProperty(messageComponent);
@@ -606,21 +511,21 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             }
         }
 
-        void addPageInitializedMethod(in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType, in StringBuilder initializedAsyncMethodBody)
-        {
-            _ = initializedAsyncMethodBody.AppendLine(InitializedAsyncMethodBody);
-            _ = mainClassType.AddMethod("OnPageInitializedAsync", returnType: "async Task", accessModifiers: MemberAttributes.Private);
-            var initializedAsyncBodyLines = initializedAsyncMethodBody.ToString().Split(Environment.NewLine);
-            _ = initializedAsyncMethodBody.Clear();
-            foreach (var line in initializedAsyncBodyLines)
-            {
-                _ = initializedAsyncMethodBody.AppendLine(line.TrimEnd().Add(8, before: true));
-            }
-            var initializedAsyncBodyCode = initializedAsyncMethodBody.ToString();
-            _ = partClassType.AddMethod("OnInitializedAsync", body: initializedAsyncBodyCode.TrimEnd(), returnType: "async Task", accessModifiers: MemberAttributes.Family | MemberAttributes.Override);
-        }
+        //void addPageInitializedMethod(in CodeTypeDeclaration mainClassType, in CodeTypeDeclaration partClassType, in StringBuilder initializedAsyncMethodBody)
+        //{
+        //    _ = initializedAsyncMethodBody.AppendLine(InitializedAsyncMethodBody);
+        //    _ = mainClassType.AddMethod("OnPageInitializedAsync", returnType: "async Task", accessModifiers: MemberAttributes.Private);
+        //    var initializedAsyncBodyLines = initializedAsyncMethodBody.ToString().Split(Environment.NewLine);
+        //    _ = initializedAsyncMethodBody.Clear();
+        //    foreach (var line in initializedAsyncBodyLines)
+        //    {
+        //        _ = initializedAsyncMethodBody.AppendLine(line.TrimEnd().Add(8, before: true));
+        //    }
+        //    var initializedAsyncBodyCode = initializedAsyncMethodBody.ToString();
+        //    _ = partClassType.AddMethod("OnInitializedAsync", body: initializedAsyncBodyCode.TrimEnd(), returnType: "async Task", accessModifiers: MemberAttributes.Family | MemberAttributes.Override);
+        //}
 
-        Class createPartialClassR(in INamespace partNameSpace)
+        Class createPartialClass(in INamespace partNameSpace)
         {
             partNameSpace.AddUsingNameSpace(typeof(string).Namespace!, typeof(Enumerable).Namespace!, typeof(Task).Namespace!, typeof(ObservationRepository).Namespace!);
             var partialClass = new Class(this.Name)
@@ -633,19 +538,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             partNameSpace.AddType(partialClass);
             return partialClass;
         }
-
-        CodeTypeDeclaration createPartialClass(in CodeNamespace partNameSpace)
-            => partNameSpace.UseNameSpace(typeof(string).Namespace!)
-                        .UseNameSpace(typeof(Enumerable).Namespace!)
-                        .UseNameSpace(typeof(Task).Namespace!)
-                        .UseNameSpace(typeof(ObservationRepository).Namespace!)
-                        .AddNewType(this.Name, isPartial: true, baseTypes: this.GetBaseTypes().IsNullOrEmpty() ? null : new[] { this.GetBaseTypes()! });
-
-        CodeTypeDeclaration createMainClass(in CodeNamespace mainNameSpace)
-            => mainNameSpace.UseNameSpace(typeof(string).Namespace!)
-                        .UseNameSpace(typeof(Enumerable).Namespace!)
-                        .UseNameSpace(typeof(Task).Namespace!)
-                        .AddNewType(this.Name, isPartial: true);
     }
 
     private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)

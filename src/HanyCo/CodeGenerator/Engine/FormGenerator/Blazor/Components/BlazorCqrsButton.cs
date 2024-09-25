@@ -3,6 +3,7 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration;
+using Library.CodeGeneration.v2.Back;
 using Library.Helpers.CodeGen;
 using Library.Validations;
 
@@ -29,47 +30,49 @@ public sealed class BlazorCqrsButton(
         }
         Check.MustBeNotNull(this.Action.Segregation);
         var calleeName = this.Action.Name;
-        _ = TypePath.New(this.Action.Segregation.Name);
-        var cqrsParamsType = this.Action.Segregation.Parameter?.Type ?? TypePath.New<object>();
-        var cqrsResultType = this.Action.Segregation.Result?.Type ?? TypePath.New<object>();
-        var dataContextValidatorName = $"ValidateForm";
-        var dataContextValidatorMethod = CodeDomHelper.NewMethod($"{dataContextValidatorName}", accessModifiers: DEFAULT_ACCESS_MODIFIER);
+        var dataContextValidatorName = "ValidateForm";
+        var dataContextValidatorMethod = new Method(dataContextValidatorName) { AccessModifier = AccessModifier.Private };
 
         yield return new(dataContextValidatorMethod, null);
+        var cqrsParamsType = this.Action.Segregation.Parameter?.Type ?? TypePath.New<object>();
         switch (this.Action.Segregation)
         {
             case IQueryCqrsSegregation query:
-                var queryBody = CodeDomHelper.NewMethod(this.OnClick.ArgumentNotNull(nameof(this.OnClick))
-                    , QueryButton_CallQueryMethodBody(dataContextValidatorName, cqrsParamsType.FullPath, calleeName)
-                    , returnType: this._onClickReturnType ?? "async void");
+                var queryBody = new Method(this.OnClick.ArgumentNotNull())
+                {
+                    Body = QueryButton_CallQueryMethodBody(dataContextValidatorName, cqrsParamsType.FullPath, calleeName),
+                    ReturnType = this._onClickReturnType ?? "async void"
+
+                };
                 var queryParameterType = query.Parameter?.Type;
-                var queryCalling = CodeDomHelper.NewMethod(
-                    QueryButton_CallingQueryMethodName(calleeName, cqrsParamsType.FullPath)
-                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
+                var queryCalling = new Method(QueryButton_CallingQueryMethodName(calleeName, cqrsParamsType.FullPath)) { AccessModifier = AccessModifier.Private };
                 var queryResultType = query.Result?.Type;
-                var queryCalled = CodeDomHelper.NewMethod(
-                    QueryButton_CalledQueryMethodName(calleeName, queryParameterType, queryResultType)
-                    , accessModifiers: DEFAULT_ACCESS_MODIFIER);
+                var queryCalled = new Method(QueryButton_CalledQueryMethodName(calleeName, queryParameterType, queryResultType))
+                {
+                    AccessModifier = AccessModifier.Private
+                };
                 yield return new(queryCalling, null);
                 yield return new(null, queryBody);
                 yield return new(queryCalled, null);
                 break;
 
             case ICommandCqrsSegregation:
-                var commandBody = CodeDomHelper.NewMethod(
-                    this.OnClick.ArgumentNotNull(nameof(this.OnClick)),
-                    CommandButton_CallCommandMethodBody(dataContextValidatorName, cqrsParamsType.FullPath, cqrsResultType.FullPath, calleeName),
-                    returnType: "async void");
-                var commandCalling = CodeDomHelper.NewMethod(
-                    $"On{calleeName}Calling",
-                    accessModifiers: DEFAULT_ACCESS_MODIFIER,
-                    arguments: [($"{cqrsParamsType.FullPath ?? "System.Object"}", "parameter")],
-                    isPartial: true);
-                var commandCalled = CodeDomHelper.NewMethod(
-                    $"On{calleeName}Called",
-                    accessModifiers: DEFAULT_ACCESS_MODIFIER,
-                    arguments: [($"{cqrsParamsType.FullPath ?? "System.Object"}", "parameter"), ($"{cqrsResultType?.FullPath ?? "System.Object"}", "result")],
-                    isPartial: true);
+                var cqrsResultType = this.Action.Segregation.Result?.Type ?? TypePath.New<object>();
+                var commandBody = new Method(this.OnClick.ArgumentNotNull())
+                {
+                    Body = CommandButton_CallCommandMethodBody(dataContextValidatorName, cqrsParamsType.FullPath, cqrsResultType.FullPath, calleeName),
+                    ReturnType = "async void"
+                };
+                var commandCalling = new Method($"On{calleeName}Calling")
+                {
+                    AccessModifier = AccessModifier.Private,
+                    InheritanceModifier = InheritanceModifier.Partial
+                }.AddArgument($"{cqrsParamsType?.FullPath ?? "System.Object"}", "parameter");
+                var commandCalled = new Method($"On{calleeName}Called")
+                {
+                    AccessModifier = AccessModifier.Private,
+                    InheritanceModifier = InheritanceModifier.Partial
+                }.AddArgument(($"{cqrsParamsType.FullPath ?? "System.Object"}", "parameter"), ($"{cqrsResultType?.FullPath ?? "System.Object"}", "result"));
                 yield return new(commandCalling, null);
                 yield return new(null, commandBody);
                 yield return new(commandCalled, null);

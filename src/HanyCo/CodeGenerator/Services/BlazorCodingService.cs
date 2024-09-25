@@ -30,10 +30,11 @@ using UiViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentViewMod
 
 namespace Services;
 
-internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator) : IBlazorComponentCodeService, IBlazorPageCodeService
+internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator, ICodeGeneratorEngine codeGenerator) : IBlazorComponentCodeService, IBlazorPageCodeService
 {
     private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
     private readonly ILogger _logger = logger;
+    private readonly ICodeGeneratorEngine _codeGenerator = codeGenerator;
 
     public static string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
         new StringBuilder()
@@ -79,7 +80,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
         try
         {
-            var component = createComponent(model);
+            var component = createComponent(model, _codeGenerator);
             processBackendActions(model, component);
             processFrontActions(model, component);
             addParameters(model, component);
@@ -93,12 +94,12 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
             return Result.Fail<Codes>(ex, Codes.Empty);
         }
 
-        static BlazorComponent createComponent(in UiViewModel model)
+        static BlazorComponent createComponent(in UiViewModel model, in ICodeGeneratorEngine codeGenerator)
         {
             Check.MustBeArgumentNotNull(model.Name);
 
             var (dataContextType, dataContextPropType) = createDataContext(model);
-            var result = getNewComponent(model, dataContextType);
+            var result = getNewComponent(model, dataContextType, codeGenerator);
             setDataContext(model, dataContextPropType, result);
             return result;
 
@@ -346,8 +347,8 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
         this._logger.Debug($"Generating code is started.");
         var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
         var page = (!viewModel.Routes.Any()
-            ? BlazorPage.NewByModuleName(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Module.Name!)
-            : BlazorPage.NewByPageRoute(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Routes))
+            ? BlazorPage.NewByModuleName(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Module.Name!, _codeGenerator)
+            : BlazorPage.NewByPageRoute(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Routes, _codeGenerator))
                 .With(x => x.NameSpace = viewModel.NameSpace)
                 .With(x => x.DataContextType = dataContextType);
 
@@ -355,7 +356,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
         {
             page.Parameters.Add(new(parameter.Type, parameter.Name));
         }
-        _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!))));
+        _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!), _codeGenerator)));
 
         var result = page.GenerateCodes(CodeCategory.Page, arguments);
         this._logger.Debug($"Generating code is done.");

@@ -3,6 +3,7 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
 using HanyCo.Infra.CodeGeneration.Helpers;
 
 using Library.CodeGeneration.Models;
+using Library.CodeGeneration.v2.Back;
 using Library.Helpers.CodeGen;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
@@ -17,7 +18,7 @@ public sealed class BlazorCustomButton(
 {
     public string? OnClickReturnType { get; set; }
 
-    public IEnumerable<CodeTypeMembers>? GenerateCodeTypeMembers()
+    public IEnumerable<ClassMembers>? GenerateCodeTypeMembers()
     {
         if (this.Action is null)
         {
@@ -27,7 +28,7 @@ public sealed class BlazorCustomButton(
         {
             var body = this.Action.CodeStatement;
             var returnValue = this.OnClickReturnType == "void" ? null : this.OnClickReturnType;
-            var method = CodeDomHelper.NewMethod(this.OnClick, body, returnType: returnValue);
+            var method = new Method(this.OnClick) { Body = body, ReturnType = returnValue };
             yield return body.IsNullOrEmpty() ? new(method, null) : new(null, method);
         }
     }
