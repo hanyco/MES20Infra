@@ -9,7 +9,7 @@ public sealed class EditFormInfo
     public string Model { get; set; } = "@this.DataContext";
 }
 
-public readonly struct EditFormEventInfo(string eventName, Method eventHandler, bool isPartial = true) : IEquatable<EditFormEventInfo>
+public readonly struct EditFormEventInfo(string eventName, Method eventHandler, bool isPartial = false) : IEquatable<EditFormEventInfo>
 {
     public IMethod Handler { get; } = eventHandler;
     public bool IsPartial { get; } = isPartial;

@@ -194,6 +194,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponent.PageDataContextProperty = data.ViewModel.BlazorDetailsPage.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponent.Attributes.Add(new("@bind-EntityId", "this.Id"));
             data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
+            data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!);
             //data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             data.ViewModel.BlazorDetailsPage.Components.Add(data.ViewModel.BlazorDetailsComponent);
         }

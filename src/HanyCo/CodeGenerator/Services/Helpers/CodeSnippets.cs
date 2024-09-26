@@ -67,8 +67,8 @@ internal static class CodeSnippets
     internal static string BlazorListComponent_DeleteButton_OnClick_Body(in string controllerName, in string sourceDtoName)
     {
         var result = new StringBuilder()
-            .AppendLine($"var id = this.DataContext.Id;")
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, paramVarName: "id"))
+            // Reads Id from argument
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["id"]))
             .AppendLine($"await OnInitializedAsync();")
             .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
             .AppendLine($"this.StateHasChanged();");

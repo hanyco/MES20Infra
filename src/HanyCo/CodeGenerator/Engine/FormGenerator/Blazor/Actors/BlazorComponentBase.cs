@@ -402,7 +402,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 var m = new Method(method.EventHandlerName ?? method.Name.NotNull())
                 {
                     Body = method.Body,
-                    InheritanceModifier = InheritanceModifier.Partial,
+                    AccessModifier = AccessModifier.Protected,
                     ReturnType = method.ReturnType is not null ? TypePath.New(method.ReturnType) : null
                 }.AddArgument((method.Arguments ?? []).Select(x => (x.Type, x.Name)));
                 partClass.AddMethod(m);
