@@ -10,19 +10,19 @@ using Library.Interfaces;
 namespace HumanResources;
 public partial class PeopleListComponent
 {
-    public  void NewButton_OnClick()
+    protected void NewButton_OnClick()
     {
         this._navigationManager.NavigateTo("/HumanResources/Person/details");
     }
 
-    public  void EditButton_OnClick(Int64 id)
+    protected void EditButton_OnClick(Int64 id)
     {
         this._navigationManager.NavigateTo($"/HumanResources/Person/details/{id.ToString()}");
     }
 
-    public  async void DeleteButton_OnClick(Int64 id)
+    protected async void DeleteButton_OnClick(Int64 id)
     {
-        var apiResult = await _http.DeleteFromJsonAsync($"person/{id}",);
+        var apiResult = await _http.DeleteFromJsonAsync("person/id/");
         await OnInitializedAsync();
         MessageComponent.Show("Delete Entity", "Entity deleted.");
         this.StateHasChanged();

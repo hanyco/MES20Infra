@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.AspNetCore.Components;
 
 namespace HumanResources.Pages;
 public partial class PersonDetailsPage
@@ -17,6 +16,6 @@ public partial class PersonDetailsPage
 
     public MessageComponent MessageComponent { get; set; }
 
-    [Parameter]
+    [Microsoft.AspNetCore.Components.Parameter]
     public Int64? Id { get; set; }
 }

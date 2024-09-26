@@ -16,20 +16,6 @@ public partial class PersonDetailsComponent
         await this.OnLoadAsync();
     }
 
-    public partial async Task SaveData()
-    {
-        if (this.DataContext.Id == default)
-        {
-            var apiResult = await _http.PostAsJsonAsync("person/", PersonDto);
-        }
-        else
-        {
-            var apiResult = await _http.PutAsJsonAsync("person/", PersonDto);
-        }
-
-        MessageComponent.Show("Save Data", "Date saved.");
-    }
-
     public MessageComponent MessageComponent { get; set; }
 
     [Parameter]
