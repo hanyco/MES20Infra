@@ -22,7 +22,7 @@ public partial class PeopleListComponent
 
     public  async void DeleteButton_OnClick(Int64 id)
     {
-        var apiResult = await _http.DeleteFromJsonAsync("person/", id);
+        var apiResult = await _http.DeleteFromJsonAsync($"person/{id}",);
         await OnInitializedAsync();
         MessageComponent.Show("Delete Entity", "Entity deleted.");
         this.StateHasChanged();
