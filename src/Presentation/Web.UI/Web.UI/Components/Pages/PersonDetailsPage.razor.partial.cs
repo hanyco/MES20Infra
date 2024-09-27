@@ -1,6 +1,7 @@
 using Web.UI.Components.Shared;
 using System;
 using HumanResources.Pages;
+using Microsoft.AspNetCore.Components;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
@@ -16,6 +17,6 @@ public partial class PersonDetailsPage
 
     public MessageComponent MessageComponent { get; set; }
 
-    [Microsoft.AspNetCore.Components.Parameter]
+    [Parameter]
     public Int64? Id { get; set; }
 }

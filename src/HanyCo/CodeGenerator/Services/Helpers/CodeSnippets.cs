@@ -12,7 +12,6 @@ using System.Text;
 
 namespace Services.Helpers;
 
-[DebuggerStepThrough]
 internal static class CodeSnippets
 {
     public static string QueryHandler_Handle_Body(in CqrsViewModelBase model, in DtoViewModel entityModel, in string? additionalWhereClause = null)
@@ -69,7 +68,7 @@ internal static class CodeSnippets
     {
         var result = new StringBuilder()
             // Reads Id from argument
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["{id}"]))
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["{id}"], type: "typeof(long)"))
             .AppendLine($"await OnInitializedAsync();")
             .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
             .AppendLine($"this.StateHasChanged();");
@@ -175,7 +174,8 @@ internal static class CodeSnippets
         in string? nameSpace = null,
         in IEnumerable<string>? queryParams = null,
         in IEnumerable<(string Key, string Value)>? keyValueQueryParams = null,
-        in string? paramVarName = null
+        in string? paramVarName = null,
+        in string? type = null
         )
     {
         var httpClientMethodName = method switch
@@ -188,8 +188,8 @@ internal static class CodeSnippets
         };
 
         // Examples: person = await
-        // Http.GetFromJsonAsync<PersonDto>($"HumanResources/person/{personId}"); var apiResult =
-        // await Http.PostAsJsonAsync("HumanResources/person", newPerson);
+        // Http.GetFromJsonAsync<PersonDto>($"HumanResources/person/{personId}");
+        // var apiResult = await Http.PostAsJsonAsync("HumanResources/person", newPerson);
 
         // var apiResult = await _http.GetFromJsonAsync
         var returnStatement = returnVarStatement.IsNullOrEmpty() ? "" : $"{returnVarStatement} = ";
@@ -197,7 +197,7 @@ internal static class CodeSnippets
             // var apiResult = await _http.GetFromJsonAsync<PersonDto>
             .Append(resultTypeName is { } value ? $"<{value}>" : "")
             // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"
-            .Append("(\"")
+            .Append("($\"")
             // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/
             .Append(nameSpace?.Trim('/') is { } ns ? $"{ns}/" : null)
             // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/
@@ -208,11 +208,11 @@ internal static class CodeSnippets
             .Append(keyValueQueryParams.Compact(kv => kv is { Key: not null } and { Value: not null }).Select(kv => $"{kv.Key}={kv.Value}").Merge('&'))
             // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5"
             .Append('"')
-            // var apiResult = await
-            // _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson
             .Append(paramVarName.IsNullOrEmpty() ? null : $", {paramVarName}")
-            // var apiResult = await
-            // _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson);
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type
+            .Append(type.IsNullOrEmpty() ? null : $", {type}")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type);
             .Append(");");
         var result = sb.ToString();
         return result;

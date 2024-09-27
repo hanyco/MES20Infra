@@ -1,6 +1,8 @@
 using System;
 using Web.UI.Components.Shared;
 using HumanResources;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
@@ -22,7 +24,7 @@ public partial class PeopleListComponent
 
     protected async void DeleteButton_OnClick(Int64 id)
     {
-        var apiResult = await _http.DeleteFromJsonAsync("person/id/");
+        var apiResult = await _http.DeleteFromJsonAsync($"person/{id}/", typeof(long));
         await OnInitializedAsync();
         MessageComponent.Show("Delete Entity", "Entity deleted.");
         this.StateHasChanged();

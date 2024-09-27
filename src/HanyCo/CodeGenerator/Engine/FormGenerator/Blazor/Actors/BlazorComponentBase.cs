@@ -418,13 +418,13 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             };
             partClass.AddMethod(onInitializedAsyncMethod);
 
+            //foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is null or true))
             foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is null or true))
             {
                 var m = new Method(method.EventHandlerName ?? method.Name.NotNull())
                 {
                     Body = method.Body,
-                    ReturnType = method.ReturnType is null ? null : TypePath.New(method.ReturnType),
-                    InheritanceModifier = method.IsPartial is true ? InheritanceModifier.Partial : InheritanceModifier.None
+                    ReturnType = method.ReturnType is null ? null : TypePath.New(method.ReturnType)
                 }.AddArgument((method.Arguments ?? []).Select(x => (x.Type, x.Name)));
                 _ = partClass.AddMethod(m);
             }
@@ -437,7 +437,6 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 var m = new Method(method.EventHandlerName ?? method.Name.NotNull())
                 {
                     Body = method.Body,
-                    InheritanceModifier = method.IsPartial == true ? InheritanceModifier.Partial : InheritanceModifier.None,
                     ReturnType = method.ReturnType is not null ? TypePath.New(method.ReturnType) : null
                 }.AddArgument((method.Arguments ?? []).Select(x => (x.Type, x.Name)));
                 mainClass.AddMethod(m);

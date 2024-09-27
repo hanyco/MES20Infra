@@ -1,6 +1,8 @@
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
 using HumanResources;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +16,20 @@ public partial class PersonDetailsComponent
     protected override async Task OnInitializedAsync()
     {
         await this.OnLoadAsync();
+    }
+
+    public async Task SaveData()
+    {
+        if (this.DataContext.Id == default)
+        {
+            var apiResult = await _http.PostAsJsonAsync($"person/", DataContext);
+        }
+        else
+        {
+            var apiResult = await _http.PutAsJsonAsync($"person/", DataContext);
+        }
+
+        MessageComponent.Show("Save Data", "Date saved.");
     }
 
     public MessageComponent MessageComponent { get; set; }

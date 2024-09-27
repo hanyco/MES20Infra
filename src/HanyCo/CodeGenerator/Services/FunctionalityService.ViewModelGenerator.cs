@@ -23,6 +23,7 @@ using Services.Helpers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Xml.Linq;
 
 namespace Services;
@@ -195,10 +196,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponent.PageDataContext = data.ViewModel.BlazorDetailsPage.DataContext;
             data.ViewModel.BlazorDetailsComponent.PageDataContextProperty = data.ViewModel.BlazorDetailsPage.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponent.Attributes.Add(new("@bind-EntityId", "this.Id"));
-            _ = data.ViewModel.BlazorDetailsComponent.AddUsings("Web.UI.Components.Shared",
-                typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!);
-            _ = data.ViewModel.BlazorDetailsComponent.AdditionalInjects.Add((typeof(HttpClient), "_http"));
+            _ = data.ViewModel.BlazorDetailsComponent.AddUsings("Web.UI.Components.Shared", typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!);
             //data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            _ = AddHttpClientInjection(data.ViewModel.BlazorDetailsComponent);
             data.ViewModel.BlazorDetailsPage.Components.Add(data.ViewModel.BlazorDetailsComponent);
         }
 
@@ -266,11 +266,19 @@ internal sealed partial class FunctionalityService
             {
                 Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
                 ReturnType = "async Task"
-            }));
+            }, true));
         }
 
         void setupSecurity(CreationData data)
             => AddClaimViewModel(data.ViewModel.BlazorDetailsComponent, $"{name}Details", data);
+    }
+
+    private static UiComponentViewModel AddHttpClientInjection(UiComponentViewModel model)
+    {
+        var httpClient = (Type: typeof(HttpClient), FieldName: "_http");
+        _ = model.AddUsings(httpClient.Type.Namespace!, typeof(HttpClientJsonExtensions).Namespace!);
+        _ = model.AdditionalInjects.Add(httpClient);
+        return model;
     }
 
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
@@ -310,10 +318,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponent.IsGrid = true;
             data.ViewModel.BlazorListComponent.PageDataContext = data.ViewModel.BlazorListPage.DataContext;
             data.ViewModel.BlazorListComponent.PageDataContextProperty = data.ViewModel.BlazorListPage.DataContext.Properties.First(x => x.IsList == true);
-            _ = data.ViewModel.BlazorListComponent.AdditionalInjects.Add((typeof(HttpClient), "_http"));
-            _ = data.ViewModel.BlazorListComponent.AddUsings("Web.UI.Components.Shared",
-                typeof(System.Net.Http.Json.HttpClientJsonExtensions).Namespace!);
+            _ = data.ViewModel.BlazorListComponent.AddUsings("Web.UI.Components.Shared");
             //data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            _ = AddHttpClientInjection(data.ViewModel.BlazorListComponent);
             data.ViewModel.BlazorListPage.Components.Add(data.ViewModel.BlazorListComponent);
         }
 

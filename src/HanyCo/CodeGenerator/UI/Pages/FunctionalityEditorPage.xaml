@@ -82,6 +82,7 @@
             Grid.Row="1"
             Width="150" />
         <TabControl
+            x:Name="MainTabControl"
             Grid.Row="1"
             Grid.Column="1"
             TabStripPlacement="Left">

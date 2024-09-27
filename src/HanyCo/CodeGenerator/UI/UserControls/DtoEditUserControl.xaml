@@ -7,8 +7,8 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;assembly=HanyCo.Infra.CodeGen.Contracts.CodeGen"
-    d:DataContext="{d:DesignInstance Type=viewmodels:DtoViewModel}"
     x:Name="Me"
+    d:DataContext="{d:DesignInstance Type=viewmodels:DtoViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Loaded="Me_Loaded"
@@ -110,7 +110,7 @@
                 Grid.Column="3"
                 Content="Is List"
                 IsChecked="{Binding IsList}"
-                IsEnabled="{Binding ElementName=Me, Path=IsReadOnly, Converter={StaticResource BooleanInverterConverter}}" />        
+                IsEnabled="{Binding ElementName=Me, Path=IsReadOnly, Converter={StaticResource BooleanInverterConverter}}" />
         </Grid>
         <StackPanel Grid.Row="1" Style="{StaticResource FieldPanel}">
             <TextBlock Style="{StaticResource GroupTitleBlock}" Text="Properties" />

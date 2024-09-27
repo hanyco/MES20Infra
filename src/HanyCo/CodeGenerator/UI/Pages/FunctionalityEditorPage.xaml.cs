@@ -23,6 +23,8 @@ using Library.Wpf.Windows.CommonTools;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
 
+using UI;
+
 namespace HanyCo.Infra.UI.Pages;
 
 /// <summary>
@@ -105,46 +107,99 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-        await this.AskToSaveIfChangedAsync().BreakOnFail().EndAsync();
-        this.ViewModel = null;
-        this.ViewModel = await this.GetNewViewModelAsync();
+        try
+        {
+            EnableActors(false);
+            await this.AskToSaveIfChangedAsync().BreakOnFail().EndAsync();
+            this.ViewModel = null;
+            this.ViewModel = await this.GetNewViewModelAsync();
+        }
+        finally
+        {
+            EnableActors(true);
+        }
     }
 
     private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-        var functionality = this.FunctionalityTreeView.SelectedItem;
-        Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
-        var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
-        if (resp != TaskDialogResult.Yes)
+        try
         {
-            return;
-        }
+            EnableActors(false);
+            var functionality = this.FunctionalityTreeView.SelectedItem;
+            Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
+            var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
+            if (resp != TaskDialogResult.Yes)
+            {
+                return;
+            }
 
-        _ = await this._service.DeleteAsync(functionality).ShowOrThrowAsync(this.Title);
-        await this.BindDataAsync();
+            _ = await this._service.DeleteAsync(functionality).ShowOrThrowAsync(this.Title);
+            await this.BindDataAsync();
+        }
+        finally
+        {
+            EnableActors(true);
+        }
     }
 
     private async void EditFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-        var id = this.FunctionalityTreeView.SelectedItem.Check()
+        try
+        {
+            EnableActors(false);
+            var id = this.FunctionalityTreeView.SelectedItem.Check()
             .NotNull(() => "No functionality is selected.")
             .NotNull(x => x!.Id).ThrowOnFail().Value!.Id!.Value;
-        var viewModel = await this._service.GetByIdAsync(id);
-        this.ViewModel = viewModel;
-        await this.BindDataAsync();
+            var viewModel = await this._service.GetByIdAsync(id);
+            this.ViewModel = viewModel;
+            await this.BindDataAsync();
+        }
+        finally
+        {
+            EnableActors(true);
+        }
     }
 
     private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
     {
-        await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
-        this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
+        try
+        {
+            EnableActors(false);
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
+            this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
+        }
+        finally
+        {
+            EnableActors(true);
+        }
     }
 
     private async void GenerateViewModelButton_Click(object sender, RoutedEventArgs e)
     {
-        await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
-        this.PrepareViewModel();
-        this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
+        try
+        {
+            EnableActors(false);
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
+            this.PrepareViewModel();
+            this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
+        }
+        finally
+        {
+            EnableActors(true);
+        }
+    }
+
+    void EnableActors(bool enable)
+    {
+        this.CreateFunctionalityButton.IsEnabled = enable;
+        this.EditFunctionalityButton.IsEnabled = enable;
+        this.DeleteFunctionalityButton.IsEnabled = enable;
+        this.GenerateViewModelButton.IsEnabled = enable;
+        this.GenerateCodesButton.IsEnabled = enable;
+        this.SaveToDbButton.IsEnabled = enable;
+        this.SaveToDiskButton.IsEnabled = enable;
+        this.MainTabControl.IsEnabled = enable;
+        App.Current.DoEvents();
     }
 
     private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
@@ -268,16 +323,32 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = ControlHelper.MoveToNextUIElement();
-        _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
-        await this.FunctionalityTreeView.BindAsync();
+        try
+        {
+            EnableActors(false);
+            _ = ControlHelper.MoveToNextUIElement();
+            _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
+            await this.FunctionalityTreeView.BindAsync();
+        }
+        finally
+        {
+            EnableActors(true);
+        }
     }
 
     private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = ControlHelper.MoveToNextUIElement();
-        var saveResult = await this.SaveCodes().ThrowOnFailAsync(this.Title);
-        SourceCodeHelper.ShowDiskOperationResult(saveResult);
+        try
+        {
+            EnableActors(false);
+            _ = ControlHelper.MoveToNextUIElement();
+            var saveResult = await this.SaveCodes().ThrowOnFailAsync(this.Title);
+            SourceCodeHelper.ShowDiskOperationResult(saveResult);
+        }
+        finally
+        {
+            EnableActors(true);
+        }
     }
 
     private async void SelectRootDtoByDtoButton_Click(object sender, RoutedEventArgs e)
