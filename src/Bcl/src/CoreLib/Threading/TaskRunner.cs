@@ -31,7 +31,7 @@ public sealed class TaskRunner : TaskRunnerBase<TaskRunner, Result>
         StartWith(c => start.ToAsync(c));
 
     // Auxiliary method
-    public static TaskRunner<TState> StartWith<TState>(TState state) =>
+    public static TaskRunner<TState> SetState<TState>(TState state) =>
         TaskRunner<TState>.StartWith(state);
 
     public TaskRunner Then([DisallowNull] Func<CancellationToken, Task> func)

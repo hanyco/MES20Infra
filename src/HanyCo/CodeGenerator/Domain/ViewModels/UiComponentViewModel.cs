@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
@@ -16,7 +17,6 @@ public class UiComponentViewModel : UiComponentViewModelBase
     private PropertyViewModel? _pageDataContextProperty;
 
     public ObservableCollection<IUiComponentContent> Actions { get; } = [];
-    public ObservableCollection<string> AdditionalUsingNameSpaces { get; } = [];
     public ObservableCollection<(string Key, string Value)> Attributes { get; } = [];
     public string ClassName { get => this._className; set => this.SetProperty(ref this._className, value); }
     public EditFormInfo EditFormInfo { get; } = new();

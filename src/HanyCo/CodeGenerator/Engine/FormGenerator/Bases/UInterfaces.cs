@@ -1,5 +1,6 @@
 ﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
+using Library.CodeGeneration;
 using Library.Interfaces;
 
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
@@ -12,7 +13,7 @@ public interface IActionCodesGenerate
 public interface IBlazorComponent : IHtmlElement
 {
     Dictionary<string, string?> BlazorAttributes { get; }
-
+    
     string? NameSpace { get; }
 }
 

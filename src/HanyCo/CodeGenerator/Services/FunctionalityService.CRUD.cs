@@ -102,7 +102,7 @@ internal partial class FunctionalityService
         {
             return er.WithValue(model);
         }
-        var result = await TaskRunner.StartWith(model)
+        var result = await TaskRunner.SetState(model)
             .Then(x => saveQuery(x.GetAllQuery, token))
             .Then(x => saveQuery(x.GetByIdQuery, token))
             .Then(x => saveCommand(x.InsertCommand, token))

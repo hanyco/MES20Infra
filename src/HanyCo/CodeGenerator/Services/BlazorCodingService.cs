@@ -7,6 +7,7 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Actions;
+using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
@@ -83,8 +84,9 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
             var component = createComponent(model, _codeGenerator);
             processBackendActions(model, component);
             processFrontActions(model, component);
-            addParameters(model, component);
+            addParameters(model, component);            
             var codes = component.GenerateCodes(CodeCategory.Component, arguments)
+                
                 //.AddRange(this.GenerateModelConverterCode())
                 ;
             return Result.Success<Codes>(codes);
@@ -117,7 +119,8 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                     .With(x => x.NameSpace = model.NameSpace)
                     .With(x => x.IsGrid = model.IsGrid)
                     .With(x => x.DataContextType = dataContextType)
-                    .With(x => x.AdditionalUsings.AddRange(model.AdditionalUsingNameSpaces));
+                    .With(x => x.AdditionalUsings.AddRange(model.AdditionalUsings))
+                    .With(x => x.AdditionalInjects.AddRange(model.AdditionalInjects));
 
             static void setDataContext(UiViewModel model, TypePath? dataContextPropType, BlazorComponent result)
             {
@@ -284,6 +287,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
 
         void processBackendActions(in UiViewModel model, in BlazorComponent result)
         {
+            result.AddUsings(model.AdditionalUsings);
             foreach (var action in model.Actions.OfType<BackElement>())
             {
                 switch (action)
@@ -345,7 +349,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
             return vr.WithValue(Codes.Empty);
         }
         this._logger.Debug($"Generating code is started.");
-        var dataContextType = TypePath.New(viewModel.DataContext?.Name, viewModel.DataContext?.NameSpace);
+        var dataContextType = TypePath.New(viewModel.DataContext.Name, viewModel.DataContext.NameSpace);
         var page = (!viewModel.Routes.Any()
             ? BlazorPage.NewByModuleName(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Module.Name!, _codeGenerator)
             : BlazorPage.NewByPageRoute(arguments?.BackendFileName ?? viewModel.Name!, viewModel.Routes, _codeGenerator))
@@ -357,7 +361,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
             page.Parameters.Add(new(parameter.Type, parameter.Name));
         }
         _ = page.Children.AddRange(viewModel.Components.Select(x => toHtmlElement(x, dataContextType, x.PageDataContextProperty is null ? null : (new TypePath(x.PageDataContextProperty.TypeFullName), x.PageDataContextProperty.Name!), _codeGenerator)));
-
+        page.AddUsings(viewModel.AdditionalUsings);
         var result = page.GenerateCodes(CodeCategory.Page, arguments);
         this._logger.Debug($"Generating code is done.");
 

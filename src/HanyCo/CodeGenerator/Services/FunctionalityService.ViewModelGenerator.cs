@@ -1,6 +1,7 @@
 ﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
+using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
@@ -21,6 +22,7 @@ using Services.Helpers;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Xml.Linq;
 
 namespace Services;
@@ -175,7 +177,7 @@ internal sealed partial class FunctionalityService
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.SourceDtoName);
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createViewModel)
             .Then(setupEditForm)
             .Then(addActions)
@@ -193,8 +195,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponent.PageDataContext = data.ViewModel.BlazorDetailsPage.DataContext;
             data.ViewModel.BlazorDetailsComponent.PageDataContextProperty = data.ViewModel.BlazorDetailsPage.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponent.Attributes.Add(new("@bind-EntityId", "this.Id"));
-            data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
-            data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!);
+            _ = data.ViewModel.BlazorDetailsComponent.AddUsings("Web.UI.Components.Shared",
+                typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!);
+            _ = data.ViewModel.BlazorDetailsComponent.AdditionalInjects.Add((typeof(HttpClient), "_http"));
             //data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             data.ViewModel.BlazorDetailsPage.Components.Add(data.ViewModel.BlazorDetailsComponent);
         }
@@ -273,14 +276,14 @@ internal sealed partial class FunctionalityService
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("DetailsPage");
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createPageViewModel)
             .Then(addParameters)
             .Then(setupSecurity)
             .RunAsync(token);
-
         void createPageViewModel(CreationData data) =>
             data.ViewModel.BlazorDetailsPage = this._blazorPageService.CreateViewModel(data.ViewModel.SourceDto)
+                .AddUsings(typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!)
                 .With(x => x.Name = name)
                 .With(x => x.ClassName = name);
         static void addParameters(CreationData data) =>
@@ -293,7 +296,7 @@ internal sealed partial class FunctionalityService
     private Task CreateBlazorListComponent(CreationData data, CancellationToken token)
     {
         var name = StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName));
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createViewModel)
             .Then(addActions)
             .Then(setupSecurity)
@@ -307,7 +310,9 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponent.IsGrid = true;
             data.ViewModel.BlazorListComponent.PageDataContext = data.ViewModel.BlazorListPage.DataContext;
             data.ViewModel.BlazorListComponent.PageDataContextProperty = data.ViewModel.BlazorListPage.DataContext.Properties.First(x => x.IsList == true);
-            data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add("Web.UI.Components.Shared");
+            _ = data.ViewModel.BlazorListComponent.AdditionalInjects.Add((typeof(HttpClient), "_http"));
+            _ = data.ViewModel.BlazorListComponent.AddUsings("Web.UI.Components.Shared",
+                typeof(System.Net.Http.Json.HttpClientJsonExtensions).Namespace!);
             //data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             data.ViewModel.BlazorListPage.Components.Add(data.ViewModel.BlazorListComponent);
         }
@@ -364,7 +369,7 @@ internal sealed partial class FunctionalityService
     private Task CreateBlazorListPage(CreationData data, CancellationToken token)
     {
         var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("ListPage");
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createPageViewModel)
             .Then(setupSecurity)
             .RunAsync(token);
@@ -380,7 +385,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateController(CreationData data, CancellationToken token)
     {
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(initialize)
             .Then(createCtor)
             .Then(createGetAllApi)
@@ -483,7 +488,7 @@ internal sealed partial class FunctionalityService
     private Task CreateDeleteCommand(CreationData data, CancellationToken token)
     {
         var name = $"Delete{CommonHelpers.Purify(data.SourceDtoName)}";
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createViewModel)
             .Then(createValidator)
             .Then(createResult)
@@ -535,7 +540,7 @@ internal sealed partial class FunctionalityService
     private async Task CreateGetAllQuery(CreationData data, CancellationToken token)
     {
         var name = $"GetAll{StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName))}";
-        var result = await TaskRunner.StartWith(data)
+        var result = await TaskRunner.SetState(data)
             .Then(createViewModel)
             .Then(createResult)
             .Then(createParams)
@@ -585,7 +590,7 @@ internal sealed partial class FunctionalityService
     {
         var name = $"GetById{CommonHelpers.Purify(data.SourceDtoName)}";
 
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createModel)
             .Then(createResult)
             .Then(createParams)
@@ -634,7 +639,7 @@ internal sealed partial class FunctionalityService
     private Task CreateInsertCommand(CreationData data, CancellationToken token)
     {
         var name = $"Insert{CommonHelpers.Purify(data.SourceDtoName)}";
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createModel)
             .Then(createResult)
             .Then(createParams)
@@ -688,7 +693,7 @@ internal sealed partial class FunctionalityService
     private Task CreateUpdateCommand(CreationData data, CancellationToken token)
     {
         var name = $"Update{CommonHelpers.Purify(data.SourceDtoName)}";
-        return TaskRunner.StartWith(data)
+        return TaskRunner.SetState(data)
             .Then(createHandler)
             .Then(createResult)
             .Then(createParams)

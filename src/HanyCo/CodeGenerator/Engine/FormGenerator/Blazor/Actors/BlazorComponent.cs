@@ -6,8 +6,6 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.CodeGeneration.v2;
-using Library.Cqrs.Models.Commands;
-using Library.Cqrs.Models.Queries;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
 
@@ -18,12 +16,12 @@ namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 
 [Immutable]
 [Fluent]
-public sealed class BlazorComponent(in string name, ICodeGeneratorEngine codeGenerator) 
+public sealed class BlazorComponent(in string name, ICodeGeneratorEngine codeGenerator)
     : BlazorComponentBase<BlazorComponent>(name, codeGenerator), IBlazorComponent
 {
+    public ISet<(TypePath Type, string FieldName)> AdditionalInjects { get; } = new HashSet<(TypePath Type, string FieldName)>();
     public Dictionary<string, string?> BlazorAttributes { get; } = [];
     public (TypePath Type, string Name)? DataContextProperty { get; set; }
-    
     public bool ShouldGenerateFullUiCode { get; internal set; } = true;
 
     public static BlazorComponent New(in string name, in ICodeGeneratorEngine codeGenerator) =>
@@ -56,6 +54,7 @@ public sealed class BlazorComponent(in string name, ICodeGeneratorEngine codeGen
             .AppendLine("@using Web.UI.Components.Shared")
             .AppendLine()
             .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
+            .AppendAllLines(this.AdditionalInjects, x => $"@inject {x.Type} {TypeMemberNameHelper.ToFieldName(x.FieldName)}")
             .AppendLine()
             .AppendLine($"@inherits {componentBaseTypePath.FullPath}")
             .AppendLine()
@@ -86,7 +85,7 @@ public sealed class BlazorComponent(in string name, ICodeGeneratorEngine codeGen
                 element.Attributes.Add("DataContext", "@this.DataContext");
             }
             element.Attributes.Add("PageDataContext", "@this.DataContext");
-            element.Attributes.AddRange(this.Attributes);
+            _ = element.Attributes.AddRange(this.Attributes);
             return element.GenerateUiCode();
         }
     }

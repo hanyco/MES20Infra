@@ -1,4 +1,5 @@
 ﻿using System.CodeDom;
+using System.Collections.Generic;
 
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
@@ -22,7 +23,7 @@ using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
 namespace HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 
 [Fluent]
-public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>//, ICodeGenerator,  IComponentCodeUnit
+public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IParent<IHtmlElement>, ICodeBase//, ICodeGenerator,  IComponentCodeUnit
     where TBlazorComponent : BlazorComponentBase<TBlazorComponent>
 {
     private static readonly string[] _parameterAttributes = ["Microsoft.AspNetCore.Components.Parameter"];
@@ -32,7 +33,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
         => (this.Name, this.CodeGenerator) = (name, codeGenerator);
 
     public IList<MethodActor> Actions { get; } = [];
-    public HashSet<string> AdditionalUsings { get; } = [];
+    public ISet<string> AdditionalUsings { get; } = new HashSet<string>();
     public IDictionary<string, string?> Attributes { get; } = new Dictionary<string, string?>();
     Dictionary<string, string?> IHtmlElement.Attributes { get; }
     public IList<IHtmlElement> Children { get; } = [];

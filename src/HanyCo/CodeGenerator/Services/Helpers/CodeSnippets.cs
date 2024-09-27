@@ -6,12 +6,13 @@ using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Net.Http.Json;           // GetFromJsonAsync, PostAsJsonAsync
 using System.Text;
 
 namespace Services.Helpers;
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 internal static class CodeSnippets
 {
     public static string QueryHandler_Handle_Body(in CqrsViewModelBase model, in DtoViewModel entityModel, in string? additionalWhereClause = null)
@@ -68,7 +69,7 @@ internal static class CodeSnippets
     {
         var result = new StringBuilder()
             // Reads Id from argument
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["id"]))
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["{id}"]))
             .AppendLine($"await OnInitializedAsync();")
             .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
             .AppendLine($"this.StateHasChanged();");

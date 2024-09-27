@@ -1,6 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+using HanyCo.Infra.CodeGeneration.Definitions;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -11,13 +13,13 @@ using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 
-public sealed class ApiCodingViewModel : InfraViewModelBase
+public sealed class ApiCodingViewModel : InfraViewModelBase, ICodeBase
 {
     private string _controllerName;
     private string _controllerRoute;
     private bool _isAnonymousAllow;
     private string _nameSpace;
-    public HashSet<string> AdditionalUsings { get; } = [];
+    public ISet<string> AdditionalUsings { get; } = new HashSet<string>();
     public HashSet<ApiMethod> Apis { get; } = [];
     public string ControllerName { get => this._controllerName; set => this.SetProperty(ref this._controllerName, value); }
     public string ControllerRoute { get => this._controllerRoute; set => this.SetProperty(ref this._controllerRoute, value); }
