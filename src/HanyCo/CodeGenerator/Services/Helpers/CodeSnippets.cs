@@ -55,11 +55,11 @@ internal static class CodeSnippets
         new StringBuilder()
             .AppendLine($"if (this.DataContext.Id == default)")
             .AppendLine($"{{")
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Post, paramVarName: sourceDtoName))
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Post, paramVarName: "DataContext"))
             .AppendLine($"}}")
             .AppendLine($"else")
             .AppendLine($"{{")
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Put, paramVarName: sourceDtoName))
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Put, paramVarName: "DataContext"))
             .AppendLine($"}}")
             .AppendLine($"MessageComponent.Show(\"Save Data\", \"Date saved.\");")
             .ToString();
