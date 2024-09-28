@@ -9,6 +9,7 @@ using Web.UI.Components;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services
@@ -37,6 +38,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Web.UI.Client._Imports).Assembly);
 
