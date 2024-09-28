@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using HumanResources.Dtos;
 
 namespace HumanResources;
 public partial class PersonDetailsComponent

@@ -14,7 +14,7 @@ using Library.Validations;
 
 namespace Library.Helpers;
 
-[DebuggerStepThrough, StackTraceHidden]
+//[DebuggerStepThrough, StackTraceHidden]
 public static class EnumerableHelper
 {
     /// <summary>

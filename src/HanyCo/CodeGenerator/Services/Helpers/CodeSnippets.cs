@@ -102,7 +102,8 @@ public static class CodeSnippets
     internal static string BlazorListComponent_LoadPage_Body(in string controllerName, in string resultDtoName, in string sourceDtoName, in string httClientInstanceName = "_http")
     {
         var result = new StringBuilder()
-            .AppendLine(GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName)))
+            .Append(GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName), closeStatement: false))
+            .AppendLine(".ToListAsync();")
             .AppendLine("this.DataContext = apiResult;");
         return result.ToString();
     }
@@ -198,7 +199,8 @@ public static class CodeSnippets
         in IEnumerable<string>? queryParams = null,
         in IEnumerable<(string Key, string Value)>? keyValueQueryParams = null,
         in string? paramVarName = null,
-        in string? type = null
+        in string? type = null,
+        in bool closeStatement = true
         )
     {
         var httpClientMethodName = method switch
@@ -235,8 +237,10 @@ public static class CodeSnippets
             .Append(paramVarName.IsNullOrEmpty() ? null : $", {paramVarName}")
             // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type
             .Append(type.IsNullOrEmpty() ? null : $", {type}")
+            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type)
+            .Append(')')
             // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type);
-            .Append(");");
+            .Append(closeStatement ? ';' : null);
         var result = sb.ToString();
         return result;
     }

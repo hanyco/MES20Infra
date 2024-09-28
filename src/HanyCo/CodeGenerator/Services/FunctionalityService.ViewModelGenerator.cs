@@ -196,7 +196,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponent.PageDataContext = data.ViewModel.BlazorDetailsPage.DataContext;
             data.ViewModel.BlazorDetailsComponent.PageDataContextProperty = data.ViewModel.BlazorDetailsPage.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponent.Attributes.Add(new("@bind-EntityId", "this.Id"));
-            _ = data.ViewModel.BlazorDetailsComponent.AddUsings("Web.UI.Components.Shared", typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!);
+            _ = data.ViewModel.BlazorDetailsComponent.AddUsings("Web.UI.Components.Shared", typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!, data.ViewModel.SourceDto!.NameSpace);
             //data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             _ = AddHttpClientInjection(data.ViewModel.BlazorDetailsComponent);
             data.ViewModel.BlazorDetailsPage.Components.Add(data.ViewModel.BlazorDetailsComponent);
@@ -318,7 +318,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponent.IsGrid = true;
             data.ViewModel.BlazorListComponent.PageDataContext = data.ViewModel.BlazorListPage.DataContext;
             data.ViewModel.BlazorListComponent.PageDataContextProperty = data.ViewModel.BlazorListPage.DataContext.Properties.First(x => x.IsList == true);
-            _ = data.ViewModel.BlazorListComponent.AddUsings("Web.UI.Components.Shared");
+            _ = data.ViewModel.BlazorListComponent.AddUsings("Web.UI.Components.Shared", data.ViewModel.SourceDto!.NameSpace);
             //data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             _ = AddHttpClientInjection(data.ViewModel.BlazorListComponent);
             data.ViewModel.BlazorListPage.Components.Add(data.ViewModel.BlazorListComponent);
@@ -419,9 +419,7 @@ internal sealed partial class FunctionalityService
                 .New("GetAll")
                 .AddHttpMethod<HttpGetAttribute>()
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQuery}());")
-                //.AddBodyLine("return result.Result;")
-                .AddBodyLine("return this.Ok(result);")
-                //.WithReturnType(TypePath.NewTask(TypePath.NewEnumerable(data.SourceDtoName!)))
+                .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetAllQuery.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
@@ -435,9 +433,7 @@ internal sealed partial class FunctionalityService
                 .AddHttpMethod<HttpGetAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQuery}(id));")
-                //.AddBodyLine("return result.Result;")
-                .AddBodyLine("return this.Ok(result);")
-                //.WithReturnType(TypePath.NewTask(data.SourceDtoName!))
+                .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetByIdQuery.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
@@ -451,9 +447,7 @@ internal sealed partial class FunctionalityService
                 .AddHttpMethod<HttpPostAttribute>()
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.InsertCommand}({argName}));")
-                //.AddBodyLine("return result.Result;")
-                .AddBodyLine("return this.Ok(result);")
-                //.WithReturnType(TypePath.NewTask(TypePath.New(typeof(Result<>), [typeof(long)])))
+                .AddBodyLine($"return this.Ok(result.{data.ViewModel.InsertCommand.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);

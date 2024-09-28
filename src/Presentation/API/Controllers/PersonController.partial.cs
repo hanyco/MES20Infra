@@ -20,21 +20,21 @@ public sealed class PersonController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var result = await this._mediator.Send(new GetAllPeopleQuery());
-        return this.Ok(result);
+        return this.Ok(result.People);
     }
 
     [HttpGetAttribute("{id:long}")]
     public async Task<IActionResult> GetById(Int64 id)
     {
         var result = await this._mediator.Send(new GetByIdPersonQuery(id));
-        return this.Ok(result);
+        return this.Ok(result.PersonDto);
     }
 
     [HttpPostAttribute()]
     public async Task<IActionResult> Insert(PersonDto personDto)
     {
         var result = await this._mediator.Send(new InsertPersonCommand(personDto));
-        return this.Ok(result);
+        return this.Ok(result.Id);
     }
 
     [HttpPutAttribute("{id:long}")]
