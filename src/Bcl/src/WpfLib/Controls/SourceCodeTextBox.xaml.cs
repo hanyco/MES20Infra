@@ -28,11 +28,11 @@ public partial class SourceCodeTextBox : UserControl
     {
         if (e.NewValue is SourceCodeTextBoxViewModel viewModel)
         {
-            if (viewModel.Code.Language == Languages.CSharp)
-            {
-                _ = this.CodeStatementRichTextBox.InsertCSharpCodeToDocument(viewModel.Code);
-            }
-            else
+            //if (viewModel.Code.Language == Languages.CSharp)
+            //{
+            //    _ = this.CodeStatementRichTextBox.InsertCSharpCodeToDocument(viewModel.Code);
+            //}
+            //else
             {
                 var para = new Paragraph();
                 para.Inlines.Add(new Run(viewModel.Code.Statement));

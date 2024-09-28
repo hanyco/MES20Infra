@@ -9,4 +9,16 @@ using System.Threading.Tasks;
 namespace HumanResources;
 public partial class PersonDetailsComponent
 {
+    protected override async Task OnLoadAsync()
+    {
+        if (this.EntityId is { } entityId)
+        {
+            var apiResult = await _http.GetFromJsonAsync<PersonDto>($"person/{entityId}/");
+            this.DataContext = apiResult;
+        }
+        else
+        {
+            this.DataContext = new();
+        }
+    }
 }

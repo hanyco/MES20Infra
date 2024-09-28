@@ -221,7 +221,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
     protected TBlazorComponent This()
         => (this as TBlazorComponent)!;
 
-    private static string Component_OnInitializedAsync_MethodBody(in string? onInitializedAsyncAdditionalBody)
+    public static string Component_OnInitializedAsync_MethodBody(in string? onInitializedAsyncAdditionalBody)
     {
         var result = new StringBuilder(onInitializedAsyncAdditionalBody)
             .AppendLine()
@@ -441,14 +441,7 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
                 }.AddArgument((method.Arguments ?? []).Select(x => (x.Type, x.Name)));
                 mainClass.AddMethod(m);
             }
-            var OnLoadAsyncBody = this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == false))?.Body;
-            var OnLoadAsyncMethod = new Method("OnLoadAsync") 
-            {
-                AccessModifier = AccessModifier.Protected,
-                InheritanceModifier = InheritanceModifier.Override,
-                Body = OnLoadAsyncBody ?? DefaultTaskMethodBody,
-                ReturnType = "async Task"
-            };
+            AddOnLoadMethod(mainClass);
             foreach (var method in this.Actions.OfType<FormActor>().Where(x => x.IsPartial is not true))
             {
             }
@@ -538,6 +531,19 @@ public abstract class BlazorComponentBase<TBlazorComponent> : IHtmlElement, IPar
             partNameSpace.AddType(partialClass);
             return partialClass;
         }
+    }
+
+    private void AddOnLoadMethod(Class codeClass)
+    {
+        var onLoadAsyncBody = this.Actions.FirstOrDefault(m => m.Name == Keyword_AddToOnInitializedAsync && (m.IsPartial == false))?.Body;
+        var onLoadAsyncMethod = new Method("OnLoadAsync")
+        {
+            AccessModifier = AccessModifier.Protected,
+            InheritanceModifier = InheritanceModifier.Override,
+            Body = onLoadAsyncBody ?? DefaultTaskMethodBody,
+            ReturnType = "async Task"
+        };
+        codeClass.AddMethod(onLoadAsyncMethod);
     }
 
     private Code GenerateUiCode(CodeCategory category, in GenerateCodesParameters? arguments = null)

@@ -7,13 +7,36 @@ using Library.Helpers.CodeGen;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Net.Http.Json;           // GetFromJsonAsync, PostAsJsonAsync
+using System.Net.Http.Json;
 using System.Text;
 
 namespace Services.Helpers;
 
-internal static class CodeSnippets
+public static class CodeSnippets
 {
+    public static string Component_OnInitializedAsync_MethodBody(in string? onInitializedAsyncAdditionalBody)
+    {
+        var result = new StringBuilder(onInitializedAsyncAdditionalBody)
+            .AppendLine()
+            .AppendLine($"// Call developer's method.")
+            .AppendLine($"await this.OnLoadAsync();");
+        return result.ToString();
+    }
+
+    public static string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
+        new StringBuilder()
+            .AppendLine($"// Setup segregation parameters")
+            .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").FullPath}();")
+            .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query").FullPath}(@params);")
+            .AppendLine($"")
+            .AppendLine($"")
+            .AppendLine($"// Invoke the query handler to retrieve all entities")
+            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetSegregateResultType("Query").FullPath}>(cqParams);")
+            .AppendLine($"")
+            .AppendLine($"")
+            .AppendLine($"// Now, set the data context.")
+            .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
+            .ToString();
     public static string QueryHandler_Handle_Body(in CqrsViewModelBase model, in DtoViewModel entityModel, in string? additionalWhereClause = null)
     {
         // Create query to be used inside the body code.
@@ -42,7 +65,7 @@ internal static class CodeSnippets
         new StringBuilder()
             .AppendLine("if (this.EntityId is { } entityId)")
             .AppendLine("{")
-            .AppendLine(GenerateApiCallCode(controllerName, queryParams: ["entityId"], resultTypeName: TypePath.New(sourceDtoName)))
+            .AppendLine(GenerateApiCallCode(controllerName, queryParams: ["{entityId}"], resultTypeName: TypePath.New(sourceDtoName)))
             .AppendLine("   this.DataContext = apiResult;")
             .AppendLine("}")
             .AppendLine("else")
@@ -80,7 +103,7 @@ internal static class CodeSnippets
     {
         var result = new StringBuilder()
             .AppendLine(GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName)))
-            .AppendLine($"""this.DataContext = apiResult;""");
+            .AppendLine("this.DataContext = apiResult;");
         return result.ToString();
     }
 

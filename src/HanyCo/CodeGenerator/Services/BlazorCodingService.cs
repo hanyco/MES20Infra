@@ -37,21 +37,6 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
     private readonly ILogger _logger = logger;
     private readonly ICodeGeneratorEngine _codeGenerator = codeGenerator;
 
-    public static string ExecuteCqrs_MethodBody(CqrsViewModelBase cqrsViewModel) =>
-        new StringBuilder()
-            .AppendLine($"// Setup segregation parameters")
-            .AppendLine($"var @params = new {cqrsViewModel.GetSegregateParamsType("Query").FullPath}();")
-            .AppendLine($"var cqParams = new {cqrsViewModel.GetSegregateType("Query").FullPath}(@params);")
-            .AppendLine($"")
-            .AppendLine($"")
-            .AppendLine($"// Invoke the query handler to retrieve all entities")
-            .AppendLine($"var cqResult = await this._queryProcessor.ExecuteAsync<{cqrsViewModel.GetSegregateResultType("Query").FullPath}>(cqParams);")
-            .AppendLine($"")
-            .AppendLine($"")
-            .AppendLine($"// Now, set the data context.")
-            .AppendLine($"this.DataContext = cqResult.Result.ToViewModel();")
-            .ToString();
-
     public bool ControlTypeHasPropertiesPage(ControlType controlType) =>
         controlType switch
         {
@@ -86,7 +71,6 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
             processFrontActions(model, component);
             addParameters(model, component);            
             var codes = component.GenerateCodes(CodeCategory.Component, arguments)
-                
                 //.AddRange(this.GenerateModelConverterCode())
                 ;
             return Result.Success<Codes>(codes);
@@ -294,7 +278,7 @@ internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator
                 {
                     case CqrsLoadViewModel load when load.CqrsSegregate is not null:
                         this._conversionSubjects.Enqueue(load.CqrsSegregate);
-                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, true, body: ExecuteCqrs_MethodBody(load.CqrsSegregate)));
+                        result.Actions.Add(new(Keyword_AddToOnInitializedAsync, true, body:CodeSnippets.ExecuteCqrs_MethodBody(load.CqrsSegregate)));
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.CqrsNameSpace);
                         _ = result.AdditionalUsings.Add(load.CqrsSegregate.DtoNameSpace);
                         //_ = result.AdditionalUsings.Add(load.CqrsSegregate.MapperNameSpace);
