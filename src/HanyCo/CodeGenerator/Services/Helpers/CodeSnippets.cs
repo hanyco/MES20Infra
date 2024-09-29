@@ -82,9 +82,9 @@ public static class CodeSnippets
             .AppendLine($"}}")
             .AppendLine($"else")
             .AppendLine($"{{")
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Put, paramVarName: "DataContext"))
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Put, queryParams: ["{this.DataContext.Id}"], paramVarName: "DataContext"))
             .AppendLine($"}}")
-            .AppendLine($"MessageComponent.Show(\"Save Data\", \"Date saved.\");")
+            .AppendLine($"MessageComponent.Show(\"Save Data\", \"Data saved successfully.\");")
             .ToString();
 
     internal static string BlazorListComponent_DeleteButton_OnClick_Body(in string controllerName, in string sourceDtoName)

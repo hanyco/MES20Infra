@@ -1,10 +1,10 @@
 using Web.UI.Components.Shared;
+using HumanResources.Dtos;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using HumanResources.Dtos;
 
 namespace HumanResources;
 public partial class PeopleListComponent

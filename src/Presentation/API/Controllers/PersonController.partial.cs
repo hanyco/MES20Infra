@@ -48,6 +48,6 @@ public sealed class PersonController : ControllerBase
     public async Task<IActionResult> Delete(Int64 id)
     {
         var result = await this._mediator.Send(new DeletePersonCommand(id));
-        return this.Ok(result);
+        return this.Ok(true);
     }
 }

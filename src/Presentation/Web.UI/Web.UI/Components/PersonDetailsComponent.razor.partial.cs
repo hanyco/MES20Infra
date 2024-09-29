@@ -1,6 +1,8 @@
+
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
 using HumanResources;
+using HumanResources.Dtos;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System;
@@ -26,10 +28,10 @@ public partial class PersonDetailsComponent
         }
         else
         {
-            var apiResult = await _http.PutAsJsonAsync($"person/", DataContext);
+            var apiResult = await _http.PutAsJsonAsync($"person/{this.DataContext.Id}/", DataContext);
         }
 
-        MessageComponent.Show("Save Data", "Date saved.");
+        MessageComponent.Show("Save Data", "Data saved successfully.");
     }
 
     public MessageComponent MessageComponent { get; set; }
