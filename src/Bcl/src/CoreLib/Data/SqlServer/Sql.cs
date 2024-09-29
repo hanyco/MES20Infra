@@ -14,6 +14,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Library.Data.SqlServer;
 
+[DebuggerStepThrough, StackTraceHidden]
 public sealed class Sql(string connectionString, Action<string>? logTo = null) : IFactory<Sql, string>
 {
     private readonly Action<string>? _logTo = logTo;
@@ -27,7 +28,6 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return await conn.CanConnectAsync(cancellationToken: cancellationToken);
     }
 
-    [DebuggerStepThrough, StackTraceHidden]
     public static (TypePath Type, string Name)? FindIdColumn<TEntity>()
         => FindIdColumn(typeof(TEntity));
 

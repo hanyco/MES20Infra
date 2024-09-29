@@ -91,7 +91,7 @@ public static class CodeSnippets
     {
         var result = new StringBuilder()
             // Reads Id from argument
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["{id}"], type: "typeof(long)"))
+            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["{id}"], type: "typeof(bool)"))
             .AppendLine($"await OnInitializedAsync();")
             .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
             .AppendLine($"this.StateHasChanged();");

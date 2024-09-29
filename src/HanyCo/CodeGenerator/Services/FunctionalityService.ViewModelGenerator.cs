@@ -462,9 +462,7 @@ internal sealed partial class FunctionalityService
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommand}(id, {argName}));")
-                //.AddBodyLine("return result.Result;")
                 .AddBodyLine("return this.Ok(result);")
-                //.WithReturnType(TypePath.NewTask(typeof(Result<>)))
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
@@ -477,9 +475,7 @@ internal sealed partial class FunctionalityService
                 .AddHttpMethod<HttpDeleteAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommand}(id));")
-                //.AddBodyLine("return result;")
-                .AddBodyLine("return this.Ok(result);")
-                //.WithReturnType(TypePath.NewTask(typeof(Result)))
+                .AddBodyLine("return this.Ok(true);")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
             _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);

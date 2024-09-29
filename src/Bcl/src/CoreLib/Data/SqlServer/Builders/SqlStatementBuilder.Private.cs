@@ -28,8 +28,11 @@ public static partial class SqlStatementBuilder
                 float f => f.ToString(),
                 decimal d => d.ToString(),
                 long l => l.ToString(),
+
+                "null" or "NULL" => "NULL",
                 string and { Length: 0 } => "''",
                 string s => $"N'{s.Trim('\'')}'",
+
                 null => DBNull.Value.ToString(),
                 _ => $"'{stringValue?.Trim('\'')}'",
             };

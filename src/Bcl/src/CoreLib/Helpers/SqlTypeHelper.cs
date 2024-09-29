@@ -3,7 +3,8 @@
 public static class SqlTypeHelper
 {
     public static string FormatDate(DateTime date, string onNull = "NULL", bool isForInterpolation = false)
-        => date == default || DBNull.Value.Equals(date)
+        //=> date == default || DBNull.Value.Equals(date)
+        => DBNull.Value.Equals(date)
             ? onNull
             : isForInterpolation ? $"{date:yyyy-MM-dd HH:mm:ss}" : $"'{date:yyyy-MM-dd HH:mm:ss}'";
 
