@@ -33,12 +33,12 @@ public partial class SourceCodeTextBox : UserControl
             //    _ = this.CodeStatementRichTextBox.InsertCSharpCodeToDocument(viewModel.Code);
             //}
 
-            if (viewModel.Code.Language == Languages.CSharp)
-            {
-                var doc = RichTextBoxHelper.FormatCSharpCode(viewModel.Code.Statement);
-                this.CodeStatementRichTextBox.Document = doc;
-            }
-            else
+            //if (viewModel.Code.Language == Languages.CSharp)
+            //{
+            //    var doc = RichTextBoxHelper.FormatCSharpCode(viewModel.Code.Statement);
+            //    this.CodeStatementRichTextBox.Document = doc;
+            //}
+            //else
             {
                 var para = new Paragraph();
                 para.Inlines.Add(new Run(viewModel.Code.Statement));
