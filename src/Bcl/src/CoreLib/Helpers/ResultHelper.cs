@@ -66,7 +66,7 @@ public static class ResultHelper
     public static void End<TValue>(this Result<TValue> _)
     { }
 
-    public static Task EndAsync(this Task<Result> _) =>
+    public static Task End(this Task<Result> _) =>
         Task.CompletedTask;
 
     [return: NotNull]

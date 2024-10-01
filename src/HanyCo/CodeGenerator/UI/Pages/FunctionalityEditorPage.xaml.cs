@@ -74,25 +74,33 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    [MemberNotNullWhen(true)]
-    private bool IsNotInitiated => this.ViewModel is null or { ApiCodingViewModel: null } or { BlazorDetailsComponent: null } or { GetAllQuery: null };
+    [MemberNotNullWhen(true, nameof(ViewModel))]
+    private bool IsNotInitiated => this.ViewModel is not null and { ApiCodingViewModel: not null } and { BlazorDetailsComponent: not null } and { GetAllQuery: not null };
 
     async Task<Result> IAsyncSavePage.SaveToDbAsync()
     {
-        this.CheckIfInitiated();
-        this.PrepareViewModel();
-        if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
+        try
         {
-            return validationResult;
-        }
+            this.EnableActors(false);
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
+            this.PrepareViewModel();
+            if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
+            {
+                return validationResult;
+            }
 
-        var result = await this._service.SaveViewModelAsync(this.ViewModel);
-        if (result.IsSucceed)
+            var result = await this._service.SaveViewModelAsync(this.ViewModel);
+            if (result.IsSucceed)
+            {
+                _ = this.SetIsViewModelChanged(false);
+            }
+
+            return result;
+        }
+        finally
         {
-            _ = this.SetIsViewModelChanged(false);
+            this.EnableActors(true);
         }
-
-        return result;
     }
 
     protected override Task<Result> OnValidateFormAsync()
@@ -102,14 +110,15 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     }
 
     [MemberNotNull(nameof(ViewModel))]
-    private void CheckIfInitiated() => Check.If(this.IsNotInitiated, () => "Please create a new Functionality or edit an old one.");
+    private void CheckIfInitiated() => 
+        Check.MustBe(this.IsNotInitiated, () => "Please create a new Functionality or edit an old one.");
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             this.EnableActors(false);
-            await this.AskToSaveIfChangedAsync().BreakOnFail().EndAsync();
+            await this.AskToSaveIfChangedAsync().BreakOnFail().End();
             this.ViewModel = null;
             this.ViewModel = await this.GetNewViewModel();
         }
@@ -151,6 +160,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 .NotNull(() => "No functionality is selected.")
                 .NotNull(x => x!.Id).ThrowOnFail()
                 .Value!.Id!.Value;
+            await this.AskToSaveIfChangedAsync().BreakOnFail().End();
             var viewModel = await this._service.GetByIdAsync(id);
             this.ViewModel = viewModel;
             await this.BindDataAsync();
@@ -179,7 +189,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
             this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
         }
         finally
@@ -193,7 +203,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
             this.PrepareViewModel();
             this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
         }
@@ -383,7 +393,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
         try
         {
-            this.CheckIfInitiated();
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
             _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
 
             // Let user to select a table
