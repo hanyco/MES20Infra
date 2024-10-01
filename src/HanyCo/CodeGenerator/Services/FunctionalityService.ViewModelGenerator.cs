@@ -283,7 +283,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
     {
-        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("DetailsPage");
+        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddToEnd("DetailsPage");
         return TaskRunner.SetState(data)
             .Then(createPageViewModel)
             .Then(addParameters)
@@ -375,7 +375,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateBlazorListPage(CreationData data, CancellationToken token)
     {
-        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddEnd("ListPage");
+        var name = CommonHelpers.Purify(data.ViewModel.SourceDto.Name)?.AddToEnd("ListPage");
         return TaskRunner.SetState(data)
             .Then(createPageViewModel)
             .Then(setupSecurity)

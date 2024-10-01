@@ -148,7 +148,7 @@ public sealed class Table(Database owner, string name, string? schema = null, st
             if (column.Length < lengths[column])
             {
                 var colLen = lengths[column] - column.Length;
-                var col = column.Add(colLen / 2, before: true)!.Add(colLen / 2)!.AddEnd(" ");
+                var col = column.Add(colLen / 2, before: true)!.Add(colLen / 2)!.AddToEnd(" ");
                 yield return col;
             }
             else

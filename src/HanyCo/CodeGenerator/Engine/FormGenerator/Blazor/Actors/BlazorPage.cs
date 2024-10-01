@@ -56,7 +56,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
         }
 
         var fixedParameters = parameters.Select(x => x.TrimStart('{').TrimEnd('}').Format(x => $"{{{x}}}"));
-        var result = merge(pureRoute, fixedParameters).AddEnd("\"");
+        var result = merge(pureRoute, fixedParameters).AddToEnd("\"");
 
         return result;
 

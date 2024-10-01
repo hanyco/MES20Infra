@@ -40,8 +40,8 @@ internal sealed class BlazorPageService(
         var pureName = CommonHelpers.Purify(name ?? dto.Name);
         var result = new UiPageViewModel
         {
-            Name = pureName?.AddEnd("Page"),
-            ClassName = pureName?.AddEnd("Page"),
+            Name = pureName?.AddToEnd("Page"),
+            ClassName = pureName?.AddToEnd("Page"),
             Guid = guid ?? Guid.NewGuid(),
             GenerateMainCode = true,
             GeneratePartialCode = true,

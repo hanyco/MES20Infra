@@ -74,9 +74,6 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
-    [MemberNotNullWhen(true, nameof(ViewModel))]
-    private bool IsNotInitiated => this.ViewModel is not null and { ApiCodingViewModel: not null } and { BlazorDetailsComponent: not null } and { GetAllQuery: not null };
-
     async Task<Result> IAsyncSavePage.SaveToDbAsync()
     {
         try
@@ -110,8 +107,14 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     }
 
     [MemberNotNull(nameof(ViewModel))]
-    private void CheckIfInitiated() => 
-        Check.MustBe(this.IsNotInitiated, () => "Please create a new Functionality or edit an old one.");
+    private void CheckIfInitiated(bool fullCheck = true)
+    {
+        bool isNotInitiated = fullCheck
+            ? this.ViewModel is not null and { ApiCodingViewModel: not null } and { BlazorDetailsComponent: not null } and { GetAllQuery: not null }
+            : this.ViewModel is not null;
+        
+        Check.MustBe(isNotInitiated, () => "Please create a new Functionality or edit an old one.");
+    }
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
@@ -237,11 +240,11 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
     [MemberNotNull(nameof(ViewModel))]
     private void PrepareViewModel() =>
-        this.ViewModel!.Name = this.ViewModel.SourceDto.Name.TrimEnd("Dto").AddEnd("Functionality");
+        this.ViewModel!.Name = this.ViewModel.SourceDto.Name?.TrimEnd("Dto").AddToEnd("Functionality");
 
     private void PrepareViewModelByDto(DtoViewModel? details)
     {
-        this.CheckIfInitiated();
+        this.CheckIfInitiated(false);
 
         this.ViewModel.SourceDto = null!;
 
@@ -265,7 +268,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
         if (this.ViewModel.Name.IsNullOrEmpty())
         {
-            this.ViewModel.Name = details.Name.TrimEnd("Dto").AddEnd("Functionality");
+            this.ViewModel.Name = details.Name?.TrimEnd("Dto").AddToEnd("Functionality");
         }
         //The form is now ready to call services.
     }
@@ -393,8 +396,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
         try
         {
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
-            _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
+            await this.AskToSaveIfChangedAsync().BreakOnFail().End();
 
             // Let user to select a table
             if (this._databaseExplorerUserControl == null)

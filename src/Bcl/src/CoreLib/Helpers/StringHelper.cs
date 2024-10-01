@@ -56,7 +56,7 @@ public static class StringHelper
     /// <returns>The string with the added string at the end.</returns>
     [Pure]
     [return: NotNull]
-    public static string AddEnd(this string? str, in string? s) =>
+    public static string AddToEnd(this string? str, in string? s) =>
         string.Concat(str, s);
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class StringHelper
     /// <returns>The string with the added string at the end.</returns>
     [Pure]
     [return: NotNull]
-    public static string AddEnd(this string? str, in char c) =>
+    public static string AddToEnd(this string? str, in char c) =>
         string.Concat(str, c);
 
     /// <summary>
@@ -75,7 +75,7 @@ public static class StringHelper
     /// </summary>
     [Pure]
     [return: NotNull]
-    public static string AddStart(this string str, in string s) =>
+    public static string AddToStart(this string str, in string s) =>
         string.Concat(s, str);
 
     /// <summary>
