@@ -1,8 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows;
-
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGeneration.Definitions;
@@ -22,6 +18,10 @@ using Library.Wpf.Windows;
 using Library.Wpf.Windows.CommonTools;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
+
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows;
 
 using UI;
 
@@ -74,6 +74,9 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
     }
 
+    [MemberNotNullWhen(true)]
+    private bool IsNotInitiated => this.ViewModel is null or { ApiCodingViewModel: null } or { BlazorDetailsComponent: null } or { GetAllQuery: null };
+
     async Task<Result> IAsyncSavePage.SaveToDbAsync()
     {
         this.CheckIfInitiated();
@@ -92,9 +95,6 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         return result;
     }
 
-    protected override async Task OnBindDataAsync() =>
-        await base.OnBindDataAsync();
-
     protected override Task<Result> OnValidateFormAsync()
     {
         this.CheckIfInitiated();
@@ -102,21 +102,20 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     }
 
     [MemberNotNull(nameof(ViewModel))]
-    private void CheckIfInitiated() =>
-        this.ViewModel.NotNull(() => "Please create a new Functionality or edit an old one.");
+    private void CheckIfInitiated() => Check.If(this.IsNotInitiated, () => "Please create a new Functionality or edit an old one.");
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            EnableActors(false);
+            this.EnableActors(false);
             await this.AskToSaveIfChangedAsync().BreakOnFail().EndAsync();
             this.ViewModel = null;
-            this.ViewModel = await this.GetNewViewModelAsync();
+            this.ViewModel = await this.GetNewViewModel();
         }
         finally
         {
-            EnableActors(true);
+            this.EnableActors(true);
         }
     }
 
@@ -124,7 +123,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     {
         try
         {
-            EnableActors(false);
+            this.EnableActors(false);
             var functionality = this.FunctionalityTreeView.SelectedItem;
             Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
             var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
@@ -138,7 +137,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
         finally
         {
-            EnableActors(true);
+            this.EnableActors(true);
         }
     }
 
@@ -146,50 +145,23 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     {
         try
         {
-            EnableActors(false);
-            var id = this.FunctionalityTreeView.SelectedItem.Check()
-            .NotNull(() => "No functionality is selected.")
-            .NotNull(x => x!.Id).ThrowOnFail().Value!.Id!.Value;
+            this.EnableActors(false);
+            var id = this.FunctionalityTreeView.SelectedItem
+                .Check()
+                .NotNull(() => "No functionality is selected.")
+                .NotNull(x => x!.Id).ThrowOnFail()
+                .Value!.Id!.Value;
             var viewModel = await this._service.GetByIdAsync(id);
             this.ViewModel = viewModel;
             await this.BindDataAsync();
         }
         finally
         {
-            EnableActors(true);
+            this.EnableActors(true);
         }
     }
 
-    private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            EnableActors(false);
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
-            this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
-        }
-        finally
-        {
-            EnableActors(true);
-        }
-    }
-
-    private async void GenerateViewModelButton_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            EnableActors(false);
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
-            this.PrepareViewModel();
-            this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
-        }
-        finally
-        {
-            EnableActors(true);
-        }
-    }
-
-    void EnableActors(bool enable)
+    private void EnableActors(bool enable)
     {
         this.CreateFunctionalityButton.IsEnabled = enable;
         this.EditFunctionalityButton.IsEnabled = enable;
@@ -202,14 +174,42 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         App.Current.DoEvents();
     }
 
-    private async Task<FunctionalityViewModel> GetNewViewModelAsync() =>
-        await this._service.CreateAsync()
-            .WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
+    private async void GenerateCodesButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            this.EnableActors(false);
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
+            this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
+        }
+        finally
+        {
+            this.EnableActors(true);
+        }
+    }
+
+    private async void GenerateViewModelButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            this.EnableActors(false);
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).EndAsync();
+            this.PrepareViewModel();
+            this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
+        }
+        finally
+        {
+            this.EnableActors(true);
+        }
+    }
+
+    private async Task<FunctionalityViewModel> GetNewViewModel() =>
+        await this._service.CreateAsync().WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
 
     private async void Me_Loaded(object sender, RoutedEventArgs e)
     {
         this.GetChildren<IAsyncBindable>().ForEach(async x => await x.BindAsync());
-        this.ViewModel = await this.GetNewViewModelAsync();
+        this.ViewModel = await this.GetNewViewModel();
     }
 
     private void ModuleComboBox_Initializing(object sender, InitialItemEventArgs<IModuleService> e) =>
@@ -325,14 +325,14 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     {
         try
         {
-            EnableActors(false);
+            this.EnableActors(false);
             _ = ControlHelper.MoveToNextUIElement();
             _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
             await this.FunctionalityTreeView.BindAsync();
         }
         finally
         {
-            EnableActors(true);
+            this.EnableActors(true);
         }
     }
 
@@ -340,14 +340,14 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     {
         try
         {
-            EnableActors(false);
+            this.EnableActors(false);
             _ = ControlHelper.MoveToNextUIElement();
             var saveResult = await this.SaveCodes().ThrowOnFailAsync(this.Title);
             SourceCodeHelper.ShowDiskOperationResult(saveResult);
         }
         finally
         {
-            EnableActors(true);
+            this.EnableActors(true);
         }
     }
 

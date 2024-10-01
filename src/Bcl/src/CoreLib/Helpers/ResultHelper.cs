@@ -60,10 +60,10 @@ public static class ResultHelper
     public static void Deconstruct<TValue>(this Result<TValue> result, out bool IsSucceed, out TValue Value) =>
         (IsSucceed, Value) = (result.ArgumentNotNull().IsSucceed, result.Value);
 
-    public static void End([DisallowNull] this Result _)
+    public static void End(this Result _)
     { }
 
-    public static void End<TValue>([DisallowNull] this Result<TValue> _)
+    public static void End<TValue>(this Result<TValue> _)
     { }
 
     public static Task EndAsync(this Task<Result> _) =>

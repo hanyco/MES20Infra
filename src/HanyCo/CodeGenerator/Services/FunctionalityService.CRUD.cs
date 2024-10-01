@@ -1,7 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Data.EntityFrameworkCore;
@@ -11,6 +8,9 @@ using Library.Threading;
 using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
+
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Services;
 
@@ -47,7 +47,7 @@ internal partial class FunctionalityService
         static Result<FunctionalityViewModel> validate(FunctionalityViewModel model)
             => model.Check().ArgumentNotNull().NotNull(x => x.Id);
         Task<Functionality?> getFunctionality(long modelId, CancellationToken token)
-            => this.GetByIdFuncitonality(modelId, token);
+            => this.GetByIdFunctionality(modelId, token);
         Task<Result> removeQuery(CqrsSegregate query, CancellationToken token)
             => removeSegregate(query, this._queryService.DeleteByIdAsync, token);
         Task<Result> removeCommand(CqrsSegregate command, CancellationToken token)
@@ -84,7 +84,7 @@ internal partial class FunctionalityService
 
     public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        var dbResult = await this.GetByIdFuncitonality(id, cancellationToken);
+        var dbResult = await this.GetByIdFunctionality(id, cancellationToken);
         var result = this._converter.ToViewModel(dbResult);
         return result;
     }
@@ -305,13 +305,8 @@ internal partial class FunctionalityService
         return result;
     }
 
-    private static void CheckPersistence([DoesNotReturnIf(false)] bool persist)
-    {
-        if (!persist)
-        {
-            throw new NotSupportedException("non-persistent operation is not supported.");
-        }
-    }
+    private static void CheckPersistence([DoesNotReturnIf(false)] bool persist) =>
+        Check.If(!persist, () => new NotSupportedException("non-persistent operation is not supported."));
 
     private Task<bool> AnyByNameAsync(string name)
     {
@@ -321,7 +316,7 @@ internal partial class FunctionalityService
         return query.AnyAsync();
     }
 
-    private async Task<Functionality?> GetByIdFuncitonality(long id, CancellationToken cancellationToken)
+    private async Task<Functionality?> GetByIdFunctionality(long id, CancellationToken cancellationToken)
     {
         var funcQuery = from func in this._readDbContext.Functionalities
                             .Include(f => f.DeleteCommand)
