@@ -4,6 +4,7 @@ using System.Globalization;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.CodeGeneration;
 using Library.Mapping;
 using Library.Validations;
 
@@ -208,7 +209,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             return null;
         }
 
-        var result = this.InnerToViewModel(entity);
+        var result = this._mapper.Map<DtoViewModel>(entity);
 
         if (entity.Properties?.Count > 0)
         {
@@ -216,17 +217,24 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
         if (entity.Module is not null)
         {
-            result.Module = this.ToViewModel(entity.Module)!;
+            result.Module = this.ToViewModel(entity.Module);
+        }
+        if (!entity.BaseType.IsNullOrEmpty())
+        {
+            result.BaseType = TypePath.New(entity.BaseType);
         }
         return result;
     }
 
+    [return: NotNullIfNotNull(nameof(entity))]
     public ModuleViewModel? ToViewModel(HanyCo.Infra.Internals.Data.DataSources.Module? entity) =>
         entity is null ? null : this._mapper.Map<ModuleViewModel>(entity);
 
+    [return: NotNullIfNotNull(nameof(entity))]
     public UiBootstrapPositionViewModel? ToViewModel(UiBootstrapPosition? entity) =>
         entity is null ? null : this._mapper.Map<UiBootstrapPositionViewModel>(entity);
 
+    [return: NotNullIfNotNull(nameof(entity))]
     public UiComponentViewModel? ToViewModel(UiComponent? entity) =>
         entity is null ? null : this._mapper.Map<UiComponentViewModel>(entity)
             .ForMember(x => x.IsGrid = entity.IsGrid ?? false)
@@ -270,7 +278,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         entity is null ? null : this._mapper.Map<PropertyViewModel>(entity)
             .ForMember(x => x.TypeFullName = entity.TypeFullName!)
             .ForMember(x => x.Type = PropertyTypeHelper.FromPropertyTypeId(entity.PropertyType))
-            .ForMember(x => x.Dto = this.InnerToViewModel(entity.Dto));
+            .ForMember(x => x.Dto = this.ToViewModel(entity.Dto));
 
     [return: NotNullIfNotNull(nameof(CqrsSegregate))]
     public CqrsViewModelBase? ToViewModel(CqrsSegregate? entity) =>
@@ -339,10 +347,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
         return result;
     }
-
-    [return: NotNullIfNotNull(nameof(entity))]
-    private DtoViewModel? InnerToViewModel(Dto? entity) =>
-        entity is null ? null : this._mapper.Map<DtoViewModel>(entity);
 
     [return: NotNullIfNotNull(nameof(entity))]
     private CqrsCommandViewModel? ToCommandViewModel(CqrsSegregate? entity)

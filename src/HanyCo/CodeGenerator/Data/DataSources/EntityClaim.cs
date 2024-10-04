@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("EntityClaim", Schema = "infra")]
+[Index("ClaimId", Name = "IX_EntityClaim_ClaimId")]
 public partial class EntityClaim
 {
     [Key]

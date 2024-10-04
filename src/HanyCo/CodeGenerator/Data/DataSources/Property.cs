@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("Property", Schema = "infra")]
+[Index("DtoId", Name = "IX_Property_DtoId")]
 public partial class Property
 {
     [Key]

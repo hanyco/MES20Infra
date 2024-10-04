@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("CqrsSegregate", Schema = "infra")]
+[Index("ModuleId", Name = "IX_CqrsSegregate_ModuleId")]
+[Index("ParamDtoId", Name = "IX_CqrsSegregate_ParamDtoId")]
 [Index("ResultDtoId", Name = "IX_CqrsSegregate_ResultDtoId")]
 public partial class CqrsSegregate
 {

@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("UiComponentProperty", Schema = "infra")]
+[Index("PositionId", Name = "IX_UiComponentProperty_PositionId")]
+[Index("PropertyId", Name = "IX_UiComponentProperty_PropertyId")]
+[Index("UiComponentId", Name = "IX_UiComponentProperty_UiComponentId")]
 public partial class UiComponentProperty
 {
     [Key]

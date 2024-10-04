@@ -1,18 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
-using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
 using Library.Coding;
 using Library.Validations;
+using Library.Wpf.Markers;
 
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using System.Diagnostics.CodeAnalysis;
 
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
+
+[ViewModel]
 public sealed class ApiCodingViewModel : InfraViewModelBase, ICodeBase
 {
     private string _controllerName;
@@ -32,70 +33,65 @@ public sealed class ApiMethod : InfraViewModelBase
 {
     private string? _body;
 
-    public ApiMethod(string name)
-        => this.Name = name.ArgumentNotNull();
-
     public ISet<MethodArgument> Arguments { get; } = new HashSet<MethodArgument>();
+
     public string? Body { get => this._body; set => this.SetProperty(ref this._body, value); }
+
     public ISet<HttpMethodAttribute> HttpMethods { get; } = new HashSet<HttpMethodAttribute>();
 
-    private bool _isAsync;
-
-    public ApiMethod IsAsync(bool isAsync)
-    {
-        this._isAsync = isAsync;
-        return this;
-    }
-    public bool IsAsync() => _isAsync;
+    public bool IsAsync { get; set; }
 
     public TypePath? ReturnType { get; set; }
 
-    public static ApiMethod New([DisallowNull] in string name, in TypePath returnType)
-        => new(name) { ReturnType = returnType };
-
     public static ApiMethod New([DisallowNull] in string name)
-        => new(name);
+        => new() { Name = name };
+}
 
-    public ApiMethod AddArgument(params IEnumerable<MethodArgument> arguments)
+public static class ApiExtensions
+{
+    public static ApiMethod AddArgument(this ApiMethod apiMethod, params IEnumerable<MethodArgument> arguments)
     {
         foreach (var argument in arguments)
         {
-            _ = this.Arguments.Add(argument);
+            _ = apiMethod.Arguments.Add(argument);
         }
 
-        return this;
+        return apiMethod;
     }
 
-    public ApiMethod AddArgument(in TypePath type, in string? name)
-        => this.AddArgument(new MethodArgument(type, name));
+    public static ApiMethod AddArgument(this ApiMethod apiMethod, in TypePath type, in string? name)
+        => apiMethod.AddArgument(new MethodArgument(type, name));
 
-    public ApiMethod AddBodyLine(string body)
+    public static ApiMethod AddBodyLine(this ApiMethod apiMethod, string body)
     {
-        this.Body = string.Join(Environment.NewLine, this.Body, body);
-        return this;
+        apiMethod.Body = string.Join(Environment.NewLine, apiMethod.Body, body);
+        return apiMethod;
     }
 
-    public ApiMethod AddHttpMethod(HttpMethodAttribute httpMethod)
+    public static ApiMethod AddHttpMethod(this ApiMethod apiMethod, HttpMethodAttribute httpMethod)
     {
-        _ = this.HttpMethods.Add(httpMethod);
-        return this;
+        _ = apiMethod.HttpMethods.Add(httpMethod);
+        return apiMethod;
     }
 
-    public ApiMethod AddHttpMethod<THttpMethod>([StringSyntax("Route")] string template)
+    public static ApiMethod AddHttpMethod<THttpMethod>(this ApiMethod apiMethod, [StringSyntax("Route")] string template)
         where THttpMethod : HttpMethodAttribute
     {
         var ctor = typeof(THttpMethod).GetConstructor([typeof(string)]);
         var method = (THttpMethod)ctor.Invoke([template]);
-        return this.AddHttpMethod(method);
+        return apiMethod.AddHttpMethod(method);
     }
 
-    public ApiMethod AddHttpMethod<THttpMethod>()
+    public static ApiMethod AddHttpMethod<THttpMethod>(this ApiMethod apiMethod)
         where THttpMethod : HttpMethodAttribute, new()
-        => this.AddHttpMethod(new THttpMethod());
+        => apiMethod.AddHttpMethod(new THttpMethod());
 
-    public ApiMethod WithBody(string body)
-        => this.With(x => x.Body = body);
+    public static ApiMethod IsAsync(this ApiMethod apiMethod, bool isAsync)
+    {
+        apiMethod.IsAsync = isAsync;
+        return apiMethod;
+    }
 
-    public ApiMethod WithReturnType(TypePath type)
-        => this.With(x => x.ReturnType = type);
+    public static ApiMethod WithReturnType(this ApiMethod apiMethod, TypePath type)
+        => apiMethod.With(x => x.ReturnType = type);
 }

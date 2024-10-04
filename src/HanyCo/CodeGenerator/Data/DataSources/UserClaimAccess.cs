@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("UserClaimAccess", Schema = "infra")]
+[Index("ClaimId", Name = "IX_UserClaimAccess_ClaimId")]
 public partial class UserClaimAccess
 {
     [Key]

@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("UiPageComponent", Schema = "infra")]
+[Index("PageId", Name = "IX_UiPageComponent_PageId")]
+[Index("PositionId", Name = "IX_UiPageComponent_PositionId")]
+[Index("UiComponentId", Name = "IX_UiPageComponent_UiComponentId")]
 public partial class UiPageComponent
 {
     [Key]

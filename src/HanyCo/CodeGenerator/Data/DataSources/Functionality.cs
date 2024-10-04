@@ -2,11 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("Functionality", Schema = "infra")]
+[Index("DeleteCommandId", Name = "IX_Functionality_DeleteCommandId")]
+[Index("GetAllQueryId", Name = "IX_Functionality_GetAllQueryId")]
+[Index("GetByIdQueryId", Name = "IX_Functionality_GetByIdQueryId")]
+[Index("InsertCommandId", Name = "IX_Functionality_InsertCommandId")]
+[Index("ModuleId", Name = "IX_Functionality_ModuleId")]
+[Index("SourceDtoId", Name = "IX_Functionality_SourceDtoId")]
+[Index("UpdateCommandId", Name = "IX_Functionality_UpdateCommandId")]
 public partial class Functionality
 {
     [Key]

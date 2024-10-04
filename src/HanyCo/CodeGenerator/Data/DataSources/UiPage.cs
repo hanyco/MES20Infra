@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("UiPage", Schema = "infra")]
+[Index("DtoId", Name = "IX_UiPage_DtoId")]
+[Index("ModuleId", Name = "IX_UiPage_ModuleId")]
 public partial class UiPage
 {
     [Key]

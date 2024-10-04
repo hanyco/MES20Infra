@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Markers;

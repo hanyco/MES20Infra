@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
 [Table("UiComponentAction", Schema = "infra")]
+[Index("CqrsSegregateId", Name = "IX_UiComponentAction_CqrsSegregateId")]
+[Index("PositionId", Name = "IX_UiComponentAction_PositionId")]
+[Index("UiComponentId", Name = "IX_UiComponentAction_UiComponentId")]
 public partial class UiComponentAction
 {
     /// <summary>
