@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.ComponentModel;
 using Library.Validations;

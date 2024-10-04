@@ -2,6 +2,7 @@
 
 
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;

@@ -1,6 +1,6 @@
 ﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.UI.Helpers;
 using HanyCo.Infra.UI.UserControls;
@@ -33,11 +33,9 @@ namespace HanyCo.Infra.UI.Pages;
 public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSavePage
 {
     private readonly IFunctionalityCodeService _codeService;
-    private readonly IEntityViewModelConverter _converter;
     private readonly IDbTableService _dbTableService;
     private readonly IDtoService _dtoService;
     private readonly IModuleService _moduleService;
-    private readonly IPropertyService _propertyService;
     private readonly IProgressReport _reporter;
     private readonly IFunctionalityService _service;
     private DatabaseExplorerUserControl? _databaseExplorerUserControl;
@@ -55,14 +53,12 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         ILogger logger)
         : base(logger)
     {
-        this._service = service;
-        this._codeService = codeService;
+        (this._service, this._codeService) = (service, codeService);
         this._moduleService = moduleService;
         this._dbTableService = dbTableService;
         this._reporter = reporter;
         this._dtoService = dtoService;
-        this._propertyService = propertyService;
-        this._converter = converter;
+
         this.InitializeComponent();
     }
 
@@ -191,6 +187,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         var viewModel = await this._service.GetByIdAsync(id, cancellation);
         this.ViewModel = viewModel;
         await this.BindDataAsync();
+        CheckIfInitiated(true);
     }
 
     private void EnableActors(bool enable)

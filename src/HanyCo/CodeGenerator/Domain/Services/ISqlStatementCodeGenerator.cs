@@ -1,5 +1,5 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
-using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;

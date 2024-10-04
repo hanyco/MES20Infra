@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Exceptions.Validations;
 using Library.Globalization;

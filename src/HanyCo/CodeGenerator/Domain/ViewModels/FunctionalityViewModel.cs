@@ -1,7 +1,7 @@
 ﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
-using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {

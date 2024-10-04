@@ -69,10 +69,6 @@ public partial class CqrsSegregate : IMesEntity
 {
 }
 
-public partial class CrudCode : IMesEntity
-{
-}
-
 public partial class Dto : IMesEntity
 {
 }

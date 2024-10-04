@@ -17,8 +17,6 @@ public partial class InfraWriteDbContext : DbContext
 
     public virtual DbSet<CqrsSegregate> CqrsSegregates { get; set; }
 
-    public virtual DbSet<CrudCode> CrudCodes { get; set; }
-
     public virtual DbSet<Dto> Dtos { get; set; }
 
     public virtual DbSet<EntityClaim> EntityClaims { get; set; }
@@ -68,13 +66,6 @@ public partial class InfraWriteDbContext : DbContext
                 .HasConstraintName("FK_CqrsSegregate_Dto");
 
             entity.HasOne(d => d.ResultDto).WithMany(p => p.CqrsSegregateResultDtos).OnDelete(DeleteBehavior.ClientSetNull);
-        });
-
-        modelBuilder.Entity<CrudCode>(entity =>
-        {
-            entity.Property(e => e.Guid).HasDefaultValueSql("(newsequentialid())");
-
-            entity.HasOne(d => d.Module).WithMany(p => p.CrudCodes).HasConstraintName("FK_CrudCode_Module");
         });
 
         modelBuilder.Entity<Dto>(entity =>

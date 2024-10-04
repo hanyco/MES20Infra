@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Mapping;
@@ -305,7 +305,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.GetByIdQuery = this.ToQueryViewModel(entity.GetByIdQuery))
             .ForMember(x => x.InsertCommand = this.ToCommandViewModel(entity.InsertCommand))
             .ForMember(x => x.UpdateCommand = this.ToCommandViewModel(entity.UpdateCommand))
-            .ForMember(x => x.DeleteCommand = this.ToCommandViewModel(entity.DeleteCommand));
+            .ForMember(x => x.DeleteCommand = this.ToCommandViewModel(entity.DeleteCommand))
+            ;
 
     [return: NotNullIfNotNull(nameof(entity))]
     public ClaimViewModel? ToViewModel(SecurityClaim? entity)

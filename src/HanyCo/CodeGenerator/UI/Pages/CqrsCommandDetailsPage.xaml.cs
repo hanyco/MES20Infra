@@ -53,7 +53,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         set => this.DataContext = value;
     }
 
-    public async Task<Result> SaveToDbAsync()
+    public async Task<Result> SaveToDbAsync(CancellationToken cancellation = default)
     {
         Check.MustBeNotNull(this.ViewModel);
         try

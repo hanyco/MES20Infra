@@ -23,9 +23,6 @@ public partial class Module
     public virtual ICollection<CqrsSegregate> CqrsSegregates { get; set; } = new List<CqrsSegregate>();
 
     [InverseProperty("Module")]
-    public virtual ICollection<CrudCode> CrudCodes { get; set; } = new List<CrudCode>();
-
-    [InverseProperty("Module")]
     public virtual ICollection<Dto> Dtos { get; set; } = new List<Dto>();
 
     [InverseProperty("Module")]
