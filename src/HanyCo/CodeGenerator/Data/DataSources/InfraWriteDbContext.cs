@@ -16,6 +16,10 @@ public partial class InfraWriteDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Controller> Controllers { get; set; }
+
+    public virtual DbSet<ControllerMethod> ControllerMethods { get; set; }
+
     public virtual DbSet<CqrsSegregate> CqrsSegregates { get; set; }
 
     public virtual DbSet<Dto> Dtos { get; set; }
@@ -48,12 +52,26 @@ public partial class InfraWriteDbContext : DbContext
 
     public virtual DbSet<UserClaimAccess> UserClaimAccesses { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True;TrustServerCertificate=True");
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+    //        => optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Controller>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Controll__3214EC07E36E1F9C");
+
+            entity.HasOne(d => d.Module).WithMany(p => p.Controllers).HasConstraintName("FK_Controller_Module");
+        });
+
+        modelBuilder.Entity<ControllerMethod>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ApiMetho__3214EC07E6131459");
+
+            entity.HasOne(d => d.Controller).WithMany(p => p.ControllerMethods).HasConstraintName("FK__ApiMethod__Contr__2B0A656D");
+        });
+
         modelBuilder.Entity<CqrsSegregate>(entity =>
         {
             entity.Property(e => e.Guid).HasDefaultValueSql("(newid())");
@@ -84,6 +102,10 @@ public partial class InfraWriteDbContext : DbContext
         modelBuilder.Entity<Functionality>(entity =>
         {
             entity.Property(e => e.Guid).HasDefaultValueSql("(newid())");
+
+            entity.HasOne(d => d.Controller).WithMany(p => p.Functionalities)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Functionality_Controller");
 
             entity.HasOne(d => d.DeleteCommand).WithMany(p => p.FunctionalityDeleteCommands)
                 .OnDelete(DeleteBehavior.ClientSetNull)

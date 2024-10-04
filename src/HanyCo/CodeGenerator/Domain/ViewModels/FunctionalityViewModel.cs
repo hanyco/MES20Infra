@@ -6,7 +6,7 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 {
     private DtoViewModel _sourceDto;
 
-    public ApiCodingViewModel ApiCodingViewModel { get; set; } = new();
+    public ControllerViewModel Controller { get; set; } = new();
 
     public UiComponentViewModel BlazorDetailsComponent { get; set; }
 
@@ -31,4 +31,6 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
     public CqrsCommandViewModel UpdateCommand { get; set; }
+
+    public ModuleViewModel Module { get; set; }
 }

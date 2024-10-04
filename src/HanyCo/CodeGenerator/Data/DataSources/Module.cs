@@ -21,6 +21,9 @@ public partial class Module
     public long? ParentId { get; set; }
 
     [InverseProperty("Module")]
+    public virtual ICollection<Controller> Controllers { get; set; } = new List<Controller>();
+
+    [InverseProperty("Module")]
     public virtual ICollection<CqrsSegregate> CqrsSegregates { get; set; } = new List<CqrsSegregate>();
 
     [InverseProperty("Module")]

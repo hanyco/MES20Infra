@@ -7,47 +7,27 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using Library.Data.Markers;
 using Library.Interfaces;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IEntityViewModelConverter :
     IService,
     ILoggerContainer,
 
-    IDbEntityToViewModelConverter<UiComponentViewModel, UiComponent>,
-    IViewModelToDbEntityConverter<UiComponentViewModel, UiComponent>,
-
-    IDbEntityToViewModelConverter<UiPropertyViewModel, UiComponentProperty>,
-    IViewModelToDbEntityConverter<UiPropertyViewModel, UiComponentProperty>,
-
-    IDbEntityToViewModelConverter<UiComponentButtonViewModelBase, UiComponentAction>,
-    IViewModelToDbEntityConverter<UiComponentButtonViewModelBase, UiComponentAction>,
-
-    IDbEntityToViewModelConverter<ModuleViewModel, Module>,
-    IViewModelToDbEntityConverter<ModuleViewModel, Module>,
-
-    IDbEntityToViewModelConverter<PropertyViewModel, Property>,
-    IViewModelToDbEntityConverter<PropertyViewModel, Property>,
-
-    IDbEntityToViewModelConverter<UiBootstrapPositionViewModel, UiBootstrapPosition>,
-    IViewModelToDbEntityConverter<UiBootstrapPositionViewModel, UiBootstrapPosition>,
-
-    IDbEntityToViewModelConverter<UiPageViewModel, UiPage>,
-    IViewModelToDbEntityConverter<UiPageViewModel, UiPage>,
-
+    IDbEntityViewModelConverter<UiComponentViewModel, UiComponent>,
+    IDbEntityViewModelConverter<UiPropertyViewModel, UiComponentProperty>,
+    IDbEntityViewModelConverter<UiComponentButtonViewModelBase, UiComponentAction>,
+    IDbEntityViewModelConverter<ModuleViewModel, Module>,
+    IDbEntityViewModelConverter<PropertyViewModel, Property>,
+    IDbEntityViewModelConverter<UiBootstrapPositionViewModel, UiBootstrapPosition>,
+    IDbEntityViewModelConverter<UiPageViewModel, UiPage>,
     IDbEntityToViewModelConverter<UiComponentViewModel, UiPageComponent>,
-
-    IDbEntityToViewModelConverter<FunctionalityViewModel, Functionality>,
-    IViewModelToDbEntityConverter<FunctionalityViewModel, Functionality>,
-
-    IViewModelToDbEntityConverter<DtoViewModel, Dto>,
-    IDbEntityToViewModelConverter<DtoViewModel, Dto>,
-
-    IViewModelToDbEntityConverter<ClaimViewModel, SecurityClaim>,
-    IDbEntityToViewModelConverter<ClaimViewModel, SecurityClaim>,
-
-    IViewModelToDbEntityConverter<CqrsQueryViewModel, CqrsSegregate>,
+    IDbEntityViewModelConverter<FunctionalityViewModel, Functionality>,
+    IDbEntityViewModelConverter<DtoViewModel, Dto>,
+    IDbEntityViewModelConverter<ClaimViewModel, SecurityClaim>,
     IViewModelToDbEntityConverter<CqrsCommandViewModel, CqrsSegregate>,
-    IDbEntityToViewModelConverter<CqrsViewModelBase, CqrsSegregate>
+    IDbEntityViewModelConverter<CqrsViewModelBase, CqrsSegregate>,
+    IDbEntityViewModelConverter<ControllerViewModel, Controller>,
+    IDbEntityViewModelConverter<ControllerMethodViewModel, ControllerMethod>
 {
     [return: NotNullIfNotNull(nameof(entity))]
     DtoViewModel FillByDbEntity(Dto entity, in IEnumerable<Property>? properties);

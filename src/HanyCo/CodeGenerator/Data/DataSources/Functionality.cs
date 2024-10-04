@@ -42,6 +42,12 @@ public partial class Functionality
 
     public long SourceDtoId { get; set; }
 
+    public long ControllerId { get; set; }
+
+    [ForeignKey("ControllerId")]
+    [InverseProperty("Functionalities")]
+    public virtual Controller Controller { get; set; } = null!;
+
     [ForeignKey("DeleteCommandId")]
     [InverseProperty("FunctionalityDeleteCommands")]
     public virtual CqrsSegregate DeleteCommand { get; set; } = null!;

@@ -115,6 +115,8 @@ public interface IDbEntityToViewModelConverter<out TViewModel, in TDbEntity>
     TViewModel? ToViewModel(TDbEntity? entity);
 }
 
+public interface IDbEntityViewModelConverter<TViewMode, TDbEntity> : IDbEntityToViewModelConverter<TViewMode, TDbEntity>,IViewModelToDbEntityConverter<TViewMode,TDbEntity>;
+
 /// <summary>
 /// Supporting to clean tracked entities.
 /// </summary>

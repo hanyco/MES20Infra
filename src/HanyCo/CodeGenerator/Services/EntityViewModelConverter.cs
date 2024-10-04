@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
@@ -10,7 +11,7 @@ using Library.Validations;
 
 using Services.Helpers;
 
-namespace Services.CodeGen;
+namespace Services;
 
 internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) : IEntityViewModelConverter
 {
@@ -45,11 +46,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
     public DtoViewModel FillViewModel(in DtoViewModel viewModel, in Dto dto, in IEnumerable<Property> properties)
     {
-        Check.MustBeArgumentNotNull(viewModel);
-        Check.MustBeArgumentNotNull(viewModel.Properties);
-        Check.MustBeArgumentNotNull(dto);
-        Check.MustBeArgumentNotNull(properties);
-
         _ = this._mapper.Map(dto, viewModel);
         if (viewModel.Module is null && dto.Module is not null)
         {
@@ -87,9 +83,11 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     // TODO: Think about how to load component complexity from database
     //?.IfTrue(model.UiActions.Any() is true, x => x.UiComponentActions = model.UiActions.Select(this.ToDbEntity).ToList()!);
 
+    [return: NotNullIfNotNull(nameof(model))]
     public HanyCo.Infra.Internals.Data.DataSources.Module? ToDbEntity(ModuleViewModel? model) =>
         model is null ? null : this._mapper.Map<HanyCo.Infra.Internals.Data.DataSources.Module>(model);
 
+    [return: NotNullIfNotNull(nameof(model))]
     public UiBootstrapPosition? ToDbEntity(UiBootstrapPositionViewModel? model) =>
         model is null ? null : this._mapper.Map<UiBootstrapPosition>(model);
 
@@ -140,7 +138,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         {
             result.ModuleId = moduleId;
         }
-        _ = (result.Properties?.AddRange(model.Properties.Select(this.ToDbEntity)));
+        _ = (result.Properties?.AddRange(model.Properties.Select(this.ToDbEntity).Compact()));
         return result;
     }
 
@@ -165,18 +163,50 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             result.Id = model.Id.Value;
         }
 
-        result.GetAllQuery = this.ToDbEntity(model.GetAllQuery.NotNull());
-        result.GetByIdQuery = this.ToDbEntity(model.GetByIdQuery.NotNull());
-        result.InsertCommand = this.ToDbEntity(model.InsertCommand.NotNull());
-        result.UpdateCommand = this.ToDbEntity(model.UpdateCommand.NotNull());
-        result.DeleteCommand = this.ToDbEntity(model.DeleteCommand.NotNull());
+        result.GetAllQuery = this.ToDbEntity(model.GetAllQuery);
+        result.GetByIdQuery = this.ToDbEntity(model.GetByIdQuery);
+        result.InsertCommand = this.ToDbEntity(model.InsertCommand);
+        result.UpdateCommand = this.ToDbEntity(model.UpdateCommand);
+        result.DeleteCommand = this.ToDbEntity(model.DeleteCommand);
         result.SourceDto = this.ToDbEntity(model.SourceDto);
         result.Module = this.ToDbEntity(model.SourceDto.Module);
         result.ModuleId = result.Module?.Id;
+        result.Controller = this.ToDbEntity(model.Controller);
         //TODO Fill IDs
         return result;
     }
 
+    [return: NotNullIfNotNull("model")]
+    public CqrsSegregate? ToDbEntity(CqrsViewModelBase? model) => throw new NotImplementedException();
+
+    [return: NotNullIfNotNull(nameof(model))]
+    public Controller? ToDbEntity(ControllerViewModel? model)
+    {
+        if (model == null)
+        {
+            return null;
+        }
+
+        var result = this._mapper
+            .MapExcept<Controller>(model, x => x.Id)
+            .ForMember(x => x.AdditionalUsings = model.AdditionalUsings.Merge(";"))
+            .ForMember(x => x.ControllerMethods!.AddRange(model.Apis.Select(this.ToDbEntity)))
+            .ForMember(x => x.ControllerName = model.Name!)
+            .ForMember(x => x.ControllerRoute = model.Route);
+        if (model.Id is not null and not 0)
+        {
+            result.Id = model.Id.Value;
+        }
+        if (model.Module?.Id is { } moduleId)
+        {
+            result.ModuleId = moduleId;
+        }
+        
+        return result;
+    }
+
+    [return: NotNullIfNotNull("model")]
+    public ControllerMethod? ToDbEntity(ControllerMethodViewModel? model) => throw new NotImplementedException();
     public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel) =>
         columnViewModel == null
             ? null
@@ -192,13 +222,13 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public UiPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel) =>
         propertyViewModel == null ? null : new()
         {
-            Name = propertyViewModel.Name.NotNull(),
+            Name = propertyViewModel.Name,
             Property = propertyViewModel,
             ControlType = propertyViewModel.Type.ToControlType(propertyViewModel.IsList, propertyViewModel.IsNullable, propertyViewModel.Dto).Control,
             Caption = string.Equals(propertyViewModel.Name, "id", global::System.StringComparison.Ordinal)
                 ? propertyViewModel.Name
                 : propertyViewModel.Name.SeparateCamelCase(),
-            IsEnabled = !propertyViewModel.Name.EqualsTo("id")
+            IsEnabled = !propertyViewModel.Name?.EqualsTo("id")??false
         };
 
     [return: NotNullIfNotNull(nameof(entity))]
@@ -314,11 +344,16 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.InsertCommand = this.ToCommandViewModel(entity.InsertCommand))
             .ForMember(x => x.UpdateCommand = this.ToCommandViewModel(entity.UpdateCommand))
             .ForMember(x => x.DeleteCommand = this.ToCommandViewModel(entity.DeleteCommand))
+            .ForMember(x => x.Controller = this.ToViewModel(entity.Controller))
             ;
 
     [return: NotNullIfNotNull(nameof(entity))]
     public ClaimViewModel? ToViewModel(SecurityClaim? entity)
         => entity is null ? null : this._mapper.Map<ClaimViewModel>(entity);
+    [return: NotNullIfNotNull("entity")]
+    public ControllerViewModel? ToViewModel(Controller? entity) => throw new NotImplementedException();
+    [return: NotNullIfNotNull("entity")]
+    public ControllerMethodViewModel? ToViewModel(ControllerMethod? entity) => throw new NotImplementedException();
 
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType)
     {
@@ -326,7 +361,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         {
             return null;
         }
-        
+
         var result = this._mapper.Map<CqrsSegregate>(model)
             .ForMember(x => x.SegregateType = segregateType.Cast().ToInt())
             .ForMember(x => x.CategoryId = model.Category.Cast().ToInt());

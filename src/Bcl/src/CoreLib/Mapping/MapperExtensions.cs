@@ -5,9 +5,9 @@ using Library.Validations;
 
 namespace Library.Mapping;
 
+[DebuggerStepThrough]
 public static class MapperExtensions
 {
-    [DebuggerStepThrough]
     public static TEntity ForMember<TEntity>(this TEntity entity, in Action<TEntity> action)
         where TEntity : IEntity
     {
@@ -15,10 +15,4 @@ public static class MapperExtensions
         action(entity);
         return entity;
     }
-
-    public static TEntity ForMember<TEntity>(in TEntity entity, in Action<TEntity> action)
-        => entity.Fluent(action);
-
-    public static TEntity? ForMemberIfNotNull<TEntity>(TEntity? entity, Action<TEntity> action)
-            => CodeHelper.IfTrue<Fluency<TEntity>>(entity is not null && action is not null, () => entity.ArgumentNotNull().Fluent(action));
 }

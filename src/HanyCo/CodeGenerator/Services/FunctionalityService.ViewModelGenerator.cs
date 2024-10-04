@@ -209,7 +209,7 @@ internal sealed partial class FunctionalityService
             // The Save button
             var saveButton = new UiComponentCustomButton()
             {
-                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
+                CodeStatement = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.Controller.Name, data.SourceDtoName),
                 Caption = "Save",
                 ButtonType = ButtonType.Submit,
                 Guid = Guid.NewGuid(),
@@ -245,7 +245,7 @@ internal sealed partial class FunctionalityService
             };
             var onLoad = new UiComponentCustomLoad
             {
-                CodeStatement = CodeSnippets.BlazorDetailsComponent_LoadPage_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
+                CodeStatement = CodeSnippets.BlazorDetailsComponent_LoadPage_Body(data.ViewModel.Controller.Name, data.SourceDtoName),
             };
             data.ViewModel.BlazorDetailsComponent.Actions.Add(saveButton);
             data.ViewModel.BlazorDetailsComponent.Actions.Add(cancelButton);
@@ -264,7 +264,7 @@ internal sealed partial class FunctionalityService
             info.IsEditForm = true;
             _ = info.Events.Add(new(nameof(EditForm.OnValidSubmit), new Library.CodeGeneration.v2.Back.Method("SaveData")
             {
-                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
+                Body = CodeSnippets.BlazorDetailsComponent_SaveButton_OnClick_Body(data.ViewModel.Controller.Name, data.SourceDtoName),
                 ReturnType = "async Task"
             }, true));
         }
@@ -353,7 +353,7 @@ internal sealed partial class FunctionalityService
             };
             var deleteButton = new UiComponentCustomButton
             {
-                CodeStatement = CodeSnippets.BlazorListComponent_DeleteButton_OnClick_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName),
+                CodeStatement = CodeSnippets.BlazorListComponent_DeleteButton_OnClick_Body(data.ViewModel.Controller.Name, data.SourceDtoName),
                 Caption = "Delete",
                 EventHandlerName = "DeleteButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -364,7 +364,7 @@ internal sealed partial class FunctionalityService
             };
             var onLoad = new UiComponentCustomLoad
             {
-                CodeStatement = CodeSnippets.BlazorListComponent_LoadPage_Body(data.ViewModel.ApiCodingViewModel.ControllerName, data.SourceDtoName, data.SourceDtoName)
+                CodeStatement = CodeSnippets.BlazorListComponent_LoadPage_Body(data.ViewModel.Controller.Name, data.SourceDtoName, data.SourceDtoName)
             };
             _ = data.ViewModel.BlazorListComponent.Actions.AddRange(new IUiComponentContent[] { newButton, editButton, deleteButton, onLoad });
         }
@@ -403,32 +403,32 @@ internal sealed partial class FunctionalityService
             .RunAsync(token);
 
         void initialize(CreationData data)
-            => data.ViewModel.ApiCodingViewModel
+            => data.ViewModel.Controller
                 .With(x => x.AdditionalUsings.Add(data.ViewModel.GetAllQuery.DtoNameSpace))
                 .With(x => x.AdditionalUsings.Add(typeof(Result).Namespace!))
                 .With(x => x.AdditionalUsings.Add(typeof(Result<>).Namespace!))
                 .With(x => x.NameSpace = TypePath.Combine(GetRootNameSpace(data), "Controllers"))
-                .With(x => x.ControllerName = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"));
+                .With(x => x.Name = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"));
 
         void createCtor(CreationData data)
-            => data.ViewModel.ApiCodingViewModel.CtorParams.Add((MethodArgument.New(TypePath.New<IMediator>()), true));
+            => data.ViewModel.Controller.CtorParams.Add((MethodArgument.New(TypePath.New<IMediator>()), true));
 
         void createGetAllApi(CreationData data)
         {
-            var api = ApiMethod
+            var api = ControllerMethodViewModel
                 .New("GetAll")
                 .AddHttpMethod<HttpGetAttribute>()
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQuery}());")
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetAllQuery.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
-            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
-            _ = data.ViewModel.ApiCodingViewModel.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace!);
+            _ = data.ViewModel.Controller.Apis.Add(api);
+            _ = data.ViewModel.Controller.AdditionalUsings.Add(data.ViewModel.SourceDto.NameSpace!);
         }
 
         void createGetByIdApi(CreationData data)
         {
-            var api = ApiMethod
+            var api = ControllerMethodViewModel
                 .New("GetById")
                 .AddHttpMethod<HttpGetAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
@@ -436,13 +436,13 @@ internal sealed partial class FunctionalityService
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetByIdQuery.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
-            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.Controller.Apis.Add(api);
         }
 
         void createInsertApi(CreationData data)
         {
             var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
-            var api = ApiMethod
+            var api = ControllerMethodViewModel
                 .New("Insert")
                 .AddHttpMethod<HttpPostAttribute>()
                 .AddArgument(data.SourceDtoName!, argName)
@@ -450,13 +450,13 @@ internal sealed partial class FunctionalityService
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.InsertCommand.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
-            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.Controller.Apis.Add(api);
         }
 
         void createUpdateApi(CreationData data)
         {
             var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
-            var api = ApiMethod
+            var api = ControllerMethodViewModel
                 .New("Update")
                 .AddHttpMethod<HttpPutAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
@@ -465,12 +465,12 @@ internal sealed partial class FunctionalityService
                 .AddBodyLine("return this.Ok(result);")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
-            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.Controller.Apis.Add(api);
         }
 
         void createDeleteApi(CreationData data)
         {
-            var api = ApiMethod
+            var api = ControllerMethodViewModel
                 .New("Delete")
                 .AddHttpMethod<HttpDeleteAttribute>("{id:long}")
                 .AddArgument(TypePath.New<long>(), "id")
@@ -478,7 +478,7 @@ internal sealed partial class FunctionalityService
                 .AddBodyLine("return this.Ok(true);")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
                 .IsAsync(true);
-            _ = data.ViewModel.ApiCodingViewModel.Apis.Add(api);
+            _ = data.ViewModel.Controller.Apis.Add(api);
         }
     }
 

@@ -23,12 +23,12 @@ namespace Services.CodeGen;
 [Stateless]
 internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodingService
 {
-    public Result<Codes> GenerateCodes(ApiCodingViewModel viewModel)
+    public Result<Codes> GenerateCodes(ControllerViewModel viewModel)
     {
         // Validations
         var vr = viewModel
             .ArgumentNotNull().Check()
-            .NotNull(x => x.ControllerName).Build();
+            .NotNull(x => x.Name).Build();
         if (vr.IsFailure)
         {
             return vr.WithValue(Codes.Empty)!;
@@ -70,17 +70,17 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             return codeStatement.WithValue(Codes.Empty)!;
         }
 
-        var partCode = Code.New(viewModel.ControllerName, Languages.CSharp, codeStatement, true).SetCategory(CodeCategory.Api);
+        var partCode = Code.New(viewModel.Name, Languages.CSharp, codeStatement, true).SetCategory(CodeCategory.Api);
         // TODO: Add main part to let the developer to add his/her own code to the controller.
-        var mainCode = Code.New(viewModel.ControllerName, Languages.CSharp, "// Working on it... To be back soon.", false).SetCategory(CodeCategory.Api);
+        var mainCode = Code.New(viewModel.Name, Languages.CSharp, "// Working on it... To be back soon.", false).SetCategory(CodeCategory.Api);
 
         // Return result
         return Codes.New(mainCode, partCode);
 
-        static IClass createController(in ApiCodingViewModel viewModel)
+        static IClass createController(in ControllerViewModel viewModel)
         {
             var controllerClass = IClass
-                .New(viewModel.ControllerName)
+                .New(viewModel.Name)
                 .AddBaseType<ControllerBase>()
                 .AddAttribute<ApiControllerAttribute>()
                 .AddAttribute<RouteAttribute>((null, "[controller]"));
@@ -92,7 +92,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             return controllerClass;
         }
 
-        static Method createConstructor(in ApiCodingViewModel viewModel, in INamespace ns, in IClass controllerClass)
+        static Method createConstructor(in ControllerViewModel viewModel, in INamespace ns, in IClass controllerClass)
         {
             var ctor = new Method(controllerClass.Name)
             {
@@ -114,7 +114,7 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             return ctor;
         }
 
-        static string processReturnType(in INamespace ns, in ApiMethod api)
+        static string processReturnType(in INamespace ns, in ControllerMethodViewModel api)
         {
             string returnType;
             if (api.ReturnType is not null)
@@ -130,13 +130,13 @@ internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine)
             return returnType;
         }
 
-        static Method createMethod(in INamespace ns, in ApiMethod api, in string returnType)
+        static Method createMethod(in INamespace ns, in ControllerMethodViewModel api, in string returnType)
         {
             var method = new Method(api.Name!)
             {
                 Body = api.Body,
                 ReturnType = returnType,
-                IsAsync = api.IsAsync(),
+                IsAsync = api.IsAsync,
             };
             api.Arguments.ForEach(x => method.AddArgument(x));
 
