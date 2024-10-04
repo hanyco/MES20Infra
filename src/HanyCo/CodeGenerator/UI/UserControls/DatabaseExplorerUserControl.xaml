@@ -6,16 +6,24 @@
     xmlns:local="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
-    d:DesignWidth="260"
+    d:DesignWidth="250"
     mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--<TextBox x:Name="FilterTextBox" Style="{StaticResource LongTextBox}" TextChanged="FilterTextBox_TextChanged" />-->
+        <StackPanel Style="{StaticResource FieldPanel}">
+            <TextBox x:Name="FilterTextBox" TextChanged="FilterTextBox_TextChanged" />
+            <Button
+                x:Name="ClearFilterButton"
+                Click="ClearFilterButton_Click"
+                Style="{StaticResource IconButton}">
+                <Path Style="{StaticResource Close}" />
+            </Button>
+        </StackPanel>
         <TreeView
-            x:Name="ServerExplorerTreeView"
+            x:Name="TreeView"
             Grid.Row="1"
             SelectedItemChanged="ServerExplorerTreeView_SelectedItemChanged" />
     </Grid>

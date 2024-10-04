@@ -583,7 +583,7 @@ public static class DataServiceHelper
     /// This code checks if the model's Id is not null and greater than 0, and then either updates
     /// or inserts the model depending on the result.
     /// </remarks>
-    public static Task<Result<TViewModel>> SaveViewModelAsync<TViewModel>(this IAsyncWrite<TViewModel> service, TViewModel model, bool persist = true)
+    public static Task<Result<TViewModel>> SaveViewModelAsync<TViewModel>(this IAsyncWrite<TViewModel> service, TViewModel model, bool persist = true, CancellationToken cancellationToken = default)
         where TViewModel : ICanSetKey<long?>
     {
         Checker.MustBeArgumentNotNull(service);
@@ -593,12 +593,12 @@ public static class DataServiceHelper
         if (model.Id is { } id && id > 0)
         {
             //If the Id is not null and greater than 0, update the model
-            return service.UpdateAsync(id, model, persist);
+            return service.UpdateAsync(id, model, persist, cancellationToken);
         }
         else
         {
             //If the Id is null or less than 0, insert the model
-            return service.InsertAsync(model, persist);
+            return service.InsertAsync(model, persist, cancellationToken);
         }
     }
 

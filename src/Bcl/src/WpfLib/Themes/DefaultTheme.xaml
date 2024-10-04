@@ -103,7 +103,7 @@
         x:Key="LongLabelBlock"
         BasedOn="{StaticResource {x:Type TextBlock}}"
         TargetType="TextBlock">
-        <Setter Property="Width" Value="{StaticResource LongControlWidth}" />
+        <Setter Property="Width" Value="{StaticResource ControlLongWidth}" />
     </Style>
 
     <Style
@@ -462,22 +462,22 @@
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="VerticalScrollBarVisibility" Value="Visible" />
-        <Setter Property="MinWidth" Value="{StaticResource ContentControlLongWidth}" />
-        <Setter Property="MinHeight" Value="{StaticResource ContentControlLongHeight}" />
+        <Setter Property="MinWidth" Value="{StaticResource ControlVeryLongWidth}" />
+        <Setter Property="MinHeight" Value="{StaticResource TextBoxMultilineHeight}" />
     </Style>
 
     <Style
         x:Key="LongTextBox"
         BasedOn="{StaticResource {x:Type TextBox}}"
         TargetType="TextBox">
-        <Setter Property="Width" Value="{StaticResource ContentControlLongWidth}" />
+        <Setter Property="Width" Value="{StaticResource ControlVeryLongWidth}" />
     </Style>
 
     <Style
         x:Key="LongLongTextBox"
         BasedOn="{StaticResource {x:Type TextBox}}"
         TargetType="TextBox">
-        <Setter Property="Width" Value="{StaticResource ContentControlLongLongWidth}" />
+        <Setter Property="Width" Value="{StaticResource TextBoxLongLongHeight}" />
     </Style>
 
     <Style TargetType="CheckBox">
@@ -508,7 +508,7 @@
         x:Key="LongComboBox"
         BasedOn="{StaticResource {x:Type ComboBox}}"
         TargetType="ComboBox">
-        <Setter Property="Width" Value="{StaticResource ContentControlLongWidth}" />
+        <Setter Property="Width" Value="{StaticResource ControlVeryLongWidth}" />
     </Style>
 
     <Style x:Key="RadioButtonListStyle" TargetType="ListBox">
@@ -665,7 +665,7 @@
         x:Key="LongToggleButton"
         BasedOn="{StaticResource {x:Type ToggleButton}}"
         TargetType="ToggleButton">
-        <Setter Property="Width" Value="{StaticResource LongControlWidth}" />
+        <Setter Property="Width" Value="{StaticResource ControlLongWidth}" />
     </Style>
 
     <Style
@@ -726,7 +726,7 @@
         <Setter Property="Foreground" Value="{StaticResource SkinForeground}" />
     </Style>
     <Style x:Key="LongControl" TargetType="ContentControl">
-        <Setter Property="Width" Value="{StaticResource ContentControlLongWidth}" />
+        <Setter Property="Width" Value="{StaticResource ControlVeryLongWidth}" />
     </Style>
 
     <ControlTemplate x:Key="ValidationTemplate">

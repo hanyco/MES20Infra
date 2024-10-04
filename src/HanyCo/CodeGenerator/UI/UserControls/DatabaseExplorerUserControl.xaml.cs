@@ -55,7 +55,7 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
     public static readonly DependencyProperty SelectedColumnsProperty = GetDependencyProperty<IEnumerable<DbColumnViewModel>, DatabaseExplorerUserControl>(
         nameof(SelectedColumns),
         onPropertyChanged: (me, e) => me.OnPropertyChanged(e),
-        defaultValue: Enumerable.Empty<DbColumnViewModel>());
+        defaultValue: []);
 
     public IEnumerable<DbColumnViewModel> SelectedColumns
     {
@@ -71,11 +71,11 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
         var treeItems = new TreeViewItem { Header = "Tables" };
         EnumerableHelper.BuildTree<Node<DbObjectViewModel>, TreeViewItem>(
             dbNode,
-            dbObject => new() { Header = dbObject.Value, DataContext = dbObject },
+            dbObject => new() { Header = dbObject.Value, DataContext = dbObject, Name = dbObject.Value?.Name },
             dbObject => dbObject.Children,
             item => treeItems.Items.Add(item),
             (parent, child) => parent.Items.Add(child));
-        _ = this.ServerExplorerTreeView.Items.ClearAndAdd(treeItems);
+        _ = this.TreeView.Items.ClearAndAdd(treeItems);
         return this;
     }
 
@@ -91,7 +91,7 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
     private void ServerExplorerTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        this.SelectedDbObjectNode = this.ServerExplorerTreeView.GetSelectedModel<Node<DbObjectViewModel>>();
+        this.SelectedDbObjectNode = this.TreeView.GetSelectedModel<Node<DbObjectViewModel>>();
 
         (this.SelectedTable, this.SelectedColumns) = this.SelectedDbObjectNode?.Value switch
         {
@@ -111,13 +111,26 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
             var dbTable = node.Value.Cast().As<DbTableViewModel>();
             var children = node.Children?.FirstOrDefault()?.Children;
-            var dbColumns = (children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>()).ToList();
+            var dbColumns = (children?.Select(x => x?.Value?.Cast().As<DbColumnViewModel>()).Compact() ?? []).ToList();
             return (dbTable, dbColumns);
         }
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onColumnSelected(Node<DbObjectViewModel>? node) =>
-            (null, EnumerableHelper.AsEnumerable(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? Enumerable.Empty<DbColumnViewModel>());
+            (null, EnumerableHelper.AsEnumerable(node?.Value.Cast().As<DbColumnViewModel>()).Compact() ?? []);
 
         static (DbTableViewModel? DbTable, IEnumerable<DbColumnViewModel> dbColumns) onUnknownSelected(Node<DbObjectViewModel>? node) =>
-            (null, Enumerable.Empty<DbColumnViewModel>());
+            (null, []);
+    }
+
+    private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        this.TreeView.FilterItems(
+            this.FilterTextBox.Text,
+            item => item.GetModel<Node<DbObjectViewModel>>()?.ToString(),
+            this.TreeView.Items[0].Cast().To<TreeViewItem>().Items);
+    }
+
+    private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.FilterTextBox.Text = string.Empty;
     }
 }

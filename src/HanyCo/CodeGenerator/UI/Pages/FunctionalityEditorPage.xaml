@@ -10,7 +10,6 @@
     xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=HanyCo.Infra.CodeGen.Contracts.CodeGen"
     x:Name="Me"
     Title="Functionality Editor"
-    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Loaded="Me_Loaded"
@@ -77,10 +76,7 @@
                 <Path Style="{StaticResource SaveAll}" />
             </Button>
         </ToolBar>
-        <usercontrols:FunctionalityTreeView
-            x:Name="FunctionalityTreeView"
-            Grid.Row="1"
-            Width="150" />
+        <usercontrols:FunctionalityTreeView x:Name="FunctionalityTreeView" Grid.Row="1" />
         <TabControl
             x:Name="MainTabControl"
             Grid.Row="1"

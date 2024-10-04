@@ -71,22 +71,26 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     public FunctionalityViewModel? ViewModel
     {
         get => this.GetViewModelByDataContext<FunctionalityViewModel>();
-        set => this.SetViewModelByDataContext(value, () => this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null);
+        set => this.SetViewModelByDataContext(value, () =>
+        {
+            this.DtoViewModelEditor.IsEnabled = this.ViewModel?.SourceDto != null;
+            if (this.ViewModel?.SourceDto is null)
+            {
+                this.ComponentCodeResultUserControl.Codes = Codes.Empty;
+            }
+        });
     }
 
-    async Task<Result> IAsyncSavePage.SaveToDbAsync()
+    async Task<Result> IAsyncSavePage.SaveToDbAsync(CancellationToken cancellationToken)
     {
         try
         {
             this.EnableActors(false);
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
+            
             this.PrepareViewModel();
-            if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
-            {
-                return validationResult;
-            }
+            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
 
-            var result = await this._service.SaveViewModelAsync(this.ViewModel);
+            var result = await this._service.SaveViewModelAsync(this.ViewModel, cancellationToken: cancellationToken);
             if (result.IsSucceed)
             {
                 _ = this.SetIsViewModelChanged(false);
@@ -109,10 +113,10 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     [MemberNotNull(nameof(ViewModel))]
     private void CheckIfInitiated(bool fullCheck = true)
     {
-        bool isNotInitiated = fullCheck
+        var isNotInitiated = fullCheck
             ? this.ViewModel is not null and { ApiCodingViewModel: not null } and { BlazorDetailsComponent: not null } and { GetAllQuery: not null }
             : this.ViewModel is not null;
-        
+
         Check.MustBe(isNotInitiated, () => "Please create a new Functionality or edit an old one.");
     }
 
@@ -121,14 +125,19 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            await this.AskToSaveIfChangedAsync().BreakOnFail().End();
-            this.ViewModel = null;
-            this.ViewModel = await this.GetNewViewModel();
+            await CreateFunctionality();
         }
         finally
         {
             this.EnableActors(true);
         }
+    }
+
+    private async Task CreateFunctionality(CancellationToken cancellationToken = default)
+    {
+        await this.AskToSaveIfChangedAsync(cancellationToken: cancellationToken).BreakOnFail().End();
+        this.ViewModel = null;
+        this.ViewModel = await this.GetNewViewModel(cancellationToken);
     }
 
     private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
@@ -136,16 +145,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            var functionality = this.FunctionalityTreeView.SelectedItem;
-            Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
-            var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
-            if (resp != TaskDialogResult.Yes)
-            {
-                return;
-            }
-
-            _ = await this._service.DeleteAsync(functionality).ShowOrThrowAsync(this.Title);
-            await this.BindDataAsync();
+            await DeleteFunctionality();
         }
         finally
         {
@@ -153,25 +153,44 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
+    private async Task DeleteFunctionality()
+    {
+        var functionality = this.FunctionalityTreeView.SelectedItem;
+        Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
+        var resp = MsgBox2.AskWithWarn("Are you sure you want to delete this Functionality?", "This operation cannot be undone.", detailsExpandedText: "Any DTO, View Model and CQRS segregation associated to this Functionality will be deleted.");
+        if (resp != TaskDialogResult.Yes)
+        {
+            return;
+        }
+
+        _ = await this._service.DeleteAsync(functionality).ShowOrThrowAsync(this.Title);
+        await this.BindDataAsync();
+    }
+
     private async void EditFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             this.EnableActors(false);
-            var id = this.FunctionalityTreeView.SelectedItem
-                .Check()
-                .NotNull(() => "No functionality is selected.")
-                .NotNull(x => x!.Id).ThrowOnFail()
-                .Value!.Id!.Value;
-            await this.AskToSaveIfChangedAsync().BreakOnFail().End();
-            var viewModel = await this._service.GetByIdAsync(id);
-            this.ViewModel = viewModel;
-            await this.BindDataAsync();
+            await LoadFunctionality();            
         }
         finally
         {
             this.EnableActors(true);
         }
+    }
+
+    private async Task LoadFunctionality(CancellationToken cancellation = default)
+    {
+        var id = this.FunctionalityTreeView.SelectedItem
+                        .Check()
+                        .NotNull(() => "No functionality is selected.")
+                        .NotNull(x => x!.Id).ThrowOnFail()
+                        .Value!.Id!.Value;
+        await this.AskToSaveIfChangedAsync(cancellationToken: cancellation).BreakOnFail().End();
+        var viewModel = await this._service.GetByIdAsync(id, cancellation);
+        this.ViewModel = viewModel;
+        await this.BindDataAsync();
     }
 
     private void EnableActors(bool enable)
@@ -184,6 +203,9 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         this.SaveToDbButton.IsEnabled = enable;
         this.SaveToDiskButton.IsEnabled = enable;
         this.MainTabControl.IsEnabled = enable;
+        this.SelectRootDtoByDtoButton.IsEnabled = enable;
+        this.SelectRootDtoByTableButton.IsEnabled = enable;
+        this.DtoViewModelEditor.IsEnabled = enable;
         App.Current.DoEvents();
     }
 
@@ -216,8 +238,8 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
-    private async Task<FunctionalityViewModel> GetNewViewModel() =>
-        await this._service.CreateAsync().WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
+    private async Task<FunctionalityViewModel> GetNewViewModel(CancellationToken cancellationToken = default) =>
+        await this._service.CreateAsync(cancellationToken).WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
 
     private async void Me_Loaded(object sender, RoutedEventArgs e)
     {
@@ -242,7 +264,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     private void PrepareViewModel() =>
         this.ViewModel!.Name = this.ViewModel.SourceDto.Name?.TrimEnd("Dto").AddToEnd("Functionality");
 
-    private void PrepareViewModelByDto(DtoViewModel? details)
+    private void PrepareViewModelByDto(in DtoViewModel? details)
     {
         this.CheckIfInitiated(false);
 
@@ -339,14 +361,19 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            _ = ControlHelper.MoveToNextUIElement();
-            _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
-            await this.FunctionalityTreeView.BindAsync();
+            await SaveToDb();
         }
         finally
         {
             this.EnableActors(true);
         }
+    }
+
+    private async Task SaveToDb()
+    {
+        _ = ControlHelper.MoveToNextUIElement();
+        _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
+        await this.FunctionalityTreeView.BindAsync();
     }
 
     private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
@@ -354,9 +381,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            _ = ControlHelper.MoveToNextUIElement();
-            var saveResult = await this.SaveCodes().ThrowOnFailAsync(this.Title);
-            SourceCodeHelper.ShowDiskOperationResult(saveResult);
+            await SaveToDisk();
         }
         finally
         {
@@ -364,13 +389,18 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
+    private async Task SaveToDisk()
+    {
+        _ = ControlHelper.MoveToNextUIElement();
+        var saveResult = await this.SaveCodes().ThrowOnFailAsync(this.Title);
+        SourceCodeHelper.ShowDiskOperationResult(saveResult);
+    }
+
     private async void SelectRootDtoByDtoButton_Click(object sender, RoutedEventArgs e)
     {
-        this.SelectRootDtoByDtoButton.IsEnabled = false;
-
+        this.EnableActors(false);
         try
         {
-            this.CheckIfInitiated();
             _ = await this.AskToSaveIfChangedAsync().BreakOnFail();
 
             //Let user to select a DTO
@@ -378,44 +408,40 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             _ = HostDialog.ShowDialog(this._dtoExplorerTreeView, "Select Root DTO", "Select a DTO to create a Functionality.", _ => Check.If(this._dtoExplorerTreeView.SelectedItem is not DtoViewModel, () => "Please select a DTO.")).BreakOnFail();
 
             //Did user select a DTO?
-            if (this._dtoExplorerTreeView.SelectedItem is DtoViewModel dto)
+            if (this._dtoExplorerTreeView.SelectedItem is DtoViewModel selectedDto)
             {
-                var details = await this._dtoService.GetByIdAsync(dto.Id!.Value);
-                this.PrepareViewModelByDto(details);
+                var dto = await this._dtoService.GetByIdAsync(selectedDto.Id!.Value);
+                this.PrepareViewModelByDto(dto);
             }
         }
         finally
         {
-            this.SelectRootDtoByDtoButton.IsEnabled = true;
+            this.EnableActors(true);
         }
     }
 
     private async void SelectRootDtoByTableButton_Click(object sender, RoutedEventArgs e)
     {
-        this.SelectRootDtoByTableButton.IsEnabled = false;
-
+        this.EnableActors(false);
         try
         {
             await this.AskToSaveIfChangedAsync().BreakOnFail().End();
 
             // Let user to select a table
-            if (this._databaseExplorerUserControl == null)
-            {
-                this._databaseExplorerUserControl = new DatabaseExplorerUserControl();
-                _ = await this._databaseExplorerUserControl.InitializeAsync(this._dbTableService, this._reporter);
-            }
+            this._databaseExplorerUserControl ??= await new DatabaseExplorerUserControl().InitializeAsync(this._dbTableService, this._reporter);
             _ = HostDialog.ShowDialog(this._databaseExplorerUserControl, "Select Root Table", "Select a table to create a Functionality.", _ => Check.If(this._databaseExplorerUserControl.SelectedTable is null, () => "Please select a table.")).BreakOnFail();
 
-            // Did user select a DTO?
-            var table = this._databaseExplorerUserControl.SelectedTable!;
-            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
-            var dto = this._dtoService.CreateByDbTable(table, columns);
-            //dto.NameSpace = this.ViewModel.nam
-            this.PrepareViewModelByDto(dto);
+            // Did user select a table?
+            if (this._databaseExplorerUserControl.SelectedTable is DbTableViewModel table)
+            {
+                var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
+                var dto = this._dtoService.CreateByDbTable(table, columns);
+                this.PrepareViewModelByDto(dto);
+            }
         }
         finally
         {
-            this.SelectRootDtoByTableButton.IsEnabled = true;
+            this.EnableActors(true);
         }
     }
 }

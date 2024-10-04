@@ -125,7 +125,7 @@ public partial class CqrsExplorerTreeView : UserControl
         this.FilterTextBox.Text = string.Empty;
 
     private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        => this.TreeView.FilterTreeView(
+        => this.TreeView.FilterItems(
             this.FilterTextBox.Text,
             item => item.GetModel<InfraViewModelBase>()?.Name,
             this.TreeView.Items[0].Cast().To<TreeViewItem>().Items);

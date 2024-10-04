@@ -62,14 +62,14 @@ public class LibPageBase : Page, ISupportAsyncDataBinding
         try
         {
             this.BeginInit();
-            if(BindingData!=null)
+            if (BindingData != null)
+            {
                 this.BindingData(this, EventArgs.Empty);
+            }
             else
-            await this.OnBindDataAsync();
-        }
-        catch
-        {
-            throw;
+            {
+                await this.OnBindDataAsync();
+            }
         }
         finally
         {

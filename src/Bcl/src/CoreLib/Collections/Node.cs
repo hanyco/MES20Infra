@@ -114,8 +114,8 @@ public sealed class Node<T> : IEquatable<Node<T>>, IEquatable<T>, IHasChildren<N
         return false;
     }
 
-    public override string ToString()
-        => this.Display ?? this.Value?.ToString() ?? "(Empty Value)";
+    public override string? ToString()
+        => this.Display ?? this.Value?.ToString();
 
     public T ToType()
         => this.Value;

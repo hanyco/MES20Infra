@@ -42,4 +42,17 @@ public partial class FunctionalityTreeView : UserControl, IBinable<IEnumerable<F
 
     private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) =>
         this.SelectedItem = e.GetModel<FunctionalityViewModel>();
+
+    private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        this.TreeView.FilterItems(
+            this.FilterTextBox.Text,
+            item => item.GetModel<InfraViewModelBase>()?.Name,
+            this.TreeView.Items[0].Cast().To<TreeViewItem>().Items);
+    }
+
+    private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.FilterTextBox.Text = string.Empty;
+    }
 }

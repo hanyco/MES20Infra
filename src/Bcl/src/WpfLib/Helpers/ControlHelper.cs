@@ -45,14 +45,11 @@ public static class ControlHelper
         where THeaderedItemsControl : HeaderedItemsControl
     {
         Check.MustBeArgumentNotNull(itemsControl);
-
-        itemsControl.DataContext = dataContext;
-        itemsControl.Header = header ?? dataContext?.ToString();
-        return itemsControl;
+        return InnerBindDataContext(itemsControl, dataContext, header);
     }
 
-    public static TTreeView BindItems<TTreeView>(this TTreeView treeView, IEnumerable? items) where TTreeView : TreeView
-        => BindItems<TTreeView, TreeViewItem>(treeView, items);
+    public static TTreeView BindItems<TTreeView>(this TTreeView treeView, IEnumerable? items) where TTreeView : TreeView =>
+        BindItems<TTreeView, TreeViewItem>(treeView, items);
 
     public static TItemsControl BindItems<TItemsControl, THeaderedItemsControl>(this TItemsControl treeView, IEnumerable? items)
         where TItemsControl : ItemsControl
@@ -66,7 +63,7 @@ public static class ControlHelper
         {
             foreach (var item in items)
             {
-                _ = treeView.Items.Add(new THeaderedItemsControl { DataContext = item, Header = item?.ToString() });
+                _ = treeView.Items.Add(new THeaderedItemsControl().InnerBindDataContext(item));
             }
         }
         return treeView;
@@ -174,6 +171,49 @@ public static class ControlHelper
         item.BringIntoView();
     }
 
+    [return: NotNullIfNotNull(nameof(treeView))]
+    public static TreeView? FilterItems(
+        this TreeView? treeView,
+        string? filterText,
+        Func<TreeViewItem, string?> getItemText,
+        in ItemCollection? roots = null,
+        StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+    {
+        Check.MustBeArgumentNotNull(getItemText);
+
+        var theRoots = roots.IfNull(treeView.ArgumentNotNull().Items).Cast<TreeViewItem?>();
+
+        foreach (var item in theRoots.Compact())
+        {
+            filterTreeViewItems(item, filterText, getItemText, stringComparison);
+        }
+        return treeView;
+
+        static void filterTreeViewItems(in TreeViewItem item, in string? filterText, in Func<TreeViewItem, string?> getItemText, in StringComparison stringComparison)
+        {
+            var itemText = getItemText(item);
+            item.Visibility = filterText.IsNullOrEmpty() || (itemText?.Contains(filterText, stringComparison) ?? false)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            if (item.Visibility == Visibility.Visible)
+            {
+                item.IsExpanded = true;
+                var parent = item.Parent as TreeViewItem;
+                while (parent is not null)
+                {
+                    parent.Visibility = Visibility.Visible;
+                    parent.IsExpanded = true;
+                    parent = parent.Parent as TreeViewItem;
+                }
+            }
+
+            foreach (TreeViewItem child in item.Items)
+            {
+                filterTreeViewItems(child, filterText, getItemText, stringComparison);
+            }
+        }
+    }
+
     public static void Flick(FrameworkElement element, int duration = 500) => CodeHelper.Catch(() => Animations.Flick(element, duration));
 
     public static IEnumerable<TreeViewItem> GetAllItems([DisallowNull] this TreeView tree) =>
@@ -214,11 +254,11 @@ public static class ControlHelper
             c =>
             {
                 return !loopThrough && !Equals(c, visual)
-                    ? Enumerable.Empty<Visual>()
+                    ? []
                     : c is not TabItem tabItem
                         ? Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(c)).Select(i => (Visual)VisualTreeHelper.GetChild(c, i))
                         : tabItem.Content is Visual
-                            ? (IEnumerable<Visual>)(new[] { tabItem.Content.Cast().As<Visual>()!, tabItem.Header.Cast().As<Visual>()! })
+                            ? ([tabItem.Content.Cast().As<Visual>()!, tabItem.Header.Cast().As<Visual>()!])
                             : Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(c)).Select(i => (Visual)VisualTreeHelper.GetChild(c, i));
             },
             result.Add,
@@ -401,12 +441,534 @@ public static class ControlHelper
                     break;
                 }
 
+            case Key.None:
+                break;
+
+            case Key.Cancel:
+                break;
+
+            case Key.Back:
+                break;
+
+            case Key.Tab:
+                break;
+
+            case Key.LineFeed:
+                break;
+
+            case Key.Clear:
+                break;
+
+            case Key.Enter:
+                break;
+
+            case Key.Pause:
+                break;
+
+            case Key.Capital:
+                break;
+
+            case Key.HangulMode:
+                break;
+
+            case Key.JunjaMode:
+                break;
+
+            case Key.FinalMode:
+                break;
+
+            case Key.HanjaMode:
+                break;
+
+            case Key.Escape:
+                break;
+
+            case Key.ImeConvert:
+                break;
+
+            case Key.ImeNonConvert:
+                break;
+
+            case Key.ImeAccept:
+                break;
+
+            case Key.ImeModeChange:
+                break;
+
+            case Key.PageUp:
+                break;
+
+            case Key.Next:
+                break;
+
+            case Key.End:
+                break;
+
+            case Key.Home:
+                break;
+
+            case Key.Left:
+                break;
+
+            case Key.Up:
+                break;
+
+            case Key.Right:
+                break;
+
+            case Key.Down:
+                break;
+
+            case Key.Select:
+                break;
+
+            case Key.Print:
+                break;
+
+            case Key.Execute:
+                break;
+
+            case Key.PrintScreen:
+                break;
+
+            case Key.Insert:
+                break;
+
+            case Key.Delete:
+                break;
+
+            case Key.Help:
+                break;
+
+            case Key.D0:
+                break;
+
+            case Key.D1:
+                break;
+
+            case Key.D2:
+                break;
+
+            case Key.D3:
+                break;
+
+            case Key.D4:
+                break;
+
+            case Key.D5:
+                break;
+
+            case Key.D6:
+                break;
+
+            case Key.D7:
+                break;
+
+            case Key.D8:
+                break;
+
+            case Key.D9:
+                break;
+
+            case Key.A:
+                break;
+
+            case Key.B:
+                break;
+
+            case Key.C:
+                break;
+
+            case Key.D:
+                break;
+
+            case Key.E:
+                break;
+
+            case Key.F:
+                break;
+
+            case Key.G:
+                break;
+
+            case Key.H:
+                break;
+
+            case Key.I:
+                break;
+
+            case Key.J:
+                break;
+
+            case Key.K:
+                break;
+
+            case Key.L:
+                break;
+
+            case Key.M:
+                break;
+
+            case Key.N:
+                break;
+
+            case Key.O:
+                break;
+
+            case Key.P:
+                break;
+
+            case Key.Q:
+                break;
+
+            case Key.R:
+                break;
+
+            case Key.S:
+                break;
+
+            case Key.T:
+                break;
+
+            case Key.U:
+                break;
+
+            case Key.V:
+                break;
+
+            case Key.W:
+                break;
+
+            case Key.X:
+                break;
+
+            case Key.Y:
+                break;
+
+            case Key.Z:
+                break;
+
+            case Key.LWin:
+                break;
+
+            case Key.RWin:
+                break;
+
+            case Key.Apps:
+                break;
+
+            case Key.Sleep:
+                break;
+
+            case Key.NumPad0:
+                break;
+
+            case Key.NumPad1:
+                break;
+
+            case Key.NumPad2:
+                break;
+
+            case Key.NumPad3:
+                break;
+
+            case Key.NumPad4:
+                break;
+
+            case Key.NumPad5:
+                break;
+
+            case Key.NumPad6:
+                break;
+
+            case Key.NumPad7:
+                break;
+
+            case Key.NumPad8:
+                break;
+
+            case Key.NumPad9:
+                break;
+
+            case Key.Multiply:
+                break;
+
+            case Key.Add:
+                break;
+
+            case Key.Separator:
+                break;
+
+            case Key.Subtract:
+                break;
+
+            case Key.Decimal:
+                break;
+
+            case Key.Divide:
+                break;
+
+            case Key.F1:
+                break;
+
+            case Key.F2:
+                break;
+
+            case Key.F3:
+                break;
+
+            case Key.F4:
+                break;
+
+            case Key.F5:
+                break;
+
+            case Key.F6:
+                break;
+
+            case Key.F7:
+                break;
+
+            case Key.F8:
+                break;
+
+            case Key.F9:
+                break;
+
+            case Key.F10:
+                break;
+
+            case Key.F11:
+                break;
+
+            case Key.F12:
+                break;
+
+            case Key.F13:
+                break;
+
+            case Key.F14:
+                break;
+
+            case Key.F15:
+                break;
+
+            case Key.F16:
+                break;
+
+            case Key.F17:
+                break;
+
+            case Key.F18:
+                break;
+
+            case Key.F19:
+                break;
+
+            case Key.F20:
+                break;
+
+            case Key.F21:
+                break;
+
+            case Key.F22:
+                break;
+
+            case Key.F23:
+                break;
+
+            case Key.F24:
+                break;
+
+            case Key.NumLock:
+                break;
+
+            case Key.Scroll:
+                break;
+
+            case Key.LeftShift:
+                break;
+
+            case Key.RightShift:
+                break;
+
+            case Key.LeftCtrl:
+                break;
+
+            case Key.RightCtrl:
+                break;
+
+            case Key.LeftAlt:
+                break;
+
+            case Key.RightAlt:
+                break;
+
+            case Key.BrowserBack:
+                break;
+
+            case Key.BrowserForward:
+                break;
+
+            case Key.BrowserRefresh:
+                break;
+
+            case Key.BrowserStop:
+                break;
+
+            case Key.BrowserSearch:
+                break;
+
+            case Key.BrowserFavorites:
+                break;
+
+            case Key.BrowserHome:
+                break;
+
+            case Key.VolumeMute:
+                break;
+
+            case Key.VolumeDown:
+                break;
+
+            case Key.VolumeUp:
+                break;
+
+            case Key.MediaNextTrack:
+                break;
+
+            case Key.MediaPreviousTrack:
+                break;
+
+            case Key.MediaStop:
+                break;
+
+            case Key.MediaPlayPause:
+                break;
+
+            case Key.LaunchMail:
+                break;
+
+            case Key.SelectMedia:
+                break;
+
+            case Key.LaunchApplication1:
+                break;
+
+            case Key.LaunchApplication2:
+                break;
+
+            case Key.Oem1:
+                break;
+
+            case Key.OemPlus:
+                break;
+
+            case Key.OemComma:
+                break;
+
+            case Key.OemMinus:
+                break;
+
+            case Key.OemPeriod:
+                break;
+
+            case Key.Oem2:
+                break;
+
+            case Key.Oem3:
+                break;
+
+            case Key.AbntC1:
+                break;
+
+            case Key.AbntC2:
+                break;
+
+            case Key.Oem4:
+                break;
+
+            case Key.Oem5:
+                break;
+
+            case Key.Oem6:
+                break;
+
+            case Key.Oem7:
+                break;
+
+            case Key.Oem8:
+                break;
+
+            case Key.Oem102:
+                break;
+
+            case Key.ImeProcessed:
+                break;
+
+            case Key.System:
+                break;
+
+            case Key.DbeAlphanumeric:
+                break;
+
+            case Key.DbeKatakana:
+                break;
+
+            case Key.DbeHiragana:
+                break;
+
+            case Key.DbeSbcsChar:
+                break;
+
+            case Key.DbeDbcsChar:
+                break;
+
+            case Key.DbeRoman:
+                break;
+
+            case Key.Attn:
+                break;
+
+            case Key.CrSel:
+                break;
+
+            case Key.DbeEnterImeConfigureMode:
+                break;
+
+            case Key.DbeFlushString:
+                break;
+
+            case Key.DbeCodeInput:
+                break;
+
+            case Key.DbeNoCodeInput:
+                break;
+
+            case Key.DbeDetermineString:
+                break;
+
+            case Key.DbeEnterDialogConversionMode:
+                break;
+
+            case Key.OemClear:
+                break;
+
+            case Key.DeadCharProcessed:
+                break;
+
             default:
                 break;
         }
     }
 
-    public static void InitializeChildren(Visual parent)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [return: NotNullIfNotNull(nameof(source))]
+    [return: NotNullIfNotNull(nameof(defaultItems))]
+    public static ItemCollection? IfNull(this ItemCollection? source, ItemCollection? defaultItems)
+        => source ?? defaultItems;
+
+    public static Visual InitializeChildren(Visual parent)
     {
         var children = parent.GetChildren();
         foreach (var child in children)
@@ -415,11 +977,12 @@ public static class ControlHelper
             {
                 initializable.Initialize();
             }
-            InitializeChildren(child);
+            _ = InitializeChildren(child);
         }
+        return parent;
     }
 
-    public static async Task InitializeChildrenAsync(Visual parent)
+    public static async Task<Visual> InitializeChildrenAsync(Visual parent)
     {
         var children = parent.GetChildren();
         foreach (var child in children)
@@ -428,15 +991,16 @@ public static class ControlHelper
             {
                 await initializable.InitializeAsync();
             }
-            InitializeChildren(child);
+            _ = InitializeChildren(child);
         }
+        return parent;
     }
 
     public static bool IsDesignTime() =>
-            Application.Current?.MainWindow is null;
+        Application.Current?.MainWindow is null;
 
     public static bool MoveToNextUIElement() =>
-            Keyboard.FocusedElement is UIElement elementWithFocus && elementWithFocus.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+        Keyboard.FocusedElement is UIElement elementWithFocus && elementWithFocus.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
     public static void PerformClick(this Button button)
     {
@@ -583,7 +1147,7 @@ public static class ControlHelper
     }
 
     /// <summary>
-    /// Selects an item in a hierarchial ItemsControl using a set of options
+    /// Selects an item in a hierarchical ItemsControl using a set of options
     /// </summary>
     /// <typeparam name="TItem">The type of the items present in the control and in the options</typeparam>
     /// <param name="control">The ItemsControl to select an item in</param>
@@ -748,40 +1312,11 @@ public static class ControlHelper
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [return: NotNullIfNotNull(nameof(source))]
-    [return: NotNullIfNotNull(nameof(defaultItems))]
-    public static ItemCollection? IfNull(this ItemCollection? source, ItemCollection? defaultItems)
-        => source ?? defaultItems;
-
-    [return: NotNullIfNotNull(nameof(treeView))]
-    public static TreeView? FilterTreeView(
-        this TreeView? treeView,
-        in string? filterText,
-        in Func<TreeViewItem, string?> getItemText,
-        in ItemCollection? roots = null,
-        in StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+    private static THeaderedItemsControl InnerBindDataContext<THeaderedItemsControl>(this THeaderedItemsControl itemsControl, object dataContext, string? header = null)
+        where THeaderedItemsControl : HeaderedItemsControl
     {
-        Check.MustBeArgumentNotNull(getItemText);
-
-        var theRoots = roots.IfNull(treeView.ArgumentNotNull().Items).Cast<TreeViewItem?>();
-        foreach (var item in theRoots.Compact())
-        {
-            item.Visibility = Visibility.Visible;
-            filterTreeViewItems(item, filterText, getItemText, stringComparison);
-        }
-        return treeView;
-
-        static void filterTreeViewItems(in TreeViewItem item, in string? filterText, in Func<TreeViewItem, string?> getItemText, in StringComparison stringComparison)
-        {
-            item.Visibility = filterText.IsNullOrEmpty() || getItemText(item)?.IndexOf(filterText, stringComparison) >= 0
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-            foreach (TreeViewItem child in item.Items)
-            {
-                filterTreeViewItems(child, filterText, getItemText, stringComparison);
-            }
-        }
+        itemsControl.DataContext = dataContext;
+        itemsControl.Header = header ?? dataContext?.ToString();
+        return itemsControl;
     }
 }

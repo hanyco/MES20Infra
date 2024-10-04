@@ -7,14 +7,28 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=HanyCo.Infra.CodeGen.Contracts"
     x:Name="Me"
-    d:DataContext="{d:DesignInstance Type=viewmodels:FunctionalityViewModel}"
+    Width="176"
     d:DesignHeight="450"
-    d:DesignWidth="250"
     mc:Ignorable="d">
-    <TreeView
-        x:Name="TreeView"
-        Grid.Row="1"
-        ScrollViewer.HorizontalScrollBarVisibility="Auto"
-        ScrollViewer.VerticalScrollBarVisibility="Auto"
-        SelectedItemChanged="TreeView_SelectedItemChanged" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Style="{StaticResource FieldPanel}">
+            <TextBox x:Name="FilterTextBox" TextChanged="FilterTextBox_TextChanged" />
+            <Button
+                x:Name="ClearFilterButton"
+                Click="ClearFilterButton_Click"
+                Style="{StaticResource IconButton}">
+                <Path Style="{StaticResource Close}" />
+            </Button>
+        </StackPanel>
+        <TreeView
+            x:Name="TreeView"
+            Grid.Row="1"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            SelectedItemChanged="TreeView_SelectedItemChanged" />
+    </Grid>
 </UserControl>
