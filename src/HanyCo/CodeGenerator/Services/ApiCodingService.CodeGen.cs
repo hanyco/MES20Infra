@@ -1,8 +1,10 @@
 ﻿using System.Text;
 
+using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.Helpers;
+using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;
@@ -11,17 +13,23 @@ using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
 using Library.DesignPatterns.Markers;
 using Library.Helpers.CodeGen;
+using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Services.CodeGen;
+namespace Services;
 
 [Service]
 [Stateless]
-internal sealed class ApiCodingService(ICodeGeneratorEngine codeGeneratorEngine) : IApiCodingService
+internal sealed partial class ControllerService(
+    InfraWriteDbContext writeDbContext,
+    InfraReadDbContext readDbContext,
+    ICodeGeneratorEngine codeGeneratorEngine,
+    IEntityViewModelConverter converter) 
+    : IControllerService
 {
     public Result<Codes> GenerateCodes(ControllerViewModel viewModel)
     {

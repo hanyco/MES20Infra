@@ -1,6 +1,7 @@
 ﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
+using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
 
@@ -35,7 +36,7 @@ internal sealed partial class FunctionalityService(
     IBlazorPageService blazorPageService,
     IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator,
-    IApiCodingService apiCodeGenerator,
+    ICodeGenerator<ControllerViewModel> apiCodeGenerator,
     ICodeGeneratorEngine generatorEngine)
     : IFunctionalityService
     , IFunctionalityCodeService
@@ -43,7 +44,7 @@ internal sealed partial class FunctionalityService(
     , IAsyncTransactionalSave
     , ILoggerContainer
 {
-    private readonly IApiCodingService _apiCodeGenerator = apiCodeGenerator;
+    private readonly ICodeGenerator<ControllerViewModel> _apiCodeGenerator = apiCodeGenerator;
     private readonly IBlazorComponentCodeService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
     private readonly IBlazorPageCodeService _blazorPageCodeService = blazorPageCodeService;

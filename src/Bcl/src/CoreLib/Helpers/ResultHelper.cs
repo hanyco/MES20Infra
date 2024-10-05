@@ -1,13 +1,13 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-
-using Library.Exceptions;
+﻿using Library.Exceptions;
 using Library.Interfaces;
 using Library.Logging;
 using Library.Results;
 using Library.Validations;
 using Library.Windows;
+
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Library.Helpers;
 
@@ -135,19 +135,30 @@ public static class ResultHelper
         return r.IsFailure ? next.ArgumentNotNull()(r) : r;
     }
 
-    [return: NotNullIfNotNull(nameof(result))]
-    public static TResult? IfSucceed<TResult>(this TResult? result, [DisallowNull] Func<TResult> next) where TResult : ResultBase
-        => result?.IsSucceed == true ? next.ArgumentNotNull()() : result;
+    //[return: NotNullIfNotNull(nameof(result))]
+    //public static TResult? IfSucceed<TResult>(this TResult? result, [DisallowNull] Func<TResult> next) where TResult : ResultBase
+    //    => result?.IsSucceed == true ? next.ArgumentNotNull()() : result;
 
-    public static async Task<TResult> IfSucceed<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult> next) where TResult : ResultBase
-    {
-        var r = await result;
-        return r.IsSucceed ? next.ArgumentNotNull()() : r;
-    }
+    //public static async Task<TResult> IfSucceed<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult> next) where TResult : ResultBase
+    //{
+    //    var r = await result;
+    //    return r.IsSucceed ? next.ArgumentNotNull()() : r;
+    //}
 
     [return: NotNullIfNotNull(nameof(result))]
     public static TResult? IfSucceed<TResult>(this TResult? result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
     {
+        if (result?.IsSucceed == true)
+        {
+            action.ArgumentNotNull()(result);
+        }
+
+        return result;
+    }
+
+    public static async Task<TResult> IfSucceed<TResult>(this Task<TResult> resultTask, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    {
+        var result = await resultTask;
         if (result?.IsSucceed == true)
         {
             action.ArgumentNotNull()(result);
