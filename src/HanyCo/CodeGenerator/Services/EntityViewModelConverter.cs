@@ -6,8 +6,15 @@ using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
+using Library.CodeGeneration.Models;
 using Library.Mapping;
 using Library.Validations;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+
+using Newtonsoft.Json;
 
 using Services.Helpers;
 
@@ -206,7 +213,21 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     }
 
     [return: NotNullIfNotNull("model")]
-    public ControllerMethod? ToDbEntity(ControllerMethodViewModel? model) => throw new NotImplementedException();
+    public ControllerMethod? ToDbEntity(ControllerMethodViewModel? model)
+    {
+        if (model == null)
+        {
+            return null;
+        }
+        var result = this._mapper.MapExcept<ControllerMethod>(model, x => x.Id);
+        if (model.Id is not null and not 0)
+        {
+            result.Id = model.Id.Value;
+        }
+        //result.
+
+        return result;
+    }
     public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel) =>
         columnViewModel == null
             ? null
@@ -353,7 +374,52 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     [return: NotNullIfNotNull("entity")]
     public ControllerViewModel? ToViewModel(Controller? entity) => throw new NotImplementedException();
     [return: NotNullIfNotNull("entity")]
-    public ControllerMethodViewModel? ToViewModel(ControllerMethod? entity) => throw new NotImplementedException();
+    public ControllerMethodViewModel? ToViewModel(ControllerMethod? entity)
+    {
+        if (entity is null)
+            return null;
+        var viewModel = new ControllerMethodViewModel
+        {
+            Id = entity.Id,  // اگر نیاز به شناسه دارید
+            Name = entity.Name,
+            Body = entity.Body,
+            IsAsync = entity.IsAsync??false,
+            ReturnType = entity.ReturnType != null ? new TypePath(entity.ReturnType) : null,
+        };
+
+        if (!string.IsNullOrEmpty(entity.Arguments))
+        {
+            var arguments = JsonConvert.DeserializeObject<List<MethodArgument>>(entity.Arguments);
+            if (arguments != null)
+            {
+                foreach (var argument in arguments)
+                {
+                    viewModel.Arguments.Add(argument);
+                }
+            }
+        }
+
+        if (!string.IsNullOrEmpty(entity.HttpMethods))
+        {
+            var httpMethods = entity.HttpMethods.Split(',');
+            foreach (var method in httpMethods)
+            {
+                viewModel.HttpMethods.Add(getHttpMethodByName);
+            }
+        }
+
+        return viewModel;
+        Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute getHttpMethodByName(string name, string? route) =>
+            name?.ToUpper() switch
+            {
+                "GET" => route is { } ? new HttpGetAttribute(route) : new HttpGetAttribute(),
+                "POST" => route is { } ? new HttpPostAttribute(route) : new HttpPostAttribute(),
+                "PUT" => route is { } ? new HttpPutAttribute(route) : new HttpPutAttribute(),
+                "DELETE" => route is { } ? new HttpDeleteAttribute(route) : new HttpDeleteAttribute(),
+                _ => throw new NotImplementedException(),
+            };
+
+    }
 
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType)
     {
