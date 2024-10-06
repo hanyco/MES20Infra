@@ -21,21 +21,11 @@ internal partial class ControllerService : IAsyncSaveChanges, IResetChanges, IAs
     private readonly InfraReadDbContext _readDbContext = readDbContext;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
-    public async Task<Result<int>> DeleteAsync(ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-    {
-        _ = this._writeDbContext.RemoveById<Controller>(model.Id!.Value);
-        return await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
-    }
+    public Task<Result<int>> DeleteAsync(ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
+        this.DeleteAsync<ControllerViewModel, Controller>(_writeDbContext, model, persist);
 
-    public async Task<IReadOnlyList<ControllerViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var query = from dto in this._readDbContext.Controllers
-                    select dto;
-
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock, cancellationToken: cancellationToken);
-        var result = this._converter.ToViewModel(dbResult).Compact().ToList();
-        return result;
-    }
+    public Task<IReadOnlyList<ControllerViewModel>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        this.GetAllAsync<ControllerViewModel, Controller>(_readDbContext, _converter.ToViewModel, _readDbContext.AsyncLock);
 
     public async Task<ControllerViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {

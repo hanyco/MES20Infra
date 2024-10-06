@@ -1,9 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
-using HanyCo.Infra.CodeGen.Contracts.ViewModels;
-
-namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class AttributeViewModel : InfraViewModelBase
 {

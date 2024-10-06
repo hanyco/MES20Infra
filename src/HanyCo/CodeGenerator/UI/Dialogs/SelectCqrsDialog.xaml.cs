@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 
+using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Exceptions.Validations;

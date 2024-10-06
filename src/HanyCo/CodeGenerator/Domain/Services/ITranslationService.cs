@@ -1,7 +1,7 @@
 ﻿using Library.Interfaces;
 using Library.Results;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface ITranslationService : IService
 {

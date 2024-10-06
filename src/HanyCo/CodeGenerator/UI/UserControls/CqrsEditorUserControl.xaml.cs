@@ -1,8 +1,7 @@
 ﻿using System.Windows.Controls;
 
-
-
-
+using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.EventsArgs;

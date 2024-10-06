@@ -1,4 +1,5 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+﻿using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Collections;
 using Library.Data.SqlServer.Dynamics;

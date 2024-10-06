@@ -1,6 +1,6 @@
 ﻿using Library.CodeGeneration.v2.Back;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class EditFormInfo
 {

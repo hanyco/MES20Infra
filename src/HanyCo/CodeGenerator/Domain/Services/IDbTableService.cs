@@ -1,11 +1,11 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Collections;
 using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 using Library.Threading.MultistepProgress;
 
-namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IDbTableService : IBusinessService
 {

@@ -3,7 +3,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Validations;
 
-namespace HanyCo.Infra.CodeGen.Contracts;
+namespace HanyCo.Infra.CodeGen.Domain;
 
 public static class PropertyTypeHelper
 {

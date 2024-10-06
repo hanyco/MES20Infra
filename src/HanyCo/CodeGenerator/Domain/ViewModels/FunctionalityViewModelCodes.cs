@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Library.CodeGeneration.Models;
 using Library.Results;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 /// <summary>
 /// This class represents a collection of codes for various functionalities. It implements

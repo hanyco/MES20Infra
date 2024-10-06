@@ -5,7 +5,7 @@ using Library.Data.Markers;
 using Library.Wpf.Bases;
 using Library.Wpf.Markers;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 [ViewModel]

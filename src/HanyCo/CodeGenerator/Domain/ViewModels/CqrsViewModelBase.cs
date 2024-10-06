@@ -1,11 +1,11 @@
 ﻿#nullable disable
 
 
+using HanyCo;
 using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
-using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public abstract class CqrsViewModelBase : InfraViewModelBase
 {

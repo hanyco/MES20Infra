@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Forms;
 
-
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Data.SqlServer;
 using Library.Wpf.Windows.UI;

@@ -7,7 +7,7 @@ using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 using Library.Results;
 
-namespace HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>;
 

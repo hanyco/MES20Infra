@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
+using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
+
 using Library.CodeGeneration.Models;
 using Library.Interfaces;
 using Library.Results;

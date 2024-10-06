@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.Json;
 
-
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Data.SqlServer.Builders;
 using Library.Validations;

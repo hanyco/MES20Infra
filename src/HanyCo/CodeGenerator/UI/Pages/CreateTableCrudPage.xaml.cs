@@ -2,7 +2,8 @@
 using System.Windows;
 using System.Windows.Forms;
 
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Collections;
 using Library.Exceptions.Validations;

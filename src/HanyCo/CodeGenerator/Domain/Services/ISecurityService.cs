@@ -1,9 +1,9 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Interfaces;
 using Library.Results;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface ISecurityService : IBusinessService, IAsyncCrud<ClaimViewModel, Guid>, IAsyncSaveChanges, IResetChanges
 {

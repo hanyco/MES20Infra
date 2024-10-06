@@ -1,4 +1,6 @@
-﻿using HanyCo.Infra.CodeGeneration.Definitions;
+﻿using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
+using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;

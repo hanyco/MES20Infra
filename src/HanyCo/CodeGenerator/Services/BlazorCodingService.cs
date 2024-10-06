@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
+using HanyCo.Infra.CodeGen.Domain;
+using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.CodeGenerator.Models;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
@@ -21,13 +24,13 @@ using Services.Helpers;
 
 using static HanyCo.Infra.CodeGeneration.Definitions.CodeConstants;
 
-using ButtonViewModelBase = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentButtonViewModelBase;
-using CqrsButtonViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCqrsButtonViewModel;
-using CqrsLoadViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCqrsLoadViewModel;
-using CstmButtonViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCustomButton;
-using CstmLoadViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCustomLoad;
-using PropertyViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiPropertyViewModel;
-using UiViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentViewModel;
+using ButtonViewModelBase = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentButtonViewModelBase;
+using CqrsButtonViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentCqrsButtonViewModel;
+using CqrsLoadViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentCqrsLoadViewModel;
+using CstmButtonViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentCustomButton;
+using CstmLoadViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentCustomLoad;
+using PropertyViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiPropertyViewModel;
+using UiViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentViewModel;
 
 namespace Services;
 

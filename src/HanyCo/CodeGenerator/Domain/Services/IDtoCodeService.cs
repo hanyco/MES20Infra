@@ -5,13 +5,9 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface IDtoCodeService : IBusinessService
-    , ICodeGenerator<DtoViewModel, DtoCodeServiceAsyncCodeGeneratorArgs>
-{
-
-}
+public interface IDtoCodeService : IBusinessService, ICodeGenerator<DtoViewModel, DtoCodeServiceAsyncCodeGeneratorArgs>;
 
 [Immutable]
 public sealed record DtoCodeServiceAsyncCodeGeneratorArgs(string? TypeName = null,

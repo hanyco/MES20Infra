@@ -1,6 +1,4 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
-
-using Library.CodeGeneration;
+﻿using Library.CodeGeneration;
 using Library.Wpf.Markers;
 
 using System.Collections.ObjectModel;

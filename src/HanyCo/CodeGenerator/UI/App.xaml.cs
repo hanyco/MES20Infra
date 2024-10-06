@@ -4,6 +4,7 @@ using System.Windows;
 
 using HanyCo.Infra;
 using HanyCo.Infra.CodeGen.Domain;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.UI;
 using HanyCo.Infra.UI.Controls.Pages;

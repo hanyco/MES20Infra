@@ -3,6 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 
+using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
+
 using Library.CodeGeneration.Models;
 using Library.Validations;
 using Library.Wpf.Dialogs;

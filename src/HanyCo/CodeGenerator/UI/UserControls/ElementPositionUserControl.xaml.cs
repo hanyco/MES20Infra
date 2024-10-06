@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using HanyCo.Infra.CodeGen.Domain.ViewModels;
+
+using System.ComponentModel;
 using System.Windows.Controls;
 
 

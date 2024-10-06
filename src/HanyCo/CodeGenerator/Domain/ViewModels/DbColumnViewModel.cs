@@ -1,7 +1,7 @@
 ﻿using Library.Data.SqlServer.Dynamics;
 using Library.DesignPatterns.Markers;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class DbColumnViewModel : DbObjectViewModel
 {

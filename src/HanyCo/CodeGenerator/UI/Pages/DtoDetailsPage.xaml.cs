@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
+using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Exceptions;
 using HanyCo.Infra.UI.Helpers;

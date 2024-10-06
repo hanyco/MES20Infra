@@ -1,4 +1,4 @@
-﻿namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+﻿namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public abstract class UiComponentContentViewModelBase : InfraViewModelBase, IUiComponentContent
 {

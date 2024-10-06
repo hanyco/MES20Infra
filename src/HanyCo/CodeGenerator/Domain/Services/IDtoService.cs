@@ -1,19 +1,18 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Interfaces;
 using Library.Results;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyncSaveChanges, IResetChanges, IAsyncCreator<DtoViewModel>
 {
     Task<bool> AnyByNameAsync(string name);
 
-    new Task<DtoViewModel> CreateAsync(CancellationToken token = default)
-        => Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });
+    new Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
+        Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });
 
     [return: NotNull]
     DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns);

@@ -1,13 +1,7 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.ViewModels;
-using HanyCo.Infra.Internals.Data.DataSources;
+﻿using HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 using Library.Interfaces;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface IModuleService
-    : IBusinessService
-    , IAsyncRead<ModuleViewModel>
-    //, IHierarchicalDbEntityActor<Module>
-{
-}
+public interface IModuleService : IBusinessService, IAsyncRead<ModuleViewModel>;

@@ -17,9 +17,9 @@ using Microsoft.EntityFrameworkCore;
 using Services.CodeGen.Helpers;
 using Services.Helpers;
 
-using CustomButtonViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentCustomButton;
-using UiComponentViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiComponentViewModel;
-using UiPropertyViewModel = HanyCo.Infra.CodeGen.Contracts.ViewModels.UiPropertyViewModel;
+using CustomButtonViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentCustomButton;
+using UiComponentViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentViewModel;
+using UiPropertyViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiPropertyViewModel;
 
 namespace Services.CodeGen;
 

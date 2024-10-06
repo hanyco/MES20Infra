@@ -1,6 +1,6 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, FrontElement
 {

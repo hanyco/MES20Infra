@@ -1,5 +1,4 @@
-﻿using HanyCo.Infra.CodeGen.Contracts.CodeGen.Services;
-using HanyCo.Infra.CodeGen.Domain.Services;
+﻿using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using HanyCo.Infra.Internals.Data.DataSources;

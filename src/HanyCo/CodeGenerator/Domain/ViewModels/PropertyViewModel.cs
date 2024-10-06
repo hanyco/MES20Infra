@@ -1,10 +1,9 @@
-﻿using HanyCo.Infra.CodeGen.Contracts;
-using HanyCo.Infra.CodeGen.Domain.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Domain;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Validations;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class PropertyViewModel : InfraViewModelBase
 {

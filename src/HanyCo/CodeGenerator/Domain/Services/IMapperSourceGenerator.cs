@@ -7,11 +7,9 @@ using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 using Library.CodeGeneration;
 using Library.Interfaces;
 
-namespace HanyCo.Infra.CodeGen.Contracts.Services;
+namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface IMapperSourceGenerator : IBusinessService, ICodeGenerator<MapperSourceGeneratorArguments>
-{
-}
+public interface IMapperSourceGenerator : IBusinessService, ICodeGenerator<MapperSourceGeneratorArguments>;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed record MapperSourceGeneratorArguments(

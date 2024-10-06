@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using HanyCo.Infra.CodeGen.Domain;
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -402,24 +403,25 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         if (!string.IsNullOrEmpty(entity.HttpMethods))
         {
             var httpMethods = entity.HttpMethods.Split(',');
-            foreach (var method in httpMethods)
-            {
-                viewModel.HttpMethods.Add(getHttpMethodByName);
-            }
+            //foreach (var method in httpMethods)
+            //{
+            //    viewModel.HttpMethods.Add(getHttpMethodByName);
+            //}
         }
 
         return viewModel;
-        Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute getHttpMethodByName(string name, string? route) =>
-            name?.ToUpper() switch
-            {
-                "GET" => route is { } ? new HttpGetAttribute(route) : new HttpGetAttribute(),
-                "POST" => route is { } ? new HttpPostAttribute(route) : new HttpPostAttribute(),
-                "PUT" => route is { } ? new HttpPutAttribute(route) : new HttpPutAttribute(),
-                "DELETE" => route is { } ? new HttpDeleteAttribute(route) : new HttpDeleteAttribute(),
-                _ => throw new NotImplementedException(),
-            };
 
     }
+
+    private static HttpMethodAttribute getHttpMethodByName(string name, string? route) =>
+        name?.ToUpper() switch
+        {
+            "GET" => route is { } ? new HttpGetAttribute(route) : new HttpGetAttribute(),
+            "POST" => route is { } ? new HttpPostAttribute(route) : new HttpPostAttribute(),
+            "PUT" => route is { } ? new HttpPutAttribute(route) : new HttpPutAttribute(),
+            "DELETE" => route is { } ? new HttpDeleteAttribute(route) : new HttpDeleteAttribute(),
+            _ => throw new NotImplementedException(),
+        };
 
     private CqrsSegregate? CqrsViewModelToDbEntityInner(CqrsViewModelBase? model, CqrsSegregateType segregateType)
     {

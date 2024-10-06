@@ -51,7 +51,7 @@ internal partial class FunctionalityService
         Task<Result> removeQuery(CqrsSegregate query, CancellationToken token)
             => removeSegregate(query, this._queryService.DeleteByIdAsync, token);
         Task<Result> removeCommand(CqrsSegregate command, CancellationToken token)
-            => removeSegregate(command, this._commandService.DeleteByIdAsync, token);
+            => removeSegregate(command, this._commandService.DeleteById, token);
         Task<Result> removeDto(Dto dto, CancellationToken token)
             => dto == null ? Task.FromResult(Result.Succeed) : this._dtoService.DeleteByIdAsync(dto.Id, true, token);
 
@@ -79,15 +79,11 @@ internal partial class FunctionalityService
         }
     }
 
-    public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => this.GetAllAsync<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+    public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default) => 
+        this.GetAllAsync<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-    {
-        var dbResult = await this.GetByIdFunctionality(id, cancellationToken);
-        var result = this._converter.ToViewModel(dbResult);
-        return result;
-    }
+    public Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default) =>
+        this.GetByIdAsync<FunctionalityViewModel, Functionality>(id, this._readDbContext, _converter.ToViewModel, _readDbContext.AsyncLock);
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
@@ -234,17 +230,17 @@ internal partial class FunctionalityService
             {
                 return Result.Fail()!;
             }
-            exists = await this._commandService.AnyByNameAsync(model.InsertCommand.Name!);
+            exists = await this._commandService.AnyByName(model.InsertCommand.Name!);
             if (exists)
             {
                 return Result.Fail()!;
             }
-            exists = await this._commandService.AnyByNameAsync(model.UpdateCommand.Name!);
+            exists = await this._commandService.AnyByName(model.UpdateCommand.Name!);
             if (exists)
             {
                 return Result.Fail()!;
             }
-            exists = await this._commandService.AnyByNameAsync(model.DeleteCommand.Name!);
+            exists = await this._commandService.AnyByName(model.DeleteCommand.Name!);
             if (exists)
             {
                 return Result.Fail()!;

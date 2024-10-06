@@ -2,7 +2,7 @@
 
 using Library.CodeGeneration;
 
-namespace HanyCo.Infra.CodeGen.Contracts.ViewModels;
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class AdvancedSearchViewModel : IList<AdvancedSearchOperation>
 {

@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Windows;
 
-
-
-
+using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.UI.Helpers;
 
 using Library.Data.EntityFrameworkCore;

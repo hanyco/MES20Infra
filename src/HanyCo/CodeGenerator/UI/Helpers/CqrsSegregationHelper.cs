@@ -1,4 +1,7 @@
-﻿namespace HanyCo.Infra.UI.Helpers;
+﻿using HanyCo.Infra.CodeGen.Domain.Services;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
+
+namespace HanyCo.Infra.UI.Helpers;
 
 internal static class CqrsSegregationHelper
 {
