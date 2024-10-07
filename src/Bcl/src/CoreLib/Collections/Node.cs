@@ -10,7 +10,7 @@ public sealed class Node<T> : IEquatable<Node<T>>, IEquatable<T>, IHasChildren<N
 {
     public static readonly Node<T?> Empty = new(default, null);
 
-    private readonly List<Node<T>> _innerChildren = new();
+    private readonly List<Node<T>> _innerChildren = [];
 
     public Node(in T value, in string? display = null)
             => (this.Value, this.Display) = (value, display ?? value?.ToString());
@@ -78,7 +78,7 @@ public sealed class Node<T> : IEquatable<Node<T>>, IEquatable<T>, IHasChildren<N
 
         foreach (var value in values)
         {
-            this.AddChild(value, this.Display);
+            _ = this.AddChild(value, this.Display);
         }
         return this;
     }
@@ -86,7 +86,7 @@ public sealed class Node<T> : IEquatable<Node<T>>, IEquatable<T>, IHasChildren<N
     public override bool Equals(object? obj)
         => obj is Node<T> other && this == other;
 
-    public bool Equals(Node<T>? other) 
+    public bool Equals(Node<T>? other)
         => other is not null && ((this.Value is null && other.Value is null) || other.Value?.Equals(this.Value) == true);
 
     public bool Equals(T? other)
@@ -127,6 +127,6 @@ public sealed class Node<T> : IEquatable<Node<T>>, IEquatable<T>, IHasChildren<N
         return result;
     }
 
-    public Node<T> WithParent(T parent, string? display = null) 
+    public Node<T> WithParent(T parent, string? display = null)
         => this.WithParent(new(parent, display), display);
 }

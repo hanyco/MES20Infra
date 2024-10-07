@@ -116,7 +116,7 @@ public static class TaskHelper
         return result;
     }
     
-    public static async Task<Result> RunAllAsync<TState>(this IEnumerable<Func<TState, Task<Result>>> funcs, TState initiaState, CancellationToken token = default)
+    public static async Task<Result> RunAllAsync<TState>(this IEnumerable<Func<TState, Task<Result>>> funcs, TState initialState, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(funcs);
 
@@ -129,7 +129,7 @@ public static class TaskHelper
                 break;
             }
 
-            var current = await func(initiaState);
+            var current = await func(initialState);
             if (current.IsFailure)
             {
                 result = current;

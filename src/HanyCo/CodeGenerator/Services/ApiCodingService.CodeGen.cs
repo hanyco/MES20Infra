@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel.Design;
+using System.Text;
 
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;

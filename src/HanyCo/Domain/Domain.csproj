@@ -10,7 +10,7 @@
     <Configurations>Debug;Release;Debug Unit Test</Configurations>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyName>HanyCo.Infra.Contracts</AssemblyName>
+    <AssemblyName>HanyCo.Infra.Domain</AssemblyName>
     <RootNamespace>HanyCo.Infra</RootNamespace>
     <DebugType>full</DebugType>
   </PropertyGroup>

@@ -8,5 +8,5 @@ namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IControllerService : IBusinessService, ICodeGenerator<ControllerViewModel>, IAsyncCrud<ControllerViewModel>
 {
-    Task<Result> DeleteById(long dtoId, bool persist = true, CancellationToken token = default);
+    Task<Result> DeleteById(long controllerId, bool persist = true, CancellationToken token = default);
 }

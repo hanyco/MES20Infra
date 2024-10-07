@@ -1,6 +1,5 @@
 ﻿#nullable disable
 
-using HanyCo.Infra.CodeGen.Contracts.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 
 using Library.CodeGeneration;

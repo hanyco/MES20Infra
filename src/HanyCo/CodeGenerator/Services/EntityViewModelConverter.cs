@@ -19,6 +19,8 @@ using Newtonsoft.Json;
 
 using Services.Helpers;
 
+using Controller = HanyCo.Infra.Internals.Data.DataSources.Controller;
+
 namespace Services;
 
 internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) : IEntityViewModelConverter
@@ -381,7 +383,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             return null;
         var viewModel = new ControllerMethodViewModel
         {
-            Id = entity.Id,  // اگر نیاز به شناسه دارید
+            Id = entity.Id,
             Name = entity.Name,
             Body = entity.Body,
             IsAsync = entity.IsAsync??false,

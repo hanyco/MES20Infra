@@ -31,7 +31,7 @@ public sealed class TaskList : FluentListBase<Task, TaskList>, IDisposable, IEnu
     private CancellationTokenSource CancellationTokenSource => this.This()._cancellationTokenSource;
 
     public static TaskList New()
-        => new();
+        => [];
 
     public void CancelAll()
         => this.CancellationTokenSource.Cancel();
@@ -50,25 +50,25 @@ public sealed class TaskList : FluentListBase<Task, TaskList>, IDisposable, IEnu
 
     public TaskList WaitAll(TimeSpan timeout)
     {
-        _ = Task.WaitAll(this.This().ToArray(), timeout);
+        _ = Task.WaitAll([.. this.This()], timeout);
         return this;
     }
 
     public TaskList WaitAll()
     {
-        Task.WaitAll(this.ToArray(), this.CancellationTokenSource.Token);
+        Task.WaitAll([.. this], this.CancellationTokenSource.Token);
         return this;
     }
 
     public async Task<TaskList> WaitAllAsync()
     {
-        await Task.Run(() => Task.WaitAll(this.ToArray(), this.CancellationTokenSource.Token));
+        await Task.Run(() => Task.WaitAll([.. this], this.CancellationTokenSource.Token));
         return this;
     }
 
     public TaskList WaitAny()
     {
-        _ = Task.WaitAny(this.This().ToArray());
+        _ = Task.WaitAny([.. this.This()]);
         return this;
     }
 

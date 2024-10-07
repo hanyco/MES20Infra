@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:libConverters="clr-namespace:Library.Wpf.Converters;assembly=Library.Wpf"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels"
     x:Name="Me"
     d:DataContext="{d:DesignInstance viewModels:UiComponentViewModel,
                                      IsDesignTimeCreatable=True}"

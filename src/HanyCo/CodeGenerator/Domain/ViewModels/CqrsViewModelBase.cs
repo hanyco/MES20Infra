@@ -1,8 +1,5 @@
 ﻿#nullable disable
 
-
-using HanyCo;
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 namespace HanyCo.Infra.CodeGen.Domain.ViewModels;

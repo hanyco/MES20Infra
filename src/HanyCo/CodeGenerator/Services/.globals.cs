@@ -3,10 +3,6 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using System.Threading.Tasks;
 
-global using HanyCo.Infra.CodeGen.Contracts;
-global using HanyCo.Infra.CodeGen.Contracts.Services;
-global using HanyCo.Infra.CodeGen.Contracts.ViewModels;
-
 global using Library.Coding;
 global using Library.Helpers;
 global using Library.Logging;

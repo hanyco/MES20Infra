@@ -6,9 +6,6 @@
     xmlns:libConverters="clr-namespace:Library.Wpf.Converters;assembly=Library.Wpf"
     xmlns:local="clr-namespace:HanyCo.Infra.UI.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="clr-namespace:HanyCo.Infra.CodeGen.Contracts.ViewModels;assembly=Contracts"
-    d:DataContext="{d:DesignInstance viewmodels:UiBootstrapPositionViewModel,
-                                     IsDesignTimeCreatable=True}"
     mc:Ignorable="d">
     <UserControl.Resources>
         <libConverters:TextToNumberConverter x:Key="TextToNumberConverter" />

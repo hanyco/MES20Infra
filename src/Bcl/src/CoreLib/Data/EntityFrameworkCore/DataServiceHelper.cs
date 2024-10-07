@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-using Library.Data.Markers;
+﻿using Library.Data.Markers;
 using Library.Interfaces;
 using Library.Logging;
 using Library.Results;
@@ -12,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+
+using System.Reflection;
 
 namespace Library.Data.EntityFrameworkCore;
 
@@ -76,7 +76,6 @@ public static class DataServiceHelper
             }
         }
 
-        
         return Result.Success(-1);
     }
 

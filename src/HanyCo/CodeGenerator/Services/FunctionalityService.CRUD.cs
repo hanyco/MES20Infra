@@ -45,19 +45,18 @@ internal partial class FunctionalityService
         var result = await tasks.RunAllAsync(functionality, token);
         return result.WithValue<int>(1);
 
-        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model) => 
+        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model) =>
             model.Check().ArgumentNotNull().NotNull(x => x.Id);
-        Task<Functionality?> getFunctionality(long modelId, CancellationToken token) => 
+        Task<Functionality?> getFunctionality(long modelId, CancellationToken token) =>
             this.GetByIdFunctionality(modelId, token);
-        Task<Result> removeQuery(CqrsSegregate query, CancellationToken token) => 
+        Task<Result> removeQuery(CqrsSegregate query, CancellationToken token) =>
             removeSegregate(query, this._queryService.DeleteById, token);
-        Task<Result> removeCommand(CqrsSegregate command, CancellationToken token) => 
+        Task<Result> removeCommand(CqrsSegregate command, CancellationToken token) =>
             removeSegregate(command, this._commandService.DeleteById, token);
-        Task<Result> removeDto(Dto dto, CancellationToken token) => 
+        Task<Result> removeDto(Dto dto, CancellationToken token) =>
             dto is null ? Task.FromResult(Result.Succeed) : this._dtoService.DeleteById(dto.Id, true, token);
         Task<Result> removeController(Controller controller, CancellationToken token) =>
             controller is null ? Task.FromResult(Result.Succeed) : this._controllerService.DeleteById(controller.Id, true, token);
-
         async Task<Result> removeFunctionality(Functionality functionality, CancellationToken token)
         {
             _ = this._writeDbContext.RemoveById<Functionality>(functionality.Id);
@@ -82,11 +81,11 @@ internal partial class FunctionalityService
         }
     }
 
-    public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default) => 
+    public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default) =>
         this.GetAllAsync<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default) =>
-        this.GetByIdAsync<FunctionalityViewModel, Functionality>(id, this._readDbContext, _converter.ToViewModel, _readDbContext.AsyncLock);
+        this.GetByIdAsync<FunctionalityViewModel, Functionality>(id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
@@ -305,7 +304,7 @@ internal partial class FunctionalityService
     }
 
     private static void CheckPersistence([DoesNotReturnIf(false)] bool persist) =>
-        Check.If(!persist, () => new NotSupportedException("non-persistent operation is not supported."));
+        Check.MustBe(!persist, () => new NotSupportedException("non-persistent operation is not supported."));
 
     private Task<bool> AnyByNameAsync(string name)
     {

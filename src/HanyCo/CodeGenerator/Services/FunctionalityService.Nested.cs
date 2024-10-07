@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-using HanyCo.Infra.CodeGen.Contracts.CodeGen.ViewModels;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 

@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.Contracts;
+﻿using Library.DesignPatterns.Markers;
 
-using Library.DesignPatterns.Markers;
+using System.Diagnostics.Contracts;
 
 namespace Library.Coding;
 
@@ -8,28 +8,18 @@ namespace Library.Coding;
 /// Represents an immutable progress object that reports progress updates.
 /// </summary>
 /// <param name="reporter">The action to be called when progress is reported.</param>
-/// <returns>
-/// An immutable progress object that reports progress updates.
-/// </returns>
+/// <returns>An immutable progress object that reports progress updates.</returns>
 [Immutable]
-public sealed class Progress<T> : ProgressBase<T>
-{
-    public Progress(Action<T> reporter) : base(reporter)
-    {
-    }
-}
+public sealed class Progress<T>(Action<T> reporter) : ProgressBase<T>(reporter);
 
 /// <summary>
 /// Represents an abstract base class for progress reporting.
 /// </summary>
 /// <typeparam name="T">The type of the progress report value.</typeparam>
 [Immutable]
-public abstract class ProgressBase<T> : IProgress<T>
+public abstract class ProgressBase<T>(Action<T> reporter) : IProgress<T>
 {
-    private readonly Action<T> _reporter;
-
-    protected ProgressBase(Action<T> reporter)
-        => this._reporter = reporter;
+    private readonly Action<T> _reporter = reporter;
 
     /// <summary>
     /// Reports the given value using the reporter.
@@ -45,12 +35,8 @@ public abstract class ProgressBase<T> : IProgress<T>
 /// <typeparam name="T">The type of the state.</typeparam>
 [Pure]
 [Immutable]
-public sealed class ProgressDetailed<T> : ProgressBase<(T State, string Description)>
+public sealed class ProgressDetailed<T>(Action<(T State, string Description)> reporter) : ProgressBase<(T State, string Description)>(reporter)
 {
-    public ProgressDetailed(Action<(T State, string Description)> reporter) : base(reporter)
-    {
-    }
-
     public void Report(T state, string description)
         => this.Report((state, description));
 }
@@ -60,13 +46,9 @@ public sealed class ProgressDetailed<T> : ProgressBase<(T State, string Descript
 /// </summary>
 /// <typeparam name="T">The type of the state.</typeparam>
 [Immutable]
-public sealed class ProgressiveReport<T> : ProgressBase<(T State, int Current, int Maximum, string Description)>
+public sealed class ProgressiveReport<T>(Action<(T State, int Current, int Maximum, string Description)> reporter) : ProgressBase<(T State, int Current, int Maximum, string Description)>(reporter)
 {
     public static readonly ProgressiveReport<T> Empty = new(_ => { });
-
-    public ProgressiveReport(Action<(T State, int Current, int Maximum, string Description)> reporter) : base(reporter)
-    {
-    }
 
     public void Report(T state, int current, int maximum, string description)
         => this.Report((state, current, maximum, description));
@@ -77,13 +59,9 @@ public sealed class ProgressiveReport<T> : ProgressBase<(T State, int Current, i
 /// </summary>
 /// <param name="reporter">The action to be called when progress is reported.</param>
 [Immutable]
-public sealed class ProgressiveReport : ProgressBase<(int Current, int Maximum, string Description)>
+public sealed class ProgressiveReport(Action<(int Current, int Maximum, string Description)> reporter) : ProgressBase<(int Current, int Maximum, string Description)>(reporter)
 {
     public static readonly ProgressiveReport Empty = new(_ => { });
-
-    public ProgressiveReport(Action<(int Current, int Maximum, string Description)> reporter) : base(reporter)
-    {
-    }
 
     public void Report(int current, int maximum, string description)
         => base.Report((current, maximum, description));
