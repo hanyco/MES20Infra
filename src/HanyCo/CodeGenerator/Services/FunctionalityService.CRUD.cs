@@ -38,22 +38,25 @@ internal partial class FunctionalityService
             x => removeQuery(x.GetByIdQuery, token),
             x => removeCommand(x.InsertCommand, token),
             x => removeCommand(x.UpdateCommand, token),
-            x => removeCommand(x.DeleteCommand, token)
+            x => removeCommand(x.DeleteCommand, token),
+            x => removeController(x.Controller, token)
         };
 
         var result = await tasks.RunAllAsync(functionality, token);
         return result.WithValue<int>(1);
 
-        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model)
-            => model.Check().ArgumentNotNull().NotNull(x => x.Id);
-        Task<Functionality?> getFunctionality(long modelId, CancellationToken token)
-            => this.GetByIdFunctionality(modelId, token);
-        Task<Result> removeQuery(CqrsSegregate query, CancellationToken token)
-            => removeSegregate(query, this._queryService.DeleteByIdAsync, token);
-        Task<Result> removeCommand(CqrsSegregate command, CancellationToken token)
-            => removeSegregate(command, this._commandService.DeleteById, token);
-        Task<Result> removeDto(Dto dto, CancellationToken token)
-            => dto == null ? Task.FromResult(Result.Succeed) : this._dtoService.DeleteByIdAsync(dto.Id, true, token);
+        static Result<FunctionalityViewModel> validate(FunctionalityViewModel model) => 
+            model.Check().ArgumentNotNull().NotNull(x => x.Id);
+        Task<Functionality?> getFunctionality(long modelId, CancellationToken token) => 
+            this.GetByIdFunctionality(modelId, token);
+        Task<Result> removeQuery(CqrsSegregate query, CancellationToken token) => 
+            removeSegregate(query, this._queryService.DeleteById, token);
+        Task<Result> removeCommand(CqrsSegregate command, CancellationToken token) => 
+            removeSegregate(command, this._commandService.DeleteById, token);
+        Task<Result> removeDto(Dto dto, CancellationToken token) => 
+            dto is null ? Task.FromResult(Result.Succeed) : this._dtoService.DeleteById(dto.Id, true, token);
+        Task<Result> removeController(Controller controller, CancellationToken token) =>
+            controller is null ? Task.FromResult(Result.Succeed) : this._controllerService.DeleteById(controller.Id, true, token);
 
         async Task<Result> removeFunctionality(Functionality functionality, CancellationToken token)
         {

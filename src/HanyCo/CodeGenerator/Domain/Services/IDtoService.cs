@@ -17,7 +17,7 @@ public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyn
     [return: NotNull]
     DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns);
 
-    Task<Result> DeleteByIdAsync(long dtoId, bool persist = true, CancellationToken token = default);
+    Task<Result> DeleteById(long dtoId, bool persist = true, CancellationToken token = default);
 
     public Task<IReadOnlySet<DtoViewModel>> GetAllByCategoryAsync(bool? paramsDtos, bool? resultDtos, bool? viewModels, CancellationToken token = default);
 

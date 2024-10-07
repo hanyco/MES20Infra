@@ -36,7 +36,8 @@ internal sealed partial class FunctionalityService(
     IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator,
     ICodeGenerator<ControllerViewModel> apiCodeGenerator,
-    ICodeGeneratorEngine generatorEngine)
+    ICodeGeneratorEngine generatorEngine,
+    IControllerService controllerService)
     : IFunctionalityService
     , IFunctionalityCodeService
     , IValidator<FunctionalityViewModel>
@@ -54,6 +55,7 @@ internal sealed partial class FunctionalityService(
     private readonly IDtoCodeService _dtoCodeService = dtoCodeService;
     private readonly IDtoService _dtoService = dtoService;
     private readonly ICodeGeneratorEngine _generatorEngine = generatorEngine;
+    private readonly IControllerService _controllerService = controllerService;
     private readonly IMapperSourceGenerator _mapperSourceGenerator = mapperSourceGenerator;
     private readonly IModuleService _moduleService = moduleService;
     private readonly ICqrsQueryService _queryService = queryService;

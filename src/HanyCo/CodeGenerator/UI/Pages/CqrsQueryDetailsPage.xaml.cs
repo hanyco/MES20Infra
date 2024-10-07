@@ -93,7 +93,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
             return;
         }
 
-        _ = await this._service.DeleteByIdAsync(id.Value);
+        _ = await this._service.DeleteById(id.Value);
         await this.InitQueriesTreeViewAsync();
         this.IsViewModelChanged = false;
     }

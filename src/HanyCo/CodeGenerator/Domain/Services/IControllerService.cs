@@ -2,7 +2,11 @@
 using HanyCo.Infra.CodeGeneration.FormGenerator.Bases;
 
 using Library.Interfaces;
+using Library.Results;
 
 namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface IControllerService : IBusinessService, ICodeGenerator<ControllerViewModel>, IAsyncCrud<ControllerViewModel>;
+public interface IControllerService : IBusinessService, ICodeGenerator<ControllerViewModel>, IAsyncCrud<ControllerViewModel>
+{
+    Task<Result> DeleteById(long dtoId, bool persist = true, CancellationToken token = default);
+}

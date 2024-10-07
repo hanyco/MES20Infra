@@ -107,7 +107,7 @@ internal sealed class DtoService(
                     .Build()!;
     }
 
-    public async Task<Result> DeleteByIdAsync(long dtoId, bool persist = true, CancellationToken token = default)
+    public async Task<Result> DeleteById(long dtoId, bool persist = true, CancellationToken token = default)
     {
         var dto = await this.GetByIdAsync(dtoId, token);
         if (!Check.IfIsNull(dto).TryParse(out var ncr))
