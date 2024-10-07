@@ -214,7 +214,7 @@ internal partial class FunctionalityService
 
             // No condition is required.
             {
-                var codeGenRes = this._apiCodeGenerator.GenerateCodes(viewModel.Controller);
+                var codeGenRes = this._controllerService.GenerateCodes(viewModel.Controller);
                 codes.ApiCodes = codeGenRes;
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.Controller)}");
                 yield return codes.ApiCodes!;

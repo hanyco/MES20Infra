@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-
-using HanyCo.Infra.CodeGen.Domain;
+﻿using HanyCo.Infra.CodeGen.Domain;
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
@@ -11,13 +8,15 @@ using Library.CodeGeneration.Models;
 using Library.Mapping;
 using Library.Validations;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 using Newtonsoft.Json;
 
 using Services.Helpers;
+
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 using Controller = HanyCo.Infra.Internals.Data.DataSources.Controller;
 
@@ -143,8 +142,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
 
         var result = this._mapper.Map<Dto>(model)
-            .ForMember(x => x.Module = this.ToDbEntity(model.Module));
-        if (model.Module?.Id is { } moduleId && result.ModuleId != moduleId)
+            .ForMember(x => x.Module = null);
+        if (model.Module?.Id is { } moduleId)
         {
             result.ModuleId = moduleId;
         }
@@ -179,15 +178,37 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         result.UpdateCommand = this.ToDbEntity(model.UpdateCommand);
         result.DeleteCommand = this.ToDbEntity(model.DeleteCommand);
         result.SourceDto = this.ToDbEntity(model.SourceDto);
-        result.Module = this.ToDbEntity(model.SourceDto.Module);
+        result.Module = null;
         result.ModuleId = result.Module?.Id;
         result.Controller = this.ToDbEntity(model.Controller);
         //TODO Fill IDs
         return result;
     }
 
-    [return: NotNullIfNotNull("model")]
-    public CqrsSegregate? ToDbEntity(CqrsViewModelBase? model) => throw new NotImplementedException();
+    [return: NotNullIfNotNull(nameof(model))]
+    public CqrsSegregate? ToDbEntity(CqrsViewModelBase? model)
+    {
+        if (model == null)
+        {
+            return null;
+        }
+
+        var result = this._mapper
+            .MapExcept<CqrsSegregate>(model, x => x.Id)
+            .ForMember(x => x.Module = null!)
+            .ForMember(x => x.ParamDto = this.ToDbEntity(model.ParamsDto))
+            .ForMember(x => x.ResultDto = this.ToDbEntity(model.ResultDto));
+        if (model.Id is not null and not 0)
+        {
+            result.Id = model.Id.Value;
+        }
+
+        if (model.Module?.Id is { } moduleId)
+        {
+            result.ModuleId= moduleId;
+        }
+        return result;
+    }
 
     [return: NotNullIfNotNull(nameof(model))]
     public Controller? ToDbEntity(ControllerViewModel? model)
@@ -202,7 +223,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.AdditionalUsings = model.AdditionalUsings.Merge(";"))
             .ForMember(x => x.ControllerMethods!.AddRange(model.Apis.Select(this.ToDbEntity)))
             .ForMember(x => x.ControllerName = model.Name!)
-            .ForMember(x => x.ControllerRoute = model.Route);
+            .ForMember(x => x.ControllerRoute = model.Route)
+            .ForMember(x => x.Module = null!);
         if (model.Id is not null and not 0)
         {
             result.Id = model.Id.Value;
@@ -211,7 +233,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         {
             result.ModuleId = moduleId;
         }
-        
+
         return result;
     }
 
@@ -231,6 +253,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
         return result;
     }
+
     public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel) =>
         columnViewModel == null
             ? null
@@ -252,7 +275,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             Caption = string.Equals(propertyViewModel.Name, "id", global::System.StringComparison.Ordinal)
                 ? propertyViewModel.Name
                 : propertyViewModel.Name.SeparateCamelCase(),
-            IsEnabled = !propertyViewModel.Name?.EqualsTo("id")??false
+            IsEnabled = !propertyViewModel.Name?.EqualsTo("id") ?? false
         };
 
     [return: NotNullIfNotNull(nameof(entity))]
@@ -326,7 +349,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         entity is null ? null : this._mapper.Map<UiPageViewModel>(entity)
             .ForMember(x => x.Components.AddRange(entity.UiPageComponents.Select(this.ToViewModel).Compact().OrderBy(x => x.Position)))
             .ForMember(x => x.DataContext = this.ToViewModel(entity.Dto))
-            .ForMember(x => x.Module = this.ToViewModel(entity.Module));
+            .ForMember(x => x.Module = null);
 
     public PropertyViewModel? ToViewModel(Property? entity) =>
         entity is null ? null : this._mapper.Map<PropertyViewModel>(entity)
@@ -374,19 +397,24 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     [return: NotNullIfNotNull(nameof(entity))]
     public ClaimViewModel? ToViewModel(SecurityClaim? entity)
         => entity is null ? null : this._mapper.Map<ClaimViewModel>(entity);
+
     [return: NotNullIfNotNull("entity")]
     public ControllerViewModel? ToViewModel(Controller? entity) => throw new NotImplementedException();
+
     [return: NotNullIfNotNull("entity")]
     public ControllerMethodViewModel? ToViewModel(ControllerMethod? entity)
     {
         if (entity is null)
+        {
             return null;
+        }
+
         var viewModel = new ControllerMethodViewModel
         {
             Id = entity.Id,
             Name = entity.Name,
             Body = entity.Body,
-            IsAsync = entity.IsAsync??false,
+            IsAsync = entity.IsAsync ?? false,
             ReturnType = entity.ReturnType != null ? new TypePath(entity.ReturnType) : null,
         };
 
@@ -397,14 +425,14 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             {
                 foreach (var argument in arguments)
                 {
-                    viewModel.Arguments.Add(argument);
+                    _ = viewModel.Arguments.Add(argument);
                 }
             }
         }
 
         if (!string.IsNullOrEmpty(entity.HttpMethods))
         {
-            var httpMethods = entity.HttpMethods.Split(',');
+            _ = entity.HttpMethods.Split(',');
             //foreach (var method in httpMethods)
             //{
             //    viewModel.HttpMethods.Add(getHttpMethodByName);
@@ -412,7 +440,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
 
         return viewModel;
-
     }
 
     private static HttpMethodAttribute getHttpMethodByName(string name, string? route) =>
@@ -434,7 +461,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
         var result = this._mapper.Map<CqrsSegregate>(model)
             .ForMember(x => x.SegregateType = segregateType.Cast().ToInt())
-            .ForMember(x => x.CategoryId = model.Category.Cast().ToInt());
+            .ForMember(x => x.CategoryId = model.Category.Cast().ToInt())
+            .ForMember(x => x.Module = null!);
         if (model.Module?.Id is { } moduleId)
         {
             result.ModuleId = moduleId;

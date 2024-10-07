@@ -90,9 +90,9 @@ internal partial class FunctionalityService
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
         CheckPersistence(persist);
-        if (!validateModel(model).TryParse(out var vr))
+        if (!this.Validate(model).TryParse(out var vr))
         {
-            return vr;
+            return vr!;
         }
 
         var er = await checkExitance(model);
@@ -122,24 +122,6 @@ internal partial class FunctionalityService
 
         return result.ToNotNullValue();
 
-        static Result<FunctionalityViewModel> validateModel(FunctionalityViewModel model) =>
-            BasicChecks(model)
-            .NotNull(x => x!.SourceDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetAllQuery, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetAllQuery.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetAllQuery.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetByIdQuery, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetByIdQuery.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.GetByIdQuery.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.InsertCommand, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.InsertCommand.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.InsertCommand.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.UpdateCommand, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.UpdateCommand.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.UpdateCommand.ResultDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.DeleteCommand, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.DeleteCommand.ParamsDto, () => "ViewModel is not initiated.")
-            .NotNull(x => x!.DeleteCommand.ResultDto, () => "ViewModel is not initiated.");
         async Task<Result> saveQuery(CqrsQueryViewModel model, CancellationToken token)
         {
             //model.ParamsDto.Functionality = model.ResultDto.Functionality = functionality;
@@ -304,7 +286,7 @@ internal partial class FunctionalityService
     }
 
     private static void CheckPersistence([DoesNotReturnIf(false)] bool persist) =>
-        Check.MustBe(!persist, () => new NotSupportedException("non-persistent operation is not supported."));
+        Check.MustBe(persist, () => new NotSupportedException("non-persistent operation is not supported."));
 
     private Task<bool> AnyByNameAsync(string name)
     {

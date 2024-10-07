@@ -11,10 +11,12 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Library.Data.EntityFrameworkCore;
 
+[DebuggerStepThrough, StackTraceHidden]
 public static class DataServiceHelper
 {
     #region CRUD

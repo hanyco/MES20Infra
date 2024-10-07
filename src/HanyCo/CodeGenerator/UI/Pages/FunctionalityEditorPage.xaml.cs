@@ -224,7 +224,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
+            this.CheckIfInitiated(false);
             this.PrepareViewModel();
             this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
         }

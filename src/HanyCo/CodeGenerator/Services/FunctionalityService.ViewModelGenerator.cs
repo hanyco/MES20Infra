@@ -32,7 +32,7 @@ internal sealed partial class FunctionalityService
 {
     public async Task<Result<FunctionalityViewModel?>> GenerateViewModelAsync(FunctionalityViewModel viewModel, CancellationToken token = default)
     {
-        if (!this.Validate(viewModel).TryParse(out var validationResult))
+        if (!BasicChecks(viewModel).TryParse(out var validationResult))
         {
             return validationResult!;
         }

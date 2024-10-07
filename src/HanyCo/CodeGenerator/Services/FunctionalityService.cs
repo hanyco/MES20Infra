@@ -35,7 +35,6 @@ internal sealed partial class FunctionalityService(
     IBlazorPageService blazorPageService,
     IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator,
-    ICodeGenerator<ControllerViewModel> apiCodeGenerator,
     ICodeGeneratorEngine generatorEngine,
     IControllerService controllerService)
     : IFunctionalityService
@@ -44,7 +43,6 @@ internal sealed partial class FunctionalityService(
     , IAsyncTransactionalSave
     , ILoggerContainer
 {
-    private readonly ICodeGenerator<ControllerViewModel> _apiCodeGenerator = apiCodeGenerator;
     private readonly IBlazorComponentCodeService _blazorComponentCodeService = blazorComponentCodeService;
     private readonly IBlazorComponentService _blazorComponentService = blazorComponentService;
     private readonly IBlazorPageCodeService _blazorPageCodeService = blazorPageCodeService;
@@ -86,7 +84,24 @@ internal sealed partial class FunctionalityService(
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
     public Result<FunctionalityViewModel?> Validate(in FunctionalityViewModel? item) =>
-        BasicChecks(item);
+        BasicChecks(item)
+            .NotNull(x => x!.SourceDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQuery, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQuery.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetAllQuery.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQuery, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQuery.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.GetByIdQuery.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommand, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommand.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.InsertCommand.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommand, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommand.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.UpdateCommand.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommand, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommand.ParamsDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.DeleteCommand.ResultDto, () => "ViewModel is not initiated.")
+            .NotNull(x => x!.Controller, () => "ViewModel is not initiated.");
 
     private static ValidationResultSet<FunctionalityViewModel?> BasicChecks(FunctionalityViewModel? model) =>
         model.Check()
