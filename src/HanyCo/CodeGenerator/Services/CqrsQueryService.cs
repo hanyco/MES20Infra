@@ -179,7 +179,7 @@ internal sealed class CqrsQueryService(
             model.Id = segregate.Id;
             return Result.Success(model);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return Result.Fail<CqrsQueryViewModel>(ex);
         }
