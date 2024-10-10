@@ -15,14 +15,6 @@ public interface ICqrsQueryService : IBusinessService, IAsyncCrud<CqrsQueryViewM
 
     CqrsQueryViewModel FillByDbEntity(CqrsQueryViewModel @this, CqrsSegregate dbQuery, string? moduleName = null, string? paramDtoName = null, string? resultDtoName = null);
 
-    CqrsQueryViewModel FillByDbEntity(CqrsQueryViewModel @this,
-        CqrsSegregate segregate,
-        Module infraModule,
-        Dto parameterDto,
-        IEnumerable<Property> parameterDtoProperties,
-        Dto resultDto,
-        IEnumerable<Property> resultDtoProperties);
-
     Task<CqrsQueryViewModel> FillViewModelAsync(CqrsQueryViewModel model,
         string? moduleName = null,
         string? paramDtoName = null,

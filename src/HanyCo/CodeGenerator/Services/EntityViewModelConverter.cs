@@ -30,41 +30,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
 
     ILogger ILoggerContainer.Logger => this._logger;
 
-    public DtoViewModel FillByDbEntity(Dto dto, in IEnumerable<Property>? properties)
-    {
-        var result = this._mapper.Map<DtoViewModel>(dto).With(x => x.Module = this.ToViewModel(dto.Module)!);
-        if (dto?.DbObjectId.IsNullOrEmpty() is false)
-        {
-            result.DbObject = new(string.Empty, dto.DbObjectId.Cast().ToLong());
-        }
-        if (properties?.Any() is true)
-        {
-            foreach (var property in properties)
-            {
-                result.Properties.Add(this.ToViewModel(property)!);
-            }
-        }
-
-        return result;
-    }
-
-    public IEnumerable<DtoViewModel> FillByDbEntity(IEnumerable<Dto> dtos) =>
-        dtos.Select(x => this.FillByDbEntity(x, null));
-
-    public UiBootstrapPositionViewModel? FillByDbEntity(in UiBootstrapPositionViewModel? viewModel, in UiBootstrapPosition? dbEntity) =>
-        viewModel is null ? null : this._mapper.Map(dbEntity, viewModel);
-
-    public DtoViewModel FillViewModel(in DtoViewModel viewModel, in Dto dto, in IEnumerable<Property> properties)
-    {
-        _ = this._mapper.Map(dto, viewModel);
-        if (viewModel.Module is null && dto.Module is not null)
-        {
-            viewModel.Module = this.ToViewModel(dto.Module)!;
-        }
-
-        _ = viewModel.Properties!.ClearAndAddRange(properties.Select(this.ToViewModel));
-        return viewModel;
-    }
 
     public UiComponentAction? ToDbEntity(UiComponentButtonViewModelBase? model) =>
         model is null ? null : this._mapper.Map<UiComponentAction>(model)
@@ -129,7 +94,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public Property? ToDbEntity(PropertyViewModel? viewModel) =>
         viewModel is null ? null : this._mapper.MapExcept<Property>(viewModel, x => new { x.Id })
             .ForMember(x => x.ParentEntityId = viewModel.ParentEntityId)
-            .ForMember(x => x.DbObjectId = viewModel.DbObject?.ObjectId.ToString(CultureInfo.CurrentCulture) ?? string.Empty)
+            .ForMember(x => x.DbObjectId = viewModel.DbObject?.ToDbFormat())
             .ForMember(x => x.PropertyType = viewModel.Type.Cast().ToInt())
             .ForMember(x => (x.Id < 0).IfTrue(() => x.Id = 0).Fluent().IfTrue(viewModel.Id > 0, () => x.Id = viewModel.Id!.Value))
             .ForMember(x => x.DtoId = viewModel.Dto?.Id);
@@ -143,7 +108,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
 
         var result = this._mapper.Map<Dto>(model)
-            .ForMember(x => x.Module = null);
+            .ForMember(x => x.Module = null)
+            .ForMember(x => x.DbObjectId = model.DbObject?.ToDbFormat());
         if (model.Module?.Id is { } moduleId)
         {
             result.ModuleId = moduleId;
@@ -302,7 +268,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             return null;
         }
 
-        var result = this._mapper.Map<DtoViewModel>(entity);
+        var result = this._mapper.Map<DtoViewModel>(entity)
+            .ForMember(x => x.DbObject = DbObjectViewModel.FromDbFormat(entity.DbObjectId));        
 
         if (entity.Properties?.Count > 0)
         {

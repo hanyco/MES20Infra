@@ -5,7 +5,7 @@ using Library.Validations;
 
 namespace Library.Threading;
 
-//[DebuggerStepThrough, StackTraceHidden]
+[DebuggerStepThrough, StackTraceHidden]
 public sealed class TaskRunner<TState> : TaskRunnerBase<TaskRunner<TState?>, Result<TState?>>
 {
     private readonly List<Func<TState, CancellationToken, Task<TState>>> _funcList = [];

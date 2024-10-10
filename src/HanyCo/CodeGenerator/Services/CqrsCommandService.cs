@@ -139,7 +139,8 @@ internal sealed class CqrsCommandService(
             .SetModified(x => x.Comment)
             .SetModified(x => x.SegregateType)
             .SetModified(x => x.CategoryId)
-            .SetModified(x => x.CqrsNameSpace);
+            .SetModified(x => x.CqrsNameSpace)
+            .SetModified(x => x.DtoNameSpace);
         _ = await this._securityService.SetEntityClaimsAsync(model.Guid!.Value, model.SecurityClaims, persist, token);
         _ = await this.SubmitChangesAsync(persist: persist, token: token);
         return Result.Success<CqrsCommandViewModel>(model);

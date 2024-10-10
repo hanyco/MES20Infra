@@ -21,6 +21,8 @@ public partial class CqrsSegregate
     public string Name { get; set; } = null!;
 
     public string? CqrsNameSpace { get; set; }
+    
+    public string? DtoNameSpace { get; set; }
 
     public int SegregateType { get; set; }
 

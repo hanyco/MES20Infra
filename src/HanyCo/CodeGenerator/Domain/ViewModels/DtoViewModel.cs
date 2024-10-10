@@ -11,7 +11,7 @@ public sealed class DtoViewModel : InfraViewModelBase
 {
     private TypePath? _baseType;
     private string? _comment;
-    private DbObjectViewModel _dbObject = null!;
+    private DbObjectViewModel? _dbObject = null;
     private FunctionalityViewModel? _functionality;
     private bool _isList;
     private bool _isParamsDto;
@@ -30,7 +30,7 @@ public sealed class DtoViewModel : InfraViewModelBase
 
     public string? Comment { get => this._comment; set => this.SetProperty(ref this._comment, value); }
 
-    public DbObjectViewModel DbObject { get => this._dbObject; set => this.SetProperty(ref this._dbObject, value); }
+    public DbObjectViewModel? DbObject { get => this._dbObject; set => this.SetProperty(ref this._dbObject, value); }
 
     public ObservableCollection<PropertyViewModel> DeletedProperties { get; } = [];
 

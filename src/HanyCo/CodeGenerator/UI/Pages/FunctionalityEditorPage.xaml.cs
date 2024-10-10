@@ -109,11 +109,11 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     [MemberNotNull(nameof(ViewModel))]
     private void CheckIfInitiated(bool fullCheck = true)
     {
-        var isNotInitiated = fullCheck
-            ? this.ViewModel is not null and { Controller: not null } and { BlazorDetailsComponent: not null } and { GetAllQuery: not null }
+        var initiated = fullCheck
+            ? this.ViewModel is not null and { Module: not null } and { Controller: not null } and { BlazorDetailsComponent: not null } and { GetAllQuery: not null }
             : this.ViewModel is not null;
 
-        Check.MustBe(isNotInitiated, () => "Please create a new Functionality or edit an old one.");
+        Check.MustBe(initiated, () => "Please create a new Functionality or edit an old one.");
     }
 
     private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)

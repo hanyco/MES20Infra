@@ -28,16 +28,6 @@ public interface IEntityViewModelConverter :
     IDbEntityViewModelConverter<ControllerViewModel, Controller>,
     IDbEntityViewModelConverter<ControllerMethodViewModel, ControllerMethod>
 {
-    [return: NotNullIfNotNull(nameof(entity))]
-    DtoViewModel FillByDbEntity(Dto entity, in IEnumerable<Property>? properties);
-
-    IEnumerable<DtoViewModel> FillByDbEntity(IEnumerable<Dto> entities);
-
-    [return: NotNullIfNotNull(nameof(viewModel))]
-    DtoViewModel FillViewModel(in DtoViewModel viewModel, in Dto dto, in IEnumerable<Property> properties);
-
-    [return: NotNullIfNotNull(nameof(viewModel))]
-    UiBootstrapPositionViewModel? FillByDbEntity(in UiBootstrapPositionViewModel? viewModel, in UiBootstrapPosition? dbEntity);
 
     [return: NotNullIfNotNull(nameof(viewModel))]
     PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? viewModel);

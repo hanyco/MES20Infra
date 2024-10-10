@@ -88,25 +88,23 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
 
     public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        var query = from entity in this._readDbContext.Functionalities
-                        //.Include(x => x.Controller)
-                        .Include(x => x.DeleteCommand)
-                        .Include(x => x.GetAllQuery)
-                        .Include(x => x.GetAllQuery)
-                        .Include(x => x.InsertCommand)
-                        .Include(x => x.SourceDto)
-                        .Include(x => x.UpdateCommand)
-                        .Include(x => x.Module)
-                    where entity.Id == id
-                    select entity;
-        var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock, cancellationToken);
+        // Read from database
+        var dbResult = await GetByIdFunctionality(id, cancellationToken);
         if (dbResult == null)
         {
+            // Not found.
             return null;
         }
+        // Convert to view model
         var result = this._converter.ToViewModel(dbResult);
+
+        // Fill the gaps
         var (_, (data, _)) = InitializeWorkspace(result, cancellationToken);
         await this.CreateController(data, cancellationToken);
+        await this.CreateBlazorListPage(data, cancellationToken);
+        await this.CreateBlazorDetailsPage(data, cancellationToken);
+        await this.CreateBlazorListComponent(data, cancellationToken);
+        await this.CreateBlazorDetailsComponent(data, cancellationToken);
         return result;
     }
 

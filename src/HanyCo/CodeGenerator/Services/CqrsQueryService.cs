@@ -59,22 +59,6 @@ internal sealed class CqrsQueryService(
             .ForMember(x => x.ResultDto = new(dbQuery.ResultDtoId, resultDtoName ?? dbQuery.ResultDto.Name) { NameSpace = dbQuery.ResultDto.NameSpace ?? string.Empty, IsList = dbQuery.ResultDto.IsList ?? false })
             .ForMember(x => x.Category = CqrsSegregateCategory.Read);
 
-    public CqrsQueryViewModel FillByDbEntity(
-        CqrsQueryViewModel @this,
-        CqrsSegregate segregate,
-        HanyCo.Infra.Internals.Data.DataSources.Module infraModule,
-        Dto parameterDto,
-        IEnumerable<Property> parameterDtoProperties,
-        Dto resultDto,
-        IEnumerable<Property> resultDtoProperties)
-    {
-        _ = this._mapper.Map(segregate, @this);
-        @this.Module = this._converter.ToViewModel(infraModule);
-        @this.ParamsDto = this._converter.FillByDbEntity(parameterDto, parameterDtoProperties);
-        @this.ResultDto = this._converter.FillByDbEntity(resultDto, resultDtoProperties);
-        return @this;
-    }
-
     public async Task<CqrsQueryViewModel> FillByDbEntity(
         CqrsQueryViewModel @this,
         long dbQueryId,
@@ -224,7 +208,8 @@ internal sealed class CqrsQueryService(
                     .SetModified(x => x.ModuleId)
                     .SetModified(x => x.Comment)
                     .SetModified(x => x.SegregateType)
-                    .SetModified(x => x.CqrsNameSpace);
+                    .SetModified(x => x.CqrsNameSpace)
+                    .SetModified(x => x.DtoNameSpace);
             if (persist)
             {
                 _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);

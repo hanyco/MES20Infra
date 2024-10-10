@@ -189,7 +189,7 @@ internal sealed class DtoService(
                     select dto;
 
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.FillByDbEntity(dbResult).ToList();
+        var result = this._converter.ToViewModel(dbResult).ToList();
         return result;
     }
 
@@ -201,7 +201,7 @@ internal sealed class DtoService(
         var query = rawQuery.Where(whereClause).Select(dto => dto);
 
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.FillByDbEntity(dbResult).ToReadOnlySet();
+        var result = this._converter.ToViewModel(dbResult).ToReadOnlySet();
         return result;
 
         static Expression<Func<DtoEntity, bool>> generateWhereClause(bool? paramsDtos, bool? resultDtos, bool? viewModels, CancellationToken token = default)
@@ -281,7 +281,7 @@ internal sealed class DtoService(
                     where dto.ModuleId == id
                     select dto;
         var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.FillByDbEntity(dbResult).ToList();
+        var result = this._converter.ToViewModel(dbResult).ToList();
         return result;
     }
 

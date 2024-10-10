@@ -1,26 +1,27 @@
 ﻿using Library.Data.SqlServer.Dynamics;
-using Library.DesignPatterns.Markers;
+
+using System.Diagnostics.CodeAnalysis;
 
 namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class DbColumnViewModel : DbObjectViewModel
 {
-    public DbColumnViewModel(string name, long objectId, string dbType, bool isNullable, int? maxLength = null, string? comment = null)
-        : base(name, objectId)
-    {
-        this.DbType = dbType;
-        this.IsNullable = isNullable;
-        this.MaxLength = maxLength;
-        this.Comment = comment;
-    }
-    public DbColumnViewModel(string name, long objectId)
-        : base(name, objectId)
-    { }
-
+    public string? Comment { get; init; }
     public string DbType { get; init; }
     public bool IsNullable { get; init; }
     public int? MaxLength { get; init; }
-    public string? Comment { get; init; }
+
+    [SetsRequiredMembers]
+    public DbColumnViewModel(string name, long objectId, string dbType, bool isNullable, int? maxLength = null, string? comment = null) : base(name, objectId)
+    {
+        this.Comment = comment;
+        this.DbType = dbType;
+        this.IsNullable = isNullable;
+        this.MaxLength = maxLength;
+    }
+
+    public static DbColumnViewModel FromDbColumn(Column column)
+        => new(column.Name, column.UniqueId, column.DataType, column.IsNullable, column.MaxLength);
 
     public override string ToString()
     {
@@ -37,7 +38,4 @@ public sealed class DbColumnViewModel : DbObjectViewModel
         result = $"{result})";
         return result;
     }
-
-    public static DbColumnViewModel FromDbColumn(Column column)
-        => new(column.Name, column.UniqueId, column.DataType, column.IsNullable, column.MaxLength);
 }
