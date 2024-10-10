@@ -38,9 +38,6 @@ internal sealed partial class FunctionalityService(
     ICodeGeneratorEngine generatorEngine,
     IControllerService controllerService)
     : IFunctionalityService
-    , IFunctionalityCodeService
-    , IValidator<FunctionalityViewModel>
-    , IAsyncTransactionalSave
     , ILoggerContainer
 {
     private readonly IBlazorComponentCodeService _blazorComponentCodeService = blazorComponentCodeService;

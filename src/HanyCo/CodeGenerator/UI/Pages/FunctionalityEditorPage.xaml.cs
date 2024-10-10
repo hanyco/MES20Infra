@@ -86,6 +86,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
 
             var result = await this._service.SaveViewModelAsync(this.ViewModel, cancellationToken: cancellationToken);
+            
             if (result.IsSucceed)
             {
                 _ = this.SetIsViewModelChanged(false);

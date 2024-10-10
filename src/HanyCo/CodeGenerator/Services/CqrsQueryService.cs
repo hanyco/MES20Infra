@@ -170,10 +170,19 @@ internal sealed class CqrsQueryService(
             }
 
             segregate = this._converter.ToDbEntity(model)!;
+            if (segregate.ParamDto?.Id is not null and not 0)
+            {
+                segregate.ParamDto = null!;
+            }
+            if (segregate.ResultDto?.Id is not null and not 0)
+            {
+                segregate.ResultDto = null!;
+            }
 
             _ = this._writeDbContext.Add(segregate);
             if (persist)
             {
+                
                 _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
             }
 
@@ -186,7 +195,7 @@ internal sealed class CqrsQueryService(
         }
         finally
         {
-            if (segregate != null)
+            if (persist && segregate is not null)
             {
                 _ = this._writeDbContext.Detach(segregate);
             }

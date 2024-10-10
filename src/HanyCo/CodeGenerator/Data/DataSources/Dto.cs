@@ -12,6 +12,7 @@ namespace HanyCo.Infra.Internals.Data.DataSources;
 public partial class Dto
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; set; }
 
     [StringLength(50)]

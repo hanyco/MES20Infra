@@ -38,7 +38,7 @@ internal sealed partial class FunctionalityService
         }
 
         this._reporter.Report(description: getTitle("Initializing..."));
-        var initResult = initialize(viewModel, token);
+        var initResult = InitializeWorkspace(viewModel, token);
         if (!initResult.IsSucceed)
         {
             return Result.From(initResult, viewModel)!;
@@ -64,24 +64,10 @@ internal sealed partial class FunctionalityService
             => new(Description: description, Sender: nameof(FunctionalityService));
 
         [DebuggerStepThrough]
-        static Result<(CreationData Data, CancellationTokenSource TokenSource)> initialize(FunctionalityViewModel viewModel, CancellationToken token)
-        {
-            var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            var result = new CreationData(viewModel, viewModel.SourceDto.Name!, tokenSource);
-            if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
-            {
-                result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "), "Dtos");
-            }
-
-            // Return a success result with the result and cancellationTokenSource
-            return Result.Success<(CreationData, CancellationTokenSource)>((result, tokenSource));
-        }
-
-        [DebuggerStepThrough]
         MultistepProcessRunner<CreationData> initSteps(in CreationData data)
              //?! ☠ Don't change the sequence of the steps ☠
              => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
-                .AddStep(this.InitializeWorkspace, getTitle("Initializing…"))
+                .AddStep(this.ResetWorkspace, getTitle("Initializing…"))
 
                 .AddStep(this.CreateGetAllQuery, getTitle($"Creating `GetAll{StringHelper.Pluralize(data.ViewModel.Name)}Query`…"))
                 .AddStep(this.CreateGetByIdQuery, getTitle($"Creating `GetById{data.ViewModel.Name}Query`…"))
@@ -131,6 +117,14 @@ internal sealed partial class FunctionalityService
     private static void AddClaimViewModel(InfraViewModelBase viewModel, CreationData data)
         => AddClaimViewModel(viewModel, viewModel.Name, null, data.ViewModel.SourceDto);
 
+    private static UiComponentViewModel AddHttpClientInjection(UiComponentViewModel model)
+    {
+        var httpClient = (Type: typeof(HttpClient), FieldName: "_http");
+        _ = model.AddUsings(httpClient.Type.Namespace!, typeof(HttpClientJsonExtensions).Namespace!);
+        _ = model.AdditionalInjects.Add(httpClient);
+        return model;
+    }
+
     [Obsolete("Mappers are no longer used in this project", true)]
     private static string GetMapperNameSpace(CreationData data)
         => TypePath.Combine(GetRootNameSpace(data), "Mappers");
@@ -155,6 +149,24 @@ internal sealed partial class FunctionalityService
         Dto = data.ViewModel.SourceDto,
         Type = PropertyType.Dto,
     };
+
+    [DebuggerStepThrough]
+    private static Result<(CreationData Data, CancellationTokenSource TokenSource)> InitializeWorkspace(FunctionalityViewModel viewModel, CancellationToken token)
+    {
+        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+        var result = new CreationData(viewModel, viewModel.SourceDto.Name!, tokenSource);
+        if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
+        {
+            result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "), "Dtos");
+        }
+        if (result.ViewModel.Module is null)
+        {
+            result.ViewModel.Module = result.ViewModel.SourceDto.Module;
+        }
+
+        // Return a success result with the result and cancellationTokenSource
+        return Result.Success<(CreationData, CancellationTokenSource)>((result, tokenSource));
+    }
 
     [DebuggerStepThrough]
     private static DtoViewModel RawDto(CreationData data)
@@ -271,14 +283,6 @@ internal sealed partial class FunctionalityService
 
         void setupSecurity(CreationData data)
             => AddClaimViewModel(data.ViewModel.BlazorDetailsComponent, $"{name}Details", data);
-    }
-
-    private static UiComponentViewModel AddHttpClientInjection(UiComponentViewModel model)
-    {
-        var httpClient = (Type: typeof(HttpClient), FieldName: "_http");
-        _ = model.AddUsings(httpClient.Type.Namespace!, typeof(HttpClientJsonExtensions).Namespace!);
-        _ = model.AdditionalInjects.Add(httpClient);
-        return model;
     }
 
     private Task CreateBlazorDetailsPage(CreationData data, CancellationToken token)
@@ -741,7 +745,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommand.HandleMethodBody = CodeSnippets.UpdateCommandHandler_Handle_Body(data.ViewModel.UpdateCommand, data.ViewModel.SourceDto);
     }
 
-    private Task InitializeWorkspace(CreationData data, CancellationToken token)
+    private Task ResetWorkspace(CreationData data, CancellationToken token)
     {
         data.ViewModel.MapperGeneratorViewModel.Arguments.Clear();
         data.ViewModel.Codes.Clear();

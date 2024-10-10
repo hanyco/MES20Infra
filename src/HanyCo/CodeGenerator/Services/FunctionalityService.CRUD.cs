@@ -3,6 +3,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Data.EntityFrameworkCore;
 using Library.Exceptions;
+using Library.Interfaces;
 using Library.Results;
 using Library.Threading;
 using Library.Validations;
@@ -14,7 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Services;
 
-internal partial class FunctionalityService
+internal partial class FunctionalityService : IValidator<FunctionalityViewModel>, IAsyncTransactionalSave
 {
     public async Task<Result<int>> DeleteAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
@@ -84,8 +85,28 @@ internal partial class FunctionalityService
     public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default) =>
         this.GetAllAsync<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default) =>
-        this.GetByIdAsync<FunctionalityViewModel, Functionality>(id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+    public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    {
+        var query = from entity in this._readDbContext.Functionalities
+                        //.Include(x => x.Controller)
+                        .Include(x => x.DeleteCommand)
+                        .Include(x => x.GetAllQuery)
+                        .Include(x => x.GetAllQuery)
+                        .Include(x => x.InsertCommand)
+                        .Include(x => x.SourceDto)
+                        .Include(x => x.UpdateCommand)
+                    where entity.Id == id
+                    select entity;
+        var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock, cancellationToken);
+        if (dbResult == null)
+        {
+            return null;
+        }
+        var result = this._converter.ToViewModel(dbResult);
+        var (_, (data, _)) = InitializeWorkspace(result, cancellationToken);
+        await this.CreateController(data, cancellationToken);
+        return result;
+    }
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
@@ -124,7 +145,6 @@ internal partial class FunctionalityService
 
         async Task<Result> saveQuery(CqrsQueryViewModel model, CancellationToken token)
         {
-            //model.ParamsDto.Functionality = model.ResultDto.Functionality = functionality;
             Result result = await this._dtoService.InsertAsync(model.ParamsDto, true, token);
             if (!result.IsSucceed)
             {

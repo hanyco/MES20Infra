@@ -43,6 +43,7 @@ internal partial class ControllerService
         return result;
     }
 
+    [Obsolete("Please re-generate it.", true)]
     public async Task<Result<ControllerViewModel>> InsertAsync(ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         var validationCheck = await this.ValidateAsync(model, cancellationToken);
@@ -80,7 +81,9 @@ internal partial class ControllerService
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
+    [Obsolete("Please re-generate it.", true)]
     public Task<Result<ControllerViewModel>> UpdateAsync(long id, ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
+    [Obsolete("Please re-generate it.", true)]
     public Task<Result<ControllerViewModel?>> ValidateAsync(ControllerViewModel? item, CancellationToken token = default) => throw new NotImplementedException();
 }

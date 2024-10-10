@@ -21,7 +21,7 @@ using System.Text;
 
 namespace Services;
 
-internal partial class FunctionalityService
+internal partial class FunctionalityService: IFunctionalityCodeService
 {
     public Result<Codes?> GenerateCodes(FunctionalityViewModel viewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs? args = null)
     {

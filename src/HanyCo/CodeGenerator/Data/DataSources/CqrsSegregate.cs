@@ -14,6 +14,7 @@ namespace HanyCo.Infra.Internals.Data.DataSources;
 public partial class CqrsSegregate
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] 
     public long Id { get; set; }
 
     [StringLength(50)]

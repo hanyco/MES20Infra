@@ -202,11 +202,19 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         {
             result.Id = model.Id.Value;
         }
-
         if (model.Module?.Id is { } moduleId)
         {
             result.ModuleId= moduleId;
+        }        
+        if(model.ParamsDto?.Id is { } paramsDtoId)
+        {
+            result.ParamDtoId = paramsDtoId;
         }
+        if(model.ResultDto?.Id is { } resultDtoId)
+        {
+            result.ResultDtoId = resultDtoId;
+        }
+        
         return result;
     }
 
