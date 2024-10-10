@@ -3,6 +3,7 @@ using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Data.EntityFrameworkCore;
+using Library.Interfaces;
 using Library.Results;
 using Library.Validations;
 
@@ -16,7 +17,12 @@ internal sealed class BlazorPageService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
-    ILogger logger) : IBlazorPageService
+    ILogger logger) 
+    : IBlazorPageService
+    , IValidator<UiPageViewModel>
+    , IAsyncSaveChanges
+    , IResetChanges
+    , ILoggerContainer
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _readDbContext = readDbContext;

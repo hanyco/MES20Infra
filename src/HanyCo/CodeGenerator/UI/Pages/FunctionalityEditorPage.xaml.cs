@@ -211,7 +211,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.EnableActors(false);
             await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
-            this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new(true)), "Generating code...").ThrowOnFail(this.Title);
+            this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new()), "Generating code...").ThrowOnFail(this.Title);
         }
         finally
         {

@@ -7,7 +7,7 @@ using Library.Results;
 
 namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyncSaveChanges, IResetChanges, IAsyncCreator<DtoViewModel>
+public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyncCreator<DtoViewModel>
 {
     Task<bool> AnyByNameAsync(string name);
 

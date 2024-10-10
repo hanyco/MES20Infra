@@ -4,13 +4,21 @@ using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Security.Identity.Entity;
 
+using Library.Interfaces;
 using Library.Results;
 
 using Microsoft.EntityFrameworkCore;
 
 namespace Services;
 
-internal class SecurityService(InfraReadDbContext readDbContext, InfraWriteDbContext infraWriteDb, InfraUserManager userManager, IEntityViewModelConverter converter) : ISecurityService
+internal class SecurityService(
+    InfraReadDbContext readDbContext,
+    InfraWriteDbContext infraWriteDb,
+    InfraUserManager userManager,
+    IEntityViewModelConverter converter) 
+    : ISecurityService
+    , IAsyncSaveChanges
+    , IResetChanges
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraWriteDbContext _infraWriteDb = infraWriteDb;

@@ -5,7 +5,7 @@ using Library.Results;
 
 namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface ISecurityService : IBusinessService, IAsyncCrud<ClaimViewModel, Guid>, IAsyncSaveChanges, IResetChanges
+public interface ISecurityService : IBusinessService, IAsyncCrud<ClaimViewModel, Guid>
 {
     Task<Result<IEnumerable<ClaimViewModel>>> GetEntityClaimsAsync(Guid entity, CancellationToken token = default);
 

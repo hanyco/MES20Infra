@@ -47,5 +47,5 @@ internal sealed class TranslationService : ITranslationService
     }
 
     private static string _currentCulture()
-                => CultureInfo.CurrentUICulture.EnglishName;
+        => CultureInfo.CurrentUICulture.EnglishName;
 }

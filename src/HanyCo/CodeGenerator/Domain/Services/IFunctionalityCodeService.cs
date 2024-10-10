@@ -11,4 +11,4 @@ namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IFunctionalityCodeService : IBusinessService, ICodeGenerator<FunctionalityViewModel, FunctionalityCodeServiceAsyncCodeGeneratorArgs>;
 
-public sealed record FunctionalityCodeServiceAsyncCodeGeneratorArgs(bool UpdateModelView, CancellationToken Token = default);
+public sealed record FunctionalityCodeServiceAsyncCodeGeneratorArgs(bool UpdateModelView = true, CancellationToken Token = default);

@@ -8,6 +8,6 @@ using Library.Validations;
 
 namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface IBlazorPageCodeService : IBusinessService, ICodeGenerator<UiPageViewModel, GenerateCodesParameters>, IValidator<UiPageViewModel>
+public interface IBlazorPageCodeService : IBusinessService, ICodeGenerator<UiPageViewModel, GenerateCodesParameters>
 {
 }

@@ -34,7 +34,8 @@ using UiViewModel = HanyCo.Infra.CodeGen.Domain.ViewModels.UiComponentViewModel;
 
 namespace Services;
 
-internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator, ICodeGeneratorEngine codeGenerator) : IBlazorComponentCodeService, IBlazorPageCodeService
+internal sealed class BlazorCodingService(ILogger logger, IMapperSourceGenerator mapperSourceGenerator, ICodeGeneratorEngine codeGenerator) 
+    : IBlazorComponentCodeService, IBlazorPageCodeService, IValidator<UiPageViewModel>
 {
     private readonly Queue<CqrsViewModelBase> _conversionSubjects = [];
     private readonly ILogger _logger = logger;

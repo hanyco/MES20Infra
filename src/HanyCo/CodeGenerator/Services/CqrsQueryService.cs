@@ -3,6 +3,7 @@ using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Data.EntityFrameworkCore;
+using Library.Interfaces;
 using Library.Mapping;
 using Library.Results;
 using Library.Validations;
@@ -15,7 +16,7 @@ internal sealed class CqrsQueryService(
     IMapper mapper,
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
-    IEntityViewModelConverter converter) : CqrsSegregationServiceBase, ICqrsQueryService, IValidator<CqrsQueryViewModel>
+    IEntityViewModelConverter converter) : CqrsSegregationServiceBase, ICqrsQueryService, IValidator<CqrsQueryViewModel>, IResetChanges
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly IMapper _mapper = mapper;

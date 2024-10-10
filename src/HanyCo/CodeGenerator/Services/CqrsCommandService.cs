@@ -23,7 +23,8 @@ internal sealed class CqrsCommandService(
     ICqrsCommandService,
     IAsyncValidator<CqrsCommandViewModel>,
     IResetChanges,
-    IAsyncRead<CqrsCommandViewModel>
+    IAsyncRead<CqrsCommandViewModel>, 
+    IAsyncSaveChanges
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _readDbContext = readDbContext;

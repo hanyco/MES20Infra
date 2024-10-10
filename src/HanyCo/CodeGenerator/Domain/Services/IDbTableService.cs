@@ -21,16 +21,16 @@ public readonly struct GetTablesTreeViewItemOptions(string connectionString, boo
     public bool GatherColumns { get; } = gatherColumns;
     public IProgressReport? Reporter { get; } = reporter;
 
-    public static bool operator !=(GetTablesTreeViewItemOptions left, GetTablesTreeViewItemOptions right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(GetTablesTreeViewItemOptions left, GetTablesTreeViewItemOptions right) => !(left == right);
 
-    public static bool operator ==(GetTablesTreeViewItemOptions left, GetTablesTreeViewItemOptions right)
-    {
-        return left.Equals(right);
-    }
+    public static bool operator ==(GetTablesTreeViewItemOptions left, GetTablesTreeViewItemOptions right) => left.Equals(right);
 
-    public void Deconstruct(out string connectionString, out bool gatherColumns, out IProgressReport? reporter)
-        => (connectionString, gatherColumns, reporter) = (this.ConnectionString, this.GatherColumns, this.Reporter);
+    public void Deconstruct(out string connectionString, out bool gatherColumns, out IProgressReport? reporter) => 
+        (connectionString, gatherColumns, reporter) = (this.ConnectionString, this.GatherColumns, this.Reporter);
+
+    public override bool Equals(object obj) =>
+        base.Equals(obj);
+
+    public override int GetHashCode() =>
+        base.GetHashCode();
 }

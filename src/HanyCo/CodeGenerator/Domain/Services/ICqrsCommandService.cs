@@ -5,7 +5,7 @@ using Library.Results;
 
 namespace HanyCo.Infra.CodeGen.Domain.Services;
 
-public interface ICqrsCommandService : IBusinessService, IAsyncSaveChanges, IAsyncCrud<CqrsCommandViewModel>, IAsyncCreator<CqrsCommandViewModel>, IResetChanges
+public interface ICqrsCommandService : IBusinessService, IAsyncCrud<CqrsCommandViewModel>, IAsyncCreator<CqrsCommandViewModel>
 {
     Task<bool> AnyByName(string name);
 
