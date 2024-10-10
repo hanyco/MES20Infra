@@ -2,7 +2,7 @@
 
 using Library.CodeGeneration;
 
-using static Services.CodeGen.Helpers.CommonHelpers;
+using static Services.Helpers.CommonHelpers;
 
 namespace Services.Helpers;
 

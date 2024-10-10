@@ -1,10 +1,11 @@
-﻿namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class FunctionalityViewModel : InfraViewModelBase
 {
     private DtoViewModel _sourceDto;
-
-    public ControllerViewModel Controller { get; set; } = new();
+    private ControllerViewModel controller = new();
 
     public UiComponentViewModel BlazorDetailsComponent { get; set; }
 
@@ -16,6 +17,9 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public FunctionalityViewModelCodes Codes { get; } = new();
 
+    [NotNull]
+    public ControllerViewModel Controller { get => this.controller ??= new(); set => this.controller = value; }
+
     public CqrsCommandViewModel DeleteCommand { get; set; }
 
     public CqrsQueryViewModel GetAllQuery { get; set; }
@@ -26,9 +30,8 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
 
     public MapperGeneratorViewModel MapperGeneratorViewModel { get; } = new();
 
+    public ModuleViewModel Module { get; set; }
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
     public CqrsCommandViewModel UpdateCommand { get; set; }
-
-    public ModuleViewModel Module { get; set; }
 }

@@ -2,6 +2,7 @@
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
+using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -178,10 +179,17 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         result.UpdateCommand = this.ToDbEntity(model.UpdateCommand);
         result.DeleteCommand = this.ToDbEntity(model.DeleteCommand);
         result.SourceDto = this.ToDbEntity(model.SourceDto);
-        result.Module = null;
-        result.ModuleId = result.Module?.Id;
         result.Controller = this.ToDbEntity(model.Controller);
-        //TODO Fill IDs
+        if (model.Module?.Id is > 0)
+        {
+            result.Module = null;
+            result.ModuleId = model.Module.Id;
+        }
+        else
+        {
+            result.Module = this.ToDbEntity(model.Module);
+        }        
+        
         return result;
     }
 
@@ -399,7 +407,9 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.InsertCommand = this.ToCommandViewModel(entity.InsertCommand))
             .ForMember(x => x.UpdateCommand = this.ToCommandViewModel(entity.UpdateCommand))
             .ForMember(x => x.DeleteCommand = this.ToCommandViewModel(entity.DeleteCommand))
-            .ForMember(x => x.Controller = this.ToViewModel(entity.Controller))
+            .ForMember(x => x.Module = this.ToViewModel(entity.Module))
+            //.ForMember(x => x.Controller = this.ToViewModel(entity.Controller))
+            .ForMember(x => x.Controller = new())
             ;
 
     [return: NotNullIfNotNull(nameof(entity))]

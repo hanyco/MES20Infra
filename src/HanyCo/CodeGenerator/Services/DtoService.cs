@@ -24,6 +24,8 @@ using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
 
+using Services.Helpers;
+
 using DtoEntity = HanyCo.Infra.Internals.Data.DataSources.Dto;
 
 namespace Services.CodeGen;
@@ -297,7 +299,7 @@ internal sealed class DtoService(
         _ = this.InitializeViewModel(viewModel);
         var entity = this.ToDbEntity(viewModel);
 
-        await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(token);
+        using var transaction = await this.CreateTransactionOnDemand(_writeDbContext, persist, token);
         await insertDto(viewModel, entity.Dto, persist, token);
         await insertProperties(viewModel, persist, entity, token);
         var result = await this.SubmitChangesAsync(persist, transaction, token: token).With((_) => viewModel.Id = entity.Dto.Id);

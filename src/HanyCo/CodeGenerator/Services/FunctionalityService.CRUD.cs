@@ -9,6 +9,7 @@ using Library.Threading;
 using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -40,7 +41,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             x => removeCommand(x.InsertCommand, token),
             x => removeCommand(x.UpdateCommand, token),
             x => removeCommand(x.DeleteCommand, token),
-            x => removeController(x.Controller, token)
+            //x => removeController(x.Controller, token)
         };
 
         var result = await tasks.RunAllAsync(functionality, token);
@@ -95,6 +96,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
                         .Include(x => x.InsertCommand)
                         .Include(x => x.SourceDto)
                         .Include(x => x.UpdateCommand)
+                        .Include(x => x.Module)
                     where entity.Id == id
                     select entity;
         var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock, cancellationToken);
@@ -121,6 +123,8 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         {
             return er.WithValue(model);
         }
+        var transaction = await _writeDbContext.BeginTransactionAsync(token);
+
         var result = await TaskRunner.SetState(model)
             .Then(x => saveQuery(x.GetAllQuery, token))
             .Then(x => saveQuery(x.GetByIdQuery, token))
@@ -131,14 +135,14 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             .Then(x => saveFunctionality(x, token))
             .RunAsync(token)
             .IfFailure(this._dtoService.ResetChanges)
-            .IfSucceedAsync(async (x, token) =>
+            .IfSucceedAsync(async (viewModel, token) =>
             {
-                var saveResult = await this.SubmitChangesAsync(true, token: token);
+                var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token);
                 if (!saveResult.IsSucceed)
                 {
                     this._dtoService.ResetChanges();
                 }
-                return saveResult.WithValue(x);
+                return saveResult.WithValue(viewModel);
             }, token);
 
         return result.ToNotNullValue();
@@ -195,7 +199,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         {
             var entity = this._converter.ToDbEntity(model);
             var (getAllId, getById, insertId, updateId, deleteId, moduleId, sourceDtoId) =
-                (entity.GetAllQuery.Id, entity.GetByIdQuery.Id, entity.InsertCommand.Id, entity.UpdateCommand.Id, entity.DeleteCommand.Id, entity.Module!.Id, entity.SourceDto.Id);
+                (entity.GetAllQuery.Id, entity.GetByIdQuery.Id, entity.InsertCommand.Id, entity.UpdateCommand.Id, entity.DeleteCommand.Id, entity.Module?.Id ?? entity.ModuleId, entity.SourceDto.Id);
             entity.GetAllQuery
                 = entity.GetByIdQuery
                 = entity.InsertCommand
@@ -204,12 +208,14 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
                 = null!;
             entity.Module = null!;
             entity.SourceDto = null!;
+            entity.Controller = null!;
             (entity.GetAllQueryId, entity.GetByIdQueryId, entity.InsertCommandId, entity.UpdateCommandId, entity.DeleteCommandId, entity.ModuleId, entity.SourceDtoId) =
                 (getAllId, getById, insertId, updateId, deleteId, moduleId, sourceDtoId);
 
             _ = await this._writeDbContext.Functionalities.AddAsync(entity, token);
             entity.Module = null!;
-            return await this.SaveChangesAsync(token);
+            var result = await this.SaveChangesAsync(token);
+            return result;
         }
 
         async Task<Result> checkExitance(FunctionalityViewModel model)

@@ -444,7 +444,7 @@ public static class DataServiceHelper
 
         //! Setup transaction
         var transaction = persist && transactionInfo is { } t and { UseTransaction: true }
-            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            ? await CreateTransactionOnDemand(null, dbContext, persist, cancellationToken)
             : null;
 
         //! Execute manipulation
@@ -498,6 +498,8 @@ public static class DataServiceHelper
         static Result<ManipulationResult<TViewModel, TDbEntity?>> getResult(Result result, ManipulationResult<TViewModel, TDbEntity?> entity = default)
             => Result.From(result, entity);
     }
+    public static async Task<IDbContextTransaction?> CreateTransactionOnDemand(this IBusinessService? _, DbContext dbContext, bool persist, CancellationToken token) =>
+        !persist || dbContext.Database.CurrentTransaction != null ? null : await dbContext.Database.BeginTransactionAsync(token);
 
     #endregion CRUD
 
