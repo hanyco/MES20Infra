@@ -338,7 +338,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         entity is null ? null : this._mapper.Map<PropertyViewModel>(entity)
             .ForMember(x => x.TypeFullName = entity.TypeFullName!)
             .ForMember(x => x.Type = PropertyTypeHelper.FromPropertyTypeId(entity.PropertyType))
-            .ForMember(x => x.Dto = this.ToViewModel(entity.Dto));
+            .ForMember(x => x.Dto = this.ToViewModel(entity.Dto))
+            .ForMember(x => x.DbObject = DbObjectViewModel.FromDbFormat(entity.DbObjectId));
 
     [return: NotNullIfNotNull(nameof(CqrsSegregate))]
     public CqrsViewModelBase? ToViewModel(CqrsSegregate? entity) =>

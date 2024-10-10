@@ -34,7 +34,10 @@ public sealed class PropertyViewModel : InfraViewModelBase
     }
 
     public PropertyViewModel(string name, PropertyType type)
-        => (this.Name, this.Type) = (name, type);
+    {
+        (this.Name, this.Type) = (name, type);
+        this._dbObject = new(this.Name, type: PropertyTypeHelper.ToDbTypeName(this.Type));
+    }
 
     public string? Comment
     {

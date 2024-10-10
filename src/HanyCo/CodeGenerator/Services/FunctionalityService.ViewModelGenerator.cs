@@ -135,6 +135,7 @@ internal sealed partial class FunctionalityService
         TypeFullName = data.ViewModel.SourceDto.FullName,
         Dto = data.ViewModel.SourceDto,
         Type = PropertyType.Dto,
+        DbObject = data.ViewModel.SourceDto.DbObject,
     };
 
     private static string GetRootNameSpace(CreationData data) =>
@@ -147,6 +148,7 @@ internal sealed partial class FunctionalityService
         TypeFullName = data.ViewModel.SourceDto.FullName,
         Dto = data.ViewModel.SourceDto,
         Type = PropertyType.Dto,
+        DbObject = data.ViewModel.SourceDto.DbObject,
     };
 
     [DebuggerStepThrough]
@@ -167,7 +169,7 @@ internal sealed partial class FunctionalityService
         return Result.Success<(CreationData, CancellationTokenSource)>((result, tokenSource));
     }
 
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     private static DtoViewModel RawDto(CreationData data)
     {
         // Create an initial DTO based on the input data
