@@ -1,5 +1,4 @@
-﻿using HanyCo.Infra.CodeGen.Domain;
-using HanyCo.Infra.Internals.Data.DataSources;
+﻿using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Validations;
 
@@ -16,12 +15,7 @@ public sealed class PropertyViewModel : InfraViewModelBase
     private PropertyType _type;
     private string? _typeFullName;
 
-    public PropertyViewModel()
-    {
-    }
-
-    public PropertyViewModel(PropertyViewModel original)
-        : base(original.ArgumentNotNull().Id, original.Name)
+    public PropertyViewModel(PropertyViewModel original) : base(original.ArgumentNotNull().Id, original.Name)
     {
         this._type = original._type;
         this._comment = original._comment;
@@ -33,10 +27,20 @@ public sealed class PropertyViewModel : InfraViewModelBase
         this._typeFullName = original._typeFullName;
     }
 
-    public PropertyViewModel(string name, PropertyType type)
+    public PropertyViewModel(string? name, PropertyType type) : this(name) => 
+        this.Type = type;
+
+    public PropertyViewModel(string? name) => 
+        this.Name = name;
+
+    public PropertyViewModel(DbColumnViewModel dbColumnViewModel) : this((DbObjectViewModel)dbColumnViewModel) => 
+        this.IsNullable = dbColumnViewModel.IsNullable;
+
+    public PropertyViewModel(DbObjectViewModel dbColumnViewModel) : this(dbColumnViewModel.Name, PropertyTypeHelper.FromDbType(dbColumnViewModel.Type))
     {
-        (this.Name, this.Type) = (name, type);
-        this._dbObject = new(this.Name, type: PropertyTypeHelper.ToDbTypeName(this.Type));
+        this.TypeFullName = dbColumnViewModel.Type;
+        this.DbObject = dbColumnViewModel;
+        this.Id = dbColumnViewModel.ObjectId;
     }
 
     public string? Comment
@@ -45,10 +49,9 @@ public sealed class PropertyViewModel : InfraViewModelBase
         set => this.SetProperty(ref this._comment, value);
     }
 
-    public DbObjectViewModel? DbObject
+    public DbObjectViewModel DbObject
     {
-        //get => this._dbObject ?? (this.DbObject = new(this.Name, type: this._type.ToDbTypeName()));
-        get => this._dbObject;
+        get => this._dbObject ??= (this._dbObject = new(this.Name, type: this._type.ToDbTypeName()));
         set => this.SetProperty(ref this._dbObject, value);
     }
 
@@ -123,9 +126,9 @@ public sealed class PropertyViewModel : InfraViewModelBase
 
 public static class PropertyViewModelHelper
 {
-    public static PropertyViewModel? FindId(this IEnumerable<PropertyViewModel> properties)
-        => properties.FirstOrDefault(p => p.Name.EqualsTo("Id"));
-
     public static IEnumerable<PropertyViewModel> ExcludeId(this IEnumerable<PropertyViewModel> properties)
         => properties.Where(x => !x.Name.EqualsTo("Id"));
+
+    public static PropertyViewModel? FindId(this IEnumerable<PropertyViewModel> properties)
+            => properties.FirstOrDefault(p => p.Name.EqualsTo("Id"));
 }

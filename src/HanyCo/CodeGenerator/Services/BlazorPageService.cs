@@ -66,22 +66,18 @@ internal sealed class BlazorPageService(
         }
         else
         {
-            var listProp = new PropertyViewModel
+            var listProp = new PropertyViewModel($"{StringHelper.Pluralize(pureName)}ListDto", PropertyType.Dto)
             {
                 Dto = dto,
-                Type = PropertyType.Dto,
                 IsList = true,
                 IsNullable = true,
-                Name = $"{StringHelper.Pluralize(pureName)}ListDto",
                 DbObject = propertyDbObject
             };
-            var detailsProp = new PropertyViewModel
+            var detailsProp = new PropertyViewModel($"{pureName}DetailsDto", PropertyType.Dto)
             {
                 Dto = dto,
-                Type = PropertyType.Dto,
                 IsList = false,
                 IsNullable = true,
-                Name = $"{pureName}DetailsDto",
                 DbObject = propertyDbObject
             };
             result.DataContext = dto.IsViewModel ? dto : new()

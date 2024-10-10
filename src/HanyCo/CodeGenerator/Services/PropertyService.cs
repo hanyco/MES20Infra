@@ -1,4 +1,5 @@
-﻿using HanyCo.Infra.CodeGen.Domain.Services;
+﻿using HanyCo.Infra.CodeGen.Domain;
+using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
@@ -59,7 +60,7 @@ internal sealed class PropertyService : IPropertyService
         {
             foreach (var prop in dbProperties)
             {
-                _ = await this.DeleteAsync(new() { Id = prop.Id, Guid = prop.Guid }, cancellationToken: cancellationToken);
+                _ = await this.DeleteAsync(new(prop.Name, PropertyTypeHelper.FromDbType(prop.TypeFullName)) { Id = prop.Id, Guid = prop.Guid }, cancellationToken: cancellationToken);
             }
         }
     }

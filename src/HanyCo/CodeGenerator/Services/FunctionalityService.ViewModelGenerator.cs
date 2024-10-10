@@ -1,4 +1,5 @@
-﻿using HanyCo.Infra.CodeGen.Domain.ViewModels;
+﻿using HanyCo.Infra.CodeGen.Domain;
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Actors;
 using HanyCo.Infra.CodeGeneration.FormGenerator.Blazor.Components;
 using HanyCo.Infra.CodeGeneration.Helpers;
@@ -124,19 +125,21 @@ internal sealed partial class FunctionalityService
         return model;
     }
 
+    private static PropertyViewModel GetIdDbColumnProperty(CreationData data) =>
+        new(new DbColumnViewModel("Id", -1, PropertyTypeHelper.ToFullTypeName(PropertyType.Long), false)) { Comment = data.COMMENT };
+
     [Obsolete("Mappers are no longer used in this project", true)]
     private static string GetMapperNameSpace(CreationData data)
         => TypePath.Combine(GetRootNameSpace(data), "Mappers");
 
-    private static PropertyViewModel GetPluralizedSourceDtoAsPropertyModel(CreationData data) => new(StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName!)), PropertyType.Dto)
-    {
-        Comment = data.COMMENT,
-        IsList = true,
-        TypeFullName = data.ViewModel.SourceDto.FullName,
-        Dto = data.ViewModel.SourceDto,
-        Type = PropertyType.Dto,
-        DbObject = data.ViewModel.SourceDto.DbObject,
-    };
+    private static PropertyViewModel GetPluralizedSourceDtoAsPropertyModel(CreationData data) =>
+        new(StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName!)), PropertyType.Dto)
+        {
+            Comment = data.COMMENT,
+            IsList = true,
+            Dto = data.ViewModel.SourceDto,
+            DbObject = data.ViewModel.SourceDto.DbObject,
+        };
 
     private static string GetRootNameSpace(CreationData data) =>
         data.ViewModel.SourceDto.NameSpace.TrimSuffix(".Dtos").TrimSuffix(".Dto");
@@ -145,11 +148,14 @@ internal sealed partial class FunctionalityService
     {
         Comment = data.COMMENT,
         IsList = false,
-        TypeFullName = data.ViewModel.SourceDto.FullName,
         Dto = data.ViewModel.SourceDto,
+        TypeFullName = data.ViewModel.SourceDto.FullName,
         Type = PropertyType.Dto,
         DbObject = data.ViewModel.SourceDto.DbObject,
     };
+
+    private static DbColumnViewModel GetDbColumn(string name, PropertyType type, string? dtoFullName = null) => 
+        new(name, -1, PropertyTypeHelper.ToFullTypeName(type, dtoFullName), false);
 
     [DebuggerStepThrough]
     private static Result<(CreationData Data, CancellationTokenSource TokenSource)> InitializeWorkspace(FunctionalityViewModel viewModel, CancellationToken token)
@@ -186,7 +192,7 @@ internal sealed partial class FunctionalityService
     }
 
     private static PropertyViewModel SourceDtoToProperty(CreationData data) =>
-        new() { Comment = data.COMMENT, Name = data.SourceDtoName, Type = PropertyType.Dto, TypeFullName = data.SourceDtoType };
+        new(GetDbColumn(data.SourceDtoName, PropertyType.Dto)) { Comment = data.COMMENT, TypeFullName = data.SourceDtoType };
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
@@ -518,7 +524,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommand.ParamsDto = RawDto(data);
             data.ViewModel.DeleteCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.DeleteCommand.ParamsDto.IsParamsDto = true;
-            data.ViewModel.DeleteCommand.ParamsDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
+            data.ViewModel.DeleteCommand.ParamsDto.Properties.Add(GetIdDbColumnProperty(data));
         }
 
         void createResult(CreationData data)
@@ -578,7 +584,19 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetAllQuery.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetAllQuery.ResultDto.IsResultDto = true;
             data.ViewModel.GetAllQuery.ResultDto.IsList = true;
-            data.ViewModel.GetAllQuery.ResultDto.Properties.Add(GetPluralizedSourceDtoAsPropertyModel(data));
+            try
+            {
+                data.ViewModel.GetAllQuery.ResultDto.Properties.Add(GetPluralizedSourceDtoAsPropertyModel(data));
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+
+            }
         }
 
         static void createHandleMethodBody(CreationData data) =>
@@ -620,7 +638,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQuery.ParamsDto.Name = $"{name}Query";
             data.ViewModel.GetByIdQuery.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQuery.ParamsDto.BaseType = TypePath.New<IRequest>([data.ViewModel.GetByIdQuery.ResultDto.Name!]);
-            data.ViewModel.GetByIdQuery.ParamsDto.Properties.Add(new() { Comment = data.COMMENT, Name = "Id", Type = PropertyType.Long });
+            data.ViewModel.GetByIdQuery.ParamsDto.Properties.Add(new(GetIdDbColumnProperty(data)));
         }
 
         void createResult()
@@ -682,7 +700,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommand.ResultDto = RawDto(data);
             data.ViewModel.InsertCommand.ResultDto.Name = $"{name}CommandResult";
             data.ViewModel.InsertCommand.ResultDto.IsResultDto = true;
-            data.ViewModel.InsertCommand.ResultDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.InsertCommand.ResultDto.Properties.Add(GetIdDbColumnProperty(data));
         }
 
         void setupSecurity(CreationData data) =>
@@ -728,7 +746,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommand.ParamsDto = RawDto(data);
             data.ViewModel.UpdateCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.UpdateCommand.ParamsDto.IsParamsDto = true;
-            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(new("Id", PropertyType.Long) { Comment = data.COMMENT });
+            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(GetIdDbColumnProperty(data));
             data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
         }
 

@@ -117,9 +117,8 @@ public partial class DtoEditUserControl : UserControl,
             return;
         }
 
-        this.ViewModel.NotNull(nameof(this.ViewModel)).Properties.Add(new()
+        this.ViewModel.NotNull(nameof(this.ViewModel)).Properties.Add(new($"NewProperty", Internals.Data.DataSources.PropertyType.String)
         {
-            Name = $"NewProperty",
             Id = --this._maxPropId
         });
     }

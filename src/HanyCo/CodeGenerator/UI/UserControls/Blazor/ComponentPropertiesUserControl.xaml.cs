@@ -97,7 +97,7 @@ public partial class ComponentPropertiesUserControl
         var controlType = ControlTypeHelper.ByDtoViewModel(dto);
         _ = this.SelectedProperty.NotNull(nameof(this.SelectedProperty))
                                  .ForMember(x => x.ControlType = controlType)
-                                 .ForMember(x => x.Property ??= new())
+                                 .ForMember(x => x.Property ??= new(this.SelectedProperty.Name, PropertyType.Dto))
                                  .Property
                                  .ForMember(x => x.Dto = dto)
                                  .ForMember(x => x.Name = dto.Name)

@@ -239,12 +239,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel) =>
         columnViewModel == null
             ? null
-            : new()
+            : new(columnViewModel)
             {
-                DbObject = columnViewModel,
-                Name = columnViewModel.Name,
-                Type = PropertyTypeHelper.FromDbType(columnViewModel.DbType),
-                IsNullable = columnViewModel.IsNullable,
                 Id = columnViewModel.ObjectId * -1
             };
 

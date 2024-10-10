@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
+using HanyCo.Infra.CodeGen.Domain;
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Exceptions;
@@ -65,7 +66,7 @@ public partial class DtoDetailsPage
     }
 
     private void AddColumnToDto(in DbColumnViewModel column)
-        => this.ViewModel.NotNull().Properties.Add(new()
+        => this.ViewModel.NotNull().Properties.Add(new(Name = column.Name, PropertyTypeHelper.FromDbType(column.DbType))
         {
             IsNullable = column.IsNullable,
             Name = column.Name,
