@@ -15,6 +15,10 @@ public sealed class PropertyViewModel : InfraViewModelBase
     private PropertyType _type;
     private string? _typeFullName;
 
+    public PropertyViewModel()
+    {
+        
+    }
     public PropertyViewModel(PropertyViewModel original) : base(original.ArgumentNotNull().Id, original.Name)
     {
         this._type = original._type;

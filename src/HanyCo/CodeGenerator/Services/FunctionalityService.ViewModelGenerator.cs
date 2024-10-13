@@ -192,7 +192,7 @@ internal sealed partial class FunctionalityService
     }
 
     private static PropertyViewModel SourceDtoToProperty(CreationData data) =>
-        new(GetDbColumn(data.SourceDtoName, PropertyType.Dto)) { Comment = data.COMMENT, TypeFullName = data.SourceDtoType };
+        new(GetDbColumn(data.SourceDtoName, PropertyType.Dto, data.SourceDtoType)) { Comment = data.COMMENT, TypeFullName = data.SourceDtoType };
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
@@ -588,14 +588,9 @@ internal sealed partial class FunctionalityService
             {
                 data.ViewModel.GetAllQuery.ResultDto.Properties.Add(GetPluralizedSourceDtoAsPropertyModel(data));
             }
-            catch (Exception)
+            catch
             {
-
                 throw;
-            }
-            finally
-            {
-
             }
         }
 
@@ -646,7 +641,15 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQuery.ResultDto = RawDto(data);
             data.ViewModel.GetByIdQuery.ResultDto.Name = $"{name}QueryResult";
             data.ViewModel.GetByIdQuery.ResultDto.IsResultDto = true;
-            data.ViewModel.GetByIdQuery.ResultDto.Properties.Add(SourceDtoToProperty(data));
+            try
+            {
+                data.ViewModel.GetByIdQuery.ResultDto.Properties.Add(SourceDtoToProperty(data));
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         void setupSecurity(CreationData data) =>
