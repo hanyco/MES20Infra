@@ -8,6 +8,8 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="MediatR" Version="12.4.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.10" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Bcl\src\CoreLib\CoreLib.csproj" />
