@@ -7,4 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Domain.Identity;
-public class ApplicationUser : IdentityUser;
+public class ApplicationUser : IdentityUser
+{
+    public string DisplayName { get; set; }
+}

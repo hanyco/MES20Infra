@@ -205,8 +205,7 @@ public static class MesSecurityConfiguration
         static void addTools(IServiceCollection services) =>
             services.AddScoped<CustomAuthenticationStateProvider>()
                 .AddScoped<AuthenticationStateProvider>(x => x.GetRequiredService<CustomAuthenticationStateProvider>())
-                .AddScoped<ISecurityService, SecurityService>()
-                    ;
+                .AddScoped<ISecurityService, SecurityService>();
     }
 
     public static IApplicationBuilder UseMesSecurityInfraMiddleware(this IApplicationBuilder app) =>

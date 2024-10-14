@@ -9,7 +9,6 @@
       "src\\Domain\\Domain.csproj",
       "src\\HanyCo\\Domain\\Domain.csproj",
       "src\\HanyCo\\Infrastructure\\Infrastructure.csproj",
-      "src\\HanyCo\\Security\\Security.csproj",
       "src\\Presentation\\API\\API.csproj",
       "src\\Presentation\\Web.UI\\Web.UI.Client\\Web.UI.Client.csproj",
       "src\\Presentation\\Web.UI\\Web.UI\\Web.UI.csproj"
