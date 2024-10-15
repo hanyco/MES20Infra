@@ -8,6 +8,7 @@ public sealed class UiPropertyViewModel : UiComponentContentViewModelBase, Front
     private ControlType? _controlType;
     private bool _isParameter;
     private PropertyViewModel? _property;
+
     public UiComponentViewModel Component { get => this._component ??= new(); set => this.SetProperty(ref this._component, value); }
 
     public ControlType? ControlType { get => this._controlType; set => this.SetProperty(ref this._controlType, value); }

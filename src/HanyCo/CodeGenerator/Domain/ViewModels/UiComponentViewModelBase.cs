@@ -1,6 +1,4 @@
-﻿#nullable disable
-
-using HanyCo.Infra.CodeGeneration.Definitions;
+﻿using HanyCo.Infra.CodeGeneration.Definitions;
 
 using Library.CodeGeneration;
 

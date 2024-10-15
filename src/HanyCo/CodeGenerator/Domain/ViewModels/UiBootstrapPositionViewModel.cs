@@ -1,16 +1,14 @@
-﻿
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-
-using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
+﻿using HanyCo.Infra.CodeGeneration.FormGenerator.Html.Elements;
 
 using Library.Mapping;
 using Library.Validations;
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+
 namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
-/// <summary> <seealso cref="InfraViewModelBase" /> <seealso
-/// cref="IComparable" /> <seealso
+/// <summary> <seealso cref="InfraViewModelBase" /> <seealso cref="IComparable" /> <seealso
 /// cref="IComparable{UiBootstrapPositionViewModel}" />
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparable, IComparable<UiBootstrapPositionViewModel>
@@ -19,10 +17,10 @@ public sealed class UiBootstrapPositionViewModel : InfraViewModelBase, IComparab
 
     private int? _col;
     private int? _colSpan;
+    private int? _offset;
     private int? _order;
     private int? _row;
     private int? _rowSpan;
-    private int? _offset;
 
     #endregion Fields
 

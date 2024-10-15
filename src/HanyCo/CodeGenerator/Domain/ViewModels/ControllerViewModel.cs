@@ -25,8 +25,8 @@ public sealed class ControllerMethodViewModel : InfraViewModelBase
 
     public TypePath? ReturnType { get; set; }
 
-    public static ControllerMethodViewModel New([DisallowNull] in string name)
-        => new() { Name = name };
+    public static ControllerMethodViewModel New([DisallowNull] in string name) => 
+        new() { Name = name };
 }
 
 [ViewModel]
