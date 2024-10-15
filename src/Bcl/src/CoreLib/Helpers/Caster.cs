@@ -1,8 +1,8 @@
-﻿using System.Collections;
+﻿using Library.Validations;
+
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-
-using Library.Validations;
 
 namespace Library.Helpers;
 

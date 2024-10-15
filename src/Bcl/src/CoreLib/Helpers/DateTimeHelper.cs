@@ -1,7 +1,7 @@
-﻿using System.Globalization;
-
-using Library.Globalization.DataTypes;
+﻿using Library.Globalization.DataTypes;
 using Library.Validations;
+
+using System.Globalization;
 
 namespace Library.Helpers;
 
@@ -25,23 +25,23 @@ public static class DateTimeHelper
             out int hour,
             out int minute,
             out int second,
-            out int millisecond)
-            => (year, month, day, hour, minute, second, millisecond) = (dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, dt.Millisecond);
+            out int millisecond) =>
+        (year, month, day, hour, minute, second, millisecond) = (dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, dt.Millisecond);
 
     /// <summary>
     /// Deconstructs a DateTime object into its year, month, and day components.
     /// </summary>
-    public static void Deconstruct(this DateTime dt, out int year, out int month, out int day)
-        => Deconstruct(dt, out year, out month, out day, out _, out _, out _, out _);
+    public static void Deconstruct(this DateTime dt, out int year, out int month, out int day) =>
+        Deconstruct(dt, out year, out month, out day, out _, out _, out _, out _);
 
     /// <summary>
     /// Deconstructs a DateTime object into its hour, minute, second, and millisecond components.
     /// </summary>
-    public static void Deconstruct(this DateTime dt, out int hour, out int minute, out int second, out int millisecond)
-         => (hour, minute, second, millisecond) = (dt.Hour, dt.Minute, dt.Second, dt.Millisecond);
+    public static void Deconstruct(this DateTime dt, out int hour, out int minute, out int second, out int millisecond) =>
+        (hour, minute, second, millisecond) = (dt.Hour, dt.Minute, dt.Second, dt.Millisecond);
 
-    public static DateOnly GetDateOnly(this DateTime dt)
-        => DateOnly.FromDateTime(dt);
+    public static DateOnly GetDateOnly(this DateTime dt) =>
+        DateOnly.FromDateTime(dt);
 
     public static TimeBand GetTimeBand(this TimeOnly source) =>
         source.Hour switch
@@ -52,8 +52,8 @@ public static class DateTimeHelper
             _ => TimeBand.Eveningrush
         };
 
-    public static TimeOnly GetTimeOnly(this DateTime dt)
-            => TimeOnly.FromDateTime(dt);
+    public static TimeOnly GetTimeOnly(this DateTime dt) =>
+        TimeOnly.FromDateTime(dt);
 
     /// <summary>
     /// Determines whether this instance start is between.
@@ -103,8 +103,8 @@ public static class DateTimeHelper
     /// <returns>
     /// True if the given dateTime is a weekend day according to the given culture, false otherwise.
     /// </returns>
-    public static bool IsWeekend([DisallowNull] this DateTime dateTime, CultureInfo? culture = null)
-        => (culture ?? CultureInfo.CurrentCulture).GetWeekdayState(dateTime.ArgumentNotNull(nameof(dateTime)).DayOfWeek)
+    public static bool IsWeekend([DisallowNull] this DateTime dateTime, CultureInfo? culture = null) =>
+        (culture ?? CultureInfo.CurrentCulture).GetWeekdayState(dateTime.ArgumentNotNull().DayOfWeek)
             is CultureInfoHelper.WeekdayState.Weekend or CultureInfoHelper.WeekdayState.WorkdayMorning;
 
     /// <summary>
@@ -128,6 +128,6 @@ public static class DateTimeHelper
     /// </summary>
     /// <param name="source">The source.</param>
     /// <returns></returns>
-    public static TimeSpan ToTimeSpan(this DateTime source)
-        => new(source.Ticks);
+    public static TimeSpan ToTimeSpan(this DateTime source) =>
+        new(source.Ticks);
 }

@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Linq.Expressions;
-
-using Library.Data.Markers;
+﻿using Library.Data.Markers;
 using Library.Results;
 using Library.Validations;
 
@@ -9,14 +6,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 
+using System.Diagnostics;
+using System.Linq.Expressions;
+
 namespace Library.Helpers;
 
 [DebuggerStepThrough]
 [StackTraceHidden]
 public static class DbContextHelper
 {
-    public static IDbContextTransaction BeginTransaction(this DbContext dbContext)
-        => dbContext.ArgumentNotNull().Database.BeginTransaction();
+    public static IDbContextTransaction BeginTransaction(this DbContext dbContext) =>
+        dbContext.ArgumentNotNull().Database.BeginTransaction();
 
     /// <summary>
     /// Asynchronously starts a new transaction.
@@ -46,8 +46,8 @@ public static class DbContextHelper
     /// <exception cref="OperationCanceledException">
     /// If the <see cref="CancellationToken"/> is canceled.
     /// </exception>
-    public static Task<IDbContextTransaction> BeginTransactionAsync(this DbContext dbContext, CancellationToken cancellationToken = default)
-        => dbContext.ArgumentNotNull().Database.BeginTransactionAsync(cancellationToken);
+    public static Task<IDbContextTransaction> BeginTransactionAsync(this DbContext dbContext, CancellationToken cancellationToken = default) =>
+        dbContext.ArgumentNotNull().Database.BeginTransactionAsync(cancellationToken);
 
     /// <summary>
     /// Commits the transaction asynchronously.
@@ -60,7 +60,7 @@ public static class DbContextHelper
         Check.MustBeArgumentNotNull(dbContext);
         try
         {
-            await dbContext.ArgumentNotNull().Database.CommitTransactionAsync(cancellationToken);
+            await dbContext.Database.CommitTransactionAsync(cancellationToken);
             return Result.Succeed;
         }
         catch (Exception ex)
@@ -97,8 +97,7 @@ public static class DbContextHelper
     /// <param name="queryExpression">The query expression.</param>
     /// <returns>A Func that can be used to execute the query.</returns>
     public static Func<Task<TResult?>> CompileAsyncQuery<TDbContext, TResult>(
-            this TDbContext db,
-            Expression<Func<TDbContext, TResult?>> queryExpression)
+            this TDbContext db, Expression<Func<TDbContext, TResult?>> queryExpression)
             where TDbContext : DbContext =>
         () => EF.CompileAsyncQuery(queryExpression)(db);
 
@@ -149,8 +148,8 @@ public static class DbContextHelper
     /// <returns>The detached entity.</returns>
     public static TDbContext Detach<TDbContext, TEntity>([DisallowNull] this TDbContext dbContext, [DisallowNull] in TEntity entity)
             where TDbContext : notnull, DbContext
-            where TEntity : class, IIdenticalEntity<long>
-            => dbContext.SetStateOf(entity, EntityState.Detached);
+            where TEntity : class, IIdenticalEntity<long> =>
+        dbContext.SetStateOf(entity, EntityState.Detached);
 
     /// <summary>
     /// Detaches a collection of entities from the DbContext.
@@ -184,8 +183,8 @@ public static class DbContextHelper
     public static TDbContext Detach<TDbContext, TEntity, TId>([DisallowNull] TDbContext dbContext, [DisallowNull] in TEntity entity)
             where TDbContext : notnull, DbContext
             where TEntity : class, IIdenticalEntity<TId>
-            where TId : notnull
-            => SetStateOf<TDbContext, TEntity, TId>(dbContext, entity, EntityState.Detached);
+            where TId : notnull =>
+        SetStateOf<TDbContext, TEntity, TId>(dbContext, entity, EntityState.Detached);
 
     /// <summary>
     /// Detaches the specified entity from the specified DbContext.
@@ -404,8 +403,8 @@ public static class DbContextHelper
     /// <param name="detach">Whether to detach the entities from the DbContext.</param>
     /// <returns>The DbContext.</returns>
     public static DbContext RemoveById<TEntity>([DisallowNull] this DbContext dbContext, in IEnumerable<long> ids, bool detach = false)
-            where TEntity : class, IIdenticalEntity<long>, new()
-            => RemoveById<TEntity, long>(dbContext, ids, detach);
+            where TEntity : class, IIdenticalEntity<long>, new() =>
+        RemoveById<TEntity, long>(dbContext, ids, detach);
 
     /// <summary>
     /// Removes entities from the database by their Ids.
