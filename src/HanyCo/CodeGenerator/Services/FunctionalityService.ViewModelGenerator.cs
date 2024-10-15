@@ -125,6 +125,9 @@ internal sealed partial class FunctionalityService
         return model;
     }
 
+    private static DbColumnViewModel GetDbColumn(string name, PropertyType type, string? dtoFullName = null) =>
+        new(name, -1, PropertyTypeHelper.ToFullTypeName(type, dtoFullName), false);
+
     private static PropertyViewModel GetIdDbColumnProperty(CreationData data) =>
         new(new DbColumnViewModel("Id", -1, PropertyTypeHelper.ToFullTypeName(PropertyType.Long), false)) { Comment = data.COMMENT };
 
@@ -153,9 +156,6 @@ internal sealed partial class FunctionalityService
         Type = PropertyType.Dto,
         DbObject = data.ViewModel.SourceDto.DbObject,
     };
-
-    private static DbColumnViewModel GetDbColumn(string name, PropertyType type, string? dtoFullName = null) => 
-        new(name, -1, PropertyTypeHelper.ToFullTypeName(type, dtoFullName), false);
 
     [DebuggerStepThrough]
     private static Result<(CreationData Data, CancellationTokenSource TokenSource)> InitializeWorkspace(FunctionalityViewModel viewModel, CancellationToken token)
@@ -647,7 +647,6 @@ internal sealed partial class FunctionalityService
             }
             catch (Exception ex)
             {
-
                 throw;
             }
         }

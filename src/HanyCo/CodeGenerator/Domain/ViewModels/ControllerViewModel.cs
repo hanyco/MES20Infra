@@ -39,9 +39,9 @@ public sealed class ControllerViewModel : InfraViewModelBase, ICodeBase
     public HashSet<ControllerMethodViewModel> Apis { get; } = [];
     public HashSet<(MethodArgument Argument, bool IsField)> CtorParams { get; } = [];
     public bool IsAnonymousAllow { get => this._isAnonymousAllow; set => this.SetProperty(ref this._isAnonymousAllow, value); }
+    public ModuleViewModel Module { get; set; }
     public string NameSpace { get => this._nameSpace; set => this.SetProperty(ref this._nameSpace, value); }
     public string Route { get => this._route; set => this.SetProperty(ref this._route, value); }
-    public ModuleViewModel Module { get; set; }
 }
 
 public static class ApiExtensions
