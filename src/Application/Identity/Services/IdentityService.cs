@@ -18,6 +18,7 @@ using Application.Interfaces.Shared;
 using Application.DTOs.Settings;
 using Application.DTOs.Identity;
 using Library.Validations;
+using HanyCo.Infra.Exceptions;
 
 namespace Application.Identity.Services;
 public class IdentityService(
@@ -361,8 +362,8 @@ public class IdentityService(
     {
         var currentUser = _authenticatedUser.UserId;
         var user = await _userManager.FindByIdAsync(currentUser);
-        if (user == null) throw new ApiException($"No Accounts founded with this Id.");
-        //string resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+        if (user == null) throw new MesException($"No Accounts founded with this Id.");
+        string resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
         var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
         await _signInManager.RefreshSignInAsync(user);
 
@@ -372,7 +373,7 @@ public class IdentityService(
         }
         else
         {
-            throw new ApiException($"Error occured while changing the password.");
+            throw new MesException($"Error occured while changing the password.");
         }
     }
 }
