@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<ItemGroup>
+    <ProjectReference Include="..\..\..\Application\Application.csproj" />
+    <ProjectReference Include="..\..\..\Bcl\src\CoreLib\CoreLib.csproj" />
+    <ProjectReference Include="..\..\..\Bcl\src\CqrsLib\CqrsLib.csproj" />
+    <ProjectReference Include="..\..\..\Bcl\src\WebLib\WebLib.csproj" />
+    <ProjectReference Include="..\..\..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\..\HanyCo\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Web.UI.Client\Web.UI.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.10" />
+  </ItemGroup>
+
+</Project>
