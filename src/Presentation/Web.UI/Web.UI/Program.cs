@@ -1,4 +1,5 @@
-using HanyCo.Infra.Security.Client.Providers;
+using System.Runtime.Versioning;
+
 
 using Library.Validations;
 
@@ -15,7 +16,6 @@ builder.Services.AddRazorComponents()
 builder.Services
     .AddAuthorization()
     .AddAuthentication();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 builder.Services.AddMemoryCache();
 

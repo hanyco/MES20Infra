@@ -32,6 +32,5 @@
 		<ProjectReference Include="..\..\Bcl\src\CoreLib\CoreLib.csproj" />
 		<ProjectReference Include="..\..\Bcl\src\CqrsLib\CqrsLib.csproj" />
 		<ProjectReference Include="..\..\Bcl\src\WebLib\WebLib.csproj" />
-		<ProjectReference Include="..\Security\Security.csproj" />
 	</ItemGroup>
 </Project>

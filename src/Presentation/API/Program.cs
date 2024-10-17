@@ -22,7 +22,7 @@ public class Program
         builder.Services.AddControllers();
         
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        //builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
 
@@ -30,7 +30,7 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            //app.UseSwaggerUI();
         }
 
         app.UseAuthorization();

@@ -1,6 +1,4 @@
-﻿using HanyCo.Infra.Security;
-using HanyCo.Infra.Security.Model;
-using HanyCo.Infra.Web.Middlewares;
+﻿using HanyCo.Infra.Web.Middlewares;
 
 using Library.Data.Ado;
 using Library.Data.SqlServer;
@@ -21,14 +19,10 @@ public static class MesInfraConfiguration
                 .AddScoped(_ => new Sql(connectionString!))
                 .AddScoped<AdoGenericRepository>()
                 .AddSingleton<IMapper, Mapper>()
-                .AddHttpContextAccessor()
-                .AddMesInfraSecurityServices(ISecurityConfigOptions.New(connectionString!))
-                ;
+                .AddHttpContextAccessor();
     }
 
     public static IApplicationBuilder UseMesInfraMiddleware(this IApplicationBuilder app)
         => app.UseMiddleware<LicenseManagerMiddleware>()
-            .UseMiddleware<InterceptorMiddleware>()
-            .UseMesSecurityInfraMiddleware()
-            ;
+            .UseMiddleware<InterceptorMiddleware>();
 }

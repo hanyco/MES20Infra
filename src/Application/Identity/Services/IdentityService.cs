@@ -19,6 +19,7 @@ using Application.DTOs.Settings;
 using Application.DTOs.Identity;
 using Library.Validations;
 using HanyCo.Infra.Exceptions;
+using Application.Interfaces;
 
 namespace Application.Identity.Services;
 public class IdentityService(
@@ -131,56 +132,21 @@ public class IdentityService(
     {
         //if (!_authenticatedUser.User.IsInRole(Roles.SuperAdmin.ToString()))
         //{
-        //    throw new ApiException($"Only SuperAdmin Can Update User !");
+        //    throw new MesException($"Only SuperAdmin Can Update User !");
         //}
         // request.Role = Roles.Moderator;
         var userWithSameId = await _userManager.FindByIdAsync(request.Id) ?? throw new MesException($"UserId '{request.Id}' not found!");
-        if (request.ProfilePicture == null)
-        {
-            userWithSameId.ProfilePicture = "%5CUsers%5Cuser-placeholder.jpg";
-        }
-        userWithSameId.ProfilePicture = request.ProfilePicture;
         userWithSameId.DisplayName = request.DisplayName;
         userWithSameId.UserName = request.UserName;
         userWithSameId.Email = request.Email;
-        userWithSameId.UserLevelId = request.UserLevelId;
         userWithSameId.PhoneNumber = request.PhoneNumber;
-        userWithSameId.TelephoneNumber = request.TelephoneNumber;
-        userWithSameId.Address = request.Address;
-        userWithSameId.FatherName = request.FatherName;
-        userWithSameId.NationalCode = request.NationalCode;
-        userWithSameId.BankName = request.BankName;
-        userWithSameId.CardNumber = request.CardNumber;
-        userWithSameId.AccountNumber = request.AccountNumber;
-        userWithSameId.IdNumber = request.IdNumber;
-        userWithSameId.BrithDate = request.BrithDate;
-        userWithSameId.GenderId = request.GenderId;
-        userWithSameId.DrivingLicenseTypeId = request.DrivingLicenseTypeId;
-        userWithSameId.Issued = request.Issued;
-        userWithSameId.DrivingLicenseDate = request.DrivingLicenseDate;
-        userWithSameId.DrivingLicenseEXPDate = request.DrivingLicenseEXPDate;
-        userWithSameId.DrivingLicenseNumber = request.DrivingLicenseNumber;
-        userWithSameId.IsActive = request.IsActive;
-        userWithSameId.PersonnelCode = request.PersonnelCode;
-        userWithSameId.SettlementDate = request.SettlementDate;
-        userWithSameId.EmployeementDate = request.EmployeementDate;
-        userWithSameId.BirthPlace = request.BirthPlace;
-        userWithSameId.JobCode = request.JobCode;
-        userWithSameId.ChildCount = request.ChildCount;
-        userWithSameId.ServiceLocationId = request.ServiceLocationId;
-        userWithSameId.JobPositionId = request.JobPositionId;
-        userWithSameId.UserGroupId = request.UserGroupId;
-        userWithSameId.SmartCardFromDate = request.SmartCardFromDate;
-        userWithSameId.SmartCardToDate = request.SmartCardToDate;
-        userWithSameId.SmartCardNumber = request.SmartCardNumber;
-
-
+        
         var result = await _userManager.UpdateAsync(userWithSameId);
         if (!result.Succeeded)
         {
 
 
-            throw new ApiException($"User Update Error !");
+            throw new MesException($"User Update Error !");
         }
         //   var roles = await _userManager.GetRolesAsync(userWithSameId);
         // await _userManager.RemoveFromRolesAsync(userWithSameId, roles);
@@ -193,12 +159,12 @@ public class IdentityService(
     {
         //if (!_authenticatedUser.User.IsInRole(Roles.SuperAdmin.ToString()))
         //{
-        //    throw new ApiException($"Only SuperAdmin Can Remove User !");
+        //    throw new MesException($"Only SuperAdmin Can Remove User !");
         //}
         var userWithSameId = await _userManager.FindByIdAsync(Id);
         if (userWithSameId == null)
         {
-            throw new ApiException($"UserId '{Id}' not found!");
+            throw new MesException($"UserId '{Id}' not found!");
         }
         await _userManager.DeleteAsync(userWithSameId);
         await ClearCache();
@@ -220,7 +186,7 @@ public class IdentityService(
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            throw new ApiException($"UserId '{userId}' not found!");
+            throw new MesException($"UserId '{userId}' not found!");
         }
 
         var result = new UserInfoExResponse()
@@ -236,16 +202,11 @@ public class IdentityService(
 
     public async Task<Result<string>> RegisterAsync(RegisterRequest request, string origin)
     {
-
-        //if (!_authenticatedUser.User.IsInRole(Roles.SuperAdmin.ToString()))
-        //{
-        //    throw new ApiException($"Only SuperAdmin Can Create User !");
-        //}
-        request.Role = Roles.Basic;
+        //request.Role = Roles.Basic;
         var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
         if (userWithSameUserName != null)
         {
-            throw new ApiException($"Username '{request.UserName}' is already taken.");
+            throw new MesException($"Username '{request.UserName}' is already taken.");
         }
         if (request.ProfilePicture == null)
         {
@@ -263,21 +224,17 @@ public class IdentityService(
         if (result.Succeeded)
         {
 
-            await _userManager.AddToRoleAsync(user, request.Role.ToString());
-            //var verificationUri = await SendVerificationEmail(user, origin);
-            //TODO: Attach Email Service here and configure it via appsettings
-            //await _mailService.SendAsync(new MailRequest() { From = "mail@codewithmukesh.com", To = user.Email, Body = $"Please confirm your account by <a href='{verificationUri}'>clicking here</a>.", Subject = "Confirm Registration" });
-            //return Result<string>.Success(user.Id, message: $"User Registered. Confirmation Mail has been delivered to your Mailbox. (DEV) Please confirm your account by visiting this URL {verificationUri}");
+            //await _userManager.AddToRoleAsync(user, request.Role.ToString());
             await ClearCache();
-            // _userManager.confir
 
-            return Result.Success<string>(user.Id, message: $"User {request.Role} Registered.");
+            //return Result.Success<string>(user.Id, message: $"User {request.Role} Registered.");
+            return Result.Success<string>(user.Id, message: $"User Registered.");
 
         }
         else
         {
 
-            throw new ApiException($"{result.Errors}");
+            throw new MesException($"{result.Errors}");
         }
     }
 
@@ -304,33 +261,19 @@ public class IdentityService(
         }
         else
         {
-            throw new ApiException($"An error occurred while confirming {user.Email}.");
+            throw new MesException($"An error occurred while confirming {user.Email}.");
         }
     }
 
-    public async Task ForgotPassword(ForgotPasswordRequest model, string origin)
+    public Task ForgotPassword(ForgotPasswordRequest model, string origin)
     {
-        var account = await _userManager.FindByEmailAsync(model.Email);
-
-        // always return ok response to prevent email enumeration
-        if (account == null) return;
-
-        var code = await _userManager.GeneratePasswordResetTokenAsync(account);
-        var route = "api/identity/reset-password/";
-        var _enpointUri = new Uri(string.Concat($"{origin}/", route));
-        var emailRequest = new MailRequest()
-        {
-            Body = $"You reset token is - {code}",
-            To = model.Email,
-            Subject = "Reset Password",
-        };
-        //await _mailService.SendAsync(emailRequest);
+        return Task.CompletedTask;
     }
 
     public async Task<Result<string>> ResetPassword(ResetPasswordRequest model)
     {
         var account = await _userManager.FindByEmailAsync(model.Email);
-        if (account == null) throw new ApiException($"No Accounts Registered with {model.Email}.");
+        if (account == null) throw new MesException($"No Accounts Registered with {model.Email}.");
         var result = await _userManager.ResetPasswordAsync(account, model.Token, model.Password);
         if (result.Succeeded)
         {
@@ -338,13 +281,13 @@ public class IdentityService(
         }
         else
         {
-            throw new ApiException($"Error occurred while resetting the password.");
+            throw new MesException($"Error occurred while resetting the password.");
         }
     }
     public async Task<Result<string>> ChangePassword(ChangePasswordRequest model)
     {
         var user = await _userManager.FindByIdAsync(model.Id);
-        if (user == null) throw new ApiException($"No Accounts founded with {model.Id}.");
+        if (user == null) throw new MesException($"No Accounts founded with {model.Id}.");
         string resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
         var result = await _userManager.ResetPasswordAsync(user, resetToken, model.Password);
 
@@ -354,7 +297,7 @@ public class IdentityService(
         }
         else
         {
-            throw new ApiException($"Error occured while changing the password.");
+            throw new MesException($"Error occured while changing the password.");
         }
     }
 

@@ -49,6 +49,5 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.8" />
 		<PackageReference Include="System.CodeDom" Version="8.0.0" />
-		<PackageReference Include="System.Drawing.Common" Version="8.0.8" />
 	</ItemGroup>
 </Project>

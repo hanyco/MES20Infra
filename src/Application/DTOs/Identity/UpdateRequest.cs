@@ -49,7 +49,7 @@ public class UpdateRequest
     public string PersonnelCode { get; set; }
     public string PhoneNumber { get; set; }
     public string ProfilePicture { get; set; }
-    public Roles? Role { get; set; }
+    //public Roles? Role { get; set; }
 
     public int? ServiceLocationId { get; set; }
 
