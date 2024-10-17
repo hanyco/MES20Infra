@@ -9,7 +9,9 @@ using Application.Interfaces.Shared;
 
 using Domain.Identity;
 
+using Library.Data.SqlServer;
 using Library.Results;
+using Library.Validations;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -27,6 +29,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddContextInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        _ = services.AddScoped(_ => new Sql(configuration.GetConnectionString("ApplicationConnectionString").NotNull(() => "Connection String not found.")));
+
         _ = services.AddDbContext<IdentityContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityConnectionString"), op => op.CommandTimeout(120)));
         _ = services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         {
@@ -43,12 +47,8 @@ public static class ServiceCollectionExtensions
             .AddDefaultUI()
             .AddDefaultTokenProviders();
 
-        #region Services
-
         _ = services.AddTransient<IIdentityService, IdentityService>();
         _ = services.AddTransient<ISecurityService, SecurityService>();
-
-        #endregion Services
 
         // Configuration for JWT authentication and handling
         _ = services
@@ -102,14 +102,14 @@ public static class ServiceCollectionExtensions
     private static void RegisterSwagger(this IServiceCollection services) =>
         services.AddSwaggerGen(c =>
         {
-            //TODO - Lowercase Swagger Documents
+            // TODO - Lowercase Swagger Documents
             //c.DocumentFilter<LowercaseDocumentFilter>();
-            //Refer - https://gist.github.com/rafalkasa/01d5e3b265e5aa075678e0adfd54e23f
-            c.IncludeXmlComments(string.Format(@"{0}\GsTechCoreV1.Api.xml", System.AppDomain.CurrentDomain.BaseDirectory));
+            // Refer - https://gist.github.com/rafalkasa/01d5e3b265e5aa075678e0adfd54e23f
+            //c.IncludeXmlComments(string.Format(@"{0}\Api.xml", System.AppDomain.CurrentDomain.BaseDirectory));
             c.SwaggerDoc("v1", new OpenApiInfo
             {
                 Version = "v1",
-                Title = "GsTechCoreV1",
+                Title = "MES 2.0",
                 License = new OpenApiLicense()
                 {
                     Name = "MIT License",
@@ -127,19 +127,19 @@ public static class ServiceCollectionExtensions
             });
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
+                {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
+                        Reference = new OpenApiReference
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer",
-                            },
-                            Scheme = "Bearer",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-                        }, new List<string>()
-                    },
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer",
+                        },
+                        Scheme = "Bearer",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                    }, new List<string>()
+                },
             });
         });
 }

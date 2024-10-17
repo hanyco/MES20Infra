@@ -520,6 +520,8 @@ Global
 		SolutionGuid = {0DDED198-E3DD-4EBE-A422-523E4983E3BE}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Presentation\Web.UI\Web.UI.SharedProject\Web.UI.SharedProject.projitems*{9ec14645-e837-4444-9c98-bfe7f1885223}*SharedItemsImports = 5
 		src\Presentation\Web.UI\Web.UI.SharedProject\Web.UI.SharedProject.projitems*{e50d6fbb-8752-43b6-817a-8f37012565e7}*SharedItemsImports = 13
+		src\Presentation\Web.UI\Web.UI.SharedProject\Web.UI.SharedProject.projitems*{f4614749-66db-4f1d-8989-56c435342bd0}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

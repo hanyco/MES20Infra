@@ -4,10 +4,12 @@ using System;
 using System.Threading.Tasks;
 using HumanResources.Dtos;
 using Library.Results;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HumanResources.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("[controller]")]
+[Authorize]
 public sealed class PersonController : ControllerBase
 {
     private IMediator _mediator;

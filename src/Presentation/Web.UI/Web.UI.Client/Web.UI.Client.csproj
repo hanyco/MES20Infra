@@ -12,4 +12,6 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
 	</ItemGroup>
 
+	<Import Project="..\Web.UI.SharedProject\Web.UI.SharedProject.projitems" Label="Shared" />
+
 </Project>
