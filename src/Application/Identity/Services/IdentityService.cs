@@ -47,8 +47,6 @@ public class IdentityService(
         var user = await _userManager.FindByNameAsync(request.UserName);
         Check.MustBeNotNull(user, () => $"No Accounts Registered with {request.UserName}.");
         var result = await _signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
-        //Throw.Exception.IfFalse(user.EmailConfirmed, $"Email is not confirmed for '{request.UserName}'.");
-        //Throw.Exception.IfFalse(user.IsActive, $"Account for '{request.UserName}' is not active. Please contact the Administrator.");
         Check.MustBe(result.Succeeded, () => $"Invalid Credentials for '{request.UserName}'.");
         JwtSecurityToken jwtSecurityToken = await GenerateJWToken(user, ipAddress);
         var response = new TokenResponse
@@ -207,10 +205,6 @@ public class IdentityService(
         if (userWithSameUserName != null)
         {
             throw new MesException($"Username '{request.UserName}' is already taken.");
-        }
-        if (request.ProfilePicture == null)
-        {
-            request.ProfilePicture = "%5CUsers%5Cuser-placeholder.jpg";
         }
         var user = new ApplicationUser
         {
