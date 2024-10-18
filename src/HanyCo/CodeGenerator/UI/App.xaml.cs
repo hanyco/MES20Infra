@@ -49,6 +49,8 @@ public partial class App : LibApp
             .With(x => x.connectionString = connectionString)
             .Save();
 
+        services.AddSingleton<IConfiguration>(config);
+
         addBclServices(services);
         addDataContext(services, settings);
         addLogger(services);

@@ -9,28 +9,12 @@ namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IDbTableService : IBusinessService
 {
-    Task<IEnumerable<DbColumnViewModel>> GetColumnsAsync(string connectionString, string tableName, CancellationToken token = default);
+    Task<IEnumerable<DbColumnViewModel>> GetColumns(string tableName, CancellationToken token = default);
 
-    Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(GetTablesTreeViewItemOptions options, CancellationToken token = default);
+    Task<DbColumnViewModel> GetIdentityColumn(string tableName, CancellationToken token = default);
+
+    Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTree(GetTablesTreeViewItemOptions options, CancellationToken token = default);
 }
 
 [Immutable]
-public readonly struct GetTablesTreeViewItemOptions(string connectionString, bool gatherColumns = false, IProgressReport? reporter = null)
-{
-    public string ConnectionString { get; } = connectionString;
-    public bool GatherColumns { get; } = gatherColumns;
-    public IProgressReport? Reporter { get; } = reporter;
-
-    public static bool operator !=(GetTablesTreeViewItemOptions left, GetTablesTreeViewItemOptions right) => !(left == right);
-
-    public static bool operator ==(GetTablesTreeViewItemOptions left, GetTablesTreeViewItemOptions right) => left.Equals(right);
-
-    public void Deconstruct(out string connectionString, out bool gatherColumns, out IProgressReport? reporter) => 
-        (connectionString, gatherColumns, reporter) = (this.ConnectionString, this.GatherColumns, this.Reporter);
-
-    public override bool Equals(object obj) =>
-        base.Equals(obj);
-
-    public override int GetHashCode() =>
-        base.GetHashCode();
-}
+public readonly record struct GetTablesTreeViewItemOptions(bool GatherColumns = false, IProgressReport? Reporter = null);

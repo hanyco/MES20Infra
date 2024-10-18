@@ -7,24 +7,6 @@ namespace HanyCo.Infra.CodeGen.Domain;
 
 public static class PropertyTypeHelper
 {
-    public static PropertyType FromDbType(string dbType) =>
-        Mapper().FirstOrDefault(x => x.DbTypes.Contains(dbType)).propertyType;
-
-    //=> dbType switch
-    //{
-    //    "nvarchar" or "varchar" or "nchar" => PropertyType.String,
-    //    "int" => PropertyType.Integer,
-    //    "bigint" => PropertyType.Long,
-    //    "smallint" => PropertyType.Short,
-    //    "float" => PropertyType.Float,
-    //    "byte" => PropertyType.Byte,
-    //    "bit" => PropertyType.Boolean,
-    //    "datetime" or "datetime2" or "datetimeoffset" or "date" => PropertyType.DateTime,
-    //    "uniqueidentifier" => PropertyType.Guid,
-    //    "varbinary" => PropertyType.ByteArray,
-    //    _ => throw new NotSupportedException("Not supported Db Type"),
-    //};
-
     public static PropertyType FromPropertyTypeId(int propertyId) =>
         EnumHelper.ToEnum<PropertyType>(propertyId);
 
@@ -68,42 +50,28 @@ public static class PropertyTypeHelper
             _ => throw new NotSupportedException(),
         };
 
+    public static PropertyType FromDbType(string dbType)
+    {
+        var value = Mapper().FirstOrDefault(x => x.DbTypes.Contains(dbType));
+        return value == default ? PropertyType.Dto : value.propertyType;
+    }
+
     internal static string? ToDbTypeName(this PropertyType propertyType) =>
         Mapper().FirstOrDefault(x => x.propertyType == propertyType).DbTypes?.FirstOrDefault();
 
-    private static IEnumerable<T> Iterate<T>(T item1)
-    {
-        yield return item1;
-    }
-
-    private static IEnumerable<T> Iterate<T>(T item1, T item2, T item3)
-    {
-        yield return item1;
-        yield return item2;
-        yield return item3;
-    }
-
-    private static IEnumerable<T> Iterate<T>(T item1, T item2, T item3, T item4)
-    {
-        yield return item1;
-        yield return item2;
-        yield return item3;
-        yield return item4;
-    }
-
     private static IEnumerable<(IEnumerable<string> DbTypes, Type netType, PropertyType propertyType)> Mapper()
     {
-        yield return (Iterate(""), null, PropertyType.None);
-        yield return (Iterate("uniqueidentifier"), typeof(Guid), PropertyType.Guid);
-        yield return (Iterate("nvarchar", "varchar", "nchar"), typeof(string), PropertyType.String);
-        yield return (Iterate("smallint"), typeof(short), PropertyType.Short);
-        yield return (Iterate("int"), typeof(int), PropertyType.Integer);
-        yield return (Iterate("bigint"), typeof(long), PropertyType.Long);
-        yield return (Iterate("float"), typeof(float), PropertyType.Float);
-        yield return (Iterate("decimal"), typeof(decimal), PropertyType.Decimal);
-        yield return (Iterate("bit"), typeof(bool), PropertyType.Boolean);
-        yield return (Iterate("byte"), typeof(byte), PropertyType.Byte);
-        yield return (Iterate("varbinary"), typeof(byte[]), PropertyType.ByteArray);
-        yield return (Iterate("datetime", "datetime2", "datetimeoffset", "date"), typeof(byte[]), PropertyType.DateTime);
+        yield return (EnumerableHelper.AsEnumerable(""), null, PropertyType.None);
+        yield return (EnumerableHelper.AsEnumerable("uniqueidentifier"), typeof(Guid), PropertyType.Guid);
+        yield return (EnumerableHelper.AsEnumerable("nvarchar", "varchar", "nchar"), typeof(string), PropertyType.String);
+        yield return (EnumerableHelper.AsEnumerable("smallint"), typeof(short), PropertyType.Short);
+        yield return (EnumerableHelper.AsEnumerable("int"), typeof(int), PropertyType.Integer);
+        yield return (EnumerableHelper.AsEnumerable("bigint"), typeof(long), PropertyType.Long);
+        yield return (EnumerableHelper.AsEnumerable("float"), typeof(float), PropertyType.Float);
+        yield return (EnumerableHelper.AsEnumerable("decimal"), typeof(decimal), PropertyType.Decimal);
+        yield return (EnumerableHelper.AsEnumerable("bit"), typeof(bool), PropertyType.Boolean);
+        yield return (EnumerableHelper.AsEnumerable("byte"), typeof(byte), PropertyType.Byte);
+        yield return (EnumerableHelper.AsEnumerable("varbinary"), typeof(byte[]), PropertyType.ByteArray);
+        yield return (EnumerableHelper.AsEnumerable("datetime", "datetime2", "datetimeoffset", "date"), typeof(byte[]), PropertyType.DateTime);
     }
 }

@@ -31,26 +31,25 @@ public static class ServiceCollectionExtensions
     {
         _ = services.AddScoped(_ => new Sql(configuration.GetConnectionString("ApplicationConnectionString").NotNull(() => "Connection String not found.")));
 
-        _ = services.AddDbContext<IdentityContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityConnectionString"), op => op.CommandTimeout(120)));
+        _ = services.AddDbContext<IdentityContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityConnectionString").NotNull(() => "Identity Connection String not found."), op => op.CommandTimeout(120)));
         _ = services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = false;
-            options.SignIn.RequireConfirmedEmail = false;
-            options.SignIn.RequireConfirmedPhoneNumber = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireDigit = true;
-            options.Password.RequiredLength = 4;
-        })
+            {
+                options.SignIn.RequireConfirmedAccount = false;
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 4;
+            })
             .AddEntityFrameworkStores<IdentityContext>()
             .AddDefaultUI()
             .AddDefaultTokenProviders();
 
-        _ = services.AddTransient<IIdentityService, IdentityService>();
-        _ = services.AddTransient<ISecurityService, SecurityService>();
+        _ = services.AddTransient<IIdentityService, IdentityService>()
+            .AddTransient<ISecurityService, SecurityService>();
 
-        // Configuration for JWT authentication and handling
         _ = services
             .Configure<JWTSettings>(configuration.GetSection("JWTSettings"))
             .AddAuthentication(options =>

@@ -348,6 +348,7 @@ public sealed class TypePath : IEquatable<TypePath>
             }
         }
 
+        [DebuggerHidden]
         internal static TypeData Parse([DisallowNull] in string fullType, in IEnumerable<string>? generics = null, in bool? isNullable = null)
         {
             var mainType = fullType

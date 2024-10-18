@@ -7,6 +7,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.Data.SqlServer.Dynamics;
 using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Threading;
@@ -17,6 +18,7 @@ using MediatR;
 
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 using Services.Helpers;
 
@@ -128,9 +130,6 @@ internal sealed partial class FunctionalityService
     private static DbColumnViewModel GetDbColumn(string name, PropertyType type, string? dtoFullName = null) =>
         new(name, -1, PropertyTypeHelper.ToFullTypeName(type, dtoFullName), false);
 
-    private static PropertyViewModel GetIdDbColumnProperty(CreationData data) =>
-        new(new DbColumnViewModel("Id", -1, PropertyTypeHelper.ToFullTypeName(PropertyType.Long), false)) { Comment = data.COMMENT };
-
     [Obsolete("Mappers are no longer used in this project", true)]
     private static string GetMapperNameSpace(CreationData data)
         => TypePath.Combine(GetRootNameSpace(data), "Mappers");
@@ -192,7 +191,7 @@ internal sealed partial class FunctionalityService
     }
 
     private static PropertyViewModel SourceDtoToProperty(CreationData data) =>
-        new(GetDbColumn(data.SourceDtoName, PropertyType.Dto, data.SourceDtoType)) { Comment = data.COMMENT, TypeFullName = data.SourceDtoType };
+        new PropertyViewModel(GetDbColumn(data.SourceDtoName, PropertyType.Dto, data.SourceDtoType)) { Comment = data.COMMENT };
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
@@ -519,12 +518,12 @@ internal sealed partial class FunctionalityService
             //data.ViewModel.DeleteCommand.MapperNameSpace = GetMapperNameSpace(data);
         }
 
-        void createParams(CreationData data)
+        async Task createParams(CreationData data)
         {
             data.ViewModel.DeleteCommand.ParamsDto = RawDto(data);
             data.ViewModel.DeleteCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.DeleteCommand.ParamsDto.IsParamsDto = true;
-            data.ViewModel.DeleteCommand.ParamsDto.Properties.Add(GetIdDbColumnProperty(data));
+            data.ViewModel.DeleteCommand.ParamsDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.DeleteCommand.ParamsDto));
         }
 
         void createResult(CreationData data)
@@ -627,13 +626,13 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQuery.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, cancellationToken: token);
         }
 
-        void createParams()
+        async Task createParams()
         {
             data.ViewModel.GetByIdQuery.ParamsDto = RawDto(data);
             data.ViewModel.GetByIdQuery.ParamsDto.Name = $"{name}Query";
             data.ViewModel.GetByIdQuery.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQuery.ParamsDto.BaseType = TypePath.New<IRequest>([data.ViewModel.GetByIdQuery.ResultDto.Name!]);
-            data.ViewModel.GetByIdQuery.ParamsDto.Properties.Add(new(GetIdDbColumnProperty(data)));
+            data.ViewModel.GetByIdQuery.ParamsDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.GetByIdQuery.ParamsDto));
         }
 
         void createResult()
@@ -697,12 +696,12 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommand.ParamsDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
         }
 
-        void createResult(CreationData data)
+        async Task createResult(CreationData data)
         {
             data.ViewModel.InsertCommand.ResultDto = RawDto(data);
             data.ViewModel.InsertCommand.ResultDto.Name = $"{name}CommandResult";
             data.ViewModel.InsertCommand.ResultDto.IsResultDto = true;
-            data.ViewModel.InsertCommand.ResultDto.Properties.Add(GetIdDbColumnProperty(data));
+            data.ViewModel.InsertCommand.ResultDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.InsertCommand.ResultDto));
         }
 
         void setupSecurity(CreationData data) =>
@@ -743,12 +742,12 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommand.Module = await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, cancellationToken: token);
         }
 
-        void createParams(CreationData data)
+        async Task createParams(CreationData data)
         {
             data.ViewModel.UpdateCommand.ParamsDto = RawDto(data);
             data.ViewModel.UpdateCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.UpdateCommand.ParamsDto.IsParamsDto = true;
-            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(GetIdDbColumnProperty(data));
+            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.UpdateCommand.ParamsDto));
             data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
         }
 
@@ -764,6 +763,25 @@ internal sealed partial class FunctionalityService
 
         static void createHandleMethodBody(CreationData data) =>
             data.ViewModel.UpdateCommand.HandleMethodBody = CodeSnippets.UpdateCommandHandler_Handle_Body(data.ViewModel.UpdateCommand, data.ViewModel.SourceDto);
+    }
+
+    private async Task<PropertyViewModel> GetIdDbColumnProperty(CreationData data, DtoViewModel? onDto = null)
+    {
+        if (onDto?.DbObject?.Name is not null)
+        {
+            var idCol = await _dbTableService.GetIdentityColumn(onDto.DbObject.Name).WithAsync(x => x.Comment = data.COMMENT).ConfigureAwait(false);
+            if (idCol is not null)
+            {
+                var result = new PropertyViewModel(idCol);
+                return result;
+            }
+        }
+        return getDefault(data);
+
+        static PropertyViewModel getDefault(CreationData data)
+        {
+            return new(new DbColumnViewModel("Id", -1, PropertyTypeHelper.ToFullTypeName(PropertyType.Long), false)) { Comment = data.COMMENT };
+        }
     }
 
     private Task ResetWorkspace(CreationData data, CancellationToken token)

@@ -25,14 +25,12 @@ namespace Application.Identity.Services;
 public class IdentityService(
     IAuthenticatedUserService authenticatedUser,
     UserManager<ApplicationUser> userManager,
-    RoleManager<IdentityRole> roleManager,
     IOptions<JWTSettings> jwtSettings,
     SignInManager<ApplicationUser> signInManager,
     IDistributedCache distributedCache) : IIdentityService
 {
     private readonly IAuthenticatedUserService _authenticatedUser = authenticatedUser;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly JWTSettings _jwtSettings = jwtSettings.Value;
     private readonly IDistributedCache _distributedCache = distributedCache;

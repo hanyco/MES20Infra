@@ -31,6 +31,7 @@ public sealed class FunctionalityViewModel : InfraViewModelBase
     public MapperGeneratorViewModel MapperGeneratorViewModel { get; } = new();
 
     public ModuleViewModel Module { get; set; }
+    
     public DtoViewModel SourceDto { get => this._sourceDto; set => this.SetProperty(ref this._sourceDto, value); }
 
     public CqrsCommandViewModel UpdateCommand { get; set; }

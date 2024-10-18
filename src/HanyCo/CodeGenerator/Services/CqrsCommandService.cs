@@ -49,7 +49,7 @@ internal sealed class CqrsCommandService(
         Check.MustBeArgumentNotNull(model?.Id);
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
         _ = this._writeDbContext.Remove(entry.Entity);
-        _ = await this._securityService.RemoveEntityClaimsAsync(model.Guid!.Value, persist, token);
+        _ = await this._securityService.RemoveEntityClaims(model.Guid!.Value, persist, token);
         return await this.SubmitChangesAsync(persist: persist, token: token);
     }
 
@@ -81,7 +81,7 @@ internal sealed class CqrsCommandService(
             ?? throw new Library.Exceptions.ObjectNotFoundException();
         if (result.Guid is { } guid)
         {
-            _ = result.SecurityClaims.AddRange(await this._securityService.GetEntityClaimsAsync(guid, token).GetValueAsync());
+            _ = result.SecurityClaims.AddRange(await this._securityService.GetEntityClaims(guid, token).GetValueAsync());
         }
 
         return result;
@@ -111,7 +111,7 @@ internal sealed class CqrsCommandService(
         if (result.IsSucceed)
         {
             var buffer = result.Value;
-            _ = await this._securityService.SetEntityClaimsAsync(buffer.Guid!.Value, buffer.SecurityClaims, persist, token);
+            _ = await this._securityService.SetEntityClaims(buffer.Guid!.Value, buffer.SecurityClaims, persist, token);
         }
 
         return result;
@@ -141,7 +141,7 @@ internal sealed class CqrsCommandService(
             .SetModified(x => x.CategoryId)
             .SetModified(x => x.CqrsNameSpace)
             .SetModified(x => x.DtoNameSpace);
-        _ = await this._securityService.SetEntityClaimsAsync(model.Guid!.Value, model.SecurityClaims, persist, token);
+        _ = await this._securityService.SetEntityClaims(model.Guid!.Value, model.SecurityClaims, persist, token);
         _ = await this.SubmitChangesAsync(persist: persist, token: token);
         return Result.Success<CqrsCommandViewModel>(model);
     }

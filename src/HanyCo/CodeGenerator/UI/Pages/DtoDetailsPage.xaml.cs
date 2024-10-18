@@ -66,11 +66,11 @@ public partial class DtoDetailsPage
     }
 
     private void AddColumnToDto(in DbColumnViewModel column)
-        => this.ViewModel.NotNull().Properties.Add(new(Name = column.Name, PropertyTypeHelper.FromDbType(column.DbType))
+        => this.ViewModel.NotNull().Properties.Add(new(Name = column.Name, PropertyTypeHelper.FromDbType(column.Type))
         {
             IsNullable = column.IsNullable,
             Name = column.Name,
-            DbObject = new DbColumnViewModel(column.Name.NotNull(), column.ObjectId, column.DbType, column.IsNullable, column.MaxLength),
+            DbObject = new DbColumnViewModel(column.Name.NotNull(), column.ObjectId, column.Type, column.IsNullable, column.MaxLength),
         });
 
     private void AddColumnToDtoButton_Click(object sender, RoutedEventArgs e)
@@ -121,7 +121,7 @@ public partial class DtoDetailsPage
             var tableNode = this._databaseExplorerUserControl.SelectedDbObjectNode;
             Check.MustBeNotNull(tableNode, () => "Please select a table");
 
-            var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, tableNode.Value.Name!);
+            var columns = await this._dbTableService.GetColumns(tableNode.Value.Name!);
             this.ViewModel = this._service.CreateByDbTable(DbTableViewModel.FromDbObjectViewModel(tableNode!), columns.Compact());
             this.EndActionScope();
             this.RefreshFormState();

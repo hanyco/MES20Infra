@@ -89,7 +89,7 @@ public sealed class PropertyViewModel : InfraViewModelBase
         {
             if (this._type is PropertyType.None && this.DbObject is DbColumnViewModel dbColumn)
             {
-                var dbType = dbColumn.DbType;
+                var dbType = dbColumn.Type;
                 if (!dbType.IsNullOrEmpty())
                 {
                     this._type = PropertyTypeHelper.FromDbType(dbType);

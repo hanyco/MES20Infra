@@ -2,7 +2,6 @@
 using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.Security.Identity.Entity;
 
 using Library.Interfaces;
 using Library.Results;
@@ -14,7 +13,6 @@ namespace Services;
 internal class SecurityService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext infraWriteDb,
-    InfraUserManager userManager,
     IEntityViewModelConverter converter) 
     : ISecurityService
     , IAsyncSaveChanges
@@ -22,7 +20,6 @@ internal class SecurityService(
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraWriteDbContext _infraWriteDb = infraWriteDb;
-    private readonly InfraUserManager _userManager = userManager;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
 
     public Task<Result<int>> DeleteAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
@@ -47,7 +44,7 @@ internal class SecurityService(
         return result;
     }
 
-    public async Task<Result<IEnumerable<ClaimViewModel>>> GetEntityClaimsAsync(Guid entity, CancellationToken token = default)
+    public async Task<Result<IEnumerable<ClaimViewModel>>> GetEntityClaims(Guid entity, CancellationToken token = default)
     {
         var query = from x in this._readDbContext.EntityClaims.Include(x => x.Claim)
                     where x.EntityId == entity
@@ -60,7 +57,7 @@ internal class SecurityService(
     public Task<Result<ClaimViewModel>> InsertAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
         throw new NotImplementedException();
 
-    public Task<Result> RemoveEntityClaimsAsync(Guid value, bool persist, CancellationToken token)
+    public Task<Result> RemoveEntityClaims(Guid value, bool persist, CancellationToken token)
     {
         var result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == value).ForEach(x => this._infraWriteDb.EntityClaims.Remove(x)));
         return Task.FromResult(result);
@@ -71,7 +68,7 @@ internal class SecurityService(
 
     public Task<Result<int>> SaveChangesAsync(CancellationToken token = default) => throw new NotImplementedException();
 
-    public Task<Result> SetEntityClaimsAsync(Guid entity, IEnumerable<ClaimViewModel> claims, bool persist, CancellationToken token = default)
+    public Task<Result> SetEntityClaims(Guid entity, IEnumerable<ClaimViewModel> claims, bool persist, CancellationToken token = default)
     {
         //this._userManager.AddClaimAsync()
         return Task.FromResult(Result.Succeed);

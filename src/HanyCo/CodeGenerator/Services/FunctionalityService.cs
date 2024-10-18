@@ -13,6 +13,7 @@ using Library.Threading.MultistepProgress;
 using Library.Validations;
 
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Configuration;
 
 namespace Services;
 
@@ -36,7 +37,9 @@ internal sealed partial class FunctionalityService(
     IBlazorPageCodeService blazorPageCodeService,
     IMapperSourceGenerator mapperSourceGenerator,
     ICodeGeneratorEngine generatorEngine,
-    IControllerService controllerService)
+    IControllerService controllerService,
+    IConfiguration configuration,
+    IDbTableService dbTableService)
     : IFunctionalityService
     , ILoggerContainer
 {
@@ -51,6 +54,8 @@ internal sealed partial class FunctionalityService(
     private readonly IDtoService _dtoService = dtoService;
     private readonly ICodeGeneratorEngine _generatorEngine = generatorEngine;
     private readonly IControllerService _controllerService = controllerService;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly IDbTableService _dbTableService = dbTableService;
     private readonly IMapperSourceGenerator _mapperSourceGenerator = mapperSourceGenerator;
     private readonly IModuleService _moduleService = moduleService;
     private readonly ICqrsQueryService _queryService = queryService;

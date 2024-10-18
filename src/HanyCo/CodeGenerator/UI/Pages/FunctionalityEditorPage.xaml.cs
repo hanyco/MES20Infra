@@ -431,7 +431,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             // Did user select a table?
             if (this._databaseExplorerUserControl.SelectedTable is DbTableViewModel table)
             {
-                var columns = await this._dbTableService.GetColumnsAsync(SettingsService.Get().connectionString!, table.Name!);
+                var columns = await this._dbTableService.GetColumns(table.Name!);
                 var dto = this._dtoService.CreateByDbTable(table, columns);
                 this.PrepareViewModelByDto(dto);
             }

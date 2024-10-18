@@ -114,7 +114,7 @@ public static class CodeSnippets
         var additionalWhereClause = "[Id] = {request.Id}";
         var deleteStatement = SqlStatementBuilder
             .Delete(entityModel.DbObject.ToString())
-            .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, $"request.{model.DbObject.Name}"))
+            .Where(ReplaceVariables(model.ParamsDto, additionalWhereClause, $"request.{StringHelper.Singularize(model.DbObject.Name)!}"))
             .Build()
             .Replace(Environment.NewLine, " ").Replace("  ", " ");
         return new StringBuilder()
@@ -127,7 +127,7 @@ public static class CodeSnippets
 
     internal static string InsertCommandHandler_Handle_Body(in CqrsViewModelBase model, in DtoViewModel entityModel)
     {
-        var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name!).ToImmutableArray();
+        var values = GetValues(entityModel.Properties.ExcludeId(), StringHelper.Singularize(model.DbObject.Name)!).ToImmutableArray();
         var insertStatement = SqlStatementBuilder
             .Insert()
             .Into(entityModel.DbObject.ToString())
@@ -164,7 +164,7 @@ public static class CodeSnippets
 
     internal static string UpdateCommandHandler_Handle_Body(in CqrsCommandViewModel model, in DtoViewModel entityModel)
     {
-        var values = GetValues(entityModel.Properties.ExcludeId(), model.DbObject.Name!).ToImmutableArray();
+        var values = GetValues(entityModel.Properties.ExcludeId(), StringHelper.Singularize(model.DbObject.Name)!).ToImmutableArray();
         var updateStatement = SqlStatementBuilder
             .Update(entityModel.DbObject.ToString())
             .Set(values.Select(x => (x.ColumnName, (object)$"{{{x.VariableName}}}")))
@@ -251,12 +251,12 @@ public static class CodeSnippets
         foreach (var p in properties.Compact())
         {
             var dbColumn = p.DbObject.Cast().As<DbColumnViewModel>();
-            if (dbColumn is null or { Name: null or { Length: 0 } } or { DbType: null or { Length: 0 } })
+            if (dbColumn is null or { Name: null or { Length: 0 } } or { Type: null or { Length: 0 } })
             {
                 continue;
             }
 
-            var type = PropertyTypeHelper.FromDbType(dbColumn.DbType);
+            var type = PropertyTypeHelper.FromDbType(dbColumn.Type);
             var statement = type switch
             {
                 PropertyType.Integer

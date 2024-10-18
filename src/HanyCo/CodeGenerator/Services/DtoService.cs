@@ -34,7 +34,6 @@ internal sealed class DtoService(
     InfraReadDbContext readDbContext,
     InfraWriteDbContext writeDbContext,
     IEntityViewModelConverter converter,
-    ISecurityService securityDescriptor,
     IPropertyService propertyService,
     ICodeGeneratorEngine codeGeneratorEngine)
     : IDtoService, IDtoCodeService, IAsyncValidator<DtoViewModel>, IAsyncSaveChanges, IResetChanges
@@ -162,7 +161,7 @@ internal sealed class DtoService(
             //}
             foreach (var claim in pvm.SecurityClaims)
             {
-                result.AddAttribute<SecurityAttribute>([("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null")]);
+                //result.AddAttribute<SecurityAttribute>([("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null")]);
             }
             return result;
         }
@@ -178,7 +177,7 @@ internal sealed class DtoService(
         {
             foreach (var claim in viewModel.SecurityClaims)
             {
-                _ = type.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
+                //_ = type.AddAttribute<SecurityAttribute>(("Key", claim.Key.NotNull()), ("Value", claim.Value?.ToString() ?? "null"));
             }
         }
     }

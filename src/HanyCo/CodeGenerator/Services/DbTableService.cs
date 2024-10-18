@@ -6,26 +6,49 @@ using Library.Data.SqlServer.Dynamics;
 using Library.Exceptions.Validations;
 using Library.Validations;
 
+using Microsoft.Extensions.Configuration;
+
+using Services.Helpers;
+
 namespace Services.CodeGen;
 
-internal sealed class DbTableService : IDbTableService
+internal sealed class DbTableService(IConfiguration configuration) : IDbTableService
 {
-    public async Task<IEnumerable<DbColumnViewModel>> GetColumnsAsync(string connectionString, string tableName, CancellationToken token = default)
+    public async Task<IEnumerable<DbColumnViewModel>> GetColumns(string tableName, CancellationToken token = default)
     {
-        Check.MustBeNotNull(connectionString);
-        Check.MustBeNotNull(tableName);
-
-        var db = await Database.GetDatabaseAsync(connectionString, cancellationToken: token);
-        Check.MustBeNotNull(db, () => "Not connected to database or database not found.");
-        return db.Tables[tableName].NotNull($"Table '{tableName}' not found.").Columns.Select(DbColumnViewModel.FromDbColumn);
+        var table = await GetTable(tableName, token);
+        return table.NotNull($"Table '{tableName}' not found.").Columns.Select(DbColumnViewModel.FromDbColumn);
     }
 
-    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTreeViewItemAsync(GetTablesTreeViewItemOptions options, CancellationToken token = default)
+    private async Task<Database> GetDb(CancellationToken token)
     {
-        var (connectionString, gatherColumns, reporter) = options;
-        reporter?.Report(description: "Please wait a while.");
+        var connectionString = configuration.GetApplicationConnectionString();
+        
         var db = await Database.GetDatabaseAsync(connectionString, cancellationToken: token);
-        Check.MustBeNotNull(db, () => new NotFoundValidationException("Not connected to database or database not found. 💀"));
+        Check.MustBeNotNull(db, () => "Not connected to database or database not found.");
+        return db;
+    }
+
+    public async Task<DbColumnViewModel> GetIdentityColumn(string tableName, CancellationToken token = default)
+    {
+        var table = await GetTable(tableName, token);
+        var idCol = table.NotNull($"Table '{tableName}' not found.").Columns.FirstOrDefault(static x => x.IsIdentity || x.Name == "Id").NotNull();
+        return DbColumnViewModel.FromDbColumn(idCol);
+    }
+
+    private async Task<Table?> GetTable(string tableName, CancellationToken token)
+    {
+        Check.MustBeNotNull(tableName);
+        var db = await GetDb(token);
+        return db.Tables[tableName];
+    }
+
+    public async Task<IReadOnlyList<Node<DbObjectViewModel>>> GetTablesTree(GetTablesTreeViewItemOptions options, CancellationToken token = default)
+    {
+        var (gatherColumns, reporter) =  (options.GatherColumns, options.Reporter);
+
+        reporter?.Report(description: "Please wait a while.");
+        var db = await this.GetDb(token);
 
         List<Node<DbObjectViewModel>> result = [];
         Node<DbObjectViewModel> schemaNode;

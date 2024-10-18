@@ -68,7 +68,7 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
 
     public async Task<DatabaseExplorerUserControl> InitializeAsync(IDbTableService dbTableService, IProgressReport? reporter = null)
     {
-        var dbNode = await dbTableService.NotNull().GetTablesTreeViewItemAsync(new(SettingsService.Get().connectionString!, reporter: reporter));
+        var dbNode = await dbTableService.NotNull().GetTablesTree(new(Reporter: reporter));
         var treeItems = new TreeViewItem { Header = "Tables" };
         EnumerableHelper.BuildTree<Node<DbObjectViewModel>, TreeViewItem>(
             dbNode,

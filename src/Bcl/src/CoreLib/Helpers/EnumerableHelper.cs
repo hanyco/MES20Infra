@@ -306,6 +306,12 @@ public static class EnumerableHelper
         yield return item;
     }
 
+    [return: NotNull]
+    public static IEnumerable<T> AsEnumerable<T>(params IEnumerable<T> items)
+    {
+        return items;
+    }
+
     public static FluentList<TItem> AsFluent<TItem>(this IList<TItem> list)
         => FluentList<TItem>.New(list);
 

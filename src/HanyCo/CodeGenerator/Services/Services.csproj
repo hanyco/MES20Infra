@@ -13,12 +13,6 @@
     <Configurations>Debug;Release;Debug Unit Test</Configurations>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="SecurityDescriptorService.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="SecurityDescriptorService.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="MediatR" Version="12.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.7" />
   </ItemGroup>
