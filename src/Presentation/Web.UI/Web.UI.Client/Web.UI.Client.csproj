@@ -10,6 +10,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.10" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
 	</ItemGroup>
 
 	<Import Project="..\Web.UI.SharedProject\Web.UI.SharedProject.projitems" Label="Shared" />

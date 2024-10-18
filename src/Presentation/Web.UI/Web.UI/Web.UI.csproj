@@ -12,7 +12,9 @@
     <ProjectReference Include="..\..\..\Domain\Domain.csproj" />
     <ProjectReference Include="..\..\..\HanyCo\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\Web.UI.Client\Web.UI.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
   </ItemGroup>
 
 </Project>

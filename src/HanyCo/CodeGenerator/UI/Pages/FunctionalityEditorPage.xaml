@@ -118,6 +118,7 @@
                                 IsReadOnly="True"
                                 Style="{StaticResource LongTextBox}"
                                 Text="{Binding Name}" />
+                            <CheckBox Content="Allow Anonymous"  IsChecked="{Binding Controller.IsAnonymousAllow}"/>
                         </StackPanel>
                     </GroupBox>
                     <GroupBox Grid.Row="2" Header="Source DTO">

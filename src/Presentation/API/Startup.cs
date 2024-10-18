@@ -4,6 +4,9 @@ using API.Extensions;
 using Library.Data.SqlServer;
 using Library.Validations;
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+
 namespace API;
 class Startup
 {
@@ -16,7 +19,13 @@ class Startup
         services.AddContextInfrastructure(configuration)
             .AddSharedInfrastructure(configuration);
         
-        services.AddControllers();
+        services.AddControllersWithViews(config =>
+        {
+            var policy = new AuthorizationPolicyBuilder()
+                             .RequireAuthenticatedUser()
+                             .Build();
+            config.Filters.Add(new AuthorizeFilter(policy));
+        });
         services.AddEndpointsApiExplorer();
         services.AddEssentials();
     }

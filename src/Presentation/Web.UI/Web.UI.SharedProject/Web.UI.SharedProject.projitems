@@ -6,6 +6,9 @@
     <SharedGUID>e50d6fbb-8752-43b6-817a-8f37012565e7</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Web.UI.SharedProject</Import_RootNamespace>
+    <Import_RootNamespace>Web.UI</Import_RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Handlers\CustomAuthorizationMessageHandler.cs" />
+  </ItemGroup>
 </Project>

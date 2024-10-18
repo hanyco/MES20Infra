@@ -31,12 +31,21 @@ public static class ValidationExtensions
     public static TValue ArgumentNotNull<TValue>([NotNull] this TValue value, [CallerArgumentExpression(nameof(value))] string paramName = null!) =>
         InnerCheck(value, CheckBehavior.ThrowOnFail, paramName).ArgumentNotNull();
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [return: NotNull]
+    public static string ArgumentNotNull([NotNull] this string? value, [CallerArgumentExpression(nameof(value))] string paramName = null!) =>
+        InnerCheck(value, CheckBehavior.ThrowOnFail, paramName).ArgumentNotNull();
+
     /// <summary>
     /// Adds a rule to the ValidationResultSet to check if the value is not null.
     /// </summary>
     [MemberNotNull(nameof(ValidationResultSet<TValue>.Value))]
     public static ValidationResultSet<TValue> ArgumentNotNull<TValue>(this ValidationResultSet<TValue> vrs, Func<Exception> onError = null) =>
         vrs.InnerAddRule(x => x, [DebuggerStepThrough, StackTraceHidden] (_) => vrs.Value is not null, onError, () => new ArgumentNullException(vrs._valueName));
+
+    [MemberNotNull(nameof(ValidationResultSet<string>.Value))]
+    public static ValidationResultSet<string> ArgumentNotNull(this ValidationResultSet<string> vrs, Func<Exception> onError = null) =>
+        vrs.InnerAddRule(x => x, [DebuggerStepThrough, StackTraceHidden] (_) => vrs.Value.IsNullOrEmpty(), onError, () => new ArgumentNullException(vrs._valueName));
 
     /// <summary> Traverses the rules and create a fail <code>Result<TValue></code>, at first broken
     /// rule . Otherwise created a succeed result. </summary>
