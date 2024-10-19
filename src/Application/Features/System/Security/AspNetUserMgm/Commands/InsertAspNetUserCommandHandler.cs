@@ -1,4 +1,4 @@
-namespace Mes.Security.Commands;
+namespace HumanResources.Commands;
 internal sealed partial class InsertAspNetUserCommandHandler
 {
 }

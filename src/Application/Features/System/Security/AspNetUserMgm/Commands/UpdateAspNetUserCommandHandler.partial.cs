@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.Security.Dtos;
+using HumanResources.Dtos;
 
-namespace Mes.Security.Commands;
+namespace HumanResources.Commands;
 internal sealed partial class UpdateAspNetUserCommandHandler : IRequestHandler<UpdateAspNetUserCommand, UpdateAspNetUserCommandResult>
 {
     private readonly IMediator _mediator;

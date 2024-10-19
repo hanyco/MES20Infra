@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.Security.Dtos;
+using HumanResources.Dtos;
 
-namespace Mes.Security.Commands;
+namespace HumanResources.Commands;
 internal sealed partial class InsertAspNetUserCommandHandler : IRequestHandler<InsertAspNetUserCommand, InsertAspNetUserCommandResult>
 {
     private readonly IMediator _mediator;
@@ -32,8 +32,8 @@ internal sealed partial class InsertAspNetUserCommandHandler : IRequestHandler<I
         var accessFailedCount = request.AspNetUser.AccessFailedCount.ToString();
         var dbCommand = $@"INSERT INTO [dbo].[AspNetUsers]   ([UserName], [NormalizedUserName], [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount])   VALUES ({userName}, {normalizedUserName}, {email}, {normalizedEmail}, {emailConfirmed}, {passwordHash}, {securityStamp}, {concurrencyStamp}, {phoneNumber}, {phoneNumberConfirmed}, {twoFactorEnabled}, {lockoutEnd}, {lockoutEnabled}, {accessFailedCount}); SELECT SCOPE_IDENTITY();";
         var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);
-        int returnValue = Convert.ToInt32(dbResult);
-        var result = new InsertAspNetUserCommandResult(dbResult?.ToString());
+        var returnValue = Convert.ToString(dbResult);
+        var result = new InsertAspNetUserCommandResult(returnValue);
         return result;
     }
 }

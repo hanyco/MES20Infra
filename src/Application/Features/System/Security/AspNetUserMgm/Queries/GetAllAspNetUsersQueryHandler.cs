@@ -1,4 +1,4 @@
-namespace Mes.Security.Queries;
+namespace HumanResources.Queries;
 internal sealed partial class GetAllAspNetUsersQueryHandler
 {
 }
