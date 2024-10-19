@@ -1,86 +1,61 @@
 ﻿using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.Validations;
-
 namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class PropertyViewModel : InfraViewModelBase
 {
-    private string? _comment;
-    private DbObjectViewModel? _dbObject;
-    private DtoViewModel? _dto;
-    private bool? _isList;
-    private bool? _isNullable;
-    private long _parentEntityId;
     private PropertyType _type;
-    private string? _typeFullName;
 
     public PropertyViewModel()
     {
-        
-    }
-    public PropertyViewModel(PropertyViewModel original) : base(original.ArgumentNotNull().Id, original.Name)
-    {
-        this._type = original._type;
-        this._comment = original._comment;
-        this._dbObject = original._dbObject;
-        this._dto = original._dto;
-        this._isList = original._isList;
-        this._isNullable = original._isNullable;
-        this._parentEntityId = original._parentEntityId;
-        this._typeFullName = original._typeFullName;
     }
 
-    public PropertyViewModel(string? name, PropertyType type) : this(name) => 
-        this.Type = type;
+    public PropertyViewModel(string? name, PropertyType type, long? id = null)
+        : base(id, name) => this.Type = type;
 
-    public PropertyViewModel(string? name) => 
-        this.Name = name;
-
-    public PropertyViewModel(DbColumnViewModel dbColumnViewModel) : this((DbObjectViewModel)dbColumnViewModel) => 
-        this.IsNullable = dbColumnViewModel.IsNullable;
-
-    public PropertyViewModel(DbObjectViewModel dbColumnViewModel) : this(dbColumnViewModel.Name, PropertyTypeHelper.FromDbType(dbColumnViewModel.Type))
+    public PropertyViewModel(DbColumnViewModel dbColumnViewModel)
+        : this(dbColumnViewModel.Name, PropertyTypeHelper.FromDbType(dbColumnViewModel.Type))
     {
         this.TypeFullName = dbColumnViewModel.Type;
         this.DbObject = dbColumnViewModel;
         this.Id = dbColumnViewModel.ObjectId;
+        this.IsNullable = dbColumnViewModel.IsNullable;
     }
 
     public string? Comment
     {
-        get => this._comment;
-        set => this.SetProperty(ref this._comment, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
 
-    public DbObjectViewModel DbObject
+    public DbColumnViewModel? DbObject
     {
-        get => this._dbObject ??= (this._dbObject = new(this.Name, type: this._type.ToDbTypeName()));
-        set => this.SetProperty(ref this._dbObject, value);
+        get => field ??= (field = new(this.Name, this.Id ?? default, this._type.ToDbTypeName(), this.IsNullable ?? default));
+        set => this.SetProperty(ref field, value);
     }
 
     public DtoViewModel? Dto
     {
-        get => this._dto;
-        set => this.SetProperty(ref this._dto, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
 
     public bool? IsList
     {
-        get => this._isList;
-        set => this.SetProperty(ref this._isList, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
 
     public bool? IsNullable
     {
-        get => this._isNullable;
-        set => this.SetProperty(ref this._isNullable, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
 
     public long ParentEntityId
     {
-        get => this._parentEntityId;
-        set => this.SetProperty(ref this._parentEntityId, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
 
     public PropertyType Type
@@ -108,9 +83,9 @@ public sealed class PropertyViewModel : InfraViewModelBase
         get
         {
             string result;
-            if (this.Type is not PropertyType.Dto || !this._typeFullName.IsNullOrEmpty())
+            if (this.Type is not PropertyType.Dto || !field.IsNullOrEmpty())
             {
-                result = this.Type.ToFullTypeName(this._typeFullName);
+                result = this.Type.ToFullTypeName(field);
             }
             else
             {
@@ -124,7 +99,7 @@ public sealed class PropertyViewModel : InfraViewModelBase
             return result;
         }
 
-        set => this.SetProperty(ref this._typeFullName, value);
+        set => this.SetProperty(ref field, value);
     }
 }
 
@@ -134,5 +109,5 @@ public static class PropertyViewModelHelper
         => properties.Where(x => !x.Name.EqualsTo("Id"));
 
     public static PropertyViewModel? FindId(this IEnumerable<PropertyViewModel> properties)
-            => properties.FirstOrDefault(p => p.Name.EqualsTo("Id"));
+        => properties.FirstOrDefault(p => (p.DbObject?.IsIdentity is true) || p.Name.EqualsTo("Id"));
 }

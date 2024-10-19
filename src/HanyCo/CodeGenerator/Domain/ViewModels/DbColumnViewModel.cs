@@ -1,16 +1,25 @@
 ﻿using Library.Data.SqlServer.Dynamics;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class DbColumnViewModel(string name, long objectId, string dbType, bool isNullable, int? maxLength = null, string? comment = null)
-    : DbObjectViewModel(name, objectId, null, dbType)
+    : DbObjectViewModel(name, objectId, null, dbType, comment)
 {
-    public string? Comment { get; set; } = comment;
+    public bool IsIdentity { get; set; }
+
     public bool IsNullable { get; init; } = isNullable;
+
     public int? MaxLength { get; init; } = maxLength;
 
-    public static DbColumnViewModel FromDbColumn(Column column)
-        => new(column.Name, column.UniqueId, column.DataType, column.IsNullable, column.MaxLength);
+    [return: NotNullIfNotNull(nameof(column))]
+    public static DbColumnViewModel? FromDbColumn(Column column) =>
+        column is null ? null : new(column.Name, column.UniqueId, column.DataType, column.IsNullable, column.MaxLength) { IsIdentity = column.IsIdentity };
+
+    [return: NotNullIfNotNull(nameof(dbObject))]
+    public static DbColumnViewModel? FromDbObjectViewModel(DbObjectViewModel? dbObject, bool isNullable = default, int? maxLength = default) =>
+        dbObject is null ? null : new(dbObject.Name, dbObject.Id ?? default, dbObject.Type, isNullable, maxLength, dbObject.Comment);
 
     public override string ToString()
     {

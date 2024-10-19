@@ -7,7 +7,6 @@ using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
-using Library.Data.SqlServer.Dynamics;
 using Library.Helpers.CodeGen;
 using Library.Results;
 using Library.Threading;
@@ -18,7 +17,6 @@ using MediatR;
 
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 using Services.Helpers;
 
@@ -140,7 +138,7 @@ internal sealed partial class FunctionalityService
             Comment = data.COMMENT,
             IsList = true,
             Dto = data.ViewModel.SourceDto,
-            DbObject = data.ViewModel.SourceDto.DbObject,
+            DbObject = DbColumnViewModel.FromDbObjectViewModel(data.ViewModel.SourceDto.DbObject),
         };
 
     private static string GetRootNameSpace(CreationData data) =>
@@ -153,7 +151,7 @@ internal sealed partial class FunctionalityService
         Dto = data.ViewModel.SourceDto,
         TypeFullName = data.ViewModel.SourceDto.FullName,
         Type = PropertyType.Dto,
-        DbObject = data.ViewModel.SourceDto.DbObject,
+        DbObject = DbColumnViewModel.FromDbObjectViewModel(data.ViewModel.SourceDto.DbObject),
     };
 
     [DebuggerStepThrough]
@@ -191,7 +189,7 @@ internal sealed partial class FunctionalityService
     }
 
     private static PropertyViewModel SourceDtoToProperty(CreationData data) =>
-        new PropertyViewModel(GetDbColumn(data.SourceDtoName, PropertyType.Dto, data.SourceDtoType)) { Comment = data.COMMENT };
+        new(GetDbColumn(data.SourceDtoName, PropertyType.Dto, data.SourceDtoType)) { Comment = data.COMMENT };
 
     private Task CreateBlazorDetailsComponent(CreationData data, CancellationToken token)
     {
@@ -438,10 +436,11 @@ internal sealed partial class FunctionalityService
 
         void createGetByIdApi(CreationData data)
         {
+            var idCol = SqlTypeHelper.SqlTypeToNetType(data.ViewModel.SourceDto.Properties.FindId()!.DbObject!.Type!);
             var api = ControllerMethodViewModel
                 .New("GetById")
-                .AddHttpMethod<HttpGetAttribute>("{id:long}")
-                .AddArgument(TypePath.New<long>(), "id")
+                .AddHttpMethod<HttpGetAttribute>("{id}")
+                .AddArgument(TypePath.New(idCol), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQuery}(id));")
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetByIdQuery.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
@@ -468,7 +467,7 @@ internal sealed partial class FunctionalityService
             var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
             var api = ControllerMethodViewModel
                 .New("Update")
-                .AddHttpMethod<HttpPutAttribute>("{id:long}")
+                .AddHttpMethod<HttpPutAttribute>("{id}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommand}(id, {argName}));")
@@ -482,7 +481,7 @@ internal sealed partial class FunctionalityService
         {
             var api = ControllerMethodViewModel
                 .New("Delete")
-                .AddHttpMethod<HttpDeleteAttribute>("{id:long}")
+                .AddHttpMethod<HttpDeleteAttribute>("{id}")
                 .AddArgument(TypePath.New<long>(), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommand}(id));")
                 .AddBodyLine("return this.Ok(true);")
@@ -523,7 +522,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.DeleteCommand.ParamsDto = RawDto(data);
             data.ViewModel.DeleteCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.DeleteCommand.ParamsDto.IsParamsDto = true;
-            data.ViewModel.DeleteCommand.ParamsDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.DeleteCommand.ParamsDto));
+            data.ViewModel.DeleteCommand.ParamsDto.Properties.Add(await this.GetIdDbColumnProperty(data, data.ViewModel.DeleteCommand.ParamsDto));
         }
 
         void createResult(CreationData data)
@@ -632,7 +631,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.GetByIdQuery.ParamsDto.Name = $"{name}Query";
             data.ViewModel.GetByIdQuery.ParamsDto.IsParamsDto = true;
             data.ViewModel.GetByIdQuery.ParamsDto.BaseType = TypePath.New<IRequest>([data.ViewModel.GetByIdQuery.ResultDto.Name!]);
-            data.ViewModel.GetByIdQuery.ParamsDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.GetByIdQuery.ParamsDto));
+            data.ViewModel.GetByIdQuery.ParamsDto.Properties.Add(await this.GetIdDbColumnProperty(data, data.ViewModel.GetByIdQuery.ParamsDto));
         }
 
         void createResult()
@@ -644,7 +643,7 @@ internal sealed partial class FunctionalityService
             {
                 data.ViewModel.GetByIdQuery.ResultDto.Properties.Add(SourceDtoToProperty(data));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -701,7 +700,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.InsertCommand.ResultDto = RawDto(data);
             data.ViewModel.InsertCommand.ResultDto.Name = $"{name}CommandResult";
             data.ViewModel.InsertCommand.ResultDto.IsResultDto = true;
-            data.ViewModel.InsertCommand.ResultDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.InsertCommand.ResultDto));
+            data.ViewModel.InsertCommand.ResultDto.Properties.Add(await this.GetIdDbColumnProperty(data, data.ViewModel.InsertCommand.ResultDto));
         }
 
         void setupSecurity(CreationData data) =>
@@ -747,7 +746,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.UpdateCommand.ParamsDto = RawDto(data);
             data.ViewModel.UpdateCommand.ParamsDto.Name = $"{name}Command";
             data.ViewModel.UpdateCommand.ParamsDto.IsParamsDto = true;
-            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(await GetIdDbColumnProperty(data, data.ViewModel.UpdateCommand.ParamsDto));
+            data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(await this.GetIdDbColumnProperty(data, data.ViewModel.UpdateCommand.ParamsDto));
             data.ViewModel.UpdateCommand.ParamsDto.Properties.Add(GetSourceDtoAsPropertyModel(data));
         }
 
@@ -769,7 +768,7 @@ internal sealed partial class FunctionalityService
     {
         if (onDto?.DbObject?.Name is not null)
         {
-            var idCol = await _dbTableService.GetIdentityColumn(onDto.DbObject.Name).WithAsync(x => x.Comment = data.COMMENT).ConfigureAwait(false);
+            var idCol = await this._dbTableService.GetIdentityColumn(onDto.DbObject.Name).WithAsync(x => x.Comment = data.COMMENT).ConfigureAwait(false);
             if (idCol is not null)
             {
                 var result = new PropertyViewModel(idCol);
@@ -778,10 +777,7 @@ internal sealed partial class FunctionalityService
         }
         return getDefault(data);
 
-        static PropertyViewModel getDefault(CreationData data)
-        {
-            return new(new DbColumnViewModel("Id", -1, PropertyTypeHelper.ToFullTypeName(PropertyType.Long), false)) { Comment = data.COMMENT };
-        }
+        static PropertyViewModel getDefault(CreationData data) => new(new DbColumnViewModel("Id", -1, PropertyTypeHelper.ToFullTypeName(PropertyType.Long), false)) { Comment = data.COMMENT };
     }
 
     private Task ResetWorkspace(CreationData data, CancellationToken token)

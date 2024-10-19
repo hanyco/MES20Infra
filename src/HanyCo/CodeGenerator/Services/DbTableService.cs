@@ -32,7 +32,10 @@ internal sealed class DbTableService(IConfiguration configuration) : IDbTableSer
     public async Task<DbColumnViewModel> GetIdentityColumn(string tableName, CancellationToken token = default)
     {
         var table = await GetTable(tableName, token);
-        var idCol = table.NotNull($"Table '{tableName}' not found.").Columns.FirstOrDefault(static x => x.IsIdentity || x.Name == "Id").NotNull();
+        var idCol = 
+            table.NotNull($"Table '{tableName}' not found.")
+            .Columns
+            .FirstOrDefault(static x => x.IsIdentity || x.Name == "Id").NotNull();
         return DbColumnViewModel.FromDbColumn(idCol);
     }
 

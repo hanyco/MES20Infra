@@ -1,23 +1,39 @@
 ﻿using Application.DTOs.Identity;
 using Application.Interfaces;
 
+using Library.Validations;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-
 [Route("[controller]")]
 [ApiController]
-public sealed class IdentityController:ControllerBase
+public sealed class IdentityController(IIdentityService identityService, ISecurityService securityService) : ControllerBase
 {
-    private readonly IIdentityService _identityService;
-    private readonly ISecurityService _securityService;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly ISecurityService _securityService = securityService;
 
-    public IdentityController(IIdentityService identityService, ISecurityService securityService)
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePasswordAsync(ChangePasswordRequest model) =>
+        this.Ok(await this._identityService.ChangePassword(model));
+
+    [HttpPost("change-password-by-user")]
+    public async Task<IActionResult> ChangePasswordByUserAsync(ChangePasswordByUserRequest model) =>
+        this.Ok(await this._identityService.ChangePasswordByUser(model));
+
+    [HttpGet("confirm-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string userId, [FromQuery] string code) =>
+        this.Ok(await this._identityService.ConfirmEmailAsync(userId, code));
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
     {
-        this._identityService = identityService;
-        this._securityService = securityService;
+        await this._identityService.ForgotPassword(model, this.Request.Headers.Origin.NotNull());
+        return this.Ok();
     }
 
     /// <summary>
@@ -29,78 +45,44 @@ public sealed class IdentityController:ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetTokenAsync(TokenRequest tokenRequest)
     {
-        var ipAddress = GenerateIPAddress();
-        var token = await _identityService.GetTokenAsync(tokenRequest, ipAddress);
-        return Ok(token);
-    }
-
-    [HttpGet("userInfo")]
-    public async Task<IActionResult> UserInfo()
-    {
-        return Ok(await _identityService.UserInfoAsync());
-    }
-
-    [HttpGet("users/{userId}")]
-    public async Task<IActionResult> UserInfo(string userId)
-    {
-        return Ok(await _identityService.UserInfoAsync(userId));
+        var ipAddress = this.GenerateIPAddress().NotNull(() => "Cannot find local address");
+        var token = await this._identityService.GetTokenAsync(tokenRequest, ipAddress);
+        return this.Ok(token);
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
-        var origin = Request.Headers["origin"];
-        return Ok(await _identityService.RegisterAsync(request, origin));
+        var origin = this.Request.Headers.Origin.NotNull();
+        return this.Ok(await this._identityService.RegisterAsync(request, origin));
     }
-    [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePasswordAsync(ChangePasswordRequest model)
-    {
-        return Ok(await _identityService.ChangePassword(model));
-    }
-    [HttpPost("change-password-by-user")]
-    public async Task<IActionResult> ChangePasswordByUserAsync(ChangePasswordByUserRequest model)
-    {
-        return Ok(await _identityService.ChangePasswordByUser(model));
-    }
+
     [HttpGet("remove/{id}")]
     public async Task<IActionResult> RemoveAsync(string id)
     {
-        var origin = Request.Headers["origin"];
-        return Ok(await _identityService.RemoveAsync(id));
-    }
-    [HttpPost("update")]
-    public async Task<IActionResult> update(UpdateRequest request)
-    {
-        return Ok(await _identityService.UpdateAsync(request));
-    }
-
-    [HttpGet("confirm-email")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string userId, [FromQuery] string code)
-    {
-        return Ok(await _identityService.ConfirmEmailAsync(userId, code));
-    }
-
-    [HttpPost("forgot-password")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
-    {
-        await _identityService.ForgotPassword(model, Request.Headers["origin"]);
-        return Ok();
+        _ = this.Request.Headers.Origin;
+        return this.Ok(await this._identityService.RemoveAsync(id));
     }
 
     [HttpPost("reset-password")]
     [AllowAnonymous]
-    public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
-    {
-        return Ok(await _identityService.ResetPassword(model));
-    }
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest model) =>
+        this.Ok(await this._identityService.ResetPassword(model));
 
-    private string GenerateIPAddress()
-    {
-        if (Request.Headers.ContainsKey("X-Forwarded-For"))
-            return Request.Headers["X-Forwarded-For"];
-        else
-            return HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
-    }
+    [HttpPost("update")]
+    public async Task<IActionResult> Update(UpdateRequest request) =>
+        this.Ok(await this._identityService.UpdateAsync(request));
+
+    [HttpGet("userInfo")]
+    public async Task<IActionResult> UserInfo() =>
+        this.Ok(await this._identityService.UserInfoAsync());
+
+    [HttpGet("users/{userId}")]
+    public async Task<IActionResult> UserInfo(string userId) =>
+        this.Ok(await this._identityService.UserInfoAsync(userId));
+
+    private string? GenerateIPAddress() =>
+        this.Request.Headers.TryGetValue("X-Forwarded-For", out var value)
+            ? (string?)value
+            : this.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
 }

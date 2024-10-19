@@ -62,7 +62,7 @@ public class Code([DisallowNull] in string name, [DisallowNull] in Language lang
     /// Gets the file name of the code. If the file name is null or empty, generate a new file name
     /// based on the code's name, language, and partial status.
     /// </summary>
-    public string FileName => this._FileName.IfNullOrEmpty(GenerateFileName(this.Name, this.Language, this.IsPartial));
+    public string FileName { get => field.IfNullOrEmpty(GenerateFileName(this.Name, this.Language, this.IsPartial)); } = fileName;
 
     /// <summary>
     /// Gets whether the code is partial or not.
@@ -77,14 +77,12 @@ public class Code([DisallowNull] in string name, [DisallowNull] in Language lang
     /// <summary>
     /// Gets the name of the code.
     /// </summary>
-    public string Name { get; } = name.ArgumentNotNull();
+    public string Name { get; } = name;
 
     /// <summary>
     /// Gets or sets the statement of the code.
     /// </summary>
-    public string Statement { get; init; } = statement.ArgumentNotNull();
-
-    private string? _FileName { get; init; } = fileName;
+    public string Statement { get; init; } = statement;
 
     public static implicit operator Code(in (string Name, Language language, string Statement, bool IsPartial) codeData) =>
         new(codeData);

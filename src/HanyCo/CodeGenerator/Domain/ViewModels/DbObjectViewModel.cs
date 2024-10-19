@@ -4,33 +4,35 @@ namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public class DbObjectViewModel : InfraViewModelBase
 {
-    private long _objectId;
-    private string? _schema;
-    private string? _type;
-
-    public DbObjectViewModel(string name, long objectId = -1, string? schema = null, string? type = null)
+    public DbObjectViewModel(string name, long objectId = -1, string? schema = default, string? dbType = default, string? comment = default)
         : base(null, name)
     {
         this.Name = name;
         this.ObjectId = objectId;
         this.Schema = schema;
-        this.Type = type;
+        this.Type = dbType;
+        this.Comment = comment;
+    }
+    public string? Comment
+    {
+        get;
+        set => this.SetProperty(ref field, value);
     }
 
     public long ObjectId
     {
-        get => this._objectId;
-        set => this.SetProperty(ref this._objectId, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
     public string? Schema
     {
-        get => this._schema;
-        set => this.SetProperty(ref this._schema, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
     public string? Type
     {
-        get => this._type;
-        set => this.SetProperty(ref this._type, value);
+        get;
+        set => this.SetProperty(ref field, value);
     }
 
     

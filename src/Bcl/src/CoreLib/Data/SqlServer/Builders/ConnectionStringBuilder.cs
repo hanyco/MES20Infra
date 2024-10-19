@@ -85,7 +85,7 @@ public sealed class ConnectionStringBuilder : IValidatable<ConnectionStringBuild
     /// </summary>
     /// <param name="connectionString">The connection string to validate.</param>
     /// <returns>A Result containing the validated ConnectionStringBuilder.</returns>
-    public static Result<ConnectionStringBuilder> Validate(string? connectionString)
+    public static Result<ConnectionStringBuilder> Validate(string connectionString)
         => Create(connectionString.ArgumentNotNull()).Validate();
 
     /// <summary>

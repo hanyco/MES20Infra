@@ -128,6 +128,7 @@ public static class CodeSnippets
     internal static string InsertCommandHandler_Handle_Body(in CqrsViewModelBase model, in DtoViewModel entityModel)
     {
         var values = GetValues(entityModel.Properties.ExcludeId(), StringHelper.Singularize(model.DbObject.Name)!).ToImmutableArray();
+        var idCol = model.ResultDto.Properties.FindId();
         var insertStatement = SqlStatementBuilder
             .Insert()
             .Into(entityModel.DbObject.ToString())
@@ -135,15 +136,34 @@ public static class CodeSnippets
             .ReturnId()
             .ForceFormatValues(false)
             .Build().Replace(Environment.NewLine, " ").Replace("  ", " ");
+        var converterCode = getConverterCodeLine(idCol);
         var result = new StringBuilder()
             .AppendAllLines(values, x => $"var {x.VariableName} = {x.VariableStatement};")
             .AppendLine($"var dbCommand = $@\"{insertStatement}\";")
             .AppendLine($"var dbResult = await this._sql.{nameof(Sql.ExecuteScalarCommandAsync)}(dbCommand, cancellationToken);")
-            .AppendLine($"int returnValue = Convert.ToInt32(dbResult);")
+            .AppendLine(converterCode)
             .AppendLine($"var result = new {model.GetSegregateResultType("Command").Name}(returnValue);")
             .AppendLine($"return result;")
             .ToString();
         return result;
+
+        static string getConverterCodeLine(PropertyViewModel? idCol)
+        {
+            return idCol?.Type switch
+            {
+                PropertyType.Boolean => $"var returnValue = Convert.ToBoolean(dbResult);",
+                PropertyType.String => $"var returnValue = Convert.ToString(dbResult);",
+                PropertyType.Integer => $"var returnValue = Convert.ToInt32(dbResult);",
+                PropertyType.Long => $"var returnValue = Convert.ToInt64(dbResult);",
+                PropertyType.Short => $"var returnValue = Convert.ToInt16(dbResult);",
+                PropertyType.Float => $"var returnValue = Convert.ToDecimal(dbResult);",
+                PropertyType.Byte => $"var returnValue = Convert.ToByte(dbResult);",
+                PropertyType.DateTime => $"var returnValue = Convert.ToDateTime(dbResult);",
+                PropertyType.Guid => $"var returnValue = Guid.Parse(dbResult);",                
+                PropertyType.Decimal => $"var returnValue = Convert.ToDecimal(dbResult);",
+                _ => "var returnValue = dbResult;",
+            };
+        }
     }
 
     internal static string InsertCommandValidator_Handle_Body(in CqrsCommandViewModel model, in DtoViewModel entityModel)

@@ -71,14 +71,14 @@ internal sealed class BlazorPageService(
                 Dto = dto,
                 IsList = true,
                 IsNullable = true,
-                DbObject = propertyDbObject
+                DbObject = DbColumnViewModel.FromDbObjectViewModel(propertyDbObject)
             };
             var detailsProp = new PropertyViewModel($"{pureName}DetailsDto", PropertyType.Dto)
             {
                 Dto = dto,
                 IsList = false,
                 IsNullable = true,
-                DbObject = propertyDbObject
+                DbObject = DbColumnViewModel.FromDbObjectViewModel(propertyDbObject)
             };
             result.DataContext = dto.IsViewModel ? dto : new()
             {
@@ -90,7 +90,7 @@ internal sealed class BlazorPageService(
                 NameSpace = dto.NameSpace,
                 Module = dto.Module
             };
-            _ = result.DataContext.Properties.AddRange(new[] { listProp, detailsProp });
+            _ = result.DataContext.Properties.AddRange([listProp, detailsProp]);
         }
         return result;
     }
@@ -135,7 +135,7 @@ internal sealed class BlazorPageService(
             var query = from x in this._readDbContext.UiPageComponents
                         where !pageCompIds.Contains(x.UiComponentId) && x.PageId == id
                         select x.Id;
-            var removedComponents = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+            var removedComponents = await query.ToListLockAsync(this._readDbContext.AsyncLock, cancellationToken: cancellationToken);
             _ = this._writeDbContext.RemoveById<UiPageComponent>(removedComponents);
 
             var save = await this.SubmitChangesAsync(persist, token: cancellationToken);

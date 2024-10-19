@@ -45,7 +45,7 @@ public static class ValidationExtensions
 
     [MemberNotNull(nameof(ValidationResultSet<string>.Value))]
     public static ValidationResultSet<string> ArgumentNotNull(this ValidationResultSet<string> vrs, Func<Exception> onError = null) =>
-        vrs.InnerAddRule(x => x, [DebuggerStepThrough, StackTraceHidden] (_) => vrs.Value.IsNullOrEmpty(), onError, () => new ArgumentNullException(vrs._valueName));
+        vrs.InnerAddRule(x => x, [DebuggerStepThrough, StackTraceHidden] (_) => !vrs.Value.IsNullOrEmpty(), onError, () => new ArgumentNullException(vrs._valueName));
 
     /// <summary> Traverses the rules and create a fail <code>Result<TValue></code>, at first broken
     /// rule . Otherwise created a succeed result. </summary>

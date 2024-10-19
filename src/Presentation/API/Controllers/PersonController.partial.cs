@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace HumanResources.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("[controller]")]
-[Authorize]
 public sealed class PersonController : ControllerBase
 {
     private IMediator _mediator;

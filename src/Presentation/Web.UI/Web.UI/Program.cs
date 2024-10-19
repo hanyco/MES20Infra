@@ -6,6 +6,7 @@ using Library.Validations;
 using Microsoft.AspNetCore.Components.Authorization;
 
 using Web.UI.Components;
+using Web.UI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,29 +20,18 @@ builder.Services
 
 builder.Services.AddMemoryCache();
 
-//var baseAddress = builder.Configuration["ApiSettings:BaseAddress"];
-
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
-
 //builder.Services.AddHttpClient("MES.Web.UI", client =>
 //{
 //    client.BaseAddress = new Uri(baseAddress);
 //}).AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
-builder.Services.AddHttpClient("MES.Web.UI", client =>
-{
-    var baseAddress = builder.Configuration["ApiSettings:BaseAddress"];
-    if (string.IsNullOrEmpty(baseAddress))
-    {
-        throw new InvalidOperationException("BaseAddress is not configured.");
-    }
-
-    client.BaseAddress = new Uri(baseAddress.TrimEnd('/'));
-}).AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
+var baseAddress = builder.Configuration["ApiSettings:BaseAddress"];
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
 
 
 var app = builder.Build();
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -54,6 +44,7 @@ else
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+app.UseAuthenticationMiddleware();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
