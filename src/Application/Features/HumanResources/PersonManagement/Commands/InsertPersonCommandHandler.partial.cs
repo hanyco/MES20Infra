@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using HumanResources.Dtos;
+using Mes.HumanResources.Dtos;
 
-namespace HumanResources.Commands;
+namespace Mes.HumanResources.Commands;
 internal sealed partial class InsertPersonCommandHandler : IRequestHandler<InsertPersonCommand, InsertPersonCommandResult>
 {
     private readonly IMediator _mediator;
@@ -22,7 +22,7 @@ internal sealed partial class InsertPersonCommandHandler : IRequestHandler<Inser
         var height = request.Person.Height?.ToString() ?? "null";
         var dbCommand = $@"INSERT INTO [dbo].[Person]   ([FirstName], [LastName], [DateOfBirth], [Height])   VALUES ({firstName}, {lastName}, {dateOfBirth}, {height}); SELECT SCOPE_IDENTITY();";
         var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);
-        int returnValue = Convert.ToInt32(dbResult);
+        var returnValue = Convert.ToInt64(dbResult);
         var result = new InsertPersonCommandResult(returnValue);
         return result;
     }

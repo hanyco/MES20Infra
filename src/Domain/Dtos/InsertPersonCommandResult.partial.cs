@@ -1,6 +1,6 @@
 using System;
 
-namespace HumanResources.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class InsertPersonCommandResult
 {
     public Int64 Id { get; set; }

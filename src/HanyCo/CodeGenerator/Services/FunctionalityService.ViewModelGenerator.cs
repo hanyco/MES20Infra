@@ -124,6 +124,13 @@ internal sealed partial class FunctionalityService
         _ = model.AdditionalInjects.Add(httpClient);
         return model;
     }
+    private static UiComponentViewModel AddLocalStorageService(UiComponentViewModel model)
+    {
+        var localStorage = (Type: TypePath.New("Microsoft.AspNetCore.Components.WebAssembly.Authentication.ILocalStorageService"), FieldName: "_localStorage");
+        _ = model.AddUsings(localStorage.Type.NameSpace);
+        _ = model.AdditionalInjects.Add(localStorage);
+        return model;
+    }
 
     private static DbColumnViewModel GetDbColumn(string name, PropertyType type, string? dtoFullName = null) =>
         new(name, -1, PropertyTypeHelper.ToFullTypeName(type, dtoFullName), false);
@@ -212,9 +219,13 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponent.PageDataContext = data.ViewModel.BlazorDetailsPage.DataContext;
             data.ViewModel.BlazorDetailsComponent.PageDataContextProperty = data.ViewModel.BlazorDetailsPage.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponent.Attributes.Add(new("@bind-EntityId", "this.Id"));
-            _ = data.ViewModel.BlazorDetailsComponent.AddUsings("Web.UI.Components.Shared", typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!, data.ViewModel.SourceDto!.NameSpace);
-            //data.ViewModel.BlazorDetailsComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            _ = data.ViewModel.BlazorDetailsComponent
+                .AddUsings("Web.UI.Components.Shared")
+                .AddUsings(typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!)
+                .AddUsings(data.ViewModel.SourceDto!.NameSpace)
+                .AddUsings("Microsoft.AspNetCore.Components.WebAssembly.Authentication");
             _ = AddHttpClientInjection(data.ViewModel.BlazorDetailsComponent);
+            AddLocalStorageService(data.ViewModel.BlazorDetailsComponent);
             data.ViewModel.BlazorDetailsPage.Components.Add(data.ViewModel.BlazorDetailsComponent);
         }
 
@@ -329,6 +340,7 @@ internal sealed partial class FunctionalityService
             _ = data.ViewModel.BlazorListComponent.AddUsings("Web.UI.Components.Shared", data.ViewModel.SourceDto!.NameSpace);
             //data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
             _ = AddHttpClientInjection(data.ViewModel.BlazorListComponent);
+            AddLocalStorageService(data.ViewModel.BlazorListComponent);
             data.ViewModel.BlazorListPage.Components.Add(data.ViewModel.BlazorListComponent);
         }
 

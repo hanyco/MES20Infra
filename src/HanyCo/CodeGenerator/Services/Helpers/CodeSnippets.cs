@@ -5,6 +5,7 @@ using HanyCo.Infra.Internals.Data.DataSources;
 using Library.CodeGeneration;
 using Library.Data.SqlServer;
 using Library.Helpers.CodeGen;
+using Library.Web.Results;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -62,11 +63,22 @@ public static class CodeSnippets
         return result;
     }
 
-    internal static string BlazorDetailsComponent_LoadPage_Body(in string controllerName, in string sourceDtoName) =>
-        new StringBuilder()
-            .AppendLine("if (this.EntityId is { } entityId)")
-            .AppendLine("{")
-            .AppendLine(GenerateApiCallCode(controllerName, queryParams: ["{entityId}"], resultTypeName: TypePath.New(sourceDtoName)))
+    internal static string BlazorDetailsComponent_LoadPage_Body(in string controllerName, in string sourceDtoName)
+    {
+        var result = new StringBuilder()
+            .AppendLine(GenerateApiCallCode(controllerName, queryParams: ["{entityId}"], resultTypeName: TypePath.New(sourceDtoName),
+                startLines: [
+                    "if (this.EntityId is { } entityId)",
+                    "{"
+                    ],
+                endLines: [
+                    "this.DataContext = apiResult;",
+                    "}",
+                    "else",
+                    "{",
+                    "this.DataContext = new();",
+                    "}"
+                    ]))
             .AppendLine("   this.DataContext = apiResult;")
             .AppendLine("}")
             .AppendLine("else")
@@ -74,38 +86,45 @@ public static class CodeSnippets
             .AppendLine("   this.DataContext = new();")
             .AppendLine("}")
             .ToString();
+        return result;
+    }
 
-    internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(in string controllerName, in string sourceDtoName) =>
-        new StringBuilder()
-            .AppendLine($"if (this.DataContext.Id == default)")
-            .AppendLine($"{{")
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Post, paramVarName: "DataContext"))
-            .AppendLine($"}}")
-            .AppendLine($"else")
-            .AppendLine($"{{")
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Put, queryParams: ["{this.DataContext.Id}"], paramVarName: "DataContext"))
-            .AppendLine($"}}")
-            .AppendLine($"MessageComponent.Show(\"Save Data\", \"Data saved successfully.\");")
-            .ToString();
+    internal static string BlazorDetailsComponent_SaveButton_OnClick_Body(in string controllerName, in string sourceDtoName)
+    {
+        var result = GenerateApiCallCode(controllerName, method: HttpMethod.Post, paramVarName: "DataContext",
+                startLines: [
+                    $"if (this.DataContext.Id == default)",
+                    $"{{"
+                    ],
+                endLines: [
+                    $"}}",
+                    $"else",
+                    $"{{",
+                    GenerateApiCallCode(controllerName, method: HttpMethod.Put, queryParams: ["{this.DataContext.Id}"], paramVarName: "DataContext", embrassInToken: false),
+                    $"MessageComponent.Show(\"Save Data\", \"Data saved successfully.\");",
+                    $"}}",
+                    ]);
+        return result;
+    }
+        
 
     internal static string BlazorListComponent_DeleteButton_OnClick_Body(in string controllerName, in string sourceDtoName)
     {
-        var result = new StringBuilder()
-            // Reads Id from argument
-            .AppendLine(GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["{id}"], type: "typeof(bool)"))
-            .AppendLine($"await OnInitializedAsync();")
-            .AppendLine($"MessageComponent.Show(\"Delete Entity\", \"Entity deleted.\");")
-            .AppendLine($"this.StateHasChanged();");
+        var result = GenerateApiCallCode(controllerName, method: HttpMethod.Delete, queryParams: ["{id}"], type: "typeof(bool)",
+            endLines:
+            [
+                $"await OnInitializedAsync();",
+                $@"MessageComponent.Show(""Delete Entity"", ""Entity deleted."");",
+                $"this.StateHasChanged();"
+            ]);
 
         return result.ToString();
     }
 
     internal static string BlazorListComponent_LoadPage_Body(in string controllerName, in string resultDtoName, in string sourceDtoName, in string httClientInstanceName = "_http")
     {
-        var result = new StringBuilder()
-            .Append(GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName), closeStatement: false))
-            .AppendLine(".ToListAsync();")
-            .AppendLine("this.DataContext = apiResult;");
+        var result = GenerateApiCallCode(controllerName, resultTypeName: TypePath.NewEnumerable(sourceDtoName), closeStatement: false,
+            endLines: [".ToListAsync();", "this.DataContext = apiResult;"]);
         return result.ToString();
     }
 
@@ -221,7 +240,10 @@ public static class CodeSnippets
         in IEnumerable<(string Key, string Value)>? keyValueQueryParams = null,
         in string? paramVarName = null,
         in string? type = null,
-        in bool closeStatement = true
+        in bool closeStatement = true,
+        in bool embrassInToken = true,
+        IEnumerable<string>? startLines = null,
+        IEnumerable<string>? endLines =  null
         )
     {
         var httpClientMethodName = method switch
@@ -237,31 +259,60 @@ public static class CodeSnippets
         // Http.GetFromJsonAsync<PersonDto>($"HumanResources/person/{personId}");
         // var apiResult = await Http.PostAsJsonAsync("HumanResources/person", newPerson);
 
-        // var apiResult = await _http.GetFromJsonAsync
         var returnStatement = returnVarStatement.IsNullOrEmpty() ? "" : $"{returnVarStatement} = ";
-        var sb = new StringBuilder($"{returnStatement} await {httpClientInstanceName.Trim('.')}.{httpClientMethodName}")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>
-            .Append(resultTypeName is { } value ? $"<{value}>" : "")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"
-            .Append("($\"")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/
-            .Append(nameSpace?.Trim('/') is { } ns ? $"{ns}/" : null)
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/
-            .Append($"{controllerName.TrimSuffix("Controller").Trim('/').ToLower()}/")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/
-            .AppendAll(queryParams.Compact().Select(qp => $"{qp.Trim('/')}/"))
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5
-            .Append(keyValueQueryParams.Compact(kv => kv is { Key: not null } and { Value: not null }).Select(kv => $"{kv.Key}={kv.Value}").Merge('&'))
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5"
-            .Append('"')
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson
-            .Append(paramVarName.IsNullOrEmpty() ? null : $", {paramVarName}")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type
-            .Append(type.IsNullOrEmpty() ? null : $", {type}")
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type)
-            .Append(')')
-            // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type);
-            .Append(closeStatement ? ';' : null);
+        var sb = new StringBuilder();
+        if (embrassInToken)
+        {
+            // var token = await _localStorage.GetItemAsync<string>("authToken");
+            sb.Append($"""var token = await _localStorage.GetItemAsync<string>("authToken");""");
+            //if (!string.IsNullOrEmpty(token))
+            //{
+            //    _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            //}
+            sb.AppendLine($"""if (!string.IsNullOrEmpty(token))""");
+            sb.AppendLine("{");
+            sb.AppendLine($"""_http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);""");
+            sb.AppendLine("}");
+            sb.AppendLine();
+            sb.AppendLine($"""try""");
+            sb.AppendLine("{");
+        }
+        sb.AppendAllLines(startLines);
+
+        // var apiResult = await _http.GetFromJsonAsync
+        sb.AppendLine($"""{returnStatement} await {httpClientInstanceName.Trim('.')}.{httpClientMethodName}""");
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>
+        sb.Append(resultTypeName is { } value ? $"<{value}>" : "");
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"
+        sb.Append("($\"");
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/
+        sb.Append(nameSpace?.Trim('/') is { } ns ? $"{ns}/" : null);
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/
+        sb.Append($"{controllerName.TrimSuffix("Controller").Trim('/').ToLower()}/");
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/
+        sb.AppendAll(queryParams.Compact().Select(qp => $"{qp.Trim('/')}/"));
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5
+        sb.Append(keyValueQueryParams.Compact(kv => kv is { Key: not null } and { Value: not null }).Select(kv => $"{kv.Key}={kv.Value}").Merge('&'));
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5"
+        sb.Append('"');
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson
+        sb.Append(paramVarName.IsNullOrEmpty() ? null : $", {paramVarName}");
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type
+        sb.Append(type.IsNullOrEmpty() ? null : $", {type}");
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type)
+        sb.Append(')');
+        // var apiResult = await _http.GetFromJsonAsync<PersonDto>($"HumanResources/person/123456/name=ali&age=5", newPerson, type);
+        sb.Append(closeStatement ? ';' : null);
+
+        sb.AppendAllLines(endLines);
+        if (embrassInToken)
+        {
+            sb.AppendLine("}");
+            sb.AppendLine($"""catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)""");
+            sb.AppendLine("{");
+            sb.AppendLine($"""_navigationManager.NavigateToLogin("/login");""");
+            sb.AppendLine("}");
+        }
         var result = sb.ToString();
         return result;
     }

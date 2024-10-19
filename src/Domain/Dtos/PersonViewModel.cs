@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using HumanResources.Dtos;
+using Mes.HumanResources.Dtos;
 
-namespace HumanResources.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed class PersonViewModel
 {
     public List<PersonDto?>? PeopleListDto { get; set; }

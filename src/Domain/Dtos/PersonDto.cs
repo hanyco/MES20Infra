@@ -1,6 +1,6 @@
 using System;
 
-namespace HumanResources.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed class PersonDto
 {
     public Int64 Id { get; set; }

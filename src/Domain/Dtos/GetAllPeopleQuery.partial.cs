@@ -1,7 +1,7 @@
 using MediatR;
-using HumanResources.Dtos;
+using Mes.HumanResources.Dtos;
 
-namespace HumanResources.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class GetAllPeopleQuery : IRequest<GetAllPeopleQueryResult>
 {
     public GetAllPeopleQuery()

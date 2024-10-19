@@ -2,11 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using System;
 using System.Threading.Tasks;
-using HumanResources.Dtos;
+using Mes.HumanResources.Dtos;
 using Library.Results;
-using Microsoft.AspNetCore.Authorization;
 
-namespace HumanResources.Controllers;
+namespace Mes.HumanResources.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("[controller]")]
 public sealed class PersonController : ControllerBase
@@ -24,7 +23,7 @@ public sealed class PersonController : ControllerBase
         return this.Ok(result.People);
     }
 
-    [HttpGetAttribute("{id:long}")]
+    [HttpGetAttribute("{id}")]
     public async Task<IActionResult> GetById(Int64 id)
     {
         var result = await this._mediator.Send(new GetByIdPersonQuery(id));
@@ -38,14 +37,14 @@ public sealed class PersonController : ControllerBase
         return this.Ok(result.Id);
     }
 
-    [HttpPutAttribute("{id:long}")]
+    [HttpPutAttribute("{id}")]
     public async Task<IActionResult> Update(Int64 id, PersonDto personDto)
     {
         var result = await this._mediator.Send(new UpdatePersonCommand(id, personDto));
         return this.Ok(result);
     }
 
-    [HttpDeleteAttribute("{id:long}")]
+    [HttpDeleteAttribute("{id}")]
     public async Task<IActionResult> Delete(Int64 id)
     {
         var result = await this._mediator.Send(new DeletePersonCommand(id));

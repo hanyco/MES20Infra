@@ -1,4 +1,4 @@
-namespace HumanResources.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class InsertPersonCommandResult
 {
 }

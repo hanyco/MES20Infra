@@ -1,14 +1,16 @@
-@namespace HumanResources
+@namespace Mes.HumanResources
 
+@using Blazored.LocalStorage
 @using HanyCo.Infra.Blazor
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
-@using HumanResources.Dtos
+@using Mes.HumanResources.Dtos
 @using Web.UI.Components.Shared
 
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
 @inject HttpClient _http
+@inject ILocalStorageService _localStorage;
 
 @inherits HanyCo.Infra.Blazor.ComponentBase<List<PersonDto>, PersonViewModel>
 

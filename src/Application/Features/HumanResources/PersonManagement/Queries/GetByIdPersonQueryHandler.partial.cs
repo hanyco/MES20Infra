@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using HumanResources.Dtos;
+using Mes.HumanResources.Dtos;
 
-namespace HumanResources.Queries;
+namespace Mes.HumanResources.Queries;
 internal sealed partial class GetByIdPersonQueryHandler : IRequestHandler<GetByIdPersonQuery, GetByIdPersonQueryResult>
 {
     private readonly IMediator _mediator;

@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HumanResources.Pages;
+namespace Mes.HumanResources.Pages;
 public partial class PersonDetailsPage
 {
     protected override async Task OnLoadAsync()

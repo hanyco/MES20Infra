@@ -1,8 +1,7 @@
-
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
-using HumanResources;
-using HumanResources.Dtos;
+using Mes.HumanResources;
+using Mes.HumanResources.Dtos;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System;
@@ -11,8 +10,9 @@ using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
-namespace HumanResources;
+namespace Mes.HumanResources;
 public partial class PersonDetailsComponent
 {
     protected override async Task OnInitializedAsync()
@@ -22,16 +22,28 @@ public partial class PersonDetailsComponent
 
     public async Task SaveData()
     {
-        if (this.DataContext.Id == default)
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrEmpty(token))
         {
-            var apiResult = await _http.PostAsJsonAsync($"person/", DataContext);
-        }
-        else
-        {
-            var apiResult = await _http.PutAsJsonAsync($"person/{this.DataContext.Id}/", DataContext);
+            _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
 
-        MessageComponent.Show("Save Data", "Data saved successfully.");
+        try
+        {
+            if (this.DataContext.Id == default)
+            {
+                var apiResult = await _http.PostAsJsonAsync($"person/", DataContext);
+            }
+            else
+            {
+                var apiResult = await _http.PutAsJsonAsync($"person/{this.DataContext.Id}/", DataContext);
+                MessageComponent.Show("Save Data", "Data saved successfully.");
+            }
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _navigationManager.NavigateToLogin("/login");
+        }
     }
 
     public MessageComponent MessageComponent { get; set; }

@@ -1,4 +1,4 @@
-namespace HumanResources.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class GetByIdPersonQueryResult
 {
     public PersonDto PersonDto { get; set; }
