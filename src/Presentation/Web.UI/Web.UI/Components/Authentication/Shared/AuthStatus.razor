@@ -20,7 +20,8 @@ else
 @code {
     private bool isAuthenticated;
     private string? userName;
-    
+    private string? lastToken;
+
     private void Logout()
     {
         _localStorage.RemoveItemAsync("authToken");
@@ -31,21 +32,31 @@ else
     {
         var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
-        var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
+        var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "full_name");
+        if (claim?.Value?.IsNullOrEmpty() is not false)
+        {
+            claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub");
+        }
         return claim?.Value;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         var token = await _localStorage.GetItemAsync<string>("authToken");
-        if (!string.IsNullOrEmpty(token))
+        if (firstRender || token != lastToken)
         {
-            isAuthenticated = true;
-            userName = GetUserNameFromToken(token);
-        }
-        else
-        {
-            isAuthenticated = false;
+            lastToken = token;
+            if (!string.IsNullOrEmpty(token))
+            {
+                isAuthenticated = true;
+                userName = GetUserNameFromToken(token);
+            }
+            else
+            {
+                isAuthenticated = false;
+            }
+
+            StateHasChanged();
         }
     }
 }
