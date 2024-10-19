@@ -9,7 +9,7 @@ public interface IIdentityService
 
     Task<Result<string>> UpdateAsync(UpdateRequest request);
     Task<Result<string>> RemoveAsync(string Id);
-    Task<Result<string>> RegisterAsync(RegisterRequest request, string origin);
+    Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
     Task<Result<UserInfoExResponse>> UserInfoAsync(string userId);
     Task<Result<UserInfoResponse>> UserInfoAsync();
     Task<Result<string>> ConfirmEmailAsync(string userId, string code);

@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <ProjectReference Include="..\..\..\Application\Application.csproj" />
     <ProjectReference Include="..\..\..\Bcl\src\CoreLib\CoreLib.csproj" />
     <ProjectReference Include="..\..\..\Bcl\src\CqrsLib\CqrsLib.csproj" />

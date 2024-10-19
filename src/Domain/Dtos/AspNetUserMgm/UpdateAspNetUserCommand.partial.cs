@@ -1,9 +1,8 @@
 using MediatR;
-using Mes.Security.Dtos;
+using Mes.HumanResources.Dtos;
 using System;
-using Mes.Security;
 
-namespace Mes.Security.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class UpdateAspNetUserCommand : IRequest<UpdateAspNetUserCommandResult>
 {
     public UpdateAspNetUserCommand()

@@ -82,7 +82,8 @@ public static class ServiceCollectionExtensions
                     OnForbidden = context => context.Response.WriteErrorAsync(StatusCodes.Status403Forbidden, "You are not authorized to access this resource")
                 };
             });
-
+        _ = services
+            .AddHttpContextAccessor();
         return services;
     }
 

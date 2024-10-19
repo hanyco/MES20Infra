@@ -18,36 +18,36 @@ public class IdentityContext(DbContextOptions<IdentityContext> options) : Identi
         builder.HasDefaultSchema("Identity");
         builder.Entity<ApplicationUser>(entity =>
         {
-            entity.ToTable(name: "Users");
+            entity.ToTable(name: "AspNetUsers");
         });
 
         builder.Entity<IdentityRole>(entity =>
         {
-            entity.ToTable(name: "Roles");
+            entity.ToTable(name: "AspNetRoles");
         });
         builder.Entity<IdentityUserRole<string>>(entity =>
         {
-            entity.ToTable("UserRoles");
+            entity.ToTable("AspNetUserRoles");
         });
 
         builder.Entity<IdentityUserClaim<string>>(entity =>
         {
-            entity.ToTable("UserClaims");
+            entity.ToTable("AspNetUserClaims");
         });
 
         builder.Entity<IdentityUserLogin<string>>(entity =>
         {
-            entity.ToTable("UserLogins");
+            entity.ToTable("AspNetUserLogins");
         });
 
         builder.Entity<IdentityRoleClaim<string>>(entity =>
         {
-            entity.ToTable("RoleClaims");
+            entity.ToTable("AspNetRoleClaims");
         });
 
         builder.Entity<IdentityUserToken<string>>(entity =>
         {
-            entity.ToTable("UserTokens");
+            entity.ToTable("AspNetUserTokens");
         });
     }
 }

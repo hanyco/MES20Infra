@@ -1,0 +1,67 @@
+﻿@page "/register"
+@using Blazored.LocalStorage
+@using Domain.Dtos
+@using Web.UI.ViewModels
+@inject HttpClient _http
+@inject NavigationManager _navigation
+@inject ILocalStorageService _localStorage
+
+<h3>Register</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+<EditForm Model="registerModel" OnValidSubmit="HandleRegistration">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="username">Username</label>
+        <InputText id="username" class="form-control" @bind-Value="registerModel.UserName" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email">Email</label>
+        <InputText id="email" class="form-control" type="email" @bind-Value="registerModel.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password">Password</label>
+        <InputText id="password" class="form-control" type="password" @bind-Value="registerModel.Password" />
+    </div>
+
+    <div class="mb-3">
+        <label for="confirmPassword">Confirm Password</label>
+        <InputText id="confirmPassword" class="form-control" type="password" @bind-Value="registerModel.ConfirmPassword" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+</EditForm>
+
+@code {
+    private RegisterModel registerModel = new RegisterModel();
+    private string? ErrorMessage;
+
+    private async Task HandleRegistration()
+    {
+        try
+        {
+            var response = await _http.PostAsJsonAsync("identity/register", registerModel);
+            if (response.IsSuccessStatusCode)
+            {
+                _navigation.NavigateTo("/login");
+            }
+            else
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+                ErrorMessage = result?.Message ?? "Registration failed.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+    }
+}

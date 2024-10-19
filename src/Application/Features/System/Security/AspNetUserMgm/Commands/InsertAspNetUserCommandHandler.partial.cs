@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using HumanResources.Dtos;
+using Mes.HumanResources.Dtos;
 
-namespace HumanResources.Commands;
+namespace Mes.HumanResources.Commands;
 internal sealed partial class InsertAspNetUserCommandHandler : IRequestHandler<InsertAspNetUserCommand, InsertAspNetUserCommandResult>
 {
     private readonly IMediator _mediator;

@@ -1,5 +1,7 @@
+using System.Net.Http.Headers;
 using System.Runtime.Versioning;
 
+using Blazored.LocalStorage;
 
 using Library.Validations;
 
@@ -28,6 +30,7 @@ builder.Services.AddMemoryCache();
 var baseAddress = builder.Configuration["ApiSettings:BaseAddress"];
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
+builder.Services.AddBlazoredLocalStorage();
 
 
 var app = builder.Build();

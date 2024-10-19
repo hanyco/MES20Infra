@@ -1,4 +1,4 @@
-namespace Mes.Security.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class GetByIdAspNetUserQueryResult
 {
     public AspNetUserDto AspNetUserDto { get; set; }

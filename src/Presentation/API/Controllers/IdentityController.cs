@@ -1,6 +1,8 @@
 ﻿using Application.DTOs.Identity;
 using Application.Interfaces;
 
+using Domain.Dtos;
+
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authorization;
@@ -47,14 +49,22 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     {
         var ipAddress = this.GenerateIPAddress().NotNull(() => "Cannot find local address");
         var token = await this._identityService.GetTokenAsync(tokenRequest, ipAddress);
-        return this.Ok(token);
+        if (token.IsSucceed)
+            return this.Ok(token.Value);
+        else
+            return this.Unauthorized(new ApiErrorResponse(token.Exception.Message, StatusCodes.Status401Unauthorized));
     }
 
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
-        var origin = this.Request.Headers.Origin.NotNull();
-        return this.Ok(await this._identityService.RegisterAsync(request, origin));
+        //var origin = this.Request.Headers.Origin.NotNull();
+        var result = await _identityService.RegisterAsync(request);
+        if (result.IsSucceed)
+            return Ok(result.Message);
+        else
+            return BadRequest(result.Message);
     }
 
     [HttpGet("remove/{id}")]

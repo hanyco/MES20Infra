@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Mes.Security;
+using Mes.HumanResources.Dtos;
 
-namespace Mes.Security;
+namespace Mes.HumanResources.Dtos;
 public sealed class AspNetUserViewModel
 {
     public List<AspNetUserDto?>? AspNetUsersListDto { get; set; }

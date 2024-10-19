@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Mes.Security;
+using Mes.HumanResources.Dtos;
 
-namespace Mes.Security.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class GetAllAspNetUsersQueryResult
 {
     public List<AspNetUserDto> AspNetUsers { get; set; }

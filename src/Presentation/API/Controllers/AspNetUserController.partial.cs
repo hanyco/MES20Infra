@@ -2,12 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using System;
 using System.Threading.Tasks;
-using HumanResources.Dtos;
+using Mes.HumanResources.Dtos;
 using Library.Results;
-using Mes.Security.Dtos;
-using Mes.Security;
 
-namespace HumanResources.Controllers;
+namespace Mes.HumanResources.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("[controller]")]
 public sealed class AspNetUserController : ControllerBase
@@ -40,14 +38,14 @@ public sealed class AspNetUserController : ControllerBase
     }
 
     [HttpPutAttribute("{id}")]
-    public async Task<IActionResult> Update(Int64 id, AspNetUserDto aspNetUserDto)
+    public async Task<IActionResult> Update(String id, AspNetUserDto aspNetUserDto)
     {
         var result = await this._mediator.Send(new UpdateAspNetUserCommand(id, aspNetUserDto));
         return this.Ok(result);
     }
 
     [HttpDeleteAttribute("{id}")]
-    public async Task<IActionResult> Delete(Int64 id)
+    public async Task<IActionResult> Delete(String id)
     {
         var result = await this._mediator.Send(new DeleteAspNetUserCommand(id));
         return this.Ok(true);

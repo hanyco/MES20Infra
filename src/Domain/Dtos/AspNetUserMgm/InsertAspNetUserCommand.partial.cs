@@ -1,8 +1,7 @@
 using MediatR;
-using Mes.Security.Dtos;
-using Mes.Security;
+using Mes.HumanResources.Dtos;
 
-namespace Mes.Security.Dtos;
+namespace Mes.HumanResources.Dtos;
 public sealed partial class InsertAspNetUserCommand : IRequest<InsertAspNetUserCommandResult>
 {
     public InsertAspNetUserCommand()

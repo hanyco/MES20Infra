@@ -1,0 +1,51 @@
+﻿@using Blazored.LocalStorage
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navigation
+
+@if (isAuthenticated)
+{
+    <span>Hello, @userName!</span>
+    <button class="btn btn-link" @onclick="Logout">Log out</button>
+}
+else
+{
+    <a href="login">Login</a>
+
+    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|</span>
+
+    <a href="register">Register</a>
+}
+
+
+@code {
+    private bool isAuthenticated;
+    private string? userName;
+    
+    private void Logout()
+    {
+        _localStorage.RemoveItemAsync("authToken");
+        _navigation.NavigateTo("login");
+    }
+
+    private string? GetUserNameFromToken(string token)
+    {
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
+        return claim?.Value;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            isAuthenticated = true;
+            userName = GetUserNameFromToken(token);
+        }
+        else
+        {
+            isAuthenticated = false;
+        }
+    }
+}

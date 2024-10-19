@@ -1,6 +1,7 @@
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
-using Mes.Security;
+using Mes.HumanResources;
+using Mes.HumanResources.Dtos;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System;
@@ -10,7 +11,7 @@ using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
 
-namespace Mes.Security;
+namespace Mes.HumanResources;
 public partial class AspNetUserDetailsComponent
 {
     protected override async Task OnInitializedAsync()
@@ -42,6 +43,6 @@ public partial class AspNetUserDetailsComponent
 
     public void BackButton_OnClick()
     {
-        this._navigationManager.NavigateTo("/System/AspNetUser");
+        this._navigationManager.NavigateTo("/HumanResources/AspNetUser");
     }
 }

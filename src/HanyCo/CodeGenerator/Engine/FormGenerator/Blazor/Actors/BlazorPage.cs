@@ -39,7 +39,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
         if (pageRoute.IsNullOrEmpty())
         {
             // Generate route form scratch.
-            pureRoute = $"@page \"/{moduleName.ArgumentNotNull().Remove(" ")}/{purify(pageName)}";
+            pureRoute = $"""@page "/{moduleName.ArgumentNotNull().Remove(" ")}/{purify(pageName)}""";
         }
         else
         {
@@ -60,7 +60,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
 
         return result;
 
-        static string purify(string pageName) => pageName.NotNull().TrimStart('/').TrimEnd('/').TrimSuffix("Page").Trim();
+        static string purify(string pageName) => pageName.NotNull().Trim('/').TrimSuffix("Page").Trim('/').Trim();
         static string merge(string s, IEnumerable<string> items)
         {
             var result = new StringBuilder(s);

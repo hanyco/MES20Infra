@@ -1,11 +1,11 @@
-@page "/System/AspNetUser/details"
-@page "/System/AspNetUser/details/{Id:long}"
+@page "/HumanResources/AspNetUser/details"
+@page "/HumanResources/AspNetUser/details/{Id}"
 
-@namespace Mes.Security.Pages
+@namespace Mes.HumanResources.Pages
 
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
-@using Mes.Security
+@using Mes.HumanResources.Dtos
 
 @inject NavigationManager NavigationManager
 @inject IMemoryCache _memoryCache

@@ -95,6 +95,7 @@ internal sealed partial class ControllerService(
                 .AddAttribute<RouteAttribute>((null, "[controller]"));
             if (viewModel.IsAnonymousAllow)
             {
+                controllerClass.UsingNamesSpaces.Add(typeof(AllowAnonymousAttribute).Namespace!);
                 _ = controllerClass.AddAttribute<AllowAnonymousAttribute>();
             }
 

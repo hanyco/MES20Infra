@@ -161,7 +161,7 @@ internal sealed partial class FunctionalityService
         var result = new CreationData(viewModel, viewModel.SourceDto.Name!, tokenSource);
         if (result.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
         {
-            result.ViewModel.SourceDto.NameSpace = TypePath.Combine(result.ViewModel.SourceDto.NameSpace, result.ViewModel.SourceDto.Module.Name!.Remove(" "), "Dtos");
+            result.ViewModel.SourceDto.NameSpace = TypePath.Combine("Mes", result.ViewModel.SourceDto.Module.Name!.Remove(" "), "Dtos");
         }
         if (result.ViewModel.Module is null)
         {
@@ -336,7 +336,7 @@ internal sealed partial class FunctionalityService
         {
             var pageName = $"{CommonHelpers.Purify(data.ViewModel.SourceDto.Name!)}/details";
             var pureRoute = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null);
-            var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null, "{Id:long}");
+            var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null, "{Id}");
             _ = data.ViewModel.BlazorDetailsPage.Routes.AddRange(pureRoute, routeWithId);
 
             var newButton = new UiComponentCustomButton
@@ -436,11 +436,11 @@ internal sealed partial class FunctionalityService
 
         void createGetByIdApi(CreationData data)
         {
-            var idCol = SqlTypeHelper.SqlTypeToNetType(data.ViewModel.SourceDto.Properties.FindId()!.DbObject!.Type!);
+            var idType = SqlTypeHelper.SqlTypeToNetType(data.ViewModel.SourceDto.Properties.FindId()!.DbObject!.Type!);
             var api = ControllerMethodViewModel
                 .New("GetById")
                 .AddHttpMethod<HttpGetAttribute>("{id}")
-                .AddArgument(TypePath.New(idCol), "id")
+                .AddArgument(TypePath.New(idType), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQuery}(id));")
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetByIdQuery.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
@@ -465,10 +465,11 @@ internal sealed partial class FunctionalityService
         void createUpdateApi(CreationData data)
         {
             var argName = TypeMemberNameHelper.ToArgName(data.SourceDtoName!);
+            var idType = SqlTypeHelper.SqlTypeToNetType(data.ViewModel.SourceDto.Properties.FindId()!.DbObject!.Type!);
             var api = ControllerMethodViewModel
                 .New("Update")
                 .AddHttpMethod<HttpPutAttribute>("{id}")
-                .AddArgument(TypePath.New<long>(), "id")
+                .AddArgument(TypePath.New(idType), "id")
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommand}(id, {argName}));")
                 .AddBodyLine("return this.Ok(result);")
@@ -479,10 +480,11 @@ internal sealed partial class FunctionalityService
 
         void createDeleteApi(CreationData data)
         {
+            var idType = SqlTypeHelper.SqlTypeToNetType(data.ViewModel.SourceDto.Properties.FindId()!.DbObject!.Type!);
             var api = ControllerMethodViewModel
                 .New("Delete")
                 .AddHttpMethod<HttpDeleteAttribute>("{id}")
-                .AddArgument(TypePath.New<long>(), "id")
+                .AddArgument(TypePath.New(idType), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommand}(id));")
                 .AddBodyLine("return this.Ok(true);")
                 .WithReturnType(TypePath.NewTask<IActionResult>())

@@ -1,6 +1,7 @@
 using System;
 using Web.UI.Components.Shared;
-using Mes.Security;
+using Mes.HumanResources;
+using Mes.HumanResources.Dtos;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Linq;
@@ -9,17 +10,17 @@ using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
 
-namespace Mes.Security;
+namespace Mes.HumanResources;
 public partial class AspNetUsersListComponent
 {
     protected void NewButton_OnClick()
     {
-        this._navigationManager.NavigateTo("/System/AspNetUser/details");
+        this._navigationManager.NavigateTo("/HumanResources/AspNetUser/details");
     }
 
     protected void EditButton_OnClick(String id)
     {
-        this._navigationManager.NavigateTo($"/System/AspNetUser/details/{id.ToString()}");
+        this._navigationManager.NavigateTo($"/HumanResources/AspNetUser/details/{id.ToString()}");
     }
 
     protected async void DeleteButton_OnClick(String id)
