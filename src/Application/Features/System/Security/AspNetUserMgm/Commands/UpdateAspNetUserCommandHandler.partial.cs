@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security.Dtos;
 
-namespace Mes.HumanResources.Commands;
+namespace Mes.System.Security.Commands;
 internal sealed partial class UpdateAspNetUserCommandHandler : IRequestHandler<UpdateAspNetUserCommand, UpdateAspNetUserCommandResult>
 {
     private readonly IMediator _mediator;
@@ -30,7 +30,8 @@ internal sealed partial class UpdateAspNetUserCommandHandler : IRequestHandler<U
         var lockoutEnd = request.AspNetUser.LockoutEnd?.ToString().IsNullOrEmpty() ?? true ? "null" : $"N{SqlTypeHelper.FormatDate(request.AspNetUser.LockoutEnd)}"; ; 
         var lockoutEnabled = $"N'{request.AspNetUser.LockoutEnabled.ToString()}'";
         var accessFailedCount = request.AspNetUser.AccessFailedCount.ToString();
-        var dbCommand = $@"UPDATE [dbo].[AspNetUsers]   SET [UserName] = {userName}, [NormalizedUserName] = {normalizedUserName}, [Email] = {email}, [NormalizedEmail] = {normalizedEmail}, [EmailConfirmed] = {emailConfirmed}, [PasswordHash] = {passwordHash}, [SecurityStamp] = {securityStamp}, [ConcurrencyStamp] = {concurrencyStamp}, [PhoneNumber] = {phoneNumber}, [PhoneNumberConfirmed] = {phoneNumberConfirmed}, [TwoFactorEnabled] = {twoFactorEnabled}, [LockoutEnd] = {lockoutEnd}, [LockoutEnabled] = {lockoutEnabled}, [AccessFailedCount] = {accessFailedCount}   WHERE [Id] = {request.Id}";
+        var displayName = request.AspNetUser.DisplayName?.ToString().IsNullOrEmpty() ?? true ? "null" : $"N'{request.AspNetUser.DisplayName.ToString()}'";
+        var dbCommand = $@"UPDATE [Identity].[AspNetUsers]   SET [UserName] = {userName}, [NormalizedUserName] = {normalizedUserName}, [Email] = {email}, [NormalizedEmail] = {normalizedEmail}, [EmailConfirmed] = {emailConfirmed}, [PasswordHash] = {passwordHash}, [SecurityStamp] = {securityStamp}, [ConcurrencyStamp] = {concurrencyStamp}, [PhoneNumber] = {phoneNumber}, [PhoneNumberConfirmed] = {phoneNumberConfirmed}, [TwoFactorEnabled] = {twoFactorEnabled}, [LockoutEnd] = {lockoutEnd}, [LockoutEnabled] = {lockoutEnabled}, [AccessFailedCount] = {accessFailedCount}, [DisplayName] = {displayName}   WHERE [Id] = {request.Id}";
         var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);
         var result = new UpdateAspNetUserCommandResult();
         return result;

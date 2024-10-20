@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security.Dtos;
 
-namespace Mes.HumanResources.Commands;
+namespace Mes.System.Security.Commands;
 internal sealed partial class DeleteAspNetUserCommandHandler : IRequestHandler<DeleteAspNetUserCommand, DeleteAspNetUserCommandResult>
 {
     private readonly IMediator _mediator;
@@ -16,7 +16,7 @@ internal sealed partial class DeleteAspNetUserCommandHandler : IRequestHandler<D
 
     public async Task<DeleteAspNetUserCommandResult> Handle(DeleteAspNetUserCommand request, CancellationToken cancellationToken)
     {
-        var dbCommand = $@"DELETE FROM [dbo].[AspNetUsers]   WHERE [Id] = {request.Id}";
+        var dbCommand = $@"DELETE FROM [Identity].[AspNetUsers]   WHERE [Id] = {request.Id}";
         await this._sql.ExecuteNonQueryAsync(dbCommand, cancellationToken: cancellationToken);
         var result = new DeleteAspNetUserCommandResult();
         return result;

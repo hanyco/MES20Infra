@@ -1,14 +1,16 @@
-@namespace Mes.HumanResources
+@namespace Mes.System.Security
 
+@using Blazored.LocalStorage
 @using HanyCo.Infra.Blazor
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
-@using Mes.HumanResources.Dtos
+@using Mes.System.Security
 @using Web.UI.Components.Shared
 
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
 @inject HttpClient _http
+@inject ILocalStorageService _localStorage
 
 @inherits HanyCo.Infra.Blazor.ComponentBase<List<AspNetUserDto>, AspNetUserViewModel>
 
@@ -37,6 +39,7 @@
             <th>Lockout End</th>
             <th>Lockout Enabled</th>
             <th>Access Failed Count</th>
+            <th>Display Name</th>
             <th>Edit</th>
             <th>Delete</th>
         </tr>
@@ -61,6 +64,7 @@
             <td>@item.LockoutEnd</td>
             <td>@item.LockoutEnabled</td>
             <td>@item.AccessFailedCount</td>
+            <td>@item.DisplayName</td>
             <td><button id="EditButton" name="EditButton" @onclick="@(() => EditButton_OnClick(item.Id))">Edit</button></td>
             <td><button id="DeleteButton" name="DeleteButton" @onclick="@(() => DeleteButton_OnClick(item.Id))">Delete</button></td>
 

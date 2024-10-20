@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using System;
 using System.Threading.Tasks;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security.Dtos;
 using Library.Results;
+using Mes.System.Security;
 
-namespace Mes.HumanResources.Controllers;
+namespace Mes.System.Security.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("[controller]")]
 public sealed class AspNetUserController : ControllerBase

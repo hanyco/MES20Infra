@@ -1,14 +1,16 @@
-@namespace Mes.HumanResources
+@namespace Mes.System.Security
 
+@using Blazored.LocalStorage
 @using HanyCo.Infra.Blazor
 @using Microsoft.Extensions.Caching.Memory
 @using Microsoft.AspNetCore.Components
-@using Mes.HumanResources.Dtos
+@using Mes.System.Security
 @using Web.UI.Components.Shared
 
 @inject IMemoryCache _memoryCache
 @inject NavigationManager _navigationManager
 @inject HttpClient _http
+@inject ILocalStorageService _localStorage
 
 @inherits HanyCo.Infra.Blazor.ComponentBase<AspNetUserDto, AspNetUserViewModel>
 
@@ -93,6 +95,11 @@
     <label id='AccessFailedCountLabel' name='AccessFailedCountLabel' class='col-2'>Access Failed Count</label>
     <InputNumber id='AccessFailedCountNumericTextBox' name='AccessFailedCountNumericTextBox' class='col-5' @bind-Value='this.DataContext.AccessFailedCount'/>
     <ValidationMessage For="@(() => this.DataContext.AccessFailedCount)" Class="error-message" />
+</div>
+<div class='row'>
+    <label id='DisplayNameLabel' name='DisplayNameLabel' class='col-2'>Display Name</label>
+    <InputText id='DisplayNameTextBox' name='DisplayNameTextBox' class='col-5' type='text' @bind-Value='this.DataContext.DisplayName'/>
+    <ValidationMessage For="@(() => this.DataContext.DisplayName)" Class="error-message" />
 </div>
 <div class='row'>
     <Button id='SaveButton' name='SaveButton' class='col-2 offset-2 btn btn-success' type='submit'>Save</Button>

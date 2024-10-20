@@ -1,12 +1,12 @@
 using Web.UI.Components.Shared;
-using Mes.HumanResources.Pages;
+using Mes.System.Security.Pages;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Mes.HumanResources.Pages;
+namespace Mes.System.Security.Pages;
 public partial class AspNetUserListPage
 {
     protected override async Task OnInitializedAsync()

@@ -1,6 +1,6 @@
 using System;
 
-namespace Mes.HumanResources.Dtos;
+namespace Mes.System.Security;
 public sealed class AspNetUserDto
 {
     public String Id { get; set; }
@@ -18,4 +18,5 @@ public sealed class AspNetUserDto
     public DateTime? LockoutEnd { get; set; }
     public Boolean LockoutEnabled { get; set; }
     public Int32 AccessFailedCount { get; set; }
+    public String? DisplayName { get; set; }
 }

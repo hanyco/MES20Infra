@@ -1,25 +1,41 @@
+using System.Net.Http.Headers;
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net;
 
-namespace Mes.HumanResources;
+namespace Mes.System.Security;
 public partial class AspNetUserDetailsComponent
 {
     protected override async Task OnLoadAsync()
     {
-        if (this.EntityId is { } entityId)
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrEmpty(token))
         {
-            var apiResult = await _http.GetFromJsonAsync<AspNetUserDto>($"aspnetuser/{entityId}/");
-            this.DataContext = apiResult;
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
-        else
+
+        try
         {
-            this.DataContext = new();
+            if (this.EntityId is { } entityId)
+            {
+                var apiResult = await _http.GetFromJsonAsync<AspNetUserDto>($"aspnetuser/{entityId}/");
+                this.DataContext = apiResult;
+            }
+            else
+            {
+                this.DataContext = new();
+            }
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            _navigationManager.NavigateToLogin("/login");
         }
     }
 }

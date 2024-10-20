@@ -2,6 +2,8 @@
 
 using Library.Web.Bases;
 
+using System.Net;
+
 namespace Web.UI.Middlewares;
 
 public class AuthenticationMiddleware
@@ -25,7 +27,7 @@ public class AuthenticationMiddleware
                 context.Response.Redirect("/login");
             }
         }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {
             context.Response.Redirect("/login");
         }

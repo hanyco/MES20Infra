@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security.Dtos;
 
-namespace Mes.HumanResources.Queries;
+namespace Mes.System.Security.Queries;
 internal sealed partial class GetByIdAspNetUserQueryHandler : IRequestHandler<GetByIdAspNetUserQuery, GetByIdAspNetUserQueryResult>
 {
     private readonly IMediator _mediator;
@@ -16,7 +16,7 @@ internal sealed partial class GetByIdAspNetUserQueryHandler : IRequestHandler<Ge
 
     public async Task<GetByIdAspNetUserQueryResult> Handle(GetByIdAspNetUserQuery request, CancellationToken cancellationToken)
     {
-        var dbQuery = $@"SELECT TOP (1) [Id], [UserName], [NormalizedUserName], [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount]   FROM [dbo].[AspNetUsers]   WHERE [Id] = {request.Id}";
+        var dbQuery = $@"SELECT TOP (1) [Id], [UserName], [NormalizedUserName], [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount], [DisplayName]   FROM [Identity].[AspNetUsers]   WHERE [Id] = {request.Id}";
         var dbResult = await this._sql.FirstOrDefaultAsync<AspNetUserDto>(dbQuery);
         var result = new GetByIdAspNetUserQueryResult(dbResult);
         return result;

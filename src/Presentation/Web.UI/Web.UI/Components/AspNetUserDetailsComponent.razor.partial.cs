@@ -1,7 +1,7 @@
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
-using Mes.HumanResources;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System;
@@ -10,8 +10,10 @@ using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
+using System.Net;
+using System.Net.Http.Headers;
 
-namespace Mes.HumanResources;
+namespace Mes.System.Security;
 public partial class AspNetUserDetailsComponent
 {
     protected override async Task OnInitializedAsync()
@@ -21,16 +23,28 @@ public partial class AspNetUserDetailsComponent
 
     public async Task SaveData()
     {
-        if (this.DataContext.Id == default)
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrEmpty(token))
         {
-            var apiResult = await _http.PostAsJsonAsync($"aspnetuser/", DataContext);
-        }
-        else
-        {
-            var apiResult = await _http.PutAsJsonAsync($"aspnetuser/{this.DataContext.Id}/", DataContext);
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        MessageComponent.Show("Save Data", "Data saved successfully.");
+        try
+        {
+            if (this.DataContext.Id == default)
+            {
+                var apiResult = await _http.PostAsJsonAsync($"aspnetuser/", DataContext);
+            }
+            else
+            {
+                var apiResult = await _http.PutAsJsonAsync($"aspnetuser/{this.DataContext.Id}/", DataContext);
+                MessageComponent.Show("Save Data", "Data saved successfully.");
+            }
+        }
+        catch (HttpRequestException ex)when (ex.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            _navigationManager.NavigateToLogin("/login");
+        }
     }
 
     public MessageComponent MessageComponent { get; set; }
@@ -43,6 +57,6 @@ public partial class AspNetUserDetailsComponent
 
     public void BackButton_OnClick()
     {
-        this._navigationManager.NavigateTo("/HumanResources/AspNetUser");
+        this._navigationManager.NavigateTo("/System/AspNetUser");
     }
 }

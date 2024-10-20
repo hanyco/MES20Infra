@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security.Dtos;
 
-namespace Mes.HumanResources.Commands;
+namespace Mes.System.Security.Commands;
 internal sealed partial class InsertAspNetUserCommandHandler : IRequestHandler<InsertAspNetUserCommand, InsertAspNetUserCommandResult>
 {
     private readonly IMediator _mediator;
@@ -30,7 +30,8 @@ internal sealed partial class InsertAspNetUserCommandHandler : IRequestHandler<I
         var lockoutEnd = request.AspNetUser.LockoutEnd?.ToString().IsNullOrEmpty() ?? true ? "null" : $"N{SqlTypeHelper.FormatDate(request.AspNetUser.LockoutEnd)}"; ; 
         var lockoutEnabled = $"N'{request.AspNetUser.LockoutEnabled.ToString()}'";
         var accessFailedCount = request.AspNetUser.AccessFailedCount.ToString();
-        var dbCommand = $@"INSERT INTO [dbo].[AspNetUsers]   ([UserName], [NormalizedUserName], [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount])   VALUES ({userName}, {normalizedUserName}, {email}, {normalizedEmail}, {emailConfirmed}, {passwordHash}, {securityStamp}, {concurrencyStamp}, {phoneNumber}, {phoneNumberConfirmed}, {twoFactorEnabled}, {lockoutEnd}, {lockoutEnabled}, {accessFailedCount}); SELECT SCOPE_IDENTITY();";
+        var displayName = request.AspNetUser.DisplayName?.ToString().IsNullOrEmpty() ?? true ? "null" : $"N'{request.AspNetUser.DisplayName.ToString()}'";
+        var dbCommand = $@"INSERT INTO [Identity].[AspNetUsers]   ([UserName], [NormalizedUserName], [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount], [DisplayName])   VALUES ({userName}, {normalizedUserName}, {email}, {normalizedEmail}, {emailConfirmed}, {passwordHash}, {securityStamp}, {concurrencyStamp}, {phoneNumber}, {phoneNumberConfirmed}, {twoFactorEnabled}, {lockoutEnd}, {lockoutEnabled}, {accessFailedCount}, {displayName}); SELECT SCOPE_IDENTITY();";
         var dbResult = await this._sql.ExecuteScalarCommandAsync(dbCommand, cancellationToken);
         var returnValue = Convert.ToString(dbResult);
         var result = new InsertAspNetUserCommandResult(returnValue);

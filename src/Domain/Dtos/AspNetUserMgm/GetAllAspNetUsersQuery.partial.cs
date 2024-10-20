@@ -1,7 +1,7 @@
 using MediatR;
-using Mes.HumanResources.Dtos;
+using Mes.System.Security.Dtos;
 
-namespace Mes.HumanResources.Dtos;
+namespace Mes.System.Security.Dtos;
 public sealed partial class GetAllAspNetUsersQuery : IRequest<GetAllAspNetUsersQueryResult>
 {
     public GetAllAspNetUsersQuery()
