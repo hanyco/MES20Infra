@@ -1,4 +1,4 @@
-namespace Mes.System.Security.Dtos;
+namespace Mes.Infra.Auth.Dtos;
 public sealed partial class InsertAspNetUserCommand
 {
 }

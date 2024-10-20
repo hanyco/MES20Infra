@@ -1,19 +1,20 @@
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
-using Mes.System.Security;
+using Mes.Infra.Auth;
+using System.Net.Http.Headers;
+using System.Net;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using System.Net.Http;
 using System.Net.Http.Json;
+using Blazored.LocalStorage;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
-using System.Net;
-using System.Net.Http.Headers;
 
-namespace Mes.System.Security;
+namespace Mes.Infra.Auth;
 public partial class AspNetUserDetailsComponent
 {
     protected override async Task OnInitializedAsync()

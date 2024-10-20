@@ -1,6 +1,6 @@
 using System;
 
-namespace Mes.System.Security;
+namespace Mes.Infra.Auth;
 public sealed class AspNetUserDto
 {
     public String Id { get; set; }

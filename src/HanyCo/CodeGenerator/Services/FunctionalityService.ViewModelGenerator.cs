@@ -128,6 +128,7 @@ internal sealed partial class FunctionalityService
     {
         var localStorage = (Type: TypePath.New("Microsoft.AspNetCore.Components.WebAssembly.Authentication.ILocalStorageService"), FieldName: "_localStorage");
         _ = model.AddUsings(localStorage.Type.NameSpace);
+        _ = model.AddUsings("Blazored.LocalStorage");
         _ = model.AdditionalInjects.Add(localStorage);
         return model;
     }
@@ -220,10 +221,11 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorDetailsComponent.PageDataContextProperty = data.ViewModel.BlazorDetailsPage.DataContext.Properties.First(x => x.IsList != true);
             data.ViewModel.BlazorDetailsComponent.Attributes.Add(new("@bind-EntityId", "this.Id"));
             _ = data.ViewModel.BlazorDetailsComponent
-                .AddUsings("Web.UI.Components.Shared")
+                .AddUsings("System.Net.Http.Headers", "System.Net")
                 .AddUsings(typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!)
-                .AddUsings(data.ViewModel.SourceDto!.NameSpace)
-                .AddUsings("Microsoft.AspNetCore.Components.WebAssembly.Authentication");
+                .AddUsings("Microsoft.AspNetCore.Components.WebAssembly.Authentication")
+                .AddUsings("Web.UI.Components.Shared")
+                .AddUsings(data.ViewModel.SourceDto!.NameSpace);
             _ = AddHttpClientInjection(data.ViewModel.BlazorDetailsComponent);
             AddLocalStorageService(data.ViewModel.BlazorDetailsComponent);
             data.ViewModel.BlazorDetailsPage.Components.Add(data.ViewModel.BlazorDetailsComponent);
@@ -337,8 +339,10 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponent.IsGrid = true;
             data.ViewModel.BlazorListComponent.PageDataContext = data.ViewModel.BlazorListPage.DataContext;
             data.ViewModel.BlazorListComponent.PageDataContextProperty = data.ViewModel.BlazorListPage.DataContext.Properties.First(x => x.IsList == true);
-            _ = data.ViewModel.BlazorListComponent.AddUsings("Web.UI.Components.Shared", data.ViewModel.SourceDto!.NameSpace);
-            //data.ViewModel.BlazorListComponent.AdditionalUsingNameSpaces.Add(GetMapperNameSpace(data));
+            _ = data.ViewModel.BlazorListComponent
+                .AddUsings("System.Net.Http.Headers", "System.Net")
+                .AddUsings("Web.UI.Components.Shared")
+                .AddUsings(data.ViewModel.SourceDto!.NameSpace);            
             _ = AddHttpClientInjection(data.ViewModel.BlazorListComponent);
             AddLocalStorageService(data.ViewModel.BlazorListComponent);
             data.ViewModel.BlazorListPage.Components.Add(data.ViewModel.BlazorListComponent);

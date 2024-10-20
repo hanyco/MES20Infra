@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.System.Security.Dtos;
+using Mes.Infra.Auth.Dtos;
 
-namespace Mes.System.Security.Queries;
+namespace Mes.Infra.Auth.Queries;
 internal sealed partial class GetAllAspNetUsersQueryHandler : IRequestHandler<GetAllAspNetUsersQuery, GetAllAspNetUsersQueryResult>
 {
     private readonly IMediator _mediator;

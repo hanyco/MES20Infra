@@ -271,7 +271,7 @@ public static class CodeSnippets
             //}
             sb.AppendLine($"""if (!string.IsNullOrEmpty(token))""");
             sb.AppendLine("{");
-            sb.AppendLine($"""_http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);""");
+            sb.AppendLine($"""_http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);""");
             sb.AppendLine("}");
             sb.AppendLine();
             sb.AppendLine($"""try""");
@@ -308,7 +308,7 @@ public static class CodeSnippets
         if (embrassInToken)
         {
             sb.AppendLine("}");
-            sb.AppendLine($"""catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)""");
+            sb.AppendLine($"""catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)""");
             sb.AppendLine("{");
             sb.AppendLine($"""_navigationManager.NavigateToLogin("/login");""");
             sb.AppendLine("}");

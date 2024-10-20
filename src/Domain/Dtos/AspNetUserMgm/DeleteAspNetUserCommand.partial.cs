@@ -1,8 +1,8 @@
 using MediatR;
-using Mes.System.Security.Dtos;
+using Mes.Infra.Auth.Dtos;
 using System;
 
-namespace Mes.System.Security.Dtos;
+namespace Mes.Infra.Auth.Dtos;
 public sealed partial class DeleteAspNetUserCommand : IRequest<DeleteAspNetUserCommandResult>
 {
     public DeleteAspNetUserCommand()

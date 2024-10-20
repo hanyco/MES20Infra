@@ -1,4 +1,4 @@
-namespace Mes.System.Security.Commands;
+namespace Mes.Infra.Auth.Commands;
 internal sealed partial class UpdateAspNetUserCommandHandler
 {
 }

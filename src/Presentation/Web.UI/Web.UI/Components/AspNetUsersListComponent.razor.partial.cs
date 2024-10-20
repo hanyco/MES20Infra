@@ -1,18 +1,19 @@
 using System;
 using Web.UI.Components.Shared;
-using Mes.System.Security;
+using Mes.Infra.Auth;
+using System.Net.Http.Headers;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Blazored.LocalStorage;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
-using System.Net.Http.Headers;
-using System.Net;
 
-namespace Mes.System.Security;
+namespace Mes.Infra.Auth;
 public partial class AspNetUsersListComponent
 {
     protected void NewButton_OnClick()

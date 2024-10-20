@@ -1,16 +1,17 @@
 using System.Net.Http.Headers;
-using Web.UI.Components.Shared;
+using System.Net;
 using Microsoft.AspNetCore.Components;
-using Mes.System.Security;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Web.UI.Components.Shared;
+using Mes.Infra.Auth;
 using System.Net.Http;
 using System.Net.Http.Json;
+using Blazored.LocalStorage;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Net;
 
-namespace Mes.System.Security;
+namespace Mes.Infra.Auth;
 public partial class AspNetUserDetailsComponent
 {
     protected override async Task OnLoadAsync()

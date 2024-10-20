@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Mes.System.Security.Pages;
+namespace Mes.Infra.Auth.Pages;
 public partial class AspNetUserListPage
 {
     protected override async Task OnLoadAsync()
