@@ -83,13 +83,24 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> Update(UpdateRequest request) =>
         this.Ok(await this._identityService.UpdateAsync(request));
 
-    [HttpGet("userInfo")]
+    [HttpGet("users/current")]
     public async Task<IActionResult> UserInfo() =>
         this.Ok(await this._identityService.UserInfoAsync());
 
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var result = await this._identityService.GetAllUsersAsync();
+        return this.Ok(result.Value);
+    }
+
+
     [HttpGet("users/{userId}")]
-    public async Task<IActionResult> UserInfo(string userId) =>
-        this.Ok(await this._identityService.UserInfoAsync(userId));
+    public async Task<IActionResult> UserInfo(string userId)
+    {
+        var result = await this._identityService.UserInfoAsync(userId);
+        return this.Ok(result.Value);
+    }
 
     private string? GenerateIPAddress() =>
         this.Request.Headers.TryGetValue("X-Forwarded-For", out var value)

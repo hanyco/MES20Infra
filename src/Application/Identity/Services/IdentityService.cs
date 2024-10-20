@@ -12,6 +12,7 @@ using Library.Validations;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -38,17 +39,17 @@ public class IdentityService(
 
     public async Task<Result<string>> ChangePassword(ChangePasswordRequest model)
     {
-        var user = await this._userManager.FindByIdAsync(model.Id);
+        var user = await this._userManager.FindByIdAsync(model.UserId);
         if (user == null)
         {
-            throw new MesException($"No Accounts founded with {model.Id}.");
+            throw new MesException($"No Accounts founded with {model.UserId}.");
         }
 
         var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
         var result = await this._userManager.ResetPasswordAsync(user, resetToken, model.Password);
 
         return result.Succeeded
-            ? Result.Success<string>(model.Id, message: $"Password changed.")
+            ? Result.Success<string>(model.UserId, message: $"Password changed.")
             : throw new MesException($"Error occured while changing the password.");
     }
 
@@ -212,7 +213,8 @@ public class IdentityService(
         return Result.Success<string>($"User Updated.");
     }
 
-    public async Task<Result<UserInfoResponse>> UserInfoAsync() => Result.Success<UserInfoResponse>(await this.GetUserInfo(this._authenticatedUser.UserId));
+    public async Task<Result<UserInfoResponse>> UserInfoAsync() =>
+        Result.Success<UserInfoResponse>(await this.GetUserInfo(this._authenticatedUser.UserId));
 
     public async Task<Result<UserInfoExResponse>> UserInfoAsync(string userId)
     {
@@ -298,6 +300,23 @@ public class IdentityService(
         // convert random bytes to hex string
         return BitConverter.ToString(randomBytes).Replace("-", "");
     }
+
+    public async Task<Result<List<UserInfoExResponse>>> GetAllUsersAsync()
+    {
+        var users = await this._userManager.Users.ToListAsync();
+
+        var userList = users.Select(user => new UserInfoExResponse
+        {
+            DisplayName = user.DisplayName,
+            UserId = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber
+        }).ToList();
+
+        return Result.Success(userList);
+    }
+
 
     private async Task<string> SendVerificationEmail(ApplicationUser user, string origin)
     {

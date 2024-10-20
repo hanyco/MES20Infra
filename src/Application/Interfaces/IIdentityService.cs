@@ -12,6 +12,7 @@ public interface IIdentityService
     Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
     Task<Result<UserInfoExResponse>> UserInfoAsync(string userId);
     Task<Result<UserInfoResponse>> UserInfoAsync();
+    Task<Result<List<UserInfoExResponse>>> GetAllUsersAsync();
     Task<Result<string>> ConfirmEmailAsync(string userId, string code);
 
     Task ForgotPassword(ForgotPasswordRequest model, string origin);

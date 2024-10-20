@@ -1,0 +1,66 @@
+﻿@page "/users"
+@using Application.DTOs.Identity
+@using Blazored.LocalStorage
+@using Web.UI.Helpers
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage;
+
+<h3>User Management</h3>
+
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditUser(user.UserId)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteUser(user.UserId)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<UserInfoExResponse>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await Http.SendApiRequestAsync<List<UserInfoExResponse>>(LocalStorage, Navigation, "Identity/users");
+    }
+
+    private void EditUser(string userId)
+    {
+        Navigation.NavigateTo($"/edit-user/{userId}");
+    }
+
+    private async Task DeleteUser(string userId)
+    {
+        var response = await Http.SendApiRequestWithoutResponseAsync(LocalStorage, Navigation, $"Identity/remove/{userId}", HttpMethod.Delete);
+        if (response.IsSuccessStatusCode)
+        {
+            users = users?.Where(u => u.UserId != userId).ToList();
+        }
+        else
+        {
+            // Handle error
+        }
+    }
+}
