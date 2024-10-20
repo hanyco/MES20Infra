@@ -52,6 +52,7 @@ public sealed class BlazorComponent(in string name, ICodeGeneratorEngine codeGen
             .AppendAllLines(injections, x => $"@using {x.NameSpace}")
             .AppendLine($"@using {this.DataContextType?.NameSpace}")
             .AppendLine("@using Web.UI.Components.Shared")
+            .AppendLine("@using Blazored.LocalStorage")
             .AppendLine()
             .AppendAllLines(injections, x => $"@inject {x.Name} {TypeMemberNameHelper.ToFieldName(x.Name!)}")
             .AppendAllLines(this.AdditionalInjects, x => $"@inject {x.Type} {TypeMemberNameHelper.ToFieldName(x.FieldName)}")

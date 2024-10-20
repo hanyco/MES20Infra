@@ -10,7 +10,6 @@
       "src\\HanyCo\\Domain\\Domain.csproj",
       "src\\HanyCo\\Infrastructure\\Infrastructure.csproj",
       "src\\Presentation\\API\\API.csproj",
-      "src\\Presentation\\Web.UI\\Web.UI.SharedProject\\Web.UI.SharedProject.shproj",
       "src\\Presentation\\Web.UI\\Web.UI\\Web.UI.csproj"
     ]
   }

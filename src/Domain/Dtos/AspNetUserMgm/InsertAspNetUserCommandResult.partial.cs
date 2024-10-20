@@ -1,6 +1,6 @@
 using System;
 
-namespace Mes.Infra.Auth.Dtos;
+namespace Mes.Infra.Security.Dtos;
 public sealed partial class InsertAspNetUserCommandResult
 {
     public String Id { get; set; }

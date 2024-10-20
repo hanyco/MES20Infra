@@ -1,4 +1,4 @@
-namespace Mes.Infra.Auth.Queries;
+namespace Mes.Infra.Security.Queries;
 internal sealed partial class GetByIdAspNetUserQueryHandler
 {
 }

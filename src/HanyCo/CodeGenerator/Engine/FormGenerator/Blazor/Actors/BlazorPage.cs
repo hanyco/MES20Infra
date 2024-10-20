@@ -39,7 +39,7 @@ public sealed class BlazorPage : BlazorComponentBase<BlazorPage>
         if (pageRoute.IsNullOrEmpty())
         {
             // Generate route form scratch.
-            pureRoute = $"""@page "/{moduleName.ArgumentNotNull().Remove(" ")}/{purify(pageName)}""";
+            pureRoute = $"""@page "/{moduleName.ArgumentNotNull().Replace('.', '/').Remove(" ")}/{purify(pageName)}""";
         }
         else
         {

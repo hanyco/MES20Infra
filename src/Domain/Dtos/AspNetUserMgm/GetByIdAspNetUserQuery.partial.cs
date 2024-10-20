@@ -1,8 +1,8 @@
 using MediatR;
-using Mes.Infra.Auth.Dtos;
+using Mes.Infra.Security.Dtos;
 using System;
 
-namespace Mes.Infra.Auth.Dtos;
+namespace Mes.Infra.Security.Dtos;
 public sealed partial class GetByIdAspNetUserQuery : IRequest<GetByIdAspNetUserQueryResult>
 {
     public GetByIdAspNetUserQuery()

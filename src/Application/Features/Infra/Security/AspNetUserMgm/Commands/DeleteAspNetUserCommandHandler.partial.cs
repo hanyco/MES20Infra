@@ -1,9 +1,9 @@
 using MediatR;
 using Library.Data.SqlServer;
 using System.Threading.Tasks;
-using Mes.Infra.Auth.Dtos;
+using Mes.Infra.Security.Dtos;
 
-namespace Mes.Infra.Auth.Commands;
+namespace Mes.Infra.Security.Commands;
 internal sealed partial class DeleteAspNetUserCommandHandler : IRequestHandler<DeleteAspNetUserCommand, DeleteAspNetUserCommandResult>
 {
     private readonly IMediator _mediator;

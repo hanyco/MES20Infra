@@ -1,16 +1,16 @@
 using System.Net.Http.Headers;
 using System.Net;
 using Web.UI.Components.Shared;
-using Mes.Infra.Auth;
+using Blazored.LocalStorage;
+using Mes.Infra.Security;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
-using Blazored.LocalStorage;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Mes.Infra.Auth;
+namespace Mes.Infra.Security;
 public partial class AspNetUsersListComponent
 {
     protected override async Task OnLoadAsync()

@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using System;
 using System.Threading.Tasks;
-using Mes.Infra.Auth.Dtos;
+using Mes.Infra.Security.Dtos;
 using Library.Results;
-using Mes.Infra.Auth;
+using Mes.Infra.Security;
 
-namespace Mes.Infra.Auth.Controllers;
+namespace Mes.Infra.Security.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("[controller]")]
 public sealed class AspNetUserController : ControllerBase

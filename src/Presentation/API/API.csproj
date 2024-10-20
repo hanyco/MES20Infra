@@ -25,6 +25,4 @@
     <ProjectReference Include="..\..\Domain\Domain.csproj" />
   </ItemGroup>
 
-  <Import Project="..\Web.UI\Web.UI.SharedProject\Web.UI.SharedProject.projitems" Label="Shared" />
-
 </Project>

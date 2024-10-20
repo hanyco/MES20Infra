@@ -3,15 +3,15 @@ using System.Net;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Web.UI.Components.Shared;
-using Mes.Infra.Auth;
+using Blazored.LocalStorage;
+using Mes.Infra.Security;
 using System.Net.Http;
 using System.Net.Http.Json;
-using Blazored.LocalStorage;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Mes.Infra.Auth;
+namespace Mes.Infra.Security;
 public partial class AspNetUserDetailsComponent
 {
     protected override async Task OnLoadAsync()
@@ -38,5 +38,6 @@ public partial class AspNetUserDetailsComponent
         {
             _navigationManager.NavigateToLogin("/login");
         }
+
     }
 }

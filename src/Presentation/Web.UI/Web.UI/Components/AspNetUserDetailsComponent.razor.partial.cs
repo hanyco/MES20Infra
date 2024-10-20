@@ -1,12 +1,12 @@
 using Web.UI.Components.Shared;
 using Microsoft.AspNetCore.Components;
-using Mes.Infra.Auth;
+using Mes.Infra.Security;
 using System.Net.Http.Headers;
 using System.Net;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Blazored.LocalStorage;
 using System.Net.Http;
 using System.Net.Http.Json;
-using Blazored.LocalStorage;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
 
-namespace Mes.Infra.Auth;
+namespace Mes.Infra.Security;
 public partial class AspNetUserDetailsComponent
 {
     protected override async Task OnInitializedAsync()
@@ -58,6 +58,6 @@ public partial class AspNetUserDetailsComponent
 
     public void BackButton_OnClick()
     {
-        this._navigationManager.NavigateTo("/System/AspNetUser");
+        this._navigationManager.NavigateTo("/Mes/Infra/Security/AspNetUser");
     }
 }

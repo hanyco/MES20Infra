@@ -1,29 +1,29 @@
 using System;
 using Web.UI.Components.Shared;
-using Mes.Infra.Auth;
+using Mes.Infra.Security;
 using System.Net.Http.Headers;
 using System.Net;
+using Blazored.LocalStorage;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
-using Blazored.LocalStorage;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 using Library.Interfaces;
 
-namespace Mes.Infra.Auth;
+namespace Mes.Infra.Security;
 public partial class AspNetUsersListComponent
 {
     protected void NewButton_OnClick()
     {
-        this._navigationManager.NavigateTo("/System/AspNetUser/details");
+        this._navigationManager.NavigateTo("/Mes/Infra/Security/AspNetUser/details");
     }
 
     protected void EditButton_OnClick(String id)
     {
-        this._navigationManager.NavigateTo($"/System/AspNetUser/details/{id.ToString()}");
+        this._navigationManager.NavigateTo($"/Mes/Infra/Security/AspNetUser/details/{id.ToString()}");
     }
 
     protected async void DeleteButton_OnClick(String id)

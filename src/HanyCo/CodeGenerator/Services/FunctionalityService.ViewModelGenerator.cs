@@ -127,8 +127,7 @@ internal sealed partial class FunctionalityService
     private static UiComponentViewModel AddLocalStorageService(UiComponentViewModel model)
     {
         var localStorage = (Type: TypePath.New("Microsoft.AspNetCore.Components.WebAssembly.Authentication.ILocalStorageService"), FieldName: "_localStorage");
-        _ = model.AddUsings(localStorage.Type.NameSpace);
-        _ = model.AddUsings("Blazored.LocalStorage");
+        _ = model.AddUsings(localStorage.Type.NameSpace);        
         _ = model.AdditionalInjects.Add(localStorage);
         return model;
     }
@@ -224,7 +223,7 @@ internal sealed partial class FunctionalityService
                 .AddUsings("System.Net.Http.Headers", "System.Net")
                 .AddUsings(typeof(Microsoft.AspNetCore.Components.ElementReference).Namespace!)
                 .AddUsings("Microsoft.AspNetCore.Components.WebAssembly.Authentication")
-                .AddUsings("Web.UI.Components.Shared")
+                .AddUsings("Web.UI.Components.Shared", "Blazored.LocalStorage")
                 .AddUsings(data.ViewModel.SourceDto!.NameSpace);
             _ = AddHttpClientInjection(data.ViewModel.BlazorDetailsComponent);
             AddLocalStorageService(data.ViewModel.BlazorDetailsComponent);
@@ -233,7 +232,7 @@ internal sealed partial class FunctionalityService
 
         void addActions(CreationData data)
         {
-            var pageRoute = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.Module.Name, null);
+            var pageRoute = BlazorPage.GetPageRoute(CommonHelpers.Purify(data.ViewModel.SourceDto.Name!), data.ViewModel.SourceDto.NameSpace, null);
             data.ViewModel.BlazorListPage.Routes.Add(pageRoute);
             // The Save button
             var saveButton = new UiComponentCustomButton()
@@ -341,7 +340,7 @@ internal sealed partial class FunctionalityService
             data.ViewModel.BlazorListComponent.PageDataContextProperty = data.ViewModel.BlazorListPage.DataContext.Properties.First(x => x.IsList == true);
             _ = data.ViewModel.BlazorListComponent
                 .AddUsings("System.Net.Http.Headers", "System.Net")
-                .AddUsings("Web.UI.Components.Shared")
+                .AddUsings("Web.UI.Components.Shared", "Blazored.LocalStorage")
                 .AddUsings(data.ViewModel.SourceDto!.NameSpace);            
             _ = AddHttpClientInjection(data.ViewModel.BlazorListComponent);
             AddLocalStorageService(data.ViewModel.BlazorListComponent);
@@ -351,8 +350,8 @@ internal sealed partial class FunctionalityService
         void addActions(CreationData data)
         {
             var pageName = $"{CommonHelpers.Purify(data.ViewModel.SourceDto.Name!)}/details";
-            var pureRoute = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null);
-            var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.Module.Name, null, "{Id}");
+            var pureRoute = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.NameSpace, null);
+            var routeWithId = BlazorPage.GetPageRoute(pageName, data.ViewModel.SourceDto.NameSpace, null, "{Id}");
             _ = data.ViewModel.BlazorDetailsPage.Routes.AddRange(pureRoute, routeWithId);
 
             var newButton = new UiComponentCustomButton

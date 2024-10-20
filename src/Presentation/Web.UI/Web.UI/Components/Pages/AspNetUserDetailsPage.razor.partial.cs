@@ -1,13 +1,13 @@
 using Web.UI.Components.Shared;
 using System;
-using Mes.Infra.Auth.Pages;
+using Mes.Infra.Security.Pages;
 using Microsoft.AspNetCore.Components;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.DesignPatterns.Behavioral.Observation;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Mes.Infra.Auth.Pages;
+namespace Mes.Infra.Security.Pages;
 public partial class AspNetUserDetailsPage
 {
     protected override async Task OnInitializedAsync()
