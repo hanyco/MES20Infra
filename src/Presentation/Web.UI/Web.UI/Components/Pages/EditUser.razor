@@ -1,4 +1,5 @@
-﻿@page "/edit-user/{userId}"
+﻿@page "/edit-user"
+@page "/edit-user/{userId}"
 @using Application.DTOs.Identity
 @using Blazored.LocalStorage
 @using Web.UI.Helpers
@@ -30,12 +31,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        user = await Http.SendApiRequestAsync<UpdateRequest>(LocalStorage, Navigation, $"Identity/users/{userId}");
+        if (!userId.IsNullOrEmpty())
+        {
+            user = await Http.SendApiRequestAsync<UpdateRequest>(LocalStorage, Navigation, $"Identity/users/{userId}");
+        }
     }
 
     private async Task HandleValidSubmit()
     {
-        var response = await Http.PostAsJsonAsync("Identity/update", user);
+        HttpResponseMessage response;
+        if(!userId.IsNullOrEmpty())
+        {
+            response = await Http.PutAsJsonAsync("Identity/update", user);
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync("Identity/update", user);
+        }
+
         if (response.IsSuccessStatusCode)
         {
             Navigation.NavigateTo("/users");
