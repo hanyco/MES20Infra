@@ -30,13 +30,32 @@
         <InputText @bind-Value="user.PhoneNumber" class="form-control" />
     </div>
 
+    <!-- فیلدهای پسورد -->
+    <div class="form-group">
+        <label>Password</label>
+        <InputText @bind-Value="user.Password" class="form-control" type="password" />
+    </div>
+    <div class="form-group">
+        <label>Confirm Password</label>
+        <InputText @bind-Value="confirmPassword" class="form-control" type="password" />
+    </div>
+
+    <!-- نمایش پیام خطا -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
     <button type="submit" class="btn btn-primary">Save</button>
     <button type="button" class="btn btn-secondary" @onclick="BackToList">Cancel</button>
 </EditForm>
 
+
 @code {
     [Parameter] public string userId { get; set; } = null!;
     private UpdateRequest user = null!;
+    private string? confirmPassword;
+    private string? errorMessage;  // پیام خطا
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,8 +71,16 @@
 
     private async Task HandleValidSubmit()
     {
+        if (user.Password != confirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        errorMessage = null;
+
         HttpResponseMessage response;
-        if(!userId.IsNullOrEmpty())
+        if (!userId.IsNullOrEmpty())
         {
             response = await Http.SendApiRequestWithoutResponseAsync(LocalStorage, Navigation, "Identity/update", HttpMethod.Put, user);
         }
@@ -77,3 +104,4 @@
         Navigation.NavigateTo("/users");
     }
 }
+

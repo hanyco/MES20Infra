@@ -14,6 +14,7 @@ using Library.Results;
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -57,6 +58,31 @@ public static class ServiceCollectionExtensions
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+            //.AddJwtBearer(o =>
+            //{
+            //    o.RequireHttpsMetadata = false;
+            //    o.SaveToken = false;
+            //    o.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidateIssuer = true,
+            //        ValidateAudience = true,
+            //        ValidateLifetime = true,
+            //        ValidateIssuerSigningKey = true,
+            //        ClockSkew = TimeSpan.Zero,
+            //        ValidIssuer = configuration["JWTSettings:Issuer"],
+            //        ValidAudience = configuration["JWTSettings:Audience"],
+            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWTSettings:Key"]!))
+            //    };
+            //    o.Events = new JwtBearerEvents
+            //    {
+            //        OnAuthenticationFailed = context => context.Response.WriteErrorAsync(StatusCodes.Status401Unauthorized, "Authentication failed"),
+            //        OnChallenge = context =>
+            //            !context.Response.HasStarted
+            //                ? context.Response.WriteErrorAsync(StatusCodes.Status401Unauthorized, "You are not authorized")
+            //                : Task.CompletedTask,
+            //        OnForbidden = context => context.Response.WriteErrorAsync(StatusCodes.Status403Forbidden, "You are not authorized to access this resource")
+            //    };
+            //});
             .AddJwtBearer(o =>
             {
                 o.RequireHttpsMetadata = false;
@@ -74,6 +100,23 @@ public static class ServiceCollectionExtensions
                 };
                 o.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        // Ignore token validation for [AllowAnonymous] endpoints
+                        var endpoint = context.HttpContext.GetEndpoint();
+                        if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+                        {
+                            return Task.CompletedTask;
+                        }
+
+                        // Otherwise, proceed with token validation
+                        var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.Token = token;
+                        }
+                        return Task.CompletedTask;
+                    },
                     OnAuthenticationFailed = context => context.Response.WriteErrorAsync(StatusCodes.Status401Unauthorized, "Authentication failed"),
                     OnChallenge = context =>
                         !context.Response.HasStarted
@@ -82,6 +125,7 @@ public static class ServiceCollectionExtensions
                     OnForbidden = context => context.Response.WriteErrorAsync(StatusCodes.Status403Forbidden, "You are not authorized to access this resource")
                 };
             });
+
         _ = services
             .AddHttpContextAccessor();
         return services;

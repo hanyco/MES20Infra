@@ -66,6 +66,7 @@
                     ErrorMessage = $"Invalid login attempt.";
                 }
             }
+            this.StateHasChanged();
         }
         catch (Exception ex)
         {

@@ -10,12 +10,9 @@
 else
 {
     <a href="login">Login</a>
-
     <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|</span>
-
     <a href="register">Register</a>
 }
-
 
 @code {
     private bool isAuthenticated;
@@ -40,13 +37,28 @@ else
         return claim?.Value;
     }
 
+    private bool IsTokenExpired(string token)
+    {
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        var expiration = jwtToken.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+
+        if (expiration != null && long.TryParse(expiration, out var expUnix))
+        {
+            var expirationDate = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
+            return expirationDate < DateTime.UtcNow;
+        }
+        return true;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         var token = await _localStorage.GetItemAsync<string>("authToken");
         if (firstRender || token != lastToken)
         {
             lastToken = token;
-            if (!string.IsNullOrEmpty(token))
+
+            if (!string.IsNullOrEmpty(token) && !IsTokenExpired(token))
             {
                 isAuthenticated = true;
                 userName = GetUserNameFromToken(token);
@@ -54,6 +66,8 @@ else
             else
             {
                 isAuthenticated = false;
+                await _localStorage.RemoveItemAsync("authToken");
+                _navigation.NavigateTo("login");
             }
 
             StateHasChanged();
