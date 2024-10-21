@@ -7,7 +7,7 @@ public interface IIdentityService
 {
     Task<Result<TokenResponse>> GetTokenAsync(TokenRequest request, string ipAddress);
 
-    Task<Result<string>> UpdateAsync(UpdateRequest request);
+    Task<Result> UpdateAsync(UpdateRequest request);
     Task<Result<string>> RemoveAsync(string Id);
     Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
     Task<Result<UserInfoExResponse>> UserInfoAsync(string userId);

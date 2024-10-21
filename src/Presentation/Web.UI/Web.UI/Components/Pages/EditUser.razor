@@ -7,7 +7,7 @@
 @inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage;
 
-<h3>Edit User</h3>
+<h3>User Details</h3>
 
 <EditForm Model="@user" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -18,22 +18,35 @@
         <InputText @bind-Value="user.UserName" class="form-control" />
     </div>
     <div class="form-group">
+        <label>Display Name</label>
+        <InputText @bind-Value="user.DisplayName" class="form-control" />
+    </div>
+    <div class="form-group">
         <label>Email</label>
         <InputText @bind-Value="user.Email" class="form-control" />
     </div>
+    <div class="form-group">
+        <label>Phone Number</label>
+        <InputText @bind-Value="user.PhoneNumber" class="form-control" />
+    </div>
+
     <button type="submit" class="btn btn-primary">Save</button>
-    <button class="btn btn-secondary" @onclick="BackToList">Cancel</button>
+    <button type="button" class="btn btn-secondary" @onclick="BackToList">Cancel</button>
 </EditForm>
 
 @code {
-    [Parameter] public string userId { get; set; }
-    private UpdateRequest user = new UpdateRequest();
+    [Parameter] public string userId { get; set; } = null!;
+    private UpdateRequest user = null!;
 
     protected override async Task OnInitializedAsync()
     {
         if (!userId.IsNullOrEmpty())
         {
             user = await Http.SendApiRequestAsync<UpdateRequest>(LocalStorage, Navigation, $"Identity/users/{userId}");
+        }
+        else
+        {
+            user = new();
         }
     }
 
@@ -42,11 +55,11 @@
         HttpResponseMessage response;
         if(!userId.IsNullOrEmpty())
         {
-            response = await Http.PutAsJsonAsync("Identity/update", user);
+            response = await Http.SendApiRequestWithoutResponseAsync(LocalStorage, Navigation, "Identity/update", HttpMethod.Put, user);
         }
         else
         {
-            response = await Http.PostAsJsonAsync("Identity/update", user);
+            response = await Http.SendApiRequestWithoutResponseAsync(LocalStorage, Navigation, "Identity/update", HttpMethod.Post, user);
         }
 
         if (response.IsSuccessStatusCode)

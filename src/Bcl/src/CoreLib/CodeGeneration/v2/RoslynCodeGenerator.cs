@@ -87,7 +87,7 @@ public sealed class RoslynCodeGenerator : ICodeGeneratorEngine
             .Compact();
         var finalRoot = root.WithUsings(List(distinctUsings));
 
-        return Result.Success(finalRoot.GenerateCode())!;
+        return Result.Success<string>(finalRoot.GenerateCode())!;
     }
 
     private static (MemberDeclarationSyntax Member, CompilationUnitSyntax Root) AddAttributes(PropertyDeclarationSyntax prop, CompilationUnitSyntax root, IMember member)

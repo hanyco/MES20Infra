@@ -81,10 +81,11 @@ public sealed class Result : ResultBase, IResult
 
     public static Result operator +(Result left, ResultBase right) => new(left) { InnerResult = right };
 
-    public static Result Success(in object? status = null, in string? message = null) => new(true, message);
+    public static Result Success(in string? message = null)
+        => new(true, message);
 
-    public static Result<TValue?> Success<TValue>(in TValue? value, in string? message = null, in IEnumerable<Exception>? errors = null)
-        => new(value, true, message, errors);
+    public static Result<TValue?> Success<TValue>(in TValue? value, in string? message = null)
+        => new(value, true, message);
 
     public Result Combine(Result obj) => this + obj;
 

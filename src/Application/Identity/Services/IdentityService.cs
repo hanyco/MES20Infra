@@ -13,7 +13,6 @@ using Library.Validations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -28,11 +27,9 @@ public class IdentityService(
     IAuthenticatedUserService authenticatedUser,
     UserManager<ApplicationUser> userManager,
     IOptions<JWTSettings> jwtSettings,
-    SignInManager<ApplicationUser> signInManager,
-    IDistributedCache distributedCache) : IIdentityService
+    SignInManager<ApplicationUser> signInManager) : IIdentityService
 {
     private readonly IAuthenticatedUserService _authenticatedUser = authenticatedUser;
-    private readonly IDistributedCache _distributedCache = distributedCache;
     private readonly JWTSettings _jwtSettings = jwtSettings.Value;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -82,6 +79,22 @@ public class IdentityService(
     }
 
     public Task ForgotPassword(ForgotPasswordRequest model, string origin) => Task.CompletedTask;
+
+    public async Task<Result<List<UserInfoExResponse>>> GetAllUsersAsync()
+    {
+        var users = await this._userManager.Users.ToListAsync();
+
+        var userList = users.Select(user => new UserInfoExResponse
+        {
+            DisplayName = user.DisplayName,
+            UserId = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber
+        }).ToList();
+
+        return Result.Success(userList);
+    }
 
     public async Task<Result<TokenResponse>> GetTokenAsync(TokenRequest request, string ipAddress)
     {
@@ -170,7 +183,6 @@ public class IdentityService(
             throw new MesException($"UserId '{Id}' not found!");
         }
         _ = await this._userManager.DeleteAsync(userWithSameId);
-        await this.ClearCache();
         return Result.Success<string>("User Removed !");
     }
 
@@ -188,29 +200,40 @@ public class IdentityService(
             : throw new MesException($"Error occurred while resetting the password.");
     }
 
-    public async Task<Result<string>> UpdateAsync(UpdateRequest request)
+    public async Task<Result> UpdateAsync(UpdateRequest request)
     {
-        //if (!_authenticatedUser.User.IsInRole(Roles.SuperAdmin.ToString()))
-        //{
-        //    throw new MesException($"Only SuperAdmin Can Update User !");
-        //}
-        // request.Role = Roles.Moderator;
-        var userWithSameId = await this._userManager.FindByIdAsync(request.Id) ?? throw new MesException($"UserId '{request.Id}' not found!");
-        userWithSameId.DisplayName = request.DisplayName;
-        userWithSameId.UserName = request.UserName;
-        userWithSameId.Email = request.Email;
-        userWithSameId.PhoneNumber = request.PhoneNumber;
-
-        var result = await this._userManager.UpdateAsync(userWithSameId);
-        if (!result.Succeeded)
+        try
         {
-            throw new MesException($"User Update Error !");
+            await update(request);
+            return Result.Success($"User Updated.");
         }
-        //   var roles = await _userManager.GetRolesAsync(userWithSameId);
-        // await _userManager.RemoveFromRolesAsync(userWithSameId, roles);
-        //await _userManager.AddToRoleAsync(userWithSameId, request.Role.ToString());
-        //await ClearCache();
-        return Result.Success<string>($"User Updated.");
+        catch (Exception ex)
+        {
+            return Result.Fail(ex);
+        }
+
+        async Task update(UpdateRequest request)
+        {
+            Check.MustBeArgumentNotNull(request?.UserId);
+            
+            var user = (await this._userManager.FindByIdAsync(request.UserId)).NotNull(() => $"UserId '{request.UserId}' not found!");
+
+            var passwordHasher = new PasswordHasher<ApplicationUser>();
+            user.DisplayName = request.DisplayName;
+            user.UserName = request.UserName.NotNull(() => "User name cannot be null");
+            user.Email = request.Email;
+            user.PhoneNumber = request.PhoneNumber;
+            if (!request.Password.IsNullOrEmpty())
+            {
+                user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
+            }
+
+            var result = await this._userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                throw new MesException(result.Errors?.FirstOrDefault()?.Description ?? "Error in updating user.");
+            }
+        }
     }
 
     public async Task<Result<UserInfoResponse>> UserInfoAsync() =>
@@ -221,8 +244,6 @@ public class IdentityService(
         var result = await this.GetUserInfo(userId);
         return Result.Success<UserInfoExResponse>(result);
     }
-
-    private async Task ClearCache() => await this._distributedCache.RemoveAsync("Users");
 
     private async Task<JwtSecurityToken> GenerateJWToken(ApplicationUser user, string ipAddress)
     {
@@ -294,29 +315,14 @@ public class IdentityService(
 
     private string RandomTokenString()
     {
-        using var rngCryptoServiceProvider = new RNGCryptoServiceProvider();
-        var randomBytes = new byte[40];
-        rngCryptoServiceProvider.GetBytes(randomBytes);
+        //using var rngCryptoServiceProvider = new RNGCryptoServiceProvider();
+        //var randomBytes = new byte[40];
+        //rngCryptoServiceProvider.GetBytes(randomBytes);
+        var randomBytes = RandomNumberGenerator.GetBytes(40);
+
         // convert random bytes to hex string
         return BitConverter.ToString(randomBytes).Replace("-", "");
     }
-
-    public async Task<Result<List<UserInfoExResponse>>> GetAllUsersAsync()
-    {
-        var users = await this._userManager.Users.ToListAsync();
-
-        var userList = users.Select(user => new UserInfoExResponse
-        {
-            DisplayName = user.DisplayName,
-            UserId = user.Id,
-            UserName = user.UserName,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber
-        }).ToList();
-
-        return Result.Success(userList);
-    }
-
 
     private async Task<string> SendVerificationEmail(ApplicationUser user, string origin)
     {
