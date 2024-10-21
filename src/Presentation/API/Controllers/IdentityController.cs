@@ -38,6 +38,13 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
         return this.Ok();
     }
 
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var result = await this._identityService.GetAllUsersAsync();
+        return this.Ok(result.Value);
+    }
+
     /// <summary>
     /// Generates a JSON Web Token for a valid combination of emailId and password.
     /// </summary>
@@ -49,10 +56,9 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     {
         var ipAddress = this.GenerateIPAddress().NotNull(() => "Cannot find local address");
         var token = await this._identityService.GetTokenAsync(tokenRequest, ipAddress);
-        if (token.IsSucceed)
-            return this.Ok(token.Value);
-        else
-            return this.Unauthorized(new ApiErrorResponse(token.Exception.Message, StatusCodes.Status401Unauthorized));
+        return token.IsSucceed
+            ? this.Ok(token.Value)
+            : this.Unauthorized(new ApiErrorResponse(token.Exception?.Message, StatusCodes.Status401Unauthorized));
     }
 
     [HttpPost("register")]
@@ -60,11 +66,8 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
         //var origin = this.Request.Headers.Origin.NotNull();
-        var result = await _identityService.RegisterAsync(request);
-        if (result.IsSucceed)
-            return Ok(result.Message);
-        else
-            return BadRequest(result.Message);
+        var result = await this._identityService.RegisterAsync(request);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
     [HttpGet("remove/{id}")]
@@ -86,15 +89,6 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     [HttpGet("users/current")]
     public async Task<IActionResult> UserInfo() =>
         this.Ok(await this._identityService.UserInfoAsync());
-
-    [HttpGet("users")]
-    public async Task<IActionResult> GetAllUsers()
-    {
-        var result = await this._identityService.GetAllUsersAsync();
-        return this.Ok(result.Value);
-    }
-
-
     [HttpGet("users/{userId}")]
     public async Task<IActionResult> UserInfo(string userId)
     {
