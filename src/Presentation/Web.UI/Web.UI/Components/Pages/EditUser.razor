@@ -3,9 +3,11 @@
 @using Application.DTOs.Identity
 @using Blazored.LocalStorage
 @using Web.UI.Helpers
+@using Web.UI.Services
 @* @inject HttpClient Http *@
 @inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage;
+@inject TokenService TokenService;
 
 <h3>User Details</h3>
 
@@ -59,7 +61,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var Http = httpClientFactory.CreateClient("ApiClient");
         if (!userId.IsNullOrEmpty())
         {
             user = await Http.SendApiRequestAsync<UpdateRequest>(LocalStorage, Navigation, $"Identity/users/{userId}");

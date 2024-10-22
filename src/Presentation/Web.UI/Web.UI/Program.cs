@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 using Web.UI.Components;
 using Web.UI.Middlewares;
+using Web.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,7 @@ builder.Services.AddHttpClient("ApiClient", client =>
 });
 
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<TokenService>();
 
 
 var app = builder.Build();
