@@ -30,6 +30,11 @@ builder.Services.AddMemoryCache();
 var baseAddress = builder.Configuration["ApiSettings:BaseAddress"];
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    client.BaseAddress = new Uri(baseAddress);
+});
+
 builder.Services.AddBlazoredLocalStorage();
 
 
