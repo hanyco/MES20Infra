@@ -51,7 +51,7 @@
                 {
                     await _localStorage.SetItemAsync("authToken", result.JWToken);
 
-                    _navigation.NavigateTo("/");
+                    _navigation.NavigateTo("/", true);
                 }
             }
             else
