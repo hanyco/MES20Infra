@@ -73,26 +73,6 @@
             .ProcessResult(_navigation)
             .HandleApiResponse("User not found or you are not authorized to view this user.");
         isSubmitDisabled = !isValid;
-
-        // try
-        // {
-        //     var buffer = await _api.SendApiRequestAsync<UpdateRequest>($"Identity/users/{userId}");
-
-        //     if (buffer.IsSucceed)
-        //     {
-        //         this.user = buffer.NotNull().Value.NotNull();
-        //     }
-        //     else
-        //     {
-        //         errorMessage = "Failed to load user information.";
-        //     }
-        //     StateHasChanged();
-        // }
-        // catch (Exception ex)
-        // {
-        //     errorMessage = $"An error occurred: {ex.Message}";
-        //     Console.WriteLine($"Error during StateHasChanged: {ex.Message}");
-        // }
     }
 
 
