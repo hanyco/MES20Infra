@@ -23,11 +23,6 @@ builder.Services
 
 builder.Services.AddMemoryCache();
 
-//builder.Services.AddHttpClient("MES.Web.UI", client =>
-//{
-//    client.BaseAddress = new Uri(baseAddress);
-//}).AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
-
 var baseAddress = builder.Configuration["ApiSettings:BaseAddress"];
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
@@ -37,7 +32,7 @@ builder.Services.AddHttpClient("ApiClient", client =>
 });
 
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<ApiClientService>();
 
 
 var app = builder.Build();

@@ -62,6 +62,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     }
 
     [HttpPost("register")]
+    [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
@@ -83,14 +84,16 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
         this.Ok(await this._identityService.ResetPassword(model));
 
     [HttpPost("update")]
+    [HttpPut]
     public async Task<IActionResult> Update(UpdateRequest request) =>
         this.Ok(await this._identityService.UpdateAsync(request));
 
     [HttpGet("users/current")]
-    public async Task<IActionResult> UserInfo() =>
+    public async Task<IActionResult> GetCurrentUser() =>
         this.Ok(await this._identityService.UserInfoAsync());
+
     [HttpGet("users/{userId}")]
-    public async Task<IActionResult> UserInfo(string userId)
+    public async Task<IActionResult> GetUserByUserId(string userId)
     {
         var result = await this._identityService.UserInfoAsync(userId);
         return this.Ok(result.Value);

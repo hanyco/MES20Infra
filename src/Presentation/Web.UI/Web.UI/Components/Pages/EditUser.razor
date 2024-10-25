@@ -2,12 +2,12 @@
 @page "/edit-user/{userId}"
 @using Application.DTOs.Identity
 @using Blazored.LocalStorage
+@using Library.Results
+@using Library.Validations
 @using Web.UI.Helpers
 @using Web.UI.Services
-@* @inject HttpClient Http *@
-@inject NavigationManager Navigation
-@inject ILocalStorageService LocalStorage;
-@inject TokenService TokenService;
+@inject NavigationManager _navigation
+@inject ApiClientService _api;
 
 <h3>User Details</h3>
 
@@ -53,28 +53,46 @@
 
 @code {
     [Parameter] public string userId { get; set; } = null!;
-    private UpdateRequest? user = null;
+    private UpdateRequest user = null!;
     private string? confirmPassword;
     private string? errorMessage;
     private bool isSubmitDisabled = false;
 
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
-        if (!userId.IsNullOrEmpty())
+        // New user
+        if (userId.IsNullOrEmpty())
         {
-            user = await Http.SendApiRequestAsync<UpdateRequest>(LocalStorage, Navigation, $"Identity/users/{userId}");
-            if (user == null)
-            {
-                errorMessage = "User not found or you are not authorized to view this user.";
-                isSubmitDisabled = true;
-                user = new();
-            }
+            this.user = new();
+            return;
         }
-        else
-        {
-            user = new();
-        }
+
+        // Edit user
+        (user, var isValid, errorMessage) = await _api.SendApiRequestAsync<UpdateRequest>($"Identity/users/{userId}")
+            .ProcessResult(_navigation)
+            .HandleApiResponse("User not found or you are not authorized to view this user.");
+        isSubmitDisabled = !isValid;
+
+        // try
+        // {
+        //     var buffer = await _api.SendApiRequestAsync<UpdateRequest>($"Identity/users/{userId}");
+
+        //     if (buffer.IsSucceed)
+        //     {
+        //         this.user = buffer.NotNull().Value.NotNull();
+        //     }
+        //     else
+        //     {
+        //         errorMessage = "Failed to load user information.";
+        //     }
+        //     StateHasChanged();
+        // }
+        // catch (Exception ex)
+        // {
+        //     errorMessage = $"An error occurred: {ex.Message}";
+        //     Console.WriteLine($"Error during StateHasChanged: {ex.Message}");
+        // }
     }
 
 
@@ -91,30 +109,18 @@
             return;
         }
 
-        errorMessage = null;
-
-        HttpResponseMessage response;
-        if (!userId.IsNullOrEmpty())
+        var method = !userId.IsNullOrEmpty() ? HttpMethod.Put : HttpMethod.Post;
+        var (isOk, result) = await _api.SendApiRequestWithoutResponseAsync("Identity", method, user).ProcessResult(_navigation);
+        if (isOk)
         {
-            response = await Http.SendApiRequestWithoutResponseAsync(LocalStorage, Navigation, "Identity/update", HttpMethod.Put, user);
+            _navigation.NavigateTo("/users");
+            return;
         }
-        else
-        {
-            response = await Http.SendApiRequestWithoutResponseAsync(LocalStorage, Navigation, "Identity/update", HttpMethod.Post, user);
-        }
-
-        if (response.IsSuccessStatusCode)
-        {
-            Navigation.NavigateTo("/users");
-        }
-        else
-        {
-            // Handle error
-        }
+        errorMessage = result.ErrorMessage;
     }
 
     private void BackToList()
     {
-        Navigation.NavigateTo("/users");
+        _navigation.NavigateTo("/users");
     }
 }
