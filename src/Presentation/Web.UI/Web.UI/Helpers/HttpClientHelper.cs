@@ -17,6 +17,12 @@ public static class HttpClientHelper
         var result = await processResult.ConfigureAwait(false);
         return result.Value.Response;
     }
+
+    public static T? GetResponse<T>(this Result<(T? Response, string? _)> processResult)
+    {
+        return processResult.Value.Response;
+    }
+
     public static async Task<HttpResponseMessage> GetResponse(this Task<Result<(HttpResponseMessage Response, string? _)>> processResult)
     {
         var result = await processResult.ConfigureAwait(false);

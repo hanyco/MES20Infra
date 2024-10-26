@@ -1,6 +1,8 @@
-﻿@using Blazored.LocalStorage
-@inject ILocalStorageService _localStorage
-@inject NavigationManager _navigation
+﻿@using Blazored.LocalStorage;
+@using Web.UI.Services;
+
+@inject ApiClientService _api;
+@inject NavigationManager _navigation;
 
 @if (isAuthenticated)
 {
@@ -21,52 +23,27 @@ else
 
     private void Logout()
     {
-        _localStorage.RemoveItemAsync("authToken");
+        _api.LogoutAsync();
+        
         _navigation.NavigateTo("login");
     }
-
-    private string? GetUserNameFromToken(string token)
-    {
-        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "full_name");
-        if (claim?.Value?.IsNullOrEmpty() is not false)
-        {
-            claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub");
-        }
-        return claim?.Value;
-    }
-
-    private bool IsTokenExpired(string token)
-    {
-        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var expiration = jwtToken.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
-
-        if (expiration != null && long.TryParse(expiration, out var expUnix))
-        {
-            var expirationDate = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
-            return expirationDate < DateTime.UtcNow;
-        }
-        return true;
-    }
-
+            
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var token = await _localStorage.GetItemAsync<string>("authToken");
+        var token = await _api.GetTokenAsync();
         if (firstRender || token != lastToken)
         {
             lastToken = token;
 
-            if (!string.IsNullOrEmpty(token) && !IsTokenExpired(token))
+            if (!string.IsNullOrEmpty(token) && !_api.IsTokenExpired(token))
             {
                 isAuthenticated = true;
-                userName = GetUserNameFromToken(token);
+                userName = _api.GetUserNameFromToken(token);
             }
             else
             {
                 isAuthenticated = false;
-                await _localStorage.RemoveItemAsync("authToken");
+                await _api.LogoutAsync();
                 _navigation.NavigateTo("login");
             }
 

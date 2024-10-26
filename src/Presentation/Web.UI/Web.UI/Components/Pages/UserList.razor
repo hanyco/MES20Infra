@@ -9,7 +9,7 @@
 
 <h3>User Management</h3>
 
-@if (users == null)
+@if (!_isInitialized)
 {
     <p><em>Loading...</em></p>
 }
@@ -19,6 +19,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Display Name</th>
                 <th>User Name</th>
                 <th>Email</th>
                 <th>Actions</th>
@@ -28,6 +29,7 @@ else
             @foreach (var user in users)
             {
                 <tr>
+                    <td>@user.DisplayName</td>
                     <td>@user.UserName</td>
                     <td>@user.Email</td>
                     <td>
@@ -42,13 +44,38 @@ else
 
 @code {
     private List<UserInfoExResponse>? users;
+    private string? errorMessage;
+    private bool _isInitialized = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        users = await _api.SendApiRequestAsync<List<UserInfoExResponse>>("Identity/users")
-            .ProcessResult(_navigation)
-            .GetResponse();
+        users = [];
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            var apiResponse = await _api.SendApiRequestAsync<List<UserInfoExResponse>>("Identity/users")
+                .ProcessResult(_navigation);
+            if (apiResponse.IsFailure)
+            {
+                if (apiResponse.Exception is HttpRequestException exception && exception.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _navigation.NavigateTo("/login");
+                }
+                else
+                {
+                    errorMessage = apiResponse.Message;
+                }
+                return;
+            }
+            users = apiResponse.GetResponse();
+            _isInitialized = true;
+            StateHasChanged();
+        }
+    }
+
 
     private void EditUser(string userId)
     {
@@ -62,11 +89,11 @@ else
 
     private async Task DeleteUser(string userId)
     {
-        userId.NotNull(() =>"No user selected");
+        userId.NotNull(() => "No user selected");
         var response = await _api.SendApiRequestWithoutResponseAsync($"Identity/remove/{userId}", HttpMethod.Delete)
             .ProcessResult(_navigation)
             .GetResponse();
-        if (response.IsSuccessStatusCode)
+        if (response?.IsSuccessStatusCode is true)
         {
             users = users?.Where(u => u.UserId != userId).ToList();
         }

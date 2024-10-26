@@ -2,15 +2,18 @@
 
 namespace Application.DTOs.Identity;
 
-public class RegisterRequest
+public class RegisterRequest : UserInfoExResponse
 {
     [Required]
-    public required string UserName { get; set; }
+    public new required string Email { get; set; }
+
     [Required]
-    public required string Email { get; set; }
+    public new required string Password { get; set; }
+
+    public override string? PhoneNumber { get; set; }
+
     [Required]
-    public required string Password { get; set; }
-    public string? PhoneNumber { get; set; } // Optional
-    public string? Role { get; set; } // Optional
+    public new required string UserName { get; set; }
+     // Optional
 }
 

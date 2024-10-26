@@ -139,6 +139,7 @@ public class IdentityService(
         // Create new user object
         var user = new ApplicationUser
         {
+            DisplayName = request.DisplayName,
             UserName = request.UserName,
             Email = request.Email,
             PhoneNumber = request.PhoneNumber
@@ -155,14 +156,14 @@ public class IdentityService(
         }
 
         // Optionally, add user to a role
-        if (!string.IsNullOrEmpty(request.Role))
-        {
-            var roleResult = await this._userManager.AddToRoleAsync(user, request.Role);
-            if (!roleResult.Succeeded)
-            {
-                return Result.Fail("Failed to assign role to user.");
-            }
-        }
+        //if (!string.IsNullOrEmpty(request.Role))
+        //{
+        //    var roleResult = await this._userManager.AddToRoleAsync(user, request.Role);
+        //    if (!roleResult.Succeeded)
+        //    {
+        //        return Result.Fail("Failed to assign role to user.");
+        //    }
+        //}
 
         // If email confirmation is required, generate and send confirmation token (optional)
         var emailConfirmationToken = await this._userManager.GenerateEmailConfirmationTokenAsync(user);

@@ -17,7 +17,7 @@ public abstract class ResultBase(
 {
     private readonly bool? _isSucceed = isSucceed;
     private ImmutableArray<Exception>? _errors = errors?.ToImmutableArray();
-
+    
     protected ResultBase(ResultBase result)
         : this(result.ArgumentNotNull().IsSucceed, result.Message, result.Errors, result.InnerResult)
     {
@@ -42,7 +42,7 @@ public abstract class ResultBase(
         init => this._isSucceed = value;
     }
 
-    public string? Message { get; init; } = message;
+    public string? Message { get => field ?? this.Exception?.GetBaseException().Message; init; } = message;
 
     public virtual bool Equals(ResultBase? other) =>
         other is not null && this.GetHashCode() == other.GetHashCode();
