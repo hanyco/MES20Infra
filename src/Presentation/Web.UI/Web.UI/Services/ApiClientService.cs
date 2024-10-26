@@ -3,6 +3,7 @@
 using Library.Results;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 using System.Net;
 using System.Net.Http;
@@ -42,7 +43,8 @@ public sealed class ApiClientService(ILocalStorageService _localStorage, IHttpCl
     {
         var token = await GetTokenAsync();
         using var httpClient = CreateClient();
-        return await httpClient.SendApiRequestWithoutResponseAsync(token, apiUrl, method, content);
+        var result = await httpClient.SendApiRequestWithoutResponseAsync(token, apiUrl, method, content);
+        return result;
     }
 
     public async Task SetTokenAsync(string token)

@@ -97,7 +97,7 @@ public static class HttpClientHelper
 
             var response = await httpClient.SendAsync(request);
 
-            return Result.Fail<HttpResponseMessage>(new HttpRequestException(HttpRequestError.UserAuthenticationError, statusCode: HttpStatusCode.Unauthorized));
+            return Result.Success(response);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {

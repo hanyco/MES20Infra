@@ -71,7 +71,8 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
         return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
-    [HttpGet("remove/{id}")]
+    [HttpDelete("remove/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> RemoveAsync(string id)
     {
         _ = this.Request.Headers.Origin;
