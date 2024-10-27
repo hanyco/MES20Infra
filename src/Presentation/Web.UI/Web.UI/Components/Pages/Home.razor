@@ -1,4 +1,45 @@
 ﻿@page "/"
 
-<h3>This is the main page content.</h3>
-<p>Here you can add the main content of your application.</p>
+<h3 class="text-center mb-4">Welcome to HanyCo Manufacturing Execution System 2.0</h3>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm text-center mb-4">
+        <h5>About This Application</h5>
+        <p>
+            This application is designed to help you manage and organize your tasks efficiently.
+            Use the menu to navigate through different sections and explore its features.
+        </p>
+    </div>
+
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">User Management</h6>
+                    <p class="card-text">Manage user profiles, update information, and assign roles with ease.</p>
+                    <a href="/users" class="btn btn-outline-primary">Manage Users</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Reports & Analytics</h6>
+                    <p class="card-text">Generate insightful reports and keep track of your data effectively.</p>
+                    <a href="/reports" class="btn btn-outline-primary">View Reports</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Settings</h6>
+                    <p class="card-text">Customize your application settings and preferences to suit your needs.</p>
+                    <a href="/settings" class="btn btn-outline-primary">Go to Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

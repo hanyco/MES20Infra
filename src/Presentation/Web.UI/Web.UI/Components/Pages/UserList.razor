@@ -7,7 +7,7 @@
 @inject NavigationManager _navigation
 @inject ApiClientService _api;
 
-<h3>User Management</h3>
+<h3 class="text-center mb-4">User Management</h3>
 
 @if (!_isInitialized)
 {
@@ -15,41 +15,74 @@
 }
 else
 {
-    <button class="btn btn-primary" @onclick="() => NewUser()">New</button>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Display Name</th>
-                <th>User Name</th>
-                <th>Email</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in users)
+    <div class="container">
+        <div class="d-flex justify-content-between mb-3">
+            <button class="btn btn-success" @onclick="NewUser">+ Add New User</button>
+            @if (!string.IsNullOrEmpty(errorMessage))
             {
-                <tr>
-                    <td>@user.DisplayName</td>
-                    <td>@user.UserName</td>
-                    <td>@user.Email</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditUser(user.UserId)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteUser(user.UserId)">Delete</button>
-                    </td>
-                </tr>
+                <div class="alert alert-danger">@errorMessage</div>
             }
-        </tbody>
-    </table>
+        </div>
+
+        <table class="table table-striped table-hover shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>Display Name</th>
+                    <th>User Name</th>
+                    <th>Email</th>
+                    <th style="width: 150px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>@user.DisplayName</td>
+                        <td>@user.UserName</td>
+                        <td>@user.Email</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm me-2" @onclick="() => EditUser(user.UserId)">Edit</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => ShowConfirmDelete(user.UserId)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (isDeleteConfirmationVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="HideConfirmDelete"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this user?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideConfirmDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
     private List<UserInfoExResponse>? users;
     private string? errorMessage;
     private bool _isInitialized = false;
+    private bool isDeleteConfirmationVisible = false;
+    private string? userIdToDelete;
 
     protected override void OnInitialized()
     {
-        users = [];
+        users = new();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -76,7 +109,6 @@ else
         }
     }
 
-
     private void EditUser(string userId)
     {
         _navigation.NavigateTo($"/edit-user/{userId}", forceLoad: true);
@@ -87,15 +119,32 @@ else
         _navigation.NavigateTo($"/edit-user");
     }
 
-    private async Task DeleteUser(string userId)
+    private void ShowConfirmDelete(string userId)
     {
-        userId.NotNull(() => "No user selected");
-        var response = await _api.SendApiRequestWithoutResponseAsync($"Identity/remove/{userId}", HttpMethod.Delete)
-            .ProcessResult(_navigation)
-            .GetResponse();
-        if (response?.IsSuccessStatusCode is true)
+        userIdToDelete = userId;
+        isDeleteConfirmationVisible = true;
+    }
+
+    private void HideConfirmDelete()
+    {
+        isDeleteConfirmationVisible = false;
+        userIdToDelete = null;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (userIdToDelete is not null)
         {
-            users = users?.Where(u => u.UserId != userId).ToList();
+            var response = await _api.SendApiRequestWithoutResponseAsync($"Identity/remove/{userIdToDelete}", HttpMethod.Delete)
+                .ProcessResult(_navigation)
+                .GetResponse();
+            if (response?.IsSuccessStatusCode is true)
+            {
+                users = users?.Where(u => u.UserId != userIdToDelete).ToList();
+            }
+            errorMessage = response?.IsSuccessStatusCode != true ? "Failed to delete user" : null;
         }
+
+        HideConfirmDelete();
     }
 }
