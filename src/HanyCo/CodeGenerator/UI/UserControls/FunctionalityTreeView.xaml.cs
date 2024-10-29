@@ -31,10 +31,10 @@ public partial class FunctionalityTreeView : UserControl, IBinable<IEnumerable<F
     public void Bind(IEnumerable<FunctionalityViewModel> viewMode) =>
         this.TreeView.BindItems(viewMode);
 
-    public async Task BindAsync()
+    public async Task BindAsync(CancellationToken cancellationToken = default)
     {
         this._service ??= DI.GetService<IFunctionalityService>();
-        var functionalities = await this._service.GetAllAsync();
+        var functionalities = await this._service.GetAllAsync(cancellationToken);
         this.Bind(functionalities);
     }
 

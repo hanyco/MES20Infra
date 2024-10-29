@@ -18,11 +18,11 @@ public class PageBase : Library.Wpf.Bases.LibPageBase, ILoggerContainer
 
     protected ILogger Logger { get; }
 
-    protected virtual async Task<Result> OnValidateFormAsync()
+    protected virtual async Task<Result> OnValidateFormAsync(CancellationToken cancellationToken = default)
         => await Task.FromResult(Result.Succeed);
 
-    protected async Task<Result> ValidateFormAsync()
-        => await this.OnValidateFormAsync();
+    protected async Task<Result> ValidateFormAsync(CancellationToken cancellationToken = default)
+        => await this.OnValidateFormAsync(cancellationToken);
 
     private void PageBase_Loaded(object sender, System.Windows.RoutedEventArgs e)
         => this.EndActionScope();

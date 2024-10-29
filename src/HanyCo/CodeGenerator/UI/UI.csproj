@@ -25,6 +25,7 @@
 		<Title>MES 2.0 Infrasrtucture</Title>
 		<Company>HanyCo</Company>
 		<Description>HanyCo MES 2.0 Code Generator and Infrastructure 2023</Description>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<PlatformTarget>AnyCPU</PlatformTarget>

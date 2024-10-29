@@ -138,4 +138,16 @@ public static class TaskHelper
         }
         return result;
     }
+
+    public static Task ThrowIfCancellationRequested(this Task task, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return task;
+    }
+
+    public static Task<T> ThrowIfCancellationRequested<T>(this Task<T> task, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return task;
+    }
 }

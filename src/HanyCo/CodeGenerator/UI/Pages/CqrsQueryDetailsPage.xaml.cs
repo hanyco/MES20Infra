@@ -56,7 +56,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         Check.MustBeNotNull(this.ViewModel);
         try
         {
-            var result = await this._service.SaveViewModelAsync(this.ViewModel);
+            var result = await this._service.SaveViewModelAsync(this.ViewModel, cancellationToken: cancellation);
 
             if (result.IsSucceed)
             {
@@ -71,7 +71,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    protected override async Task<Result> OnValidateFormAsync() =>
+    protected override async Task<Result> OnValidateFormAsync(CancellationToken cancellationToken = default) =>
         await this.ViewModel.Check()
             .NotNull()
             .NotNull(x => x!.ParamsDto)

@@ -39,7 +39,7 @@ public abstract class NotifyPropertyChanged : INotifyPropertyChanged
     /// <param name="value">The new value of the property.</param>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="orderPropertyNames">The names of the properties that should be raised after the property.</param>
-    protected virtual void SetProperty<TProperty>(ref TProperty backingField, TProperty value, [CallerMemberName] string? propertyName = null, params string[] orderPropertyNames)
+    protected virtual void SetProperty<TProperty>(ref TProperty backingField, TProperty value, [CallerMemberName] string? propertyName = null, params IEnumerable<string> orderPropertyNames)
     {
         if (this.ValidateOnPropertySet && value?.Equals(backingField) is true)
         {

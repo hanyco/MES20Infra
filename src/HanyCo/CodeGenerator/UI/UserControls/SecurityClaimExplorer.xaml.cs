@@ -22,9 +22,9 @@ public partial class SecurityClaimExplorer : UserControl, IAsyncInitialzable
 
     public ClaimViewModel? SelectedClaim => this.ClaimTreeView.GetSelectedModel<ClaimViewModel>();
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        var claims = await this._securityService.GetAllAsync();
+        var claims = await this._securityService.GetAllAsync(cancellationToken);
         var rootNode = new TreeViewItem { Header = "Security Claims" };
         EnumerableHelper.BuildTree(
             claims.Where(x => x.Parent == null),

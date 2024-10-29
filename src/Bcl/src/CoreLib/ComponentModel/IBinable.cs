@@ -2,21 +2,17 @@
 
 public interface IAsyncBindable<TViewModel>
 {
-    Task BindAsync(TViewModel viewModel);
+    Task BindAsync(TViewModel viewModel, CancellationToken cancellationToken = default);
 }
 
 public interface IAsyncBindable
 {
-    Task BindAsync();
+    Task BindAsync(CancellationToken cancellationToken = default);
 }
 
-public interface IAsyncBindableBidirectionalViewModel<TViewModel> : IAsyncBindable<TViewModel>, IBidirectionalViewModel<TViewModel>
-{
-}
+public interface IAsyncBindableBidirectionalViewModel<TViewModel> : IAsyncBindable<TViewModel>, IBidirectionalViewModel<TViewModel>;
 
-public interface IAsyncBindableUnidirectionalViewModel<TViewModel> : IAsyncBindable<TViewModel>, IUnidirectionalViewModel<TViewModel>
-{
-}
+public interface IAsyncBindableUnidirectionalViewModel<TViewModel> : IAsyncBindable<TViewModel>, IUnidirectionalViewModel<TViewModel>;
 
 public interface IBidirectionalViewModel<TViewModel> : IUnidirectionalViewModel<TViewModel>
 {

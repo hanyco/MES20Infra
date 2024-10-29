@@ -47,10 +47,10 @@ public partial class DtoEditUserControl : UserControl,
     public DtoViewModel? ViewModel =>
         this.DataContext.Cast().As<DtoViewModel>()?.With(x => x.SecurityClaims.AddRange(this.DtoSecurityClaimCollectorUserControl.ClaimViewModels));
 
-    public async Task BindAsync()
+    public async Task BindAsync(CancellationToken cancellationToken = default)
     {
         this._moduleService ??= DI.GetService<IModuleService>();
-        this.SelectModuleUserControl.Modules = await this._moduleService.GetAllAsync();
+        this.SelectModuleUserControl.Modules = await this._moduleService.GetAllAsync(cancellationToken);
     }
 
     public void RefreshState(DtoViewModel? viewModel)
@@ -104,8 +104,8 @@ public partial class DtoEditUserControl : UserControl,
 
     private IEnumerable<ClaimViewModel> DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim() =>
         this.ViewModel?.Name.IsNullOrEmpty() ?? true
-            ? Enumerable.Empty<ClaimViewModel>()
-            : EnumerableHelper.AsEnumerable(new ClaimViewModel { Key = this.ViewModel.Name });
+            ? []
+            : [new ClaimViewModel { Key = this.ViewModel.Name }];
 
     private void Me_Loaded(object sender, RoutedEventArgs e) =>
         this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);

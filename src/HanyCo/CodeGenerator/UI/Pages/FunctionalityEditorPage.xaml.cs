@@ -61,7 +61,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         this.InitializeComponent();
     }
 
-    bool IStatefulPage.IsViewModelChanged { get; set; }
+    public bool IsViewModelChanged { get; set; }
 
     public FunctionalityViewModel? ViewModel
     {
@@ -76,23 +76,31 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         });
     }
 
-    async Task<Result> IAsyncSavePage.SaveToDbAsync(CancellationToken cancellationToken)
+    public async Task<Result> SaveToDbAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             this.EnableActors(false);
-            
-            this.PrepareViewModel();
-            await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
+
+            await this
+                .PrepareViewModel()
+                .ValidateFormAsync(cancellationToken)
+                .ThrowOnFailAsync(this.Title)
+                .ThrowIfCancellationRequested(cancellationToken)
+                .End();
 
             var result = await this._service.SaveViewModelAsync(this.ViewModel, cancellationToken: cancellationToken);
             
             if (result.IsSucceed)
             {
-                _ = this.SetIsViewModelChanged(false);
+                IsViewModelChanged = false;
             }
 
             return result;
+        }
+        catch(Exception ex)
+        {
+            return Result.Fail(ex);
         }
         finally
         {
@@ -100,10 +108,10 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
-    protected override Task<Result> OnValidateFormAsync()
+    protected override Task<Result> OnValidateFormAsync(CancellationToken cancellationToken = default)
     {
         this.CheckIfInitiated();
-        return base.OnValidateFormAsync();
+        return base.OnValidateFormAsync(cancellationToken);
     }
 
     [MemberNotNull(nameof(ViewModel))]
@@ -149,7 +157,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
-    private async Task DeleteFunctionality()
+    private async Task DeleteFunctionality(CancellationToken cancellationToken = default)
     {
         var functionality = this.FunctionalityTreeView.SelectedItem;
         Check.MustBeNotNull(functionality, () => new CommonException("No functionality selected.", "Please select functionality", details: "If there is not functionality, please create one"));
@@ -159,7 +167,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             return;
         }
 
-        _ = await this._service.DeleteAsync(functionality).ShowOrThrowAsync(this.Title);
+        _ = await this._service.DeleteAsync(functionality, cancellationToken: cancellationToken).ShowOrThrowAsync(this.Title);
         await this.BindDataAsync();
     }
 
@@ -258,8 +266,11 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     }
 
     [MemberNotNull(nameof(ViewModel))]
-    private void PrepareViewModel() =>
-        this.ViewModel!.Name = this.ViewModel.SourceDto.Name?.TrimEnd("Dto").AddToEnd("Functionality");
+    private FunctionalityEditorPage PrepareViewModel()
+    {
+        this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name?.TrimEnd("Dto").AddToEnd("Functionality");
+        return this;
+    }
 
     private void PrepareViewModelByDto(in DtoViewModel? details)
     {
@@ -292,9 +303,9 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         //The form is now ready to call services.
     }
 
-    private async Task<Result<string?>> SaveCodes()
+    private async Task<Result<string?>> SaveCodes(CancellationToken cancellationToken = default)
     {
-        if (!ResultHelper.TryParse(await this.ValidateFormAsync(), out var validationResult))
+        if (!ResultHelper.TryParse(await this.ValidateFormAsync(cancellationToken), out var validationResult))
         {
             return validationResult.WithValue<string?>(null);
         }
@@ -321,7 +332,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             }
             finally
             {
-                await Task.Delay(750);
+                await Task.Delay(750, cancellationToken);
             }
         }
         var files = codes.Select(code => (Path.Combine(getPath(settings, code), code.FileName), code.Statement));
@@ -358,19 +369,14 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         try
         {
             this.EnableActors(false);
-            await SaveToDb();
+            _ = ControlHelper.MoveToNextUIElement();
+            await this.SaveToDbAsync().ShowOrThrowAsync(this.Title).End();
+            await this.FunctionalityTreeView.BindAsync();
         }
         finally
         {
             this.EnableActors(true);
         }
-    }
-
-    private async Task SaveToDb()
-    {
-        _ = ControlHelper.MoveToNextUIElement();
-        _ = await ((IAsyncSavePage)this).SaveToDbAsync().ShowOrThrowAsync(this.Title);
-        await this.FunctionalityTreeView.BindAsync();
     }
 
     private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
@@ -386,10 +392,10 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
-    private async Task SaveToDisk()
+    private async Task SaveToDisk(CancellationToken cancellationToken = default)
     {
         _ = ControlHelper.MoveToNextUIElement();
-        var saveResult = await this.SaveCodes().ThrowOnFailAsync(this.Title);
+        var saveResult = await this.SaveCodes(cancellationToken).ThrowOnFailAsync(this.Title);
         SourceCodeHelper.ShowDiskOperationResult(saveResult);
     }
 

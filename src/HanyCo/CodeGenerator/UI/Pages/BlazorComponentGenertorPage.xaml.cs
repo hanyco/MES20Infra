@@ -93,7 +93,10 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
             this.SaveToDbButton.IsEnabled = false;
             this.ValidateForm(false);
             var scope = this.ActionScopeBegin("Saving...");
-            var saveResult = await this._service.SaveViewModelAsync(this.ViewModel).ThrowOnFailAsync();
+            var saveResult = await this._service
+                .SaveViewModelAsync(this.ViewModel, cancellationToken: cancellation)
+                .ThrowIfCancellationRequested(cancellation)
+                .ThrowOnFailAsync();
             ((IStatefulPage)this).IsViewModelChanged = false;
             await this.BindComponentTreeView();
             this.IsEditMode = true;
@@ -106,10 +109,10 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
         }
     }
 
-    protected override Task<Result> OnValidateFormAsync()
+    protected override Task<Result> OnValidateFormAsync(CancellationToken cancellationToken = default)
     {
         this.ValidateForm(true);
-        return base.OnValidateFormAsync();
+        return base.OnValidateFormAsync(cancellationToken);
     }
 
     private async Task BindComponentTreeView()
