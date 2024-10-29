@@ -108,13 +108,4 @@ internal partial class ControllerService
             .NotNull(x => x.NameSpace)
             .NotNull(x => x.Module)
             .Build().ToAsync();
-
-    #region API Methods
-    public Task<Result<int>> DeleteAsync(ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-    Task<IReadOnlyList<ControllerMethodViewModel>> IAsyncRead<ControllerMethodViewModel, long>.GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
-    Task<ControllerMethodViewModel?> IAsyncRead<ControllerMethodViewModel, long>.GetByIdAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
-    public Task<Result<ControllerMethodViewModel>> InsertAsync(ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-    public Task<Result<ControllerMethodViewModel>> UpdateAsync(long id, ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-    #endregion
 }

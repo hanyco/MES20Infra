@@ -7,8 +7,10 @@ using Library.Results;
 namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IControllerService : IBusinessService, ICodeGenerator<ControllerViewModel>, 
-    IAsyncCrud<ControllerViewModel>,
-    IAsyncCrud<ControllerMethodViewModel>
+    IAsyncCrud<ControllerViewModel>
 {
     Task<Result> DeleteById(long controllerId, bool persist = true, CancellationToken token = default);
 }
+
+
+public interface IControllerApiService : IAsyncCrud<ControllerMethodViewModel>;
