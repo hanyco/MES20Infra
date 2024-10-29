@@ -60,14 +60,21 @@
             }
             else
             {
-                var error = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
-                if (error is not null)
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    ErrorMessage = $"Invalid login attempt ({(HttpStatusCode)error.ErrorCode}). Error: {error.Message}";
+                    ErrorMessage = $"Invalid username or password.";
                 }
                 else
                 {
-                    ErrorMessage = $"Invalid login attempt.";
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    if (errorMessage is not null)
+                    {
+                        ErrorMessage = $"Invalid login attempt ({response.StatusCode}). Error: {errorMessage}";
+                    }
+                    else
+                    {
+                        ErrorMessage = $"Invalid login attempt ({response.StatusCode}).";
+                    }
                 }
             }
             //this.StateHasChanged();

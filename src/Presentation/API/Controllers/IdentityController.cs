@@ -41,7 +41,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     [HttpGet("users")]
     public async Task<IActionResult> GetAllUsers()
     {
-        var result = await this._identityService.GetAllUsersAsync();
+        var result = await this._identityService.GetAllUsers();
         return this.Ok(result.Value);
     }
 
@@ -55,10 +55,11 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> GetTokenAsync(TokenRequest tokenRequest)
     {
         var ipAddress = this.GenerateIPAddress().NotNull(() => "Cannot find local address");
-        var token = await this._identityService.GetTokenAsync(tokenRequest, ipAddress);
+        var token = await this._identityService.GetToken(tokenRequest, ipAddress);
         return token.IsSucceed
             ? this.Ok(token.Value)
-            : this.Unauthorized(new ApiErrorResponse(token.Exception?.Message, StatusCodes.Status401Unauthorized));
+            //: this.Unauthorized(new ApiErrorResponse(token.Exception?.Message, StatusCodes.Status401Unauthorized));
+            : this.Unauthorized(token.Exception?.Message ?? token.Message);
     }
 
     [HttpPost("register")]
@@ -67,7 +68,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
         //var origin = this.Request.Headers.Origin.NotNull();
-        var result = await this._identityService.RegisterAsync(request);
+        var result = await this._identityService.Register(request);
         return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
@@ -76,7 +77,8 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> RemoveAsync(string id)
     {
         _ = this.Request.Headers.Origin;
-        return this.Ok(await this._identityService.RemoveAsync(id));
+        var result = await this._identityService.Remove(id);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
     [HttpPost("reset-password")]
@@ -86,18 +88,24 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
 
     [HttpPost("update")]
     [HttpPut]
-    public async Task<IActionResult> Update(UpdateRequest request) =>
-        this.Ok(await this._identityService.UpdateAsync(request));
+    public async Task<IActionResult> Update(UpdateRequest request)
+    {
+        var result = await this._identityService.Update(request);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
+    }
 
     [HttpGet("users/current")]
-    public async Task<IActionResult> GetCurrentUser() =>
-        this.Ok(await this._identityService.UserInfoAsync());
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var result = await this._identityService.GetUserCurrentUser();
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
+    }
 
     [HttpGet("users/{userId}")]
     public async Task<IActionResult> GetUserByUserId(string userId)
     {
-        var result = await this._identityService.UserInfoAsync(userId);
-        return this.Ok(result.Value);
+        var result = await this._identityService.GetUser(userId);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
     private string? GenerateIPAddress() =>

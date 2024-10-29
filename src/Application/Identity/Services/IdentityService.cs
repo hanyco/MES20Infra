@@ -80,7 +80,7 @@ public class IdentityService(
 
     public Task ForgotPassword(ForgotPasswordRequest model, string origin) => Task.CompletedTask;
 
-    public async Task<Result<List<UserInfoExResponse>>> GetAllUsersAsync()
+    public async Task<Result<List<UserInfoExResponse>>> GetAllUsers()
     {
         var users = await this._userManager.Users.ToListAsync();
 
@@ -96,7 +96,7 @@ public class IdentityService(
         return Result.Success(userList);
     }
 
-    public async Task<Result<TokenResponse>> GetTokenAsync(TokenRequest request, string ipAddress)
+    public async Task<Result<TokenResponse>> GetToken(TokenRequest request, string ipAddress)
     {
         try
         {
@@ -127,7 +127,16 @@ public class IdentityService(
         }
     }
 
-    public async Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<UserInfoExResponse>> GetUser(string userId)
+    {
+        var result = await this.GetUserInfo(userId);
+        return Result.Success<UserInfoExResponse>(result);
+    }
+
+    public async Task<Result<UserInfoResponse>> GetUserCurrentUser() =>
+        Result.Success<UserInfoResponse>(await this.GetUserInfo(this._authenticatedUser.UserId));
+
+    public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         // Check if user already exists
         var userWithSameEmail = await this._userManager.FindByEmailAsync(request.Email);
@@ -172,16 +181,21 @@ public class IdentityService(
         return Result.Success("User registered successfully.");
     }
 
-    public async Task<Result<string>> RemoveAsync(string Id)
+    public async Task<Result<string>> Remove(string Id)
     {
-        //if (!_authenticatedUser.User.IsInRole(Roles.SuperAdmin.ToString()))
-        //{
-        //    throw new MesException($"Only SuperAdmin Can Remove User !");
-        //}
         var userWithSameId = await this._userManager.FindByIdAsync(Id);
         if (userWithSameId == null)
         {
             throw new MesException($"UserId '{Id}' not found!");
+        }
+        var getUsersResult = await this.GetAllUsers();
+        if (getUsersResult is { IsSucceed: false } or { Value: null })
+        {
+            return Result.Fail<string>("Cannot remove user");
+        }
+        if (getUsersResult.Value.Count < 2)
+        {
+            return Result.Fail<string>("Cannot remove user");
         }
         _ = await this._userManager.DeleteAsync(userWithSameId);
         return Result.Success<string>("User Removed !");
@@ -201,7 +215,7 @@ public class IdentityService(
             : throw new MesException($"Error occurred while resetting the password.");
     }
 
-    public async Task<Result> UpdateAsync(UpdateRequest request)
+    public async Task<Result> Update(UpdateRequest request)
     {
         try
         {
@@ -216,7 +230,7 @@ public class IdentityService(
         async Task update(UpdateRequest request)
         {
             Check.MustBeArgumentNotNull(request?.UserId);
-            
+
             var user = (await this._userManager.FindByIdAsync(request.UserId)).NotNull(() => $"UserId '{request.UserId}' not found!");
 
             var passwordHasher = new PasswordHasher<ApplicationUser>();
@@ -236,16 +250,6 @@ public class IdentityService(
             }
         }
     }
-
-    public async Task<Result<UserInfoResponse>> UserInfoAsync() =>
-        Result.Success<UserInfoResponse>(await this.GetUserInfo(this._authenticatedUser.UserId));
-
-    public async Task<Result<UserInfoExResponse>> UserInfoAsync(string userId)
-    {
-        var result = await this.GetUserInfo(userId);
-        return Result.Success<UserInfoExResponse>(result);
-    }
-
     private async Task<JwtSecurityToken> GenerateJWToken(ApplicationUser user, string ipAddress)
     {
         var userClaims = await this._userManager.GetClaimsAsync(user);

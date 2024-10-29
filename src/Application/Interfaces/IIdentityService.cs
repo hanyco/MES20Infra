@@ -5,14 +5,14 @@ namespace Application.Interfaces;
 
 public interface IIdentityService
 {
-    Task<Result<TokenResponse>> GetTokenAsync(TokenRequest request, string ipAddress);
+    Task<Result<TokenResponse>> GetToken(TokenRequest request, string ipAddress);
 
-    Task<Result> UpdateAsync(UpdateRequest request);
-    Task<Result<string>> RemoveAsync(string Id);
-    Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
-    Task<Result<UserInfoExResponse>> UserInfoAsync(string userId);
-    Task<Result<UserInfoResponse>> UserInfoAsync();
-    Task<Result<List<UserInfoExResponse>>> GetAllUsersAsync();
+    Task<Result> Update(UpdateRequest request);
+    Task<Result<string>> Remove(string Id);
+    Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default);
+    Task<Result<UserInfoExResponse>> GetUser(string userId);
+    Task<Result<UserInfoResponse>> GetUserCurrentUser();
+    Task<Result<List<UserInfoExResponse>>> GetAllUsers();
     Task<Result<string>> ConfirmEmailAsync(string userId, string code);
 
     Task ForgotPassword(ForgotPasswordRequest model, string origin);
