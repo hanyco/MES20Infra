@@ -26,7 +26,14 @@ public static class QueryableHelper
     {
         Check.MustBeArgumentNotNull(query);
         Check.MustBeArgumentNotNull(asyncLock);
-        return asyncLock.LockAsync(async () => await query.FirstOrDefaultAsync(cancellationToken));
+        return asyncLock.LockAsync([DebuggerStepThrough] async () => await query.FirstOrDefaultAsync(cancellationToken));
+    }
+
+    public static Task<bool> AnyLockAsync<TResult>(this IQueryable<TResult> query, IAsyncLock asyncLock, CancellationToken cancellationToken = default)
+    {
+        Check.MustBeArgumentNotNull(query);
+        Check.MustBeArgumentNotNull(asyncLock);
+        return asyncLock.LockAsync([DebuggerStepThrough] async () => await query.AnyAsync(cancellationToken));
     }
 
     /// <summary>
@@ -69,7 +76,7 @@ public static class QueryableHelper
     /// Asynchronously locks a queryable and returns a list of results.
     /// </summary>
     public static Task<List<TResult>> ToListLockAsync<TResult>(this IQueryable<TResult> query, IAsyncLock asyncLock, CancellationToken cancellationToken = default)
-        => asyncLock.ArgumentNotNull().LockAsync(async () => await query.ToListAsync(cancellationToken));
+        => asyncLock.ArgumentNotNull().LockAsync([DebuggerStepThrough] async () => await query.ToListAsync(cancellationToken));
 
     /// <summary>
     /// Gets a paged list of items from a queryable source.

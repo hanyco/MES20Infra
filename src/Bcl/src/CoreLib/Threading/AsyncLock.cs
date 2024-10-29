@@ -1,7 +1,11 @@
 ﻿using Library.Validations;
 
+using System.Diagnostics;
+
 namespace Library.Threading;
 
+[DebuggerStepThrough]
+[StackTraceHidden]
 public sealed class AsyncLock : IAsyncLock, IDisposable
 {
     private readonly SemaphoreSlim _lock = new(1);

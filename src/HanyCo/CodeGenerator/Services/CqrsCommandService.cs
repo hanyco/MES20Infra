@@ -38,7 +38,7 @@ internal sealed class CqrsCommandService(
         var query = from dto in this.GetAllQuery()
                     where dto.Name == name
                     select dto.Id;
-        return query.AnyAsync();
+        return query.AnyLockAsync(_readDbContext.AsyncLock);
     }
 
     public Task<CqrsCommandViewModel> CreateAsync(CancellationToken token = default)

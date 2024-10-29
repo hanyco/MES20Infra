@@ -24,7 +24,7 @@ public partial class Functionality
     [StringLength(50)]
     public string? Name { get; set; }
 
-    public long? ModuleId { get; set; }
+    public long ModuleId { get; set; }
 
     public Guid Guid { get; set; }
 
@@ -43,7 +43,7 @@ public partial class Functionality
 
     public long SourceDtoId { get; set; }
 
-    public long? ControllerId { get; set; }
+    public long ControllerId { get; set; }
 
     [ForeignKey("ControllerId")]
     [InverseProperty("Functionalities")]

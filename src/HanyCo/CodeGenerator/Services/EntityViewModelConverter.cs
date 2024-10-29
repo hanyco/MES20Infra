@@ -149,7 +149,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         if (model.Module?.Id is > 0)
         {
             result.Module = null;
-            result.ModuleId = model.Module.Id;
+            result.ModuleId = model.Module.Id.Value;
         }
         else
         {

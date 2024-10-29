@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-
-using Library.Exceptions;
+﻿using Library.Exceptions;
 using Library.Results;
 using Library.Validations;
+
+using System.Diagnostics;
 
 namespace Library.Helpers;
 
@@ -29,114 +29,55 @@ public static class TaskHelper
         }
     }
 
-    /// <summary>
-    /// Creates a task that will complete when all of the <see cref="Task"/> objects in an array
-    /// have completed.
-    /// </summary>
-    /// <remarks>Returns all the exceptions occurred, if any</remarks>
-    /// <typeparam name="TResult">The type of the completed task.</typeparam>
-    /// <param name="tasks">The tasks to wait on for completion.</param>
-    /// <returns>A task that represents the completion of all of the supplied tasks.</returns>
-    public static async Task<IEnumerable<TResult>> WhenAllAsync<TResult>(IEnumerable<Task<TResult>> tasks)
-        => await WhenAllAsync(tasks.ToArray());
-
-    /// <summary>
-    /// Creates a task that will complete when all of the <see cref="Task"/> objects in an array
-    /// have completed.
-    /// </summary>
-    /// <remarks>Returns all the exceptions occurred, if any</remarks>
-    /// <typeparam name="TResult">The type of the completed task.</typeparam>
-    /// <param name="tasks">The tasks to wait on for completion.</param>
-    /// <returns>A task that represents the completion of all of the supplied tasks.</returns>
-    public static async Task<IEnumerable<TResult>> WhenAllAsync<TResult>(params Task<TResult>[] tasks)
-    {
-        var allTasks = Task.WhenAll(tasks);
-        try
-        {
-            return await allTasks;
-        }
-        catch (Exception)
-        {
-            return Enumerable.Empty<TResult>();
-        }
-    }
-
-    /// <summary>
-    /// Creates a task that will complete when all of the <see cref="Task"/> objects in an array
-    /// have completed.
-    /// </summary>
-    /// <remarks>Returns all the exceptions occurred, if any</remarks>
-    /// <typeparam name="TResult">The type of the completed task.</typeparam>
-    /// <param name="tasks">The tasks to wait on for completion.</param>
-    /// <returns>A task that represents the completion of all of the supplied tasks.</returns>
-    public static async Task WhenAllAsync(IEnumerable<Task> tasks)
-        => await WhenAllAsync(tasks.ToArray());
-
-    /// <summary>
-    /// Creates a task that will complete when all of the <see cref="Task"/> objects in an array
-    /// have completed.
-    /// </summary>
-    /// <remarks>Returns all the exceptions occurred, if any</remarks>
-    /// <typeparam name="TResult">The type of the completed task.</typeparam>
-    /// <param name="tasks">The tasks to wait on for completion.</param>
-    /// <returns>A task that represents the completion of all of the supplied tasks.</returns>
-    public static async Task WhenAllAsync(params Task[] tasks)
-    {
-        var allTasks = Task.WhenAll(tasks);
-        try
-        {
-            await allTasks;
-        }
-        catch (Exception)
-        {
-            //ignore
-        }
-    }
-
     public static async Task<Result> RunAllAsync(this IEnumerable<Func<Task<Result>>> funcs, CancellationToken token)
     {
         Check.MustBeArgumentNotNull(funcs);
 
-        var result = Result.Succeed;
-        foreach (var func in funcs)
+        foreach (var func in funcs.WithCancellation(token))
         {
-            if (token.IsCancellationRequested)
+            var result = await func();
+            if (result.IsFailure)
             {
-                result = Result.Fail<OperationCancelledException>();
-                break;
-            }
-
-            var current = await func();
-            if (current.IsFailure)
-            {
-                result = current;
-                break;
+                return result;
             }
         }
-        return result;
+        return token.IsCancellationRequested
+            ? Result.Fail<OperationCancelledException>()
+            : Result.Succeed;
     }
-    
+
     public static async Task<Result> RunAllAsync<TState>(this IEnumerable<Func<TState, Task<Result>>> funcs, TState initialState, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(funcs);
 
-        var result = Result.Succeed;
-        foreach (var func in funcs)
+        foreach (var func in funcs.WithCancellation(token))
         {
-            if (token.IsCancellationRequested)
+            var result = await func(initialState);
+            if (result.IsFailure)
             {
-                result = Result.Fail<OperationCancelledException>();
-                break;
-            }
-
-            var current = await func(initialState);
-            if (current.IsFailure)
-            {
-                result = current;
-                break;
+                return result;
             }
         }
-        return result;
+        return token.IsCancellationRequested
+            ? Result.Fail<OperationCancelledException>()
+            : Result.Succeed;
+    }
+
+    public static async Task<Result> RunAllAsync<TState>(this IEnumerable<Func<TState, CancellationToken, Task<Result>>> funcs, TState initialState, CancellationToken cancellationToken = default)
+    {
+        Check.MustBeArgumentNotNull(funcs);
+
+        foreach (var func in funcs.WithCancellation(cancellationToken))
+        {
+            var result = await func(initialState, cancellationToken);
+            if (result.IsFailure)
+            {
+                return result;
+            }
+        }
+        return cancellationToken.IsCancellationRequested
+            ? Result.Fail<OperationCancelledException>()
+            : Result.Succeed;
     }
 
     public static Task ThrowIfCancellationRequested(this Task task, CancellationToken cancellationToken = default)
@@ -150,4 +91,30 @@ public static class TaskHelper
         cancellationToken.ThrowIfCancellationRequested();
         return task;
     }
+
+    /// <summary>
+    /// Creates a task that will complete when all of the <see cref="Task"/> objects in an array
+    /// have completed.
+    /// </summary>
+    /// <remarks>Returns all the exceptions occurred, if any</remarks>
+    /// <typeparam name="TResult">The type of the completed task.</typeparam>
+    /// <param name="tasks">The tasks to wait on for completion.</param>
+    /// <returns>A task that represents the completion of all of the supplied tasks.</returns>
+    public static async Task<IEnumerable<TResult>> WhenAll<TResult>(params IEnumerable<Task<TResult>> tasks)
+    {
+        var allTasks = Task.WhenAll(tasks);
+        return await allTasks;
+    }
+
+    /// <summary>
+    /// Creates a task that will complete when all of the <see cref="Task"/> objects in an array
+    /// have completed.
+    /// </summary>
+    /// <remarks>Returns all the exceptions occurred, if any</remarks>
+    /// <typeparam name="TResult">The type of the completed task.</typeparam>
+    /// <param name="tasks">The tasks to wait on for completion.</param>
+    /// <returns>A task that represents the completion of all of the supplied tasks.</returns>
+    public static Task WhenAll(params IEnumerable<Task> tasks) =>
+        Task.WhenAll(tasks);
+
 }

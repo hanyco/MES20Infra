@@ -115,7 +115,7 @@ public interface IDbEntityToViewModelConverter<out TViewModel, in TDbEntity>
     TViewModel? ToViewModel(TDbEntity? entity);
 }
 
-public interface IDbEntityViewModelConverter<TViewMode, TDbEntity> : IDbEntityToViewModelConverter<TViewMode, TDbEntity>,IViewModelToDbEntityConverter<TViewMode,TDbEntity>;
+public interface IDbEntityViewModelConverter<TViewMode, TDbEntity> : IDbEntityToViewModelConverter<TViewMode, TDbEntity>, IViewModelToDbEntityConverter<TViewMode, TDbEntity>;
 
 /// <summary>
 /// Supporting to clean tracked entities.
@@ -155,7 +155,6 @@ public interface IViewModelToDbEntityConverter<in TViewModel, out TDbEntity>
     TDbEntity? ToDbEntity(TViewModel? model);
 }
 
-
 public interface IAsyncCreator<TViewModel>
 {
     Task<TViewModel> CreateAsync(CancellationToken cancellationToken = default);
@@ -174,25 +173,3 @@ public interface IAsyncCrud<TViewModel, TId> : IAsyncRead<TViewModel, TId>, IAsy
 
 public record PagingParams(in int PageIndex = 0, in int? PageSize = null);
 public record PagingResult<T>(IReadOnlyList<T> Result, in long TotalCount);
-
-//public interface IHierarchicalDbEntityActor<TDbEntity>
-//{
-//    /// <summary>
-//    /// Gets the all child entities of specific entity asynchronously.
-//    /// </summary>
-//    /// <param name="entity">The entity.</param>
-//    IAsyncEnumerable<TDbEntity> GetChildEntitiesAsync(TDbEntity entity, CancellationToken cancellationToken = default);
-
-// /// <summary> /// Gets the child entities by a specific identifier asynchronously. /// </summary>
-// /// <param name="parentId">The parent identifier.</param> IAsyncEnumerable<TDbEntity>
-// GetChildEntitiesByIdAsync(long parentId, CancellationToken cancellationToken = default);
-
-// /// <summary> /// Gets the parent entity asynchronously. /// </summary> /// <param
-// name="childId">The child identifier.</param> Task<TDbEntity?> GetParentEntityAsync(long childId,
-// CancellationToken cancellationToken = default);
-
-//    /// <summary>
-//    /// Gets the root entities asynchronously.
-//    /// </summary>
-//    IAsyncEnumerable<TDbEntity> GetRootEntitiesAsync(CancellationToken cancellationToken = default);
-//}

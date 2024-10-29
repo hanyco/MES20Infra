@@ -49,7 +49,7 @@ internal sealed class DtoService(
         var query = from dto in this._readDbContext.Dtos
                     where dto.Name == name
                     select dto.Id;
-        return query.AnyAsync();
+        return query.AnyLockAsync(_readDbContext.AsyncLock);
     }
 
     public Task<DtoViewModel> CreateAsync(CancellationToken token = default)

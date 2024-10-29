@@ -30,7 +30,7 @@ internal sealed class CqrsQueryService(
         var query = from entity in this.GetAllQuery()
                     where entity.Name == name
                     select entity.Id;
-        return query.AnyAsync();
+        return query.AnyLockAsync(_readDbContext.AsyncLock);
     }
 
     public Task<CqrsQueryViewModel> CreateAsync(CancellationToken token = default) =>

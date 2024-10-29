@@ -76,7 +76,7 @@ public sealed class TaskList : FluentListBase<Task, TaskList>, IDisposable, IEnu
         => await Task.Run(() => this.This().WaitAny());
 
     public async Task WhenAllAsync()
-        => await TaskHelper.WhenAllAsync(this.This());
+        => await TaskHelper.WhenAll(this.This());
 
     private void Dispose(bool disposing)
     {
