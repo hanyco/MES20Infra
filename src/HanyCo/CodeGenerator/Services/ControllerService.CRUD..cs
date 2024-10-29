@@ -16,8 +16,8 @@ internal partial class ControllerService
 {
     private readonly IEntityViewModelConverter _converter = converter;
     private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly ISecurityService _securityService = securityService;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
-
     public Task<Result<int>> DeleteAsync(ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
         this.DeleteAsync<ControllerViewModel, Controller>(this._writeDbContext, model, persist);
 
@@ -83,16 +83,38 @@ internal partial class ControllerService
     public async Task<Result<ControllerViewModel>> UpdateAsync(long id, ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         var vr = await this.ValidateAsync(model, cancellationToken);
+        if (!vr.IsSucceed)
+        {
+            return vr;
+        }
+
+        var entity = this._converter.ToDbEntity(model);
+        _ = this._writeDbContext.Attach(entity)
+            .SetModified(x => x.AdditionalUsings)
+            .SetModified(x => x.ControllerName)
+            .SetModified(x => x.ControllerRoute)
+            .SetModified(x => x.CtorParams)
+            .SetModified(x => x.IsAnonymousAllow)
+            .SetModified(x => x.ModuleId)
+            .SetModified(x => x.NameSpace);
+        _ = await this._securityService.SetEntityClaims(model.Guid!.Value, model.SecurityClaims, persist, cancellationToken);
+        _ = await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
+        return Result.Success(model);
     }
 
-    public Task<Result<ControllerViewModel>> ValidateAsync(ControllerViewModel? item, CancellationToken token = default)
-    {
-        return item.ArgumentNotNull()
+    public Task<Result<ControllerViewModel>> ValidateAsync(ControllerViewModel? item, CancellationToken token = default) => item.ArgumentNotNull()
             .Check()
             .NotNull(x => x.Name)
             .NotNull(x => x.NameSpace)
             .NotNull(x => x.Module)
             .Build().ToAsync();
-            
-    }
+
+    #region API Methods
+    public Task<Result<int>> DeleteAsync(ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+    Task<IReadOnlyList<ControllerMethodViewModel>> IAsyncRead<ControllerMethodViewModel, long>.GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+    Task<ControllerMethodViewModel?> IAsyncRead<ControllerMethodViewModel, long>.GetByIdAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public Task<Result<ControllerMethodViewModel>> InsertAsync(ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public Task<Result<ControllerMethodViewModel>> UpdateAsync(long id, ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    #endregion
 }

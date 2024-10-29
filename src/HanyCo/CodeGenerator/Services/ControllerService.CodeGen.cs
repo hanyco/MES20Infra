@@ -29,7 +29,8 @@ internal sealed partial class ControllerService(
     InfraWriteDbContext writeDbContext,
     InfraReadDbContext readDbContext,
     ICodeGeneratorEngine codeGeneratorEngine,
-    IEntityViewModelConverter converter) 
+    IEntityViewModelConverter converter,
+    ISecurityService securityService) 
     : IControllerService
 {
     public Result<Codes> GenerateCodes(ControllerViewModel viewModel)
