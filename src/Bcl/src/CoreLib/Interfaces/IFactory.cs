@@ -2,30 +2,30 @@
 
 public interface IFactory<out TSelf>
 {
-    static abstract TSelf New();
+    static abstract TSelf Create();
 }
 
 public interface IFactory<out TSelf, in TArg>
 {
-    static abstract TSelf New(TArg arg);
+    static abstract TSelf Create(TArg arg);
 }
 
 public interface IFactory<out TSelf, in TArg1, in TArg2>
 {
-    static abstract TSelf New(TArg1 arg1, TArg2 arg2);
+    static abstract TSelf Create(TArg1 arg1, TArg2 arg2);
 }
 
 public interface IFactory<out TSelf, in TArg1, in TArg2, in TArg3>
 {
-    static abstract TSelf New(TArg1 arg1, TArg2 arg2, TArg3 arg3);
+    static abstract TSelf Create(TArg1 arg1, TArg2 arg2, TArg3 arg3);
 }
 
 public interface IFactory<out TSelf, in TArg1, in TArg2, in TArg3, in TArg4>
 {
-    static abstract TSelf New(TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4);
+    static abstract TSelf Create(TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4);
 }
 
 public interface IFactory<out TSelf, in TArg1, in TArg2, in TArg3, in TArg4, in TArg5>
 {
-    static abstract TSelf New(TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5);
+    static abstract TSelf Create(TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5);
 }

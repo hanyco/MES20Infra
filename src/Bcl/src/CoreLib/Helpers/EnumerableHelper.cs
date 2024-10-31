@@ -1,16 +1,16 @@
-﻿using System.Collections;
+﻿using Library.Collections;
+using Library.Interfaces;
+using Library.Results;
+using Library.Types;
+using Library.Validations;
+
+using System.Collections;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-using Library.Collections;
-using Library.Interfaces;
-using Library.Results;
-using Library.Types;
-using Library.Validations;
 
 namespace Library.Helpers;
 
@@ -24,18 +24,9 @@ public static class EnumerableHelper
     /// <param name="source">The source.</param>
     /// <param name="item">The item.</param>
     /// <returns></returns>
-    public static IEnumerable<T> AddImmuted<T>(this IEnumerable<T>? source, T item)
-    {
-        if (source != null)
-        {
-            foreach (var i in source)
-            {
-                yield return i;
-            }
-        }
+    public static IEnumerable<T> AddImmuted<T>(this IEnumerable<T>? source, T item) =>
+        (source ?? []).Concat([item]);
 
-        yield return item;
-    }
 
     /// <summary>
     /// Adds the specified item immutably and returns a new instance of source.
@@ -289,7 +280,7 @@ public static class EnumerableHelper
         => source?.Count > 0;
 
     public static T[] AsArray<T>(this IEnumerable<T> items)
-            => items is T[] array ? array : (items?.ToArray() ?? []);
+        => items is T[] array ? array : (items?.ToArray() ?? []);
 
     /// <summary>
     /// Converts a single item into an IEnumerable of that item.
@@ -300,20 +291,26 @@ public static class EnumerableHelper
     /// This code creates an IEnumerable of type T and returns the item passed in as an argument.
     /// </remarks>
     [return: NotNull]
+    [Obsolete("Use `[]` instead in C# 11.")]
     public static IEnumerable<T> AsEnumerable<T>(T item)
     {
-        //The yield keyword is used to return the item passed in as an argument.
         yield return item;
     }
 
     [return: NotNull]
-    public static IEnumerable<T> AsEnumerable<T>(params IEnumerable<T> items)
-    {
-        return items;
-    }
+    public static IEnumerable<T> AsEnumerable<T>(params IEnumerable<T> items) =>
+        items;
 
-    public static FluentList<TItem> AsFluent<TItem>(this IList<TItem> list)
-        => FluentList<TItem>.New(list);
+    /// <summary>
+    /// Converts an <see cref="IList{TItem}"/> to a <see cref="FluentList{TItem}"/> instance,
+    /// allowing for fluent-style operations on the list.
+    /// </summary>
+    /// <typeparam name="TItem">The type of elements in the list.</typeparam>
+    /// <param name="sourceList">The source list to convert.</param>
+    /// <returns>A new <see cref="FluentList{TItem}"/> containing the elements of the source list.</returns>
+    public static FluentList<TItem> ToFluentList<TItem>(this IList<TItem> sourceList) =>
+        FluentList<TItem>.Create(sourceList);
+
 
     /// <summary>
     /// Builds a read-only list from an enumerable.
@@ -1675,6 +1672,7 @@ public static class EnumerableHelper
     /// <typeparam name="T">The type of the item.</typeparam>
     /// <param name="item">The item to create an array from.</param>
     /// <returns>An array containing the item.</returns>
+    [Obsolete]
     public static T[] ToArray<T>(T item)
          => AsEnumerable(item).ToArray();
 

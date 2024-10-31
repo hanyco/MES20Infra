@@ -83,7 +83,7 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return (Schema: schema, Name: name, Columns: columns, IdColumn: () => FindIdColumn(tableType));
     }
 
-    public static Sql New(string arg)
+    public static Sql Create(string arg)
         => new(arg);
 
     /// <summary>

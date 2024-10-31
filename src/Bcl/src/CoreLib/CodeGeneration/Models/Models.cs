@@ -82,7 +82,7 @@ public readonly struct MethodArgument(in TypePath type, in string? name) : IEqua
     public string Name { get; } = name ?? TypeMemberNameHelper.ToArgName(type.ArgumentNotNull().Name);
     public TypePath Type { get; } = type;
 
-    public static MethodArgument New(TypePath arg)
+    public static MethodArgument Create(TypePath arg)
         => new(arg.ArgumentNotNull(), TypeMemberNameHelper.ToArgName(arg.Name));
 
     public static bool operator !=(MethodArgument left, MethodArgument right)

@@ -136,6 +136,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             .Then(x => saveCommand(x.DeleteCommand, token))
             .Then(x => saveDto(x.SourceDto, token))
             .Then(x => _controllerService.SaveViewModelAsync(x.Controller, cancellationToken: token))
+            .Then(x => x.Controller.Api.ForEach(y => _controllerApiService.SaveViewModelAsync(y, cancellationToken: token)))
             .Then(x => saveFunctionality(x, token))
             .RunAsync(token)
             .IfFailure(this._dtoService.ResetChanges)

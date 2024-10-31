@@ -533,14 +533,14 @@ public static class ServiceHelper
         var services = serviceAsm.GetTypes().Where(t => t.IsClass && t.GetInterfaces().Contains(typeof(TServiceInterface))).ToList();
 
         //Loop through each interface and check if there is a corresponding service
-        foreach (var iface in interfaces)
+        foreach (var @interface in interfaces)
         {
             foreach (var svc in services)
             {
                 //If a service is found, add it to the ServiceCollection
-                if (svc.GetInterface(iface.Name) != null)
+                if (svc.GetInterface(@interface.Name) != null)
                 {
-                    addToServices((serviceCollection, iface, svc));
+                    addToServices((serviceCollection, @interface, svc));
                     break;
                 }
             }
@@ -684,7 +684,7 @@ public static class ServiceHelper
 /// <typeparam name="TDbEntity">The type of the database entity.</typeparam>
 /// <returns>A manipulation result containing a view model and a database entity.</returns>
 
-[Obsolete($"Use {nameof(Library.Data.EntityFrameworkCore.DataServiceHelper)}, instead.", true)]
+[Obsolete($"Use {nameof(DataServiceHelper)}, instead.", true)]
 public record struct ManipulationResult<TViewModel, TDbEntity>(in TViewModel Model, in TDbEntity Entity)
 {
     public static implicit operator (TViewModel Model, TDbEntity? Entity)(ManipulationResult<TViewModel, TDbEntity> value) => (value.Model, value.Entity);

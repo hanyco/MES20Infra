@@ -13,7 +13,7 @@ namespace Library.Data.Ado;
 public abstract class AdoRepositoryBase(in Sql sql)
 {
     protected AdoRepositoryBase(in string connectionString)
-        : this(Sql.New(connectionString)) { }
+        : this(Sql.Create(connectionString)) { }
 
     protected Sql Sql { get; } = sql;
 

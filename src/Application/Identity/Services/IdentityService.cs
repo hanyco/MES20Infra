@@ -1,11 +1,11 @@
-﻿using Application.DTOs.Identity;
+﻿#nullable disable
+
+using Application.DTOs.Identity;
 using Application.DTOs.Settings;
 using Application.Interfaces;
 using Application.Interfaces.Shared;
 
 using Domain.Identity;
-
-using HanyCo.Infra.Exceptions;
 
 using Library.Results;
 using Library.Validations;
@@ -39,7 +39,7 @@ public class IdentityService(
         var user = await this._userManager.FindByIdAsync(model.UserId);
         if (user == null)
         {
-            throw new MesException($"No Accounts founded with {model.UserId}.");
+            _ = Result.Fail<string>($"No Accounts founded with {model.UserId}.");
         }
 
         var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
@@ -47,7 +47,7 @@ public class IdentityService(
 
         return result.Succeeded
             ? Result.Success<string>(model.UserId, message: $"Password changed.")
-            : throw new MesException($"Error occured while changing the password.");
+            : Result.Fail<string>($"Error occurred while changing the password.");
     }
 
     public async Task<Result<string>> ChangePasswordByUser(ChangePasswordByUserRequest model)
@@ -56,7 +56,7 @@ public class IdentityService(
         var user = await this._userManager.FindByIdAsync(currentUser);
         if (user == null)
         {
-            throw new MesException($"No Accounts founded with this Id.");
+            _ = Result.Fail<string>($"No Accounts founded with this Id.");
         }
 
         _ = await this._userManager.GeneratePasswordResetTokenAsync(user);
@@ -65,17 +65,21 @@ public class IdentityService(
 
         return result.Succeeded
             ? Result.Success<string>(string.Empty, $"Password changed.")
-            : throw new MesException($"Error occured while changing the password.");
+            : Result.Fail<string>($"Error occurred while changing the password.");
     }
 
     public async Task<Result<string>> ConfirmEmailAsync(string userId, string code)
     {
         var user = await this._userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Fail<string>("User not found.", null);
+        }
         code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
         var result = await this._userManager.ConfirmEmailAsync(user, code);
         return result.Succeeded
             ? Result.Success<string>(user.Id, message: $"Account Confirmed for {user.Email}. You can now use the /api/identity/token endpoint to generate JWT.")
-            : throw new MesException($"An error occurred while confirming {user.Email}.");
+            : Result.Fail<string>($"An error occurred while confirming {user.Email}.");
     }
 
     public Task ForgotPassword(ForgotPasswordRequest model, string origin) => Task.CompletedTask;
@@ -115,7 +119,7 @@ public class IdentityService(
                 UserName = user.UserName
             };
             var rolesList = await this._userManager.GetRolesAsync(user).ConfigureAwait(false);
-            response.Roles = rolesList.ToList();
+            response.Roles = [.. rolesList];
             response.IsVerified = user.EmailConfirmed;
             var refreshToken = this.GenerateRefreshToken(ipAddress);
             response.RefreshToken = refreshToken.Token;
@@ -133,8 +137,8 @@ public class IdentityService(
         return Result.Success<UserInfoExResponse>(result);
     }
 
-    public async Task<Result<UserInfoResponse>> GetUserCurrentUser() =>
-        Result.Success<UserInfoResponse>(await this.GetUserInfo(this._authenticatedUser.UserId));
+    public Task<Result<UserInfoExResponse>> GetUserCurrentUser() =>
+        this.GetUser(this._authenticatedUser.UserId);
 
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
@@ -186,7 +190,7 @@ public class IdentityService(
         var userWithSameId = await this._userManager.FindByIdAsync(Id);
         if (userWithSameId == null)
         {
-            throw new MesException($"UserId '{Id}' not found!");
+            _ = Result.Fail<string>($"UserId '{Id}' not found!");
         }
         var getUsersResult = await this.GetAllUsers();
         if (getUsersResult is { IsSucceed: false } or { Value: null })
@@ -206,13 +210,13 @@ public class IdentityService(
         var account = await this._userManager.FindByEmailAsync(model.Email);
         if (account == null)
         {
-            throw new MesException($"No Accounts Registered with {model.Email}.");
+            _ = Result.Fail<string>($"No Accounts Registered with {model.Email}.");
         }
 
         var result = await this._userManager.ResetPasswordAsync(account, model.Token, model.Password);
         return result.Succeeded
-            ? Result.Success<string>(model.Email, message: $"Password Resetted.")
-            : throw new MesException($"Error occurred while resetting the password.");
+            ? Result.Success(model.Email, message: $"Password has reset.")
+            : Result.Fail<string>($"Error occurred while resetting the password.");
     }
 
     public async Task<Result> Update(UpdateRequest request)
@@ -246,7 +250,7 @@ public class IdentityService(
             var result = await this._userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                throw new MesException(result.Errors?.FirstOrDefault()?.Description ?? "Error in updating user.");
+                _ = Result.Fail<string>(result.Errors?.FirstOrDefault()?.Description ?? "Error in updating user.");
             }
         }
     }
@@ -289,7 +293,7 @@ public class IdentityService(
         var user = await this._userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            throw new MesException($"UserId '{userId}' not found!");
+            _ = Result.Fail<string>($"UserId '{userId}' not found!");
         }
 
         var result = new UserInfoExResponse()
@@ -320,12 +324,8 @@ public class IdentityService(
 
     private string RandomTokenString()
     {
-        //using var rngCryptoServiceProvider = new RNGCryptoServiceProvider();
-        //var randomBytes = new byte[40];
-        //rngCryptoServiceProvider.GetBytes(randomBytes);
         var randomBytes = RandomNumberGenerator.GetBytes(40);
 
-        // convert random bytes to hex string
         return BitConverter.ToString(randomBytes).Replace("-", "");
     }
 
@@ -334,8 +334,8 @@ public class IdentityService(
         var code = await this._userManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var route = "api/identity/confirm-email/";
-        var _enpointUri = new Uri(string.Concat($"{origin}/", route));
-        var verificationUri = QueryHelpers.AddQueryString(_enpointUri.ToString(), "userId", user.Id);
+        var _endpointUri = new Uri(string.Concat($"{origin}/", route));
+        var verificationUri = QueryHelpers.AddQueryString(_endpointUri.ToString(), "userId", user.Id);
         verificationUri = QueryHelpers.AddQueryString(verificationUri, "code", code);
         //Email Service Call Here
         return verificationUri;

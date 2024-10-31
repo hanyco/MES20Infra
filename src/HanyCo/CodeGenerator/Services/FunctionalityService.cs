@@ -38,6 +38,7 @@ internal sealed partial class FunctionalityService(
     IMapperSourceGenerator mapperSourceGenerator,
     ICodeGeneratorEngine generatorEngine,
     IControllerService controllerService,
+    IControllerApiService controllerApiService,
     IConfiguration configuration,
     IDbTableService dbTableService)
     : IFunctionalityService
@@ -54,6 +55,7 @@ internal sealed partial class FunctionalityService(
     private readonly IDtoService _dtoService = dtoService;
     private readonly ICodeGeneratorEngine _generatorEngine = generatorEngine;
     private readonly IControllerService _controllerService = controllerService;
+    private readonly IControllerApiService _controllerApiService = controllerApiService;
     private readonly IConfiguration _configuration = configuration;
     private readonly IDbTableService _dbTableService = dbTableService;
     private readonly IMapperSourceGenerator _mapperSourceGenerator = mapperSourceGenerator;

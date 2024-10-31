@@ -434,7 +434,7 @@ internal sealed partial class FunctionalityService
                 .With(x => x.Name = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"));
 
         void createCtor(CreationData data)
-            => data.ViewModel.Controller.CtorParams.Add((MethodArgument.New(TypePath.New<IMediator>()), true));
+            => data.ViewModel.Controller.CtorParams.Add((MethodArgument.Create(TypePath.New<IMediator>()), true));
 
         void createGetAllApi(CreationData data)
         {

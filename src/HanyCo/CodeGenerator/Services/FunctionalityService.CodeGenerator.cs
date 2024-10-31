@@ -209,7 +209,7 @@ internal partial class FunctionalityService: IFunctionalityCodeService
                     }
                 }
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.MapperGeneratorViewModel)}");
-                codes.BlazorDetailsComponentMapperCodes = Codes.New(mapperCodes);
+                codes.BlazorDetailsComponentMapperCodes = Codes.Create(mapperCodes);
             }
 
             // No condition is required.

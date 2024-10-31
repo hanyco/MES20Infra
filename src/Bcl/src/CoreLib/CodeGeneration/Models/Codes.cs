@@ -58,10 +58,10 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// Creates a new instance of the Codes class.
     /// </summary>
     /// <returns>A new instance of the Codes class.</returns>
-    public static Codes New(params IEnumerable<Code> arg) =>
+    public static Codes Create(params IEnumerable<Code> arg) =>
         new(arg);
 
-    public static Codes New(params IEnumerable<Codes> arg) =>
+    public static Codes Create(params IEnumerable<Codes> arg) =>
         new(arg);
 
     /// <summary>

@@ -85,7 +85,7 @@ public sealed class WhereClauseCreatorModel : IFactory<WhereClauseCreatorModel>
     public IEnumerable<WhereClauseCreatorOperation> Operations => this._operations;
     private HashSet<WhereClauseCreatorOperation> _operations { get; } = [];
 
-    public static WhereClauseCreatorModel New() =>
+    public static WhereClauseCreatorModel Create() =>
         new();
 
     public WhereClauseCreatorModel AddOperation(WhereClauseCreatorOperation operation)

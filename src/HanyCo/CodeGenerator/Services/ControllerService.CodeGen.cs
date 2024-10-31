@@ -85,7 +85,7 @@ internal sealed partial class ControllerService(
         var mainCode = Code.New(viewModel.Name, Languages.CSharp, "// Working on it... To be back soon.", false).SetCategory(CodeCategory.Api);
 
         // Return result
-        return Codes.New(mainCode, partCode);
+        return Codes.Create(mainCode, partCode);
 
         static IClass createController(in ControllerViewModel viewModel)
         {

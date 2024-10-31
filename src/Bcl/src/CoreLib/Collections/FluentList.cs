@@ -38,7 +38,7 @@ public sealed class FluentList<TItem>
         fluentList.ArgumentNotNull().AsList();
 
     /// <summary> Creates a new instance of FluentList<TItem>. </summary> <returns>A new instance of FluentList<TItem>.</returns>
-    public static FluentList<TItem> New() =>
+    public static FluentList<TItem> Create() =>
         [];
 
     /// <summary>
@@ -47,7 +47,7 @@ public sealed class FluentList<TItem>
     /// <typeparam name="TItem">The type of the items in the list.</typeparam>
     /// <param name="arg">The list to create the FluentList from.</param>
     /// <returns>A new FluentList containing the items from the given list.</returns>
-    public static FluentList<TItem> New(List<TItem> arg) =>
+    public static FluentList<TItem> Create(List<TItem> arg) =>
         new(arg);
 
     /// <summary>
@@ -56,7 +56,7 @@ public sealed class FluentList<TItem>
     /// <typeparam name="TItem">The type of the items in the list.</typeparam>
     /// <param name="arg">The IEnumerable to create the FluentList from.</param>
     /// <returns>A new FluentList containing the items from the given IEnumerable.</returns>
-    public static FluentList<TItem> New(IEnumerable<TItem> arg) =>
+    public static FluentList<TItem> Create(IEnumerable<TItem> arg) =>
         new(arg);
 }
 #pragma warning restore CA1000 // Do not declare static members on generic types

@@ -42,7 +42,7 @@ public class Result<TValue> : ResultBase, IResult<TValue>
 
     public static implicit operator TValue(Result<TValue> result) => result.ArgumentNotNull().Value;
 
-    public static Result<TValue>? New(Result<TValue>? arg) => arg == null ? default : new(arg, arg.Value);
+    public static Result<TValue>? Create(Result<TValue>? arg) => arg == null ? default : new(arg, arg.Value);
 
     public static Result<TValue> operator +(Result<TValue> left, Result right)
     {

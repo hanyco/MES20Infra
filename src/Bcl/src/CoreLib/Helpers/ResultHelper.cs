@@ -46,7 +46,7 @@ public static class ResultHelper
             return null;
         }
         var buffer = results.ToImmutableArray();
-        var result = TResult.New(buffer.First());
+        var result = TResult.Create(buffer.First());
         foreach (var item in buffer.Skip(1))
         {
             result = result.Combine(item);
