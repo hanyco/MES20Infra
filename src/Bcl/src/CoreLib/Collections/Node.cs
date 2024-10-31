@@ -12,12 +12,14 @@ public sealed class Node<T> : IEquatable<Node<T>>, IEquatable<T>, IHasChildren<N
 
     private readonly List<Node<T>> _innerChildren = [];
 
-    public Node(in T value, in string? display = null)
-            => (this.Value, this.Display) = (value, display ?? value?.ToString());
+    public Node(in T value, in string? display = null) =>
+        (this.Value, this.Display) = (value, display ?? value?.ToString());
 
-    public IEnumerable<Node<T>> Children => this._innerChildren.Enumerate();
+    public IEnumerable<Node<T>> Children =>
+        this._innerChildren.Enumerate();
 
-    public IEnumerable<T> ChildValues => this._innerChildren.Select(x => x.Cast().To<T>());
+    public IEnumerable<T> ChildValues =>
+        this._innerChildren.Select(x => x.Cast().To<T>());
 
     public string? Display { get; }
 

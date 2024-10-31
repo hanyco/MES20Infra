@@ -1,6 +1,4 @@
-﻿#pragma warning disable CA1002 // Do not expose generic lists
-#pragma warning disable CA1000 // Do not declare static members on generic types
-using Library.Interfaces;
+﻿using Library.Interfaces;
 using Library.Validations;
 
 namespace Library.Collections;
@@ -31,12 +29,6 @@ public sealed class FluentList<TItem>
     {
     }
 
-    /// <summary>
-    /// Converts a FluentList to a List.
-    /// </summary>
-    public static implicit operator List<TItem>(in FluentList<TItem> fluentList) =>
-        fluentList.ArgumentNotNull().AsList();
-
     /// <summary> Creates a new instance of FluentList<TItem>. </summary> <returns>A new instance of FluentList<TItem>.</returns>
     public static FluentList<TItem> Create() =>
         [];
@@ -58,6 +50,16 @@ public sealed class FluentList<TItem>
     /// <returns>A new FluentList containing the items from the given IEnumerable.</returns>
     public static FluentList<TItem> Create(IEnumerable<TItem> arg) =>
         new(arg);
+
+    /// <summary>
+    /// Converts a FluentList to a List.
+    /// </summary>
+    public static implicit operator List<TItem>(in FluentList<TItem> fluentList) =>
+        fluentList.ArgumentNotNull().AsList();
 }
-#pragma warning restore CA1000 // Do not declare static members on generic types
-#pragma warning restore CA1002 // Do not expose generic lists
+
+public static class FluentListExtensions
+{
+    public static FluentList<string> AddIfNotNullOrEmpty(this FluentList<string> list, string item) =>
+         list.AddIf(x => !x.IsNullOrEmpty(), item);
+}

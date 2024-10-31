@@ -56,13 +56,13 @@ public sealed class Result : ResultBase, IResult
     public static Result Fail(in string message, in IEnumerable<Exception> errors) =>
         new(false, message, errors);
 
-    public static Result Fail<TException>() where TException : Exception, new() => 
+    public static Result Fail<TException>() where TException : Exception, new() =>
         Fail(new TException());
 
-    public static Result Fail(in string message, in Exception error) => 
+    public static Result Fail(in string message, in Exception error) =>
         Fail(message, [error]);
 
-    public static Result Fail(in Exception error) => 
+    public static Result Fail(in Exception error) =>
         Fail((string)null, error);
 
     public static Result<TValue> Fail<TValue>(in TValue value, in string message, in IEnumerable<Exception> errors)
@@ -85,7 +85,7 @@ public sealed class Result : ResultBase, IResult
 
     public static Result<TValue> From<TValue>(in Result result, in TValue value) => new(result, value);
 
-    public static Result NewEmpty() 
+    public static Result NewEmpty()
         => new();
 
     public static Result operator +(Result left, ResultBase right) => new(left) { InnerResult = right };

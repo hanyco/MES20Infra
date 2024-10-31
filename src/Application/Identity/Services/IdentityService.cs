@@ -1,12 +1,11 @@
-﻿#nullable disable
-
-using Application.DTOs.Identity;
+﻿using Application.DTOs.Identity;
 using Application.DTOs.Settings;
 using Application.Interfaces;
 using Application.Interfaces.Shared;
 
 using Domain.Identity;
 
+using Library.Data.SqlServer.Dynamics;
 using Library.Results;
 using Library.Validations;
 
@@ -34,29 +33,29 @@ public class IdentityService(
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-    public async Task<Result<string>> ChangePassword(ChangePasswordRequest model)
+    public async Task<Result> ChangePassword(ChangePasswordRequest model)
     {
         var user = await this._userManager.FindByIdAsync(model.UserId);
         if (user == null)
         {
-            _ = Result.Fail<string>($"No Accounts founded with {model.UserId}.");
+            return Result.Fail($"No Accounts founded with {model.UserId}.");
         }
 
         var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
         var result = await this._userManager.ResetPasswordAsync(user, resetToken, model.Password);
 
         return result.Succeeded
-            ? Result.Success<string>(model.UserId, message: $"Password changed.")
-            : Result.Fail<string>($"Error occurred while changing the password.");
+            ? Result.Success(model.UserId, message: $"Password changed.")
+            : Result.Fail($"Error occurred while changing the password.");
     }
 
-    public async Task<Result<string>> ChangePasswordByUser(ChangePasswordByUserRequest model)
+    public async Task<Result> ChangePasswordByUser(ChangePasswordByUserRequest model)
     {
         var currentUser = this._authenticatedUser.UserId;
         var user = await this._userManager.FindByIdAsync(currentUser);
         if (user == null)
         {
-            _ = Result.Fail<string>($"No Accounts founded with this Id.");
+            return Result.Fail($"No Accounts founded with this Id.");
         }
 
         _ = await this._userManager.GeneratePasswordResetTokenAsync(user);
@@ -64,29 +63,31 @@ public class IdentityService(
         await this._signInManager.RefreshSignInAsync(user);
 
         return result.Succeeded
-            ? Result.Success<string>(string.Empty, $"Password changed.")
-            : Result.Fail<string>($"Error occurred while changing the password.");
+            ? Result.Success(string.Empty, $"Password changed.")
+            : Result.Fail($"Error occurred while changing the password.");
     }
 
-    public async Task<Result<string>> ConfirmEmailAsync(string userId, string code)
+    public async Task<Result> ConfirmEmailAsync(string userId, string code)
     {
         var user = await this._userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return Result.Fail<string>("User not found.", null);
+            return Result.Fail("User not found.", string.Empty);
         }
         code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
         var result = await this._userManager.ConfirmEmailAsync(user, code);
         return result.Succeeded
-            ? Result.Success<string>(user.Id, message: $"Account Confirmed for {user.Email}. You can now use the /api/identity/token endpoint to generate JWT.")
-            : Result.Fail<string>($"An error occurred while confirming {user.Email}.");
+            ? Result.Success(user.Id, message: $"Account Confirmed for {user.Email}.")
+            : Result.Fail($"An error occurred while confirming {user.Email}.");
     }
 
-    public Task ForgotPassword(ForgotPasswordRequest model, string origin) => Task.CompletedTask;
+    public Task ForgotPassword(ForgotPasswordRequest model, string origin) =>
+        Task.CompletedTask;
 
-    public async Task<Result<List<UserInfoExResponse>>> GetAllUsers()
+    public async Task<Result<IEnumerable<UserInfoExResponse>>> GetAllUsers()
     {
-        var users = await this._userManager.Users.ToListAsync();
+        var users = await this._userManager.Users
+            .ToListAsync();
 
         var userList = users.Select(user => new UserInfoExResponse
         {
@@ -95,18 +96,23 @@ public class IdentityService(
             UserName = user.UserName,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber
-        }).ToList();
+        });
 
         return Result.Success(userList);
     }
 
-    public async Task<Result<TokenResponse>> GetToken(TokenRequest request, string ipAddress)
+    public async Task<Result<TokenResponse?>> GetToken(TokenRequest request, string ipAddress)
     {
         try
         {
             var user = await this._userManager.FindByNameAsync(request.UserName);
+            if (user == null)
+            {
+                return Result.Fail<TokenResponse?>("User not found.", default);
+            }
+
             Check.MustBeNotNull(user, () => $"No Accounts Registered with {request.UserName}.");
-            var result = await this._signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
+            var result = await this._signInManager.PasswordSignInAsync(user.UserName!, request.Password, false, lockoutOnFailure: false);
             Check.MustBe(result.Succeeded, () => $"Invalid Credentials for '{request.UserName}'.");
             var jwtSecurityToken = await this.GenerateJWToken(user, ipAddress);
             var response = new TokenResponse
@@ -115,19 +121,19 @@ public class IdentityService(
                 JWToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
                 IssuedOn = jwtSecurityToken.ValidFrom.ToLocalTime(),
                 ExpiresOn = jwtSecurityToken.ValidTo.ToLocalTime(),
-                Email = user.Email,
-                UserName = user.UserName
+                Email = user.Email!,
+                UserName = user.UserName!
             };
             var rolesList = await this._userManager.GetRolesAsync(user).ConfigureAwait(false);
             response.Roles = [.. rolesList];
             response.IsVerified = user.EmailConfirmed;
             var refreshToken = this.GenerateRefreshToken(ipAddress);
             response.RefreshToken = refreshToken.Token;
-            return Result.Success(response, "Authenticated");
+            return Result.Success(response, "Authenticated")!;
         }
         catch (Exception ex)
         {
-            return Result.Fail<TokenResponse>(ex);
+            return Result.Fail<TokenResponse?>(ex);
         }
     }
 
@@ -185,38 +191,39 @@ public class IdentityService(
         return Result.Success("User registered successfully.");
     }
 
-    public async Task<Result<string>> Remove(string Id)
+    public async Task<Result> Remove(string Id)
     {
         var userWithSameId = await this._userManager.FindByIdAsync(Id);
         if (userWithSameId == null)
         {
-            _ = Result.Fail<string>($"UserId '{Id}' not found!");
+            return Result.Fail($"UserId '{Id}' not found!");
         }
         var getUsersResult = await this.GetAllUsers();
         if (getUsersResult is { IsSucceed: false } or { Value: null })
         {
-            return Result.Fail<string>("Cannot remove user");
+            return Result.Fail("Cannot remove user");
         }
-        if (getUsersResult.Value.Count < 2)
+        var users = getUsersResult.Value.ToList();
+        if (users.Count <= 1)
         {
-            return Result.Fail<string>("Cannot remove user");
+            return Result.Fail("Cannot remove user");
         }
         _ = await this._userManager.DeleteAsync(userWithSameId);
-        return Result.Success<string>("User Removed !");
+        return Result.Success("User Removed !");
     }
 
-    public async Task<Result<string>> ResetPassword(ResetPasswordRequest model)
+    public async Task<Result> ResetPassword(ResetPasswordRequest model)
     {
         var account = await this._userManager.FindByEmailAsync(model.Email);
         if (account == null)
         {
-            _ = Result.Fail<string>($"No Accounts Registered with {model.Email}.");
+            return Result.Fail($"No Accounts Registered with {model.Email}.");
         }
 
         var result = await this._userManager.ResetPasswordAsync(account, model.Token, model.Password);
         return result.Succeeded
             ? Result.Success(model.Email, message: $"Password has reset.")
-            : Result.Fail<string>($"Error occurred while resetting the password.");
+            : Result.Fail($"Error occurred while resetting the password.");
     }
 
     public async Task<Result> Update(UpdateRequest request)
@@ -250,34 +257,30 @@ public class IdentityService(
             var result = await this._userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                _ = Result.Fail<string>(result.Errors?.FirstOrDefault()?.Description ?? "Error in updating user.");
+                _ = Result.Fail(result.Errors?.FirstOrDefault()?.Description ?? "Error in updating user.");
             }
         }
     }
     private async Task<JwtSecurityToken> GenerateJWToken(ApplicationUser user, string ipAddress)
     {
+        Check.MustBeArgumentNotNull(user);
+
         var userClaims = await this._userManager.GetClaimsAsync(user);
         var roles = await this._userManager.GetRolesAsync(user);
-        var roleClaims = new List<Claim>();
-        for (var i = 0; i < roles.Count; i++)
-        {
-            roleClaims.Add(new Claim("roles", roles[i]));
-        }
-        var claims = new[]
-        {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("uid", user.Id),
-                //new Claim("first_name", user.FirstName),
-                //new Claim("last_name", user.LastName),
-                new Claim("full_name", $"{user.DisplayName}"),
-                new Claim("ip", ipAddress),
-                new Claim("strRoles", string.Join(",",roles)),
-            }
-        .Union(userClaims)
-        .Union(roleClaims);
-        return this.JWTGeneration(claims);
+        var roleClaims = roles.Select(x => new Claim("roles", x));
+        var result = EnumerableHelper.AsEnumerable<Claim>
+        (
+                new (JwtRegisteredClaimNames.Sub, user.UserName!),
+                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new ("uid", user.Id),
+                new ("full_name", $"{user.DisplayName}"),
+                new ("ip", ipAddress),
+                new ("strRoles", string.Join(",",roles))
+        )
+        .AddImmutedIf(!user.Email.IsNullOrEmpty(), () => new(JwtRegisteredClaimNames.Email, user.Email!))
+        .AddRangeImmuted(userClaims)
+        .AddRangeImmuted(roleClaims);
+        return this.JWTGeneration(result);
     }
 
     private RefreshToken GenerateRefreshToken(string ipAddress) => new()
@@ -293,7 +296,7 @@ public class IdentityService(
         var user = await this._userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            _ = Result.Fail<string>($"UserId '{userId}' not found!");
+            return Result.Fail<UserInfoExResponse>($"UserId '{userId}' not found!");
         }
 
         var result = new UserInfoExResponse()
@@ -313,7 +316,7 @@ public class IdentityService(
         var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
         var jwtSecurityToken = new JwtSecurityToken(
-        issuer: this._jwtSettings.Issuer,
+            issuer: this._jwtSettings.Issuer,
             audience: this._jwtSettings.Audience,
             claims: claims,
             notBefore: DateTime.UtcNow,

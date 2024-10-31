@@ -6,17 +6,17 @@ namespace Application.Interfaces;
 
 public interface IIdentityService
 {
-    Task<Result<string>> ChangePassword(ChangePasswordRequest model);
+    Task<Result> ChangePassword(ChangePasswordRequest model);
 
-    Task<Result<string>> ChangePasswordByUser(ChangePasswordByUserRequest model);
+    Task<Result> ChangePasswordByUser(ChangePasswordByUserRequest model);
 
-    Task<Result<string>> ConfirmEmailAsync(string userId, string code);
+    Task<Result> ConfirmEmailAsync(string userId, string code);
 
     Task ForgotPassword(ForgotPasswordRequest model, string origin);
 
-    Task<Result<List<UserInfoExResponse>>> GetAllUsers();
+    Task<Result<IEnumerable<UserInfoExResponse>>> GetAllUsers();
 
-    Task<Result<TokenResponse>> GetToken(TokenRequest request, string ipAddress);
+    Task<Result<TokenResponse?>> GetToken(TokenRequest request, string ipAddress);
 
     Task<Result<UserInfoExResponse>> GetUser(string userId);
 
@@ -24,9 +24,9 @@ public interface IIdentityService
 
     Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default);
 
-    Task<Result<string>> Remove(string Id);
+    Task<Result> Remove(string Id);
 
-    Task<Result<string>> ResetPassword(ResetPasswordRequest model);
+    Task<Result> ResetPassword(ResetPasswordRequest model);
 
     Task<Result> Update(UpdateRequest request);
 }

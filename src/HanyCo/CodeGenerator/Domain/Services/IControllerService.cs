@@ -13,4 +13,4 @@ public interface IControllerService : IBusinessService, ICodeGenerator<Controlle
 }
 
 
-public interface IControllerApiService : IAsyncCrud<ControllerMethodViewModel>;
+public interface IControllerApiService : IBusinessService, IAsyncCrud<ControllerMethodViewModel>;

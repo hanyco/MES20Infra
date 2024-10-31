@@ -24,8 +24,18 @@ public static class EnumerableHelper
     /// <param name="source">The source.</param>
     /// <param name="item">The item.</param>
     /// <returns></returns>
-    public static IEnumerable<T> AddImmuted<T>(this IEnumerable<T>? source, T item) =>
-        (source ?? []).Concat([item]);
+    public static IEnumerable<T> AddImmuted<T>(this IEnumerable<T>? source, T item)
+    {
+        if (source != null)
+        {
+            foreach (var i in source)
+            {
+                yield return i;
+            }
+        }
+
+        yield return item;
+    }
 
 
     /// <summary>
@@ -46,6 +56,24 @@ public static class EnumerableHelper
         result.Add(item);
 
         return result;
+    }
+
+    public static IEnumerable<T> AddImmutedIf<T>(this IEnumerable<T> source, Func<bool> predicate, Func<T> getItem)
+    {
+        foreach (var item in source)
+            yield return item;
+
+        if (predicate())
+            yield return getItem();
+    }
+
+    public static IEnumerable<T> AddImmutedIf<T>(this IEnumerable<T> source, bool isOk, Func<T> getItem)
+    {
+        foreach (var item in source)
+            yield return item;
+
+        if (isOk)
+            yield return getItem();
     }
 
     /// <summary>
@@ -161,27 +189,22 @@ public static class EnumerableHelper
     {
         return (source, items) switch
         {
-            (null, null) => [],
-            (_, null) => source,
-            (null, _) => items,
-            _ => addRangeImmutedIterator(source, items)
+            (null, null) => Enumerable.Empty<T>(),
+            (_, null) => source!,
+            (null, _) => items!,
+            _ => addRangeImmutedIterator(source!, items!)
         };
+
         static IEnumerable<T> addRangeImmutedIterator(IEnumerable<T> source, IEnumerable<T> items)
         {
-            if (source != null)
+            foreach (var item in source)
             {
-                foreach (var item in source)
-                {
-                    yield return item;
-                }
+                yield return item;
             }
 
-            if (items != null)
+            foreach (var item in items)
             {
-                foreach (var item in items)
-                {
-                    yield return item;
-                }
+                yield return item;
             }
         }
     }
@@ -300,17 +323,6 @@ public static class EnumerableHelper
     [return: NotNull]
     public static IEnumerable<T> AsEnumerable<T>(params IEnumerable<T> items) =>
         items;
-
-    /// <summary>
-    /// Converts an <see cref="IList{TItem}"/> to a <see cref="FluentList{TItem}"/> instance,
-    /// allowing for fluent-style operations on the list.
-    /// </summary>
-    /// <typeparam name="TItem">The type of elements in the list.</typeparam>
-    /// <param name="sourceList">The source list to convert.</param>
-    /// <returns>A new <see cref="FluentList{TItem}"/> containing the elements of the source list.</returns>
-    public static FluentList<TItem> ToFluentList<TItem>(this IList<TItem> sourceList) =>
-        FluentList<TItem>.Create(sourceList);
-
 
     /// <summary>
     /// Builds a read-only list from an enumerable.
@@ -541,10 +553,10 @@ public static class EnumerableHelper
 
     [return: NotNull]
     public static IEnumerable<TItem> Compact<TItem>(this IEnumerable<TItem?>? items, Func<TItem?, bool> isNotNull)
-        => items?
-            .Where(isNotNull)
-            .Select([DebuggerStepThrough] (x) => x!)
-           ?? [];
+            => items?
+                .Where(isNotNull)
+                .Select([DebuggerStepThrough] (x) => x!)
+               ?? [];
 
     /// <summary>
     /// Checks if the given IEnumerable contains a key-value pair with the specified key.
@@ -591,13 +603,13 @@ public static class EnumerableHelper
         => array.Enumerate().ToImmutableList();
 
     public static int Count<TItem>(IEnumerable<TItem> items)
-        => items switch
-        {
-            Array x => x.Length,
-            ICollection x => x.Count,
-            ICollection<TItem> x => x.Count,
-            _ => items.Count()
-        };
+            => items switch
+            {
+                Array x => x.Length,
+                ICollection x => x.Count,
+                ICollection<TItem> x => x.Count,
+                _ => items.Count()
+            };
 
     /// <summary> Counts the number of elements in a sequence that are not enumerated. </summary>
     /// <typeparam name="T">The type of the elements of source.</typeparam> <param name="source">The
@@ -695,7 +707,7 @@ public static class EnumerableHelper
 
     [return: NotNull]
     public static IEnumerable<T> Enumerate<T>(params T[] items)
-        => items.Enumerate();
+            => items.Enumerate();
 
     /// <summary>
     /// Creates an IEnumerable from a given IEnumerable.
@@ -810,12 +822,6 @@ public static class EnumerableHelper
         }
     }
 
-    //public static (TItems Items, IEnumerable<TResult> Results) ForEach<TItems, TItem, TResult>([DisallowNull] this TItems items, [DisallowNull] Func<TItem, TResult> action)
-    //    where TItems: IEnumerable<TItem>
-    //{
-    //    return (items, items.ForEach(action));
-    //}
-
     /// <summary>
     /// Asynchronously iterates over an <see cref="IAsyncEnumerableTItem"/> and performs an action
     /// on each item.
@@ -837,6 +843,11 @@ public static class EnumerableHelper
         }
     }
 
+    //public static (TItems Items, IEnumerable<TResult> Results) ForEach<TItems, TItem, TResult>([DisallowNull] this TItems items, [DisallowNull] Func<TItem, TResult> action)
+    //    where TItems: IEnumerable<TItem>
+    //{
+    //    return (items, items.ForEach(action));
+    //}
     /// <summary>
     /// Compares two IEnumerable objects for equality.
     /// </summary>
@@ -898,11 +909,11 @@ public static class EnumerableHelper
     }
 
     public static IEnumerable<T> Flatten<T>([DisallowNull] IEnumerable<T> roots, [DisallowNull] Func<T, IEnumerable<T>?> getChildren)
-        => roots.SelectAllChildren(getChildren);
+            => roots.SelectAllChildren(getChildren);
 
     [Obsolete("Please use `Fluent()`, instead.", true)]
     public static TCollection FluentAdd<TCollection, T>(this TCollection collection, T item)
-                where TCollection : ICollection<T>
+                    where TCollection : ICollection<T>
     {
         collection.Add(item);
         return collection;
@@ -962,7 +973,7 @@ public static class EnumerableHelper
         Parallel.ForEach(items, action);
 
     public static void ForEachReverse<TItem>(this TItem[] items, Action<TItem> action)
-        => items.Reverse().ForEach(action);
+            => items.Reverse().ForEach(action);
 
     public static void ForReverse<TItem>(this TItem[] items, Action<(TItem Item, int Index)> action, int? startFrom = null)
     {
@@ -1221,7 +1232,7 @@ public static class EnumerableHelper
     }
 
     public static IEnumerable<T> Merge<T>(IEnumerable<T> enumerable1, IEnumerable<T> enumerable2) =>
-        [.. enumerable1, .. enumerable2];
+            [.. enumerable1, .. enumerable2];
 
     public static T Merge<T>(this IEnumerable<T> source, Func<T, T, T> merger)
     {
@@ -1382,7 +1393,7 @@ public static class EnumerableHelper
         => defaultValue is null ? source.Where(item => item is not null) : source.Where(item => (!item?.Equals(defaultValue)) ?? false);
 
     public static IEnumerable<T> RemoveDuplicates<T>(this IEnumerable<T> source)
-        => source.GroupBy(x => x).Select(x => x.First());
+            => source.GroupBy(x => x).Select(x => x.First());
 
     /// <summary>
     /// Removes the specified item from the source IEnumerable.
@@ -1412,7 +1423,7 @@ public static class EnumerableHelper
         where TSource : class => RemoveDefaults(source);
 
     public static TList RemoveRange<TList, TItem>([DisallowNull] this TList list, params TItem[] items)
-                                                                                                                                                                                                                                                                                                                    where TList : ICollection<TItem>
+                                                                                                                                                                                                                                                                                                                        where TList : ICollection<TItem>
     {
         if (items?.Any() is true)
         {
@@ -1426,7 +1437,7 @@ public static class EnumerableHelper
     }
 
     public static TList RemoveRange<TList, TItem>([DisallowNull] this TList list, in IEnumerable<TItem> items)
-        where TList : ICollection<TItem>
+            where TList : ICollection<TItem>
     {
         if (items?.Any() is true)
         {
@@ -1709,8 +1720,8 @@ public static class EnumerableHelper
     }
 
     public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> values)
-        where TKey : notnull =>
-        new(values.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2)));
+            where TKey : notnull =>
+            new(values.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2)));
 
     [Obsolete($"Use `{nameof(AsEnumerable)}`, instead.", true)]
     public static IEnumerable<T> ToEnumerable<T>(T item)
@@ -1758,6 +1769,15 @@ public static class EnumerableHelper
         return result.Enumerate();
     }
 
+    /// <summary>
+    /// Converts an <see cref="IList{TItem}"/> to a <see cref="FluentList{TItem}"/> instance,
+    /// allowing for fluent-style operations on the list.
+    /// </summary>
+    /// <typeparam name="TItem">The type of elements in the list.</typeparam>
+    /// <param name="sourceList">The source list to convert.</param>
+    /// <returns>A new <see cref="FluentList{TItem}"/> containing the elements of the source list.</returns>
+    public static FluentList<TItem> ToFluentList<TItem>(this List<TItem> sourceList) =>
+        FluentList<TItem>.Create(sourceList);
     /// <summary>
     /// Converts an IEnumerable to an ImmutableArray.
     /// </summary>

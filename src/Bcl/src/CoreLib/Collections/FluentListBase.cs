@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿using Library.DesignPatterns.Markers;
 
-using Library.DesignPatterns.Markers;
+using System.Collections;
 
 namespace Library.Collections;
 
@@ -37,8 +37,37 @@ public abstract class FluentListBase<TItem, TList> : IFluentList<TList, TItem>, 
     public TList Add(TItem item) =>
         this.This.Fluent(() => this._list.Add(item));
 
+    public TList AddIf(Func<TItem, bool> predicate, TItem item)
+    {
+        if (predicate(item))
+        {
+            this._list.Add(item);
+        }
+
+        return this.This;
+    }
+
+    public TList AddIf(Func<bool> predicate, Func<TItem> getItem)
+    {
+        if (predicate())
+        {
+            this._list.Add(getItem());
+        }
+
+        return this.This;
+    }
+
+    public TList AddRange(IEnumerable<TItem> items)
+    {
+        if (items?.Any() is true)
+        {
+            this._list.AddRange(items);
+        }
+        return this.This;
+    }
+
     public List<TItem> AsList() =>
-        this._list;
+            this._list;
 
     public List<TItem> Build() =>
         this.AsList();
@@ -69,16 +98,4 @@ public abstract class FluentListBase<TItem, TList> : IFluentList<TList, TItem>, 
 
     public TList RemoveAt(int index) =>
         this.This.Fluent(() => this._list.RemoveAt(index));
-
-    public TList AddRange(IEnumerable<TItem>? items)
-    {
-        if (items?.Any() is true)
-        {
-            foreach (var item in items)
-            {
-                _ = this.Add(item);
-            }
-        }
-        return this.This;
-    }
 }
