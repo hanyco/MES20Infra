@@ -1,5 +1,4 @@
-﻿using Application.Identity;
-using Application.Interfaces.Shared;
+﻿using Application.Interfaces.Shared;
 
 using System.Security.Claims;
 

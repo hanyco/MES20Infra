@@ -1,5 +1,6 @@
 
 using API.Extensions;
+using API.Middlewares;
 
 using Library.Data.SqlServer;
 using Library.Validations;
@@ -39,8 +40,11 @@ class Startup
             app.UseSwaggerUI();
         }
 
-        app.UseAuthentication();
-        app.UseAuthorization();
+        app.UseAuthentication()
+           .UseAuthorization();
+
+        app.UseGlobalExceptionHandlerMiddleware()
+           .UseAccessControlMiddleware();
 
         app.MapControllers();
     }

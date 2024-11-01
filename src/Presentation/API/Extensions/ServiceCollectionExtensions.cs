@@ -31,7 +31,7 @@ public static class ServiceCollectionExtensions
     {
         _ = services.AddScoped(_ => new Sql(configuration.GetConnectionString("ApplicationConnectionString").NotNull(() => "Connection String not found.")));
 
-        _ = services.AddDbContext<IdentityContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityConnectionString").NotNull(() => "Identity Connection String not found."), op => op.CommandTimeout(120)));
+        _ = services.AddDbContext<IdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("IdentityConnectionString").NotNull(() => "Identity Connection String not found."), op => op.CommandTimeout(120)));
         _ = services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 4;
             })
-            .AddEntityFrameworkStores<IdentityContext>()
+            .AddEntityFrameworkStores<IdentityDbContext>()
             .AddDefaultUI()
             .AddDefaultTokenProviders();
 
@@ -57,31 +57,6 @@ public static class ServiceCollectionExtensions
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            //.AddJwtBearer(o =>
-            //{
-            //    o.RequireHttpsMetadata = false;
-            //    o.SaveToken = false;
-            //    o.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuer = true,
-            //        ValidateAudience = true,
-            //        ValidateLifetime = true,
-            //        ValidateIssuerSigningKey = true,
-            //        ClockSkew = TimeSpan.Zero,
-            //        ValidIssuer = configuration["JWTSettings:Issuer"],
-            //        ValidAudience = configuration["JWTSettings:Audience"],
-            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWTSettings:Key"]!))
-            //    };
-            //    o.Events = new JwtBearerEvents
-            //    {
-            //        OnAuthenticationFailed = context => context.Response.WriteErrorAsync(StatusCodes.Status401Unauthorized, "Authentication failed"),
-            //        OnChallenge = context =>
-            //            !context.Response.HasStarted
-            //                ? context.Response.WriteErrorAsync(StatusCodes.Status401Unauthorized, "You are not authorized")
-            //                : Task.CompletedTask,
-            //        OnForbidden = context => context.Response.WriteErrorAsync(StatusCodes.Status403Forbidden, "You are not authorized to access this resource")
-            //    };
-            //});
             .AddJwtBearer(o =>
             {
                 o.RequireHttpsMetadata = false;

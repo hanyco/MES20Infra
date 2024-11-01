@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Identity;
 using Application.DTOs.Permissions;
+using Application.Infrastructure.Persistence;
 using Application.Interfaces.Shared;
 using Application.Settings;
 
@@ -26,11 +27,13 @@ public class IdentityService(
     IAuthenticatedUserService authenticatedUser,
     UserManager<ApplicationUser> userManager,
     IOptions<JWTSettings> jwtSettings,
-    SignInManager<ApplicationUser> signInManager) : IIdentityService
+    SignInManager<ApplicationUser> signInManager,
+    IdentityDbContext dbContext) : IIdentityService
 {
     private readonly IAuthenticatedUserService _authenticatedUser = authenticatedUser;
     private readonly JWTSettings _jwtSettings = jwtSettings.Value;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
+    private readonly IdentityDbContext _dbContext = dbContext;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     public async Task<Result> ChangePassword(ChangePasswordRequest model)
@@ -267,6 +270,11 @@ public class IdentityService(
 
         var userClaims = await this._userManager.GetClaimsAsync(user);
         var roles = await this._userManager.GetRolesAsync(user);
+        var accessPermissions = await _dbContext.AccessPermissions
+            .Where(ap => ap.UserId == user.Id)
+            .ToListAsync();
+
+        var permissionClaims = accessPermissions.Select(ap => new Claim(ap.EntityType, $"{ap.EntityId}:{ap.AccessType}"));
         var roleClaims = roles.Select(x => new Claim("roles", x));
         var result = EnumerableHelper.AsEnumerable<Claim>
         (
@@ -279,7 +287,9 @@ public class IdentityService(
         )
         .AddImmutedIf(!user.Email.IsNullOrEmpty(), () => new(JwtRegisteredClaimNames.Email, user.Email!))
         .AddRangeImmuted(userClaims)
-        .AddRangeImmuted(roleClaims);
+        .AddRangeImmuted(roleClaims)
+        .AddRangeImmuted(roles.Select(x => new Claim("roles", x)))
+        .AddRangeImmuted(permissionClaims);
         return this.JWTGeneration(result);
     }
 
@@ -352,7 +362,7 @@ public class IdentityService(
         Check.MustBeArgumentNotNull(request.EntityType, "Entity Type cannot be null");
 
         // ذخیره در جدول AccessPermissions
-        var permission = new AccessPermissions
+        var permission = new AccessPermission
         {
             UserId = request.UserId,
             EntityId = request.EntityId,
@@ -363,8 +373,8 @@ public class IdentityService(
         };
 
         // اینجا باید Context یا Repository ذخیره سازی جدول AccessPermissions را صدا بزنیم
-        await _context.AccessPermissions.AddAsync(permission);
-        await _context.SaveChangesAsync();
+        await _dbContext.AccessPermissions.AddAsync(permission);
+        await _dbContext.SaveChangesAsync();
 
         return Result.Success("Access permissions set successfully.");
     }
