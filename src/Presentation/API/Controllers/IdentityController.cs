@@ -1,5 +1,5 @@
 ﻿using Application.DTOs.Identity;
-using Application.Interfaces;
+using Application.Interfaces.Shared;
 
 using Domain.Dtos;
 

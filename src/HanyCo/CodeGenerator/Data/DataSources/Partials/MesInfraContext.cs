@@ -73,7 +73,7 @@ public partial class UiPage : IMesEntity;
 
 public partial class UiPageComponent : IMesEntity;
 
-public partial class UserClaimAccess : IIdenticalEntity<Guid>;
+public partial class AccessPermission : IIdenticalEntity<Guid>;
 
 public enum ControlType
 {

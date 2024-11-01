@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Infrastructure.Identity;
+namespace Application.Infrastructure.Persistence;
 public class IdentityContext(DbContextOptions<IdentityContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
     protected override void OnModelCreating(ModelBuilder builder)

@@ -1,11 +1,10 @@
 ﻿using API.Services.Identity;
 
-using Application.DTOs.Settings;
-using Application.Identity.Services;
-using Application.Infrastructure.Identity;
+using Application.Features.Identity;
 using Application.Infrastructure.Identity.Services;
-using Application.Interfaces;
+using Application.Infrastructure.Persistence;
 using Application.Interfaces.Shared;
+using Application.Settings;
 
 using Domain.Identity;
 

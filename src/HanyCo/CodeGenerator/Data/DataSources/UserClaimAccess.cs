@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HanyCo.Infra.Internals.Data.DataSources;
 
-[Table("UserClaimAccess", Schema = "infra")]
-[Index("ClaimId", Name = "IX_UserClaimAccess_ClaimId")]
-public partial class UserClaimAccess
+[Table("AccessPermission", Schema = "infra")]
+[Index("ClaimId", Name = "IX_AccessPermission_ClaimId")]
+public partial class AccessPermission
 {
     [Key]
     public Guid Id { get; set; }
@@ -21,6 +21,6 @@ public partial class UserClaimAccess
     public int AccessType { get; set; }
 
     [ForeignKey("ClaimId")]
-    [InverseProperty("UserClaimAccesses")]
+    [InverseProperty("AccessPermissiones")]
     public virtual SecurityClaim Claim { get; set; } = null!;
 }

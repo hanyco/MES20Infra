@@ -37,8 +37,4 @@
 		<ProjectReference Include="..\HanyCo\Infrastructure\Infrastructure.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Features\HumanResources\PersonManagement\" />
-	</ItemGroup>
-
 </Project>

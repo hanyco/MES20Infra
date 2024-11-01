@@ -1,7 +1,6 @@
 ﻿using Application.DTOs.Identity;
-using Application.DTOs.Settings;
-using Application.Interfaces;
 using Application.Interfaces.Shared;
+using Application.Settings;
 
 using Domain.Identity;
 
@@ -20,7 +19,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Application.Identity.Services;
+namespace Application.Features.Identity;
 
 public class IdentityService(
     IAuthenticatedUserService authenticatedUser,
@@ -140,7 +139,7 @@ public class IdentityService(
     public async Task<Result<UserInfoExResponse>> GetUser(string userId)
     {
         var result = await this.GetUserInfo(userId);
-        return Result.Success<UserInfoExResponse>(result);
+        return Result.Success(result);
     }
 
     public Task<Result<UserInfoExResponse>> GetUserCurrentUser() =>
@@ -270,12 +269,12 @@ public class IdentityService(
         var roleClaims = roles.Select(x => new Claim("roles", x));
         var result = EnumerableHelper.AsEnumerable<Claim>
         (
-                new (JwtRegisteredClaimNames.Sub, user.UserName!),
-                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new ("uid", user.Id),
-                new ("full_name", $"{user.DisplayName}"),
-                new ("ip", ipAddress),
-                new ("strRoles", string.Join(",",roles))
+                new(JwtRegisteredClaimNames.Sub, user.UserName!),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new("uid", user.Id),
+                new("full_name", $"{user.DisplayName}"),
+                new("ip", ipAddress),
+                new("strRoles", string.Join(",", roles))
         )
         .AddImmutedIf(!user.Email.IsNullOrEmpty(), () => new(JwtRegisteredClaimNames.Email, user.Email!))
         .AddRangeImmuted(userClaims)
@@ -343,4 +342,30 @@ public class IdentityService(
         //Email Service Call Here
         return verificationUri;
     }
+
+    public async Task<Result> SetAccessPermissions(AccessPermissionRequest request)
+    {
+        // اعتبارسنجی درخواست
+        Check.MustBeArgumentNotNull(request.UserId, "User ID cannot be null");
+        Check.MustBeArgumentNotNull(request.EntityId, "Entity ID cannot be null");
+        Check.MustBeArgumentNotNull(request.EntityType, "Entity Type cannot be null");
+
+        // ذخیره در جدول AccessPermissions
+        var permission = new AccessPermissions
+        {
+            UserId = request.UserId,
+            EntityId = request.EntityId,
+            EntityType = request.EntityType,
+            AccessType = request.AccessType,
+            AccessScope = request.AccessScope,
+            CreatedDate = DateTime.UtcNow
+        };
+
+        // اینجا باید Context یا Repository ذخیره سازی جدول AccessPermissions را صدا بزنیم
+        await _context.AccessPermissions.AddAsync(permission);
+        await _context.SaveChangesAsync();
+
+        return Result.Success("Access permissions set successfully.");
+    }
+
 }

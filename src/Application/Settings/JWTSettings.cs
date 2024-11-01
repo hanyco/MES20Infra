@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.DTOs.Settings;
+namespace Application.Settings;
 public class JWTSettings
 {
     public string Key { get; set; }

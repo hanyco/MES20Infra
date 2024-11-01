@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+﻿using Application.Interfaces.Shared;
 
 using System;
 using System.Collections.Generic;

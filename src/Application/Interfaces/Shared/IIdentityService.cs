@@ -2,7 +2,7 @@
 
 using Library.Results;
 
-namespace Application.Interfaces;
+namespace Application.Interfaces.Shared;
 
 public interface IIdentityService
 {
