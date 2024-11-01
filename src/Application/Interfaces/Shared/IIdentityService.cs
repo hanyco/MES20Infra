@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Identity;
+using Application.DTOs.Permissions;
 
 using Library.Results;
 
@@ -29,4 +30,6 @@ public interface IIdentityService
     Task<Result> ResetPassword(ResetPasswordRequest model);
 
     Task<Result> Update(UpdateRequest request);
+
+    Task<Result> SetAccessPermissions(AccessPermissionRequest request);
 }

@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Identity;
+using Application.DTOs.Permissions;
 using Application.Interfaces.Shared;
 using Application.Settings;
 
