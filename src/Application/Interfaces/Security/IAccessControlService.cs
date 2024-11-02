@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 namespace Application.Interfaces.Security;
 public interface IAccessControlService
 {
-    Task<bool> HasAccess(string userId, string path);
-    Task<bool> HasAccessToEntity(string userId, string entityType, long entityId, string accessType);
+    /// <summary>
+    /// Check if a user has access to a specific entity with a specific access type.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="entityName">The name of the entity.</param>
+    /// <param name="accessType">The type of access requested (e.g. Read, Write).</param>
+    /// <returns>Returns true if the user has the requested access; otherwise false.</returns>
+    Task<bool> HasAccess(string userId, string entityName, string accessType);
 }

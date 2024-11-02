@@ -10,34 +10,52 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Features.Permissions.Services;
+
 public class AccessControlService : IAccessControlService
 {
-    private readonly IdentityDbContext _dbContext;
+    private readonly IdentityDbContext _context;
 
-    public AccessControlService(IdentityDbContext dbContext)
+    public AccessControlService(IdentityDbContext context)
     {
-        _dbContext = dbContext;
+        _context = context;
     }
 
-    public async Task<bool> HasAccess(string userId, string path)
+    public async Task<bool> HasAccess(string userId, string entityName, string accessType)
     {
-        // بررسی مسیر (این متد می‌تواند در آینده تغییر کند تا دقت بیشتری پیدا کند)
-        // مثلاً می‌توانید path را به موجودیت و نوع عملیات مربوطه نگاشت کنید
-        var accessPermission = await _dbContext.AccessPermissions
-            .FirstOrDefaultAsync(ap => ap.UserId == userId && ap.EntityType == "Path" && ap.EntityId == path.GetHashCode());
-
-        return accessPermission != null && accessPermission.AccessType == "Read";
+        // Check the specific entity and its parent, recursively if needed.
+        return await HasAccessRecursive(userId, entityName, accessType);
     }
 
-    public async Task<bool> HasAccessToEntity(string userId, string entityType, long entityId, string accessType)
+    private async Task<bool> HasAccessRecursive(string userId, string entityName, string accessType)
     {
-        // بررسی دسترسی کاربر به یک موجودیت خاص با استفاده از AccessPermissions
-        var accessPermission = await _dbContext.AccessPermissions
-            .FirstOrDefaultAsync(ap => ap.UserId == userId && ap.EntityType == entityType && ap.EntityId == entityId);
+        // Find the access permission for the current entity
+        var permission = await _context.AccessPermissions
+            .FirstOrDefaultAsync(p => p.UserId == userId && p.EntityName == entityName && p.AccessType == accessType);
 
-        if (accessPermission == null) return false;
+        if (permission != null)
+        {
+            return true;
+        }
 
-        // بررسی نوع دسترسی (مثلاً Read/Write)
-        return accessPermission.AccessType.Equals(accessType, StringComparison.OrdinalIgnoreCase);
+        // If there is no specific access permission, check the parent entity recursively
+        var parentEntityId = await _context.AccessPermissions
+            .Where(p => p.EntityName == entityName)
+            .Select(p => p.ParentId)
+            .FirstOrDefaultAsync();
+
+        if (parentEntityId != 0) // ParentId is found
+        {
+            var parentEntityName = await _context.AccessPermissions
+                .Where(p => p.Id == parentEntityId)
+                .Select(p => p.EntityName)
+                .FirstOrDefaultAsync();
+
+            if (!string.IsNullOrEmpty(parentEntityName))
+            {
+                return await HasAccessRecursive(userId, parentEntityName, accessType);
+            }
+        }
+
+        return false;
     }
 }
