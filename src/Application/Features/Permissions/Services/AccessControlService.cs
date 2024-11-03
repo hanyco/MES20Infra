@@ -9,7 +9,7 @@ public class AccessControlService : IAccessControlService
 
     public AccessControlService(IAccessPermissionRepository accessPermissionRepository) => this._accessPermissionRepository = accessPermissionRepository;
 
-    public async Task<AccessLevel> HasAccessRecursiveAsync(string userId, long entityId)
+    public async Task<AccessLevel> GetAccessLevel(string userId, long entityId)
     {
         // Step 1: Find user's access permission for the given entity
         var accessPermission = await _accessPermissionRepository.GetAccessPermissionAsync(userId, entityId);
@@ -22,7 +22,7 @@ public class AccessControlService : IAccessControlService
             // If a parent entity exists, call HasAccessRecursiveAsync for the parent entity
             if (parentPermission != null)
             {
-                var parentAccessLevel = await HasAccessRecursiveAsync(userId, parentPermission.EntityId);
+                var parentAccessLevel = await GetAccessLevel(userId, parentPermission.EntityId);
 
                 // Return the parent's access level if found
                 return parentAccessLevel;
@@ -37,14 +37,4 @@ public class AccessControlService : IAccessControlService
             ? accessLevel
             : AccessLevel.NoAccess;
     }
-
-
-    // Helper method to map string to AccessLevel enum
-    private AccessLevel MapStringToEnum(string accessType) => accessType.ToLower() switch
-    {
-        "no-access" => AccessLevel.NoAccess,
-        "read-only" => AccessLevel.ReadOnly,
-        "full-access" => AccessLevel.FullAccess,
-        _ => AccessLevel.FullAccess, // Default to full access if unknown
-    };
 }
