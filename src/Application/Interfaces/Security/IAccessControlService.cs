@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Common.Enums;
 
 namespace Application.Interfaces.Security;
+
 public interface IAccessControlService
 {
-    /// <summary>
-    /// Check if a user has access to a specific entity with a specific access type.
-    /// </summary>
-    /// <param name="userId">The ID of the user.</param>
-    /// <param name="entityName">The name of the entity.</param>
-    /// <param name="accessType">The type of access requested (e.g. Read, Write).</param>
-    /// <returns>Returns true if the user has the requested access; otherwise false.</returns>
-    Task<bool> HasAccess(string userId, string entityName, string accessType);
+    // Checks access level for a specific entity and user based on required access level
+    Task<AccessLevel> HasAccessAsync(string userId, Guid entityId, AccessLevel requiredAccess);
+
+    // Recursive check for access on the entity hierarchy
+    Task<AccessLevel> HasAccessRecursiveAsync(string userId, Guid entityId, AccessLevel requiredAccess);
 }

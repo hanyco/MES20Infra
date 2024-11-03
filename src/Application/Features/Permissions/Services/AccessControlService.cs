@@ -1,61 +1,51 @@
-﻿using Application.Infrastructure.Persistence;
-using Application.Interfaces.Security;
-
-using Microsoft.EntityFrameworkCore;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
 
-namespace Application.Features.Permissions.Services;
+using Application.Common.Enums;
+using Application.Interfaces.Security;
 
-public class AccessControlService : IAccessControlService
+using Microsoft.Extensions.Logging;
+
+namespace Application.Infrastructure.Services
 {
-    private readonly IdentityDbContext _context;
-
-    public AccessControlService(IdentityDbContext context)
+    public class AccessControlService : IAccessControlService
     {
-        _context = context;
-    }
+        private readonly IAccessPermissionRepository _accessPermissionRepository;
+        private readonly ILogger<AccessControlService> _logger;
 
-    public async Task<bool> HasAccess(string userId, string entityName, string accessType)
-    {
-        // Check the specific entity and its parent, recursively if needed.
-        return await HasAccessRecursive(userId, entityName, accessType);
-    }
-
-    private async Task<bool> HasAccessRecursive(string userId, string entityName, string accessType)
-    {
-        // Find the access permission for the current entity
-        var permission = await _context.AccessPermissions
-            .FirstOrDefaultAsync(p => p.UserId == userId && p.EntityName == entityName && p.AccessType == accessType);
-
-        if (permission != null)
+        public AccessControlService(IAccessPermissionRepository accessPermissionRepository, ILogger<AccessControlService> logger)
         {
-            return true;
+            _accessPermissionRepository = accessPermissionRepository;
+            _logger = logger;
         }
 
-        // If there is no specific access permission, check the parent entity recursively
-        var parentEntityId = await _context.AccessPermissions
-            .Where(p => p.EntityName == entityName)
-            .Select(p => p.ParentId)
-            .FirstOrDefaultAsync();
-
-        if (parentEntityId != 0) // ParentId is found
+        public async Task<AccessLevel> HasAccessAsync(string userId, Guid entityId, AccessLevel requiredAccess)
         {
-            var parentEntityName = await _context.AccessPermissions
-                .Where(p => p.Id == parentEntityId)
-                .Select(p => p.EntityName)
-                .FirstOrDefaultAsync();
+            // شروع چک کردن سطح دسترسی با فراخوانی متد بازگشتی
+            return await HasAccessRecursiveAsync(userId, entityId, requiredAccess);
+        }
 
-            if (!string.IsNullOrEmpty(parentEntityName))
+        public async Task<AccessLevel> HasAccessRecursiveAsync(string userId, Guid entityId, AccessLevel requiredAccess)
+        {
+            // دریافت دسترسی کاربر به این entity
+            var accessPermission = await _accessPermissionRepository.GetAccessPermissionAsync(userId, entityId);
+            if (accessPermission == null)
             {
-                return await HasAccessRecursive(userId, parentEntityName, accessType);
+                return AccessLevel.NoAccess;
             }
-        }
 
-        return false;
+            // اگر دسترسی دقیقاً منطبق با درخواست باشد، برگردانید
+            if (accessPermission.AccessLevel == AccessLevel.NoAccess)
+            {
+                return AccessLevel.NoAccess;
+            }
+            else if (accessPermission.AccessLevel == AccessLevel.ReadOnly && requiredAccess == AccessLevel.FullAccess)
+            {
+                return AccessLevel.NoAccess;
+            }
+
+            // در صورت امکان، بالاترین سطح دسترسی را برگردانید
+            return accessPermission.AccessLevel;
+        }
     }
 }
