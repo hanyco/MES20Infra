@@ -38,4 +38,9 @@
 		<ProjectReference Include="..\HanyCo\Infrastructure\Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Interfaces\Repositories\" />
+	  <Folder Include="Interfaces\Security\" />
+	</ItemGroup>
+
 </Project>

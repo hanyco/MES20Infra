@@ -1,51 +1,50 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Application.Common.Enums;
+using Application.Interfaces.Permissions.Repositories;
 
-using Application.Common.Enums;
-using Application.Interfaces.Security;
+namespace Application.Features.Permissions.Services;
 
-using Microsoft.Extensions.Logging;
-
-namespace Application.Infrastructure.Services
+public class AccessControlService : IAccessControlService
 {
-    public class AccessControlService : IAccessControlService
+    private readonly IAccessPermissionRepository _accessPermissionRepository;
+
+    public AccessControlService(IAccessPermissionRepository accessPermissionRepository) => this._accessPermissionRepository = accessPermissionRepository;
+
+    public async Task<AccessLevel> HasAccessRecursiveAsync(string userId, long entityId)
     {
-        private readonly IAccessPermissionRepository _accessPermissionRepository;
-        private readonly ILogger<AccessControlService> _logger;
+        // Step 1: Find user's access permission for the given entity
+        var accessPermission = await _accessPermissionRepository.GetAccessPermissionAsync(userId, entityId);
 
-        public AccessControlService(IAccessPermissionRepository accessPermissionRepository, ILogger<AccessControlService> logger)
+        // If no direct access permission found, check the parent entity's permissions
+        if (accessPermission == null)
         {
-            _accessPermissionRepository = accessPermissionRepository;
-            _logger = logger;
-        }
+            var parentPermission = await _accessPermissionRepository.GetParentPermissionAsync(userId, entityId);
 
-        public async Task<AccessLevel> HasAccessAsync(string userId, Guid entityId, AccessLevel requiredAccess)
-        {
-            // شروع چک کردن سطح دسترسی با فراخوانی متد بازگشتی
-            return await HasAccessRecursiveAsync(userId, entityId, requiredAccess);
-        }
-
-        public async Task<AccessLevel> HasAccessRecursiveAsync(string userId, Guid entityId, AccessLevel requiredAccess)
-        {
-            // دریافت دسترسی کاربر به این entity
-            var accessPermission = await _accessPermissionRepository.GetAccessPermissionAsync(userId, entityId);
-            if (accessPermission == null)
+            // If a parent entity exists, call HasAccessRecursiveAsync for the parent entity
+            if (parentPermission != null)
             {
-                return AccessLevel.NoAccess;
+                var parentAccessLevel = await HasAccessRecursiveAsync(userId, parentPermission.EntityId);
+
+                // Return the parent's access level if found
+                return parentAccessLevel;
             }
 
-            // اگر دسترسی دقیقاً منطبق با درخواست باشد، برگردانید
-            if (accessPermission.AccessLevel == AccessLevel.NoAccess)
-            {
-                return AccessLevel.NoAccess;
-            }
-            else if (accessPermission.AccessLevel == AccessLevel.ReadOnly && requiredAccess == AccessLevel.FullAccess)
-            {
-                return AccessLevel.NoAccess;
-            }
-
-            // در صورت امکان، بالاترین سطح دسترسی را برگردانید
-            return accessPermission.AccessLevel;
+            // If no permission found for both the entity and parent, return NoAccess
+            return AccessLevel.NoAccess;
         }
+
+        // Return the access level for the current entity
+        return Enum.TryParse<AccessLevel>(accessPermission.AccessType, out var accessLevel)
+            ? accessLevel
+            : AccessLevel.NoAccess;
     }
+
+
+    // Helper method to map string to AccessLevel enum
+    private AccessLevel MapStringToEnum(string accessType) => accessType.ToLower() switch
+    {
+        "no-access" => AccessLevel.NoAccess,
+        "read-only" => AccessLevel.ReadOnly,
+        "full-access" => AccessLevel.FullAccess,
+        _ => AccessLevel.FullAccess, // Default to full access if unknown
+    };
 }
