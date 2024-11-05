@@ -3,11 +3,15 @@ using Application.Interfaces.Permissions.Repositories;
 
 namespace Application.Features.Permissions.Services;
 
-public class AccessControlService : IAccessControlService
+public class AccessControlService(IAccessPermissionRepository accessPermissionRepository) : IAccessControlService
 {
-    private readonly IAccessPermissionRepository _accessPermissionRepository;
+    private readonly IAccessPermissionRepository _accessPermissionRepository = accessPermissionRepository;
 
-    public AccessControlService(IAccessPermissionRepository accessPermissionRepository) => this._accessPermissionRepository = accessPermissionRepository;
+    public async Task<AccessLevel> GetAccessLevel(string userId, string path)
+    {
+        var entityId = this.GetEntityIdByPath(path);
+        return await GetAccessLevel(userId, entityId);
+    }
 
     public async Task<AccessLevel> GetAccessLevel(string userId, long entityId)
     {
@@ -37,4 +41,6 @@ public class AccessControlService : IAccessControlService
             ? accessLevel
             : AccessLevel.NoAccess;
     }
+
+    private long GetEntityIdByPath(string path) => throw new NotImplementedException();
 }
