@@ -15,32 +15,20 @@ public class AccessControlService(IAccessPermissionRepository accessPermissionRe
 
     public async Task<AccessLevel> GetAccessLevel(string userId, long entityId)
     {
-        // Step 1: Find user's access permission for the given entity
-        var accessPermission = await _accessPermissionRepository.GetAccessPermissionAsync(userId, entityId);
+        // Retrieve access permission directly and from parent in a single query if possible
+        var accessPermission = await _accessPermissionRepository.GetAccessPermissionWithParentAsync(userId, entityId);
 
-        // If no direct access permission found, check the parent entity's permissions
         if (accessPermission == null)
-        {
-            var parentPermission = await _accessPermissionRepository.GetParentPermissionAsync(userId, entityId);
+            return AccessLevel.None;
 
-            // If a parent entity exists, call HasAccessRecursiveAsync for the parent entity
-            if (parentPermission != null)
-            {
-                var parentAccessLevel = await GetAccessLevel(userId, parentPermission.EntityId);
-
-                // Return the parent's access level if found
-                return parentAccessLevel;
-            }
-
-            // If no permission found for both the entity and parent, return NoAccess
-            return AccessLevel.NoAccess;
-        }
-
-        // Return the access level for the current entity
-        return Enum.TryParse<AccessLevel>(accessPermission.AccessType, out var accessLevel)
-            ? accessLevel
-            : AccessLevel.NoAccess;
+        // Map AccessType to AccessLevel
+        return AccessLevelHelper.MapAccessType(accessPermission.AccessType);
     }
 
-    private long GetEntityIdByPath(string path) => throw new NotImplementedException();
+    private long GetEntityIdByPath(string path)
+    {
+        // TODO: Implement a path-to-entity mapping logic
+        throw new NotImplementedException();
+    }
 }
+

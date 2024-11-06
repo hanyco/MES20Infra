@@ -17,49 +17,53 @@ public class AccessControlMiddleware(RequestDelegate next, ILogger<AccessControl
     {
         var endpoint = context.GetEndpoint();
 
-        // Allow requests with [AllowAnonymous] attribute to pass without authorization check
+        // Step 1: Allow requests with [AllowAnonymous]
         if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
         {
             await _next(context);
             return;
         }
 
-        // Step 1: Check authentication
+        // Step 2: Check authentication
         if (!context.User.Identity.IsAuthenticated)
         {
             _logger.LogWarning("Unauthenticated request.");
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsync("Unauthorized");
+            await WriteResponse(context, StatusCodes.Status401Unauthorized, "Unauthorized");
             return;
         }
 
-        // Step 2: Retrieve necessary information from the request
+        // Step 3: Retrieve information from the request
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var path = context.Request.Path.ToString().ToLower();
 
-        // Step 3: Check access permissions using the Access Control Service
+        // Step 4: Check access permissions
         var accessLevel = await _accessControlService.GetAccessLevel(userId, path);
         if (accessLevel == AccessLevel.NoAccess)
         {
             _logger.LogWarning($"User {userId} is not authorized to access {path}");
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsync("Forbidden");
+            await WriteResponse(context, StatusCodes.Status403Forbidden, "Forbidden");
             return;
         }
 
-        // Step 4: Allow read-only access if the user has read-only permissions
+        // Step 5: Handle read-only access
         if (context.Request.Method != HttpMethods.Get && accessLevel == AccessLevel.ReadOnly)
         {
-            _logger.LogWarning($"User {userId} has read-only access to {path}, but attempted {context.Request.Method}");
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsync("Forbidden - Read-only access");
+            _logger.LogWarning($"User {userId} attempted {context.Request.Method} on {path} with read-only access");
+            await WriteResponse(context, StatusCodes.Status403Forbidden, "Forbidden - Read-only access");
             return;
         }
 
-        // Proceed if the user has sufficient access
+        // Step 6: Allow access
         await _next(context);
     }
+
+    private static async Task WriteResponse(HttpContext context, int statusCode, string message)
+    {
+        context.Response.StatusCode = statusCode;
+        await context.Response.WriteAsync(message);
+    }
 }
+
 
 public static class AccessControlMiddlewareExtensions
 {

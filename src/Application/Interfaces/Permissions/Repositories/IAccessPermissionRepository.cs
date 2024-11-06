@@ -18,4 +18,6 @@ public interface IAccessPermissionRepository
     /// <param name="entityId">ID of the entity.</param>
     /// <returns>The access permission for the parent entity, if it exists; otherwise, null.</returns>
     Task<AccessPermission?> GetParentPermissionAsync(string userId, long entityId);
+
+    Task<AccessPermission?> GetAccessPermissionWithParentAsync(string userId, long entityId);
 }

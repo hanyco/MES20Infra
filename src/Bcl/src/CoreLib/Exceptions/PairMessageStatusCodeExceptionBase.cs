@@ -29,6 +29,6 @@ public abstract class PairMessageStatusCodeExceptionBase<TStatusCode> : LibraryE
     /// </summary>
     /// <param name="statusCode">The status code.</param>
     /// <param name="baseException">The base exception.</param>
-    public void Deconstruct(out TStatusCode statusCode, out Exception? baseException)
-        => (statusCode, baseException) = (this.StatusCode, this.GetBaseException());
+    public void Deconstruct(out TStatusCode statusCode, out Exception? baseException) =>
+        (statusCode, baseException) = (this.StatusCode, this.GetBaseException());
 }

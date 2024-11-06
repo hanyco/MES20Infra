@@ -5,11 +5,9 @@ using Application.Interfaces.Permissions.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Permissions.Repositories;
-public class AccessPermissionRepository : IAccessPermissionRepository
+public class AccessPermissionRepository(IdentityDbContext context) : IAccessPermissionRepository
 {
-    private readonly IdentityDbContext _context;
-
-    public AccessPermissionRepository(IdentityDbContext context) => this._context = context;
+    private readonly IdentityDbContext _context = context;
 
     /// <summary>
     /// Retrieve the access permission for a specific user and entity.
@@ -53,4 +51,13 @@ public class AccessPermissionRepository : IAccessPermissionRepository
         return null; // Return null if there's no parent
     }
 
+    public async Task<AccessPermission?> GetAccessPermissionWithParentAsync(string userId, long entityId)
+    {
+        var query = from p in _context.AccessPermissions
+                    where p.UserId == userId && (p.EntityId == entityId || p.EntityId == _context.AccessPermissions.FirstOrDefault(x => x.EntityId == entityId).ParentId)
+                    orderby p.EntityId == entityId descending
+                    select p;
+
+        return await query.FirstOrDefaultAsync();
+    }
 }

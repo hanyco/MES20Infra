@@ -86,7 +86,7 @@ public readonly struct MethodArgument(in TypePath type, in string? name) : IEqua
         => new(arg.ArgumentNotNull(), TypeMemberNameHelper.ToArgName(arg.Name));
 
     public static bool operator !=(MethodArgument left, MethodArgument right)
-            => !(left == right);
+        => !(left == right);
 
     public static bool operator ==(MethodArgument left, MethodArgument right)
         => left.Equals(right);
