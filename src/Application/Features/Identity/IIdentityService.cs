@@ -3,7 +3,7 @@ using Application.DTOs.Permissions;
 
 using Library.Results;
 
-namespace Application.Interfaces.Shared;
+namespace Application.Features.Identity;
 
 public interface IIdentityService
 {

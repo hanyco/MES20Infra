@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Permissions;
-using Application.Interfaces.Shared;
+using Application.Features.Identity;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;

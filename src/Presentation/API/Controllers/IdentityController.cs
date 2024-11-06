@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Identity;
-using Application.Interfaces.Shared;
+using Application.Features.Identity;
+using Application.Interfaces.Shared.Security;
 
 using Domain.Dtos;
 

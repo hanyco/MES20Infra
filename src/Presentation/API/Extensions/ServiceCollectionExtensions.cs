@@ -4,6 +4,7 @@ using Application.Features.Identity;
 using Application.Infrastructure.Identity.Services;
 using Application.Infrastructure.Persistence;
 using Application.Interfaces.Shared;
+using Application.Interfaces.Shared.Security;
 using Application.Settings;
 
 using Domain.Identity;
