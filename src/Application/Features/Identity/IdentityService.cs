@@ -23,7 +23,7 @@ using System.Text;
 
 namespace Application.Features.Identity;
 
-internal sealed class IdentityService(
+public sealed class IdentityService(
     IAuthenticatedUserService authenticatedUser,
     UserManager<ApplicationUser> userManager,
     IOptions<JWTSettings> jwtSettings,
