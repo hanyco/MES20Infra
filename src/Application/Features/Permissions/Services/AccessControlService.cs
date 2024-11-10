@@ -16,7 +16,7 @@ public class AccessControlService(IAccessPermissionRepository accessPermissionRe
     public async Task<AccessLevel> GetAccessLevel(string userId, long entityId)
     {
         // Retrieve access permission directly and from parent in a single query if possible
-        var accessPermission = await _accessPermissionRepository.GetAccessPermissionWithParent(userId, entityId);
+        var accessPermission = await _accessPermissionRepository.GetAccessPermissionWithParentAsync(userId, entityId);
 
         if (accessPermission == null)
             return AccessLevel.None;

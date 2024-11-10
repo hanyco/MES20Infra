@@ -64,7 +64,6 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     }
 
     [HttpPost("register")]
-    [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> RegisterAsync(RegisterRequest request)
     {
@@ -73,7 +72,6 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
         return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
-    [HttpDelete("remove/{id}")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> RemoveAsync(string id)
     {
@@ -87,7 +85,6 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> ResetPassword(ResetPasswordRequest model) =>
         this.Ok(await this._identityService.ResetPassword(model));
 
-    [HttpPost("update")]
     [HttpPut]
     public async Task<IActionResult> Update(UpdateRequest request)
     {
