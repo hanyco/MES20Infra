@@ -2,8 +2,6 @@
 using Application.Features.Identity;
 using Application.Interfaces.Shared.Security;
 
-using Domain.Dtos;
-
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +33,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
     {
-        await this._identityService.ForgotPassword(model, this.Request.Headers.Origin.NotNull());
+        await this._identityService.ForgotPassword(model, this.Request?.Headers?.Origin.NotNull());
         return this.Ok();
     }
 
@@ -44,6 +42,13 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     {
         var result = await this._identityService.GetAllUsers();
         return this.Ok(result.Value);
+    }
+
+    [HttpGet("users/current")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var result = await this._identityService.GetUserCurrentUser();
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
     /// <summary>
@@ -61,6 +66,13 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
             ? this.Ok(token.Value)
             //: this.Unauthorized(new ApiErrorResponse(token.Exception?.Message, StatusCodes.Status401Unauthorized));
             : this.Unauthorized(token.Exception?.Message ?? token.Message);
+    }
+
+    [HttpGet("users/{userId}")]
+    public async Task<IActionResult> GetUserByUserId(string userId)
+    {
+        var result = await this._identityService.GetUser(userId);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 
     [HttpPost("register")]
@@ -91,21 +103,6 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
         var result = await this._identityService.Update(request);
         return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
-
-    [HttpGet("users/current")]
-    public async Task<IActionResult> GetCurrentUser()
-    {
-        var result = await this._identityService.GetUserCurrentUser();
-        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
-    }
-
-    [HttpGet("users/{userId}")]
-    public async Task<IActionResult> GetUserByUserId(string userId)
-    {
-        var result = await this._identityService.GetUser(userId);
-        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
-    }
-
     private string? GenerateIPAddress() =>
         this.Request.Headers.TryGetValue("X-Forwarded-For", out var value)
             ? (string?)value
