@@ -1,7 +1,9 @@
 ﻿using API.Services.Identity;
 
+using Application;
 using Application.Features.Identity;
 using Application.Infrastructure.Persistence;
+using Application.Interfaces.Permissions.Repositories;
 using Application.Interfaces.Shared;
 using Application.Interfaces.Shared.Security;
 using Application.Settings;
@@ -124,7 +126,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        _ = services.AddTransient<IAuthenticatedUserService, AuthenticatedUserService>();
+        _ = services
+            .AddApplicationServices(configuration)
+            .AddTransient<IAuthenticatedUserService, AuthenticatedUserService>();
         return services;
     }
 

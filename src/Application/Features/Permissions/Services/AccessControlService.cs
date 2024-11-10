@@ -3,7 +3,7 @@ using Application.Interfaces.Permissions.Repositories;
 
 namespace Application.Features.Permissions.Services;
 
-public class AccessControlService(IAccessPermissionRepository accessPermissionRepository) : IAccessControlService
+internal class AccessControlService(IAccessPermissionRepository accessPermissionRepository) : IAccessControlService
 {
     private readonly IAccessPermissionRepository _accessPermissionRepository = accessPermissionRepository;
 

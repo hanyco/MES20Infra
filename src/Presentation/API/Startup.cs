@@ -3,6 +3,7 @@ using API.Extensions;
 using API.Middlewares;
 
 using Application.Features.Permissions.Services;
+using Application.Interfaces.Permissions.Repositories;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -43,9 +44,6 @@ internal class Startup
         _ = services
             .AddContextInfrastructure(configuration)
             .AddSharedInfrastructure(configuration);
-
-        _ = services
-            .AddTransient<IAccessControlService, AccessControlService>();
 
         _ = services
             .AddControllersWithViews(config =>
