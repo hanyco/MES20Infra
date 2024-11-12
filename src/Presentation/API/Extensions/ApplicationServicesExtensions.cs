@@ -29,7 +29,7 @@ using System.Text;
 namespace API.Extensions;
 
 [Obsolete("Extension methods class. Do NOT use, directly.", true)]
-internal static class ApplicationServicesExtensions
+public static class ApplicationServicesExtensions
 {
     public static IServiceCollection AddAddControllers(this IServiceCollection services)
     {

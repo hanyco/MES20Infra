@@ -2,6 +2,7 @@
 
 namespace API.Middlewares;
 
+[Obsolete("Extension methods class. Do NOT use, directly.", true)]
 public static class GlobalExceptionHandlerMiddlewareExtensions
 {
     public static IApplicationBuilder UseGlobalExceptionHandlerMiddleware(this IApplicationBuilder app)

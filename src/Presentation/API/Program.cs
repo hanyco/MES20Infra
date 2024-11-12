@@ -1,3 +1,5 @@
+using Application.Features.Permissions.Services;
+
 using Serilog;
 
 namespace API;
@@ -28,7 +30,17 @@ public class Program
             };
         });
 
-        app.ConfigureApp(app.Environment);
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var accessControlService = scope.ServiceProvider.GetRequiredService<IAccessControlService>();
+            Console.WriteLine("IAccessControlService resolved successfully.");
+        }
+
+
+        Console.WriteLine("Configuring app...");
+        app.ConfigureApp();
+        Console.WriteLine("App configured successfully.");
 
         app.Run();
     }

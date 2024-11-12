@@ -7,13 +7,14 @@ using System.Security.Claims;
 
 namespace API.Middlewares;
 
+[Obsolete("Extension methods class. Do NOT use, directly.", true)]
 public static class AccessControlMiddlewareExtensions
 {
     public static IApplicationBuilder UseAccessControlMiddleware(this IApplicationBuilder app) =>
         app.UseMiddleware<AccessControlMiddleware>();
 }
 
-public class AccessControlMiddleware
+internal class AccessControlMiddleware
 {
     private readonly IAccessControlService _accessControlService;
     private readonly ILogger<AccessControlMiddleware> _logger;
@@ -49,7 +50,7 @@ public class AccessControlMiddleware
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var path = context.Request.Path.ToString().ToLower();
 
-        var accessLevel = await _accessControlService.GetAccessLevel(userId, path);
+        var accessLevel = AccessLevel.NoAccess;// await _accessControlService.GetAccessLevel(userId, path);
         if (accessLevel == AccessLevel.NoAccess)
         {
             _logger.LogWarning("Access denied for user {UserId}. Path: {Path}, Method: {Method}",
