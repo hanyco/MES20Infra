@@ -972,8 +972,8 @@ public static class EnumerableHelper
     public static void ForEachParallel<TItem>(IEnumerable<TItem> items, Action<TItem> action) =>
         Parallel.ForEach(items, action);
 
-    public static void ForEachReverse<TItem>(this TItem[] items, Action<TItem> action)
-            => items.Reverse().ForEach(action);
+    public static void ForEachReverse<TItem>(this IEnumerable<TItem> items, Action<TItem> action) => 
+        items.Reverse().ForEach(action);
 
     public static void ForReverse<TItem>(this TItem[] items, Action<(TItem Item, int Index)> action, int? startFrom = null)
     {

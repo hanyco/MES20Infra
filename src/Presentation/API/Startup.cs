@@ -1,9 +1,5 @@
-
 using API.Extensions;
 using API.Middlewares;
-
-using Application.Features.Permissions.Services;
-using Application.Interfaces.Permissions.Repositories;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -28,7 +24,8 @@ internal class Startup
 
         _ = app
             .UseGlobalExceptionHandlerMiddleware()
-            .UseAccessControlMiddleware();
+            .UseAccessControlMiddleware()
+            ;
 
         _ = app
             .MapControllers();
@@ -42,8 +39,9 @@ internal class Startup
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(ApplicationModule).Assembly));
 
         _ = services
+            .AddSharedInfrastructure(configuration)
             .AddContextInfrastructure(configuration)
-            .AddSharedInfrastructure(configuration);
+            ;
 
         _ = services
             .AddControllersWithViews(config =>
