@@ -1,16 +1,12 @@
 using API.Extensions;
 using API.Middlewares;
 
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-
 namespace API;
 
 internal static class Startup
 {
-    public static void Configure(this WebApplication app, IWebHostEnvironment environment)
+    public static void ConfigureApp(this WebApplication app, IWebHostEnvironment environment)
     {
-        // Configure the HTTP request pipeline.
         if (environment.IsDevelopment())
         {
             _ = app
@@ -24,9 +20,7 @@ internal static class Startup
         _ = app
             .UseAuthentication()
             .UseAuthorization()
-            .UseAccessControlMiddleware()
-            ;
-
+            .UseAccessControlMiddleware();
 
         _ = app
             .MapControllers();
@@ -35,25 +29,24 @@ internal static class Startup
     public static void ConfigureServices(this IServiceCollection services, ConfigurationManager configuration)
     {
         _ = services
-            .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly))
-            .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(DomainModule).Assembly))
-            .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(ApplicationModule).Assembly));
+            .AddMediatR();
 
         _ = services
-            .AddContextInfrastructure(configuration)
+            .AddDatabases(configuration);
+
+        _ = services
+            .AddSecurity(configuration);
+
+        _ = services
             .AddSharedInfrastructure(configuration);
 
         _ = services
-            .AddControllersWithViews(config =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                config.Filters.Add(new AuthorizeFilter(policy));
-            });
+            .AddAddControllers();
+
         _ = services
-            .AddEndpointsApiExplorer();
+            .AddHttpContextAccessor();
+
         _ = services
-            .AddEssentials();
+            .AddSwagger();
     }
 }

@@ -28,7 +28,7 @@ public class Program
             };
         });
 
-        app.Configure(app.Environment);
+        app.ConfigureApp(app.Environment);
 
         app.Run();
     }
