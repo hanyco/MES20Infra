@@ -8,14 +8,13 @@ public class AuthenticatedUserService : IAuthenticatedUserService
 {
     public AuthenticatedUserService(IHttpContextAccessor httpContextAccessor)
     {
-
-        User = httpContextAccessor.HttpContext?.User;
-        UserId = httpContextAccessor.HttpContext?.User?.FindFirstValue("uid");
-        Roles = httpContextAccessor.HttpContext?.User?.FindFirstValue("strRoles");
+        this.User = httpContextAccessor.HttpContext?.User ?? throw new ArgumentNullException();
+        this.UserId = httpContextAccessor.HttpContext.User.FindFirstValue("uid");
+        this.Roles = httpContextAccessor.HttpContext.User.FindFirstValue("strRoles");
 
     }
-    public ClaimsPrincipal User { get; set; }
+    public string Roles { get; }
+    public ClaimsPrincipal User { get; }
     public string UserId { get; }
     public string Username { get; }
-    public string Roles { get; }
 }

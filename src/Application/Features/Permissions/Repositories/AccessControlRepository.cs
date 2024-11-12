@@ -5,7 +5,7 @@ using Application.Interfaces.Permissions.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Features.Permissions.Repositories;
-internal sealed class AccessPermissionRepository(IdentityDbContext context) : IAccessPermissionRepository
+internal sealed class AccessControlRepository(IdentityDbContext context) : IAccessControlRepository
 {
     private readonly IdentityDbContext _context = context;
 

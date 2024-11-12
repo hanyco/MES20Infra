@@ -3,9 +3,9 @@ using Application.Interfaces.Permissions.Repositories;
 
 namespace Application.Features.Permissions.Services;
 
-internal class AccessControlService(IAccessPermissionRepository accessPermissionRepository) : IAccessControlService
+internal class AccessControlService(IAccessControlRepository accessPermissionRepository) : IAccessControlService
 {
-    private readonly IAccessPermissionRepository _accessPermissionRepository = accessPermissionRepository;
+    private readonly IAccessControlRepository _accessPermissionRepository = accessPermissionRepository;
 
     public async Task<AccessLevel> GetAccessLevel(string userId, string path)
     {

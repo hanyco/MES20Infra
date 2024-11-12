@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Application.Interfaces.Shared;
 public interface IAuthenticatedUserService
 {
-    public ClaimsPrincipal User { get; set; }
+    public ClaimsPrincipal User { get; }
     public string UserId { get; }
     public string Username { get; }
     public string Roles { get; }

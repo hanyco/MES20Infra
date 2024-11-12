@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace API;
 
-internal class Startup
+internal static class Startup
 {
-    public static void Configure(WebApplication app, IWebHostEnvironment environment)
+    public static void Configure(this WebApplication app, IWebHostEnvironment environment)
     {
         // Configure the HTTP request pipeline.
         if (environment.IsDevelopment())
@@ -19,19 +19,20 @@ internal class Startup
         }
 
         _ = app
-            .UseAuthentication()
-            .UseAuthorization();
+            .UseGlobalExceptionHandlerMiddleware();
 
         _ = app
-            .UseGlobalExceptionHandlerMiddleware()
+            .UseAuthentication()
+            .UseAuthorization()
             .UseAccessControlMiddleware()
             ;
+
 
         _ = app
             .MapControllers();
     }
 
-    public static void ConfigureServices(IServiceCollection services, ConfigurationManager configuration)
+    public static void ConfigureServices(this IServiceCollection services, ConfigurationManager configuration)
     {
         _ = services
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly))
@@ -39,9 +40,8 @@ internal class Startup
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(ApplicationModule).Assembly));
 
         _ = services
-            .AddSharedInfrastructure(configuration)
             .AddContextInfrastructure(configuration)
-            ;
+            .AddSharedInfrastructure(configuration);
 
         _ = services
             .AddControllersWithViews(config =>

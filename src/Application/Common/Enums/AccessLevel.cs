@@ -4,7 +4,7 @@ namespace Application.Common.Enums;
 
 public enum AccessLevel
 {
-    None, // دسترسی کامل (Full Access)
+    None, // (Full Access)
     [Description("No Access")]
     NoAccess,
     [Description("Read Only")]

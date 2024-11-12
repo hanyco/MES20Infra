@@ -2,7 +2,7 @@
 
 namespace Application.Interfaces.Permissions.Repositories;
 
-public interface IAccessPermissionRepository
+public interface IAccessControlRepository
 {
     /// <summary>
     /// Get the access permission for a specific user and entity.

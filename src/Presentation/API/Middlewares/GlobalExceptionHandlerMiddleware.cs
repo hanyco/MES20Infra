@@ -4,8 +4,8 @@ namespace API.Middlewares;
 
 public static class GlobalExceptionHandlerMiddlewareExtensions
 {
-    public static IApplicationBuilder UseGlobalExceptionHandlerMiddleware(this IApplicationBuilder builder)
-        => builder.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+    public static IApplicationBuilder UseGlobalExceptionHandlerMiddleware(this IApplicationBuilder app)
+        => app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 }
 
 public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlerMiddleware> logger)

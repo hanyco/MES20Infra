@@ -13,11 +13,18 @@ public static class AccessControlMiddlewareExtensions
         app.UseMiddleware<AccessControlMiddleware>();
 }
 
-public class AccessControlMiddleware(RequestDelegate next, ILogger<AccessControlMiddleware> logger, IAccessControlService accessControlService)
+public class AccessControlMiddleware
 {
-    private readonly IAccessControlService _accessControlService = accessControlService;
-    private readonly ILogger<AccessControlMiddleware> _logger = logger;
-    private readonly RequestDelegate _next = next;
+    private readonly IAccessControlService _accessControlService;
+    private readonly ILogger<AccessControlMiddleware> _logger;
+    private readonly RequestDelegate _next;
+
+    public AccessControlMiddleware(RequestDelegate next, ILogger<AccessControlMiddleware> logger, IAccessControlService accessControlService)
+    {
+        this._accessControlService = accessControlService;
+        this._logger = logger;
+        this._next = next;
+    }
 
     public async Task InvokeAsync(HttpContext context)
     {

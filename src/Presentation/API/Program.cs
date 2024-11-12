@@ -10,10 +10,11 @@ public class Program
 
         // Configure Serilog to use settings from appsettings.json
         builder.Host.UseSerilog((context, services, configuration) =>
-            configuration.ReadFrom.Configuration(context.Configuration)
-                         .ReadFrom.Services(services));
+            configuration
+                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services));
 
-        Startup.ConfigureServices(builder.Services, builder.Configuration);
+        builder.Services.ConfigureServices(builder.Configuration);
 
         var app = builder.Build();
 
@@ -26,8 +27,8 @@ public class Program
                 diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
             };
         });
-                
-        Startup.Configure(app, app.Environment);
+
+        app.Configure(app.Environment);
 
         app.Run();
     }

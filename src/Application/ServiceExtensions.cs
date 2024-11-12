@@ -12,8 +12,8 @@ public static class ServiceExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         _ = services
-            .AddScoped<IAccessPermissionRepository, AccessPermissionRepository>()
-            .AddScoped<IAccessControlService, AccessControlService>();
+            .AddScoped<IAccessControlRepository, AccessControlRepository>()
+            .AddScoped<IAccessControlService   , AccessControlService>();
         return services;
     }
 }
