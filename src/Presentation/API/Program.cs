@@ -30,18 +30,8 @@ public class Program
             };
         });
 
-
-        using (var scope = app.Services.CreateScope())
-        {
-            var accessControlService = scope.ServiceProvider.GetRequiredService<IAccessControlService>();
-            Console.WriteLine("IAccessControlService resolved successfully.");
-        }
-
-
-        Console.WriteLine("Configuring app...");
         app.ConfigureApp();
-        Console.WriteLine("App configured successfully.");
-
+        
         app.Run();
     }
 }

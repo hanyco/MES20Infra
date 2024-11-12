@@ -20,8 +20,10 @@ internal class AccessControlMiddleware
     private readonly ILogger<AccessControlMiddleware> _logger;
     private readonly RequestDelegate _next;
 
-    public AccessControlMiddleware(RequestDelegate next, ILogger<AccessControlMiddleware> logger, IAccessControlService accessControlService)
+    public AccessControlMiddleware(RequestDelegate next, ILogger<AccessControlMiddleware> logger, IServiceProvider serviceProvider)
     {
+        using var scope = serviceProvider.CreateScope();
+        IAccessControlService accessControlService = scope.ServiceProvider.GetRequiredService<IAccessControlService>();
         this._accessControlService = accessControlService;
         this._logger = logger;
         this._next = next;
@@ -30,6 +32,12 @@ internal class AccessControlMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
+
+        if (context.Request.Path.StartsWithSegments("/swagger"))
+        {
+            await _next(context);
+            return;
+        }
 
         if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
         {
@@ -50,7 +58,7 @@ internal class AccessControlMiddleware
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var path = context.Request.Path.ToString().ToLower();
 
-        var accessLevel = AccessLevel.NoAccess;// await _accessControlService.GetAccessLevel(userId, path);
+        var accessLevel = await _accessControlService.GetAccessLevel(userId, path);
         if (accessLevel == AccessLevel.NoAccess)
         {
             _logger.LogWarning("Access denied for user {UserId}. Path: {Path}, Method: {Method}",

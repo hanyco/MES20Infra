@@ -10,13 +10,11 @@ internal static class Startup
         _ = app
             .UseGlobalExceptionHandlerMiddleware();
 
-        Console.WriteLine("Adding AccessControlMiddleware to the pipeline...");
         _ = app
             .UseAuthentication()
             .UseAuthorization()
             .UseAccessControlMiddleware();
-        Console.WriteLine("AccessControlMiddleware added successfully.");
-
+        
         _ = app
             .MapControllers();
 
@@ -30,16 +28,12 @@ internal static class Startup
         _ = services
             .AddMediatR();
 
-        Console.WriteLine("Adding databases...");
         _ = services
             .AddDatabases(configuration);
-        Console.WriteLine("Databases added.");
 
-        Console.WriteLine("Adding security...");
         _ = services
             .AddSecurity(configuration);
-        Console.WriteLine("Security added.");
-
+        
         _ = services
             .AddSharedInfrastructure(configuration);
 
