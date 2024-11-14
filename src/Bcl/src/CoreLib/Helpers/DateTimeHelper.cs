@@ -1,4 +1,5 @@
-﻿using Library.Globalization.DataTypes;
+﻿using Library.Globalization;
+using Library.Globalization.DataTypes;
 using Library.Validations;
 
 using System.Globalization;
@@ -114,6 +115,9 @@ public static class DateTimeHelper
     /// <returns></returns>
     public static DateTime ToDateTime(this TimeSpan source) =>
         new(source.Ticks);
+
+    public static PersianDateTime ToPersian(this DateTime dateTime) =>
+        dateTime;
 
     /// <summary>
     /// Converts to timespan.

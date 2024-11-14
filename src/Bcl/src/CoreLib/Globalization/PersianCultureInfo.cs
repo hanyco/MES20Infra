@@ -1,7 +1,5 @@
 ﻿using System.Globalization;
 
-// ReSharper disable PossibleNullReferenceException
-
 namespace Library.Globalization;
 
 public sealed class PersianCultureInfo : CultureInfo
