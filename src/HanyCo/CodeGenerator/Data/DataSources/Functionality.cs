@@ -18,7 +18,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources;
 public partial class Functionality
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; set; }
 
     [StringLength(50)]
@@ -47,7 +46,7 @@ public partial class Functionality
 
     [ForeignKey("ControllerId")]
     [InverseProperty("Functionalities")]
-    public virtual Controller? Controller { get; set; } = null!;
+    public virtual Controller Controller { get; set; } = null!;
 
     [ForeignKey("DeleteCommandId")]
     [InverseProperty("FunctionalityDeleteCommands")]
@@ -67,7 +66,7 @@ public partial class Functionality
 
     [ForeignKey("ModuleId")]
     [InverseProperty("Functionalities")]
-    public virtual Module? Module { get; set; }
+    public virtual Module Module { get; set; } = null!;
 
     [ForeignKey("SourceDtoId")]
     [InverseProperty("Functionalities")]

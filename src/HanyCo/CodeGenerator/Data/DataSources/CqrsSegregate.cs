@@ -14,14 +14,13 @@ namespace HanyCo.Infra.Internals.Data.DataSources;
 public partial class CqrsSegregate
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] 
     public long Id { get; set; }
 
     [StringLength(50)]
     public string Name { get; set; } = null!;
 
     public string? CqrsNameSpace { get; set; }
-    
+
     public string? DtoNameSpace { get; set; }
 
     public int SegregateType { get; set; }

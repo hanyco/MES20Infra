@@ -17,19 +17,16 @@ public partial class CqrsSegregate : IMesEntity;
 
 public partial class Dto : IMesEntity;
 
-public partial class EntityClaim : IIdenticalEntity<Guid>;
-
 public partial class Functionality : IMesEntity;
 
 [ReadDbContext]
 public class InfraReadDbContext : InfraWriteDbContext
 {
-    public InfraReadDbContext()
-        => this.InitializeInstance();
+    public InfraReadDbContext() => 
+        this.InitializeInstance();
 
-    public InfraReadDbContext(DbContextOptions<InfraWriteDbContext> options)
-        : base(options)
-        => this.InitializeInstance();
+    public InfraReadDbContext(DbContextOptions<InfraWriteDbContext> options): base(options) => 
+        this.InitializeInstance();
 
     public AsyncLock AsyncLock { get; private set; }
 
@@ -55,7 +52,7 @@ public partial class Module : IMesEntity;
 
 public partial class Property : IMesEntity;
 
-public partial class SecurityClaim : IIdenticalEntity<Guid>;
+//public partial class SecurityClaim : IIdenticalEntity<Guid>;
 
 public partial class SystemMenu : IMesEntity;
 
@@ -73,7 +70,7 @@ public partial class UiPage : IMesEntity;
 
 public partial class UiPageComponent : IMesEntity;
 
-public partial class AccessPermission : IIdenticalEntity<Guid>;
+public partial class AccessPermission : IMesEntity;
 
 public enum ControlType
 {

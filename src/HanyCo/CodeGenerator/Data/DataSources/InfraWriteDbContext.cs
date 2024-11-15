@@ -16,6 +16,8 @@ public partial class InfraWriteDbContext : DbContext
     {
     }
 
+    public virtual DbSet<AccessPermission> AccessPermissions { get; set; }
+
     public virtual DbSet<Controller> Controllers { get; set; }
 
     public virtual DbSet<ControllerMethod> ControllerMethods { get; set; }
@@ -24,15 +26,11 @@ public partial class InfraWriteDbContext : DbContext
 
     public virtual DbSet<Dto> Dtos { get; set; }
 
-    public virtual DbSet<EntityClaim> EntityClaims { get; set; }
-
     public virtual DbSet<Functionality> Functionalities { get; set; }
 
     public virtual DbSet<Module> Modules { get; set; }
 
     public virtual DbSet<Property> Properties { get; set; }
-
-    public virtual DbSet<SecurityClaim> SecurityClaims { get; set; }
 
     public virtual DbSet<SystemMenu> SystemMenus { get; set; }
 
@@ -50,11 +48,9 @@ public partial class InfraWriteDbContext : DbContext
 
     public virtual DbSet<UiPageComponent> UiPageComponents { get; set; }
 
-    public virtual DbSet<AccessPermission> AccessPermissiones { get; set; }
-
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True;TrustServerCertificate=True");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -92,13 +88,6 @@ public partial class InfraWriteDbContext : DbContext
             entity.Property(e => e.Guid).HasDefaultValueSql("(newid())");
         });
 
-        modelBuilder.Entity<EntityClaim>(entity =>
-        {
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-
-            entity.HasOne(d => d.Claim).WithMany(p => p.EntityClaims).HasConstraintName("FK_EntityClaim_SecurityClaim");
-        });
-
         modelBuilder.Entity<Functionality>(entity =>
         {
             entity.Property(e => e.Guid).HasDefaultValueSql("(newid())");
@@ -123,9 +112,7 @@ public partial class InfraWriteDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Functionality_CqrsSegregate2");
 
-            entity.HasOne(d => d.Module).WithMany(p => p.Functionalities)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_Functionality_Module");
+            entity.HasOne(d => d.Module).WithMany(p => p.Functionalities).HasConstraintName("FK_Functionality_Module");
 
             entity.HasOne(d => d.SourceDto).WithMany(p => p.Functionalities)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -148,13 +135,6 @@ public partial class InfraWriteDbContext : DbContext
             entity.HasOne(d => d.Dto).WithMany(p => p.Properties)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Property_Dto");
-        });
-
-        modelBuilder.Entity<SecurityClaim>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_SecurityClaim_1");
-
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
         });
 
         modelBuilder.Entity<SystemMenu>(entity =>
@@ -239,13 +219,6 @@ public partial class InfraWriteDbContext : DbContext
                 .HasConstraintName("FK_UiPageComponent_UiBootstrapPosition");
 
             entity.HasOne(d => d.UiComponent).WithMany(p => p.UiPageComponents).HasConstraintName("FK_UiPageComponent_UiComponent");
-        });
-
-        modelBuilder.Entity<AccessPermission>(entity =>
-        {
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-
-            entity.HasOne(d => d.Claim).WithMany(p => p.AccessPermissiones).HasConstraintName("FK_AccessPermission_SecurityClaim");
         });
 
         OnModelCreatingPartial(modelBuilder);

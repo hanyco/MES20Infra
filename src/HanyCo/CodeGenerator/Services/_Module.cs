@@ -1,4 +1,2 @@
 ﻿namespace Services;
-public class Module
-{
-}
+public static class ServicesModule;

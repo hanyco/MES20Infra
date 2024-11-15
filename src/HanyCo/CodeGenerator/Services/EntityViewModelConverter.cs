@@ -44,9 +44,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.PropertyId = model.Property?.Id)
             .ForMember(x => x.ControlTypeId = model.ControlType?.Cast().ToInt() ?? 0);
 
-    public SecurityClaim? ToDbEntity(ClaimViewModel? model) =>
-        model is null ? null : this._mapper.Map<SecurityClaim>(model);
-
     public UiComponent? ToDbEntity(UiComponentViewModel? model) =>
         model is null ? null : this._mapper.Map<UiComponent>(model)
             .ForMember(x => x.PageDataContextId = model.PageDataContext?.Id)
@@ -375,10 +372,6 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             //.ForMember(x => x.Controller = this.ToViewModel(entity.Controller))
             .ForMember(x => x.Controller = new())
             ;
-
-    [return: NotNullIfNotNull(nameof(entity))]
-    public ClaimViewModel? ToViewModel(SecurityClaim? entity)
-        => entity is null ? null : this._mapper.Map<ClaimViewModel>(entity);
 
     [return: NotNullIfNotNull("entity")]
     public ControllerViewModel? ToViewModel(Controller? entity) => throw new NotImplementedException();

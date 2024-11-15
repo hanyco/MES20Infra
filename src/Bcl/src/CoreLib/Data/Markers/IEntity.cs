@@ -1,5 +1,3 @@
 ﻿namespace Library.Data.Markers;
 
-public interface IEntity
-{
-}
+public interface IEntity;

@@ -11,11 +11,6 @@ namespace HanyCo.Infra.Internals.Data.DataSources;
 [Index("DtoId", Name = "IX_Property_DtoId")]
 public partial class Property
 {
-    public Property()
-    {
-        
-    }
-
     [Key]
     public long Id { get; set; }
 

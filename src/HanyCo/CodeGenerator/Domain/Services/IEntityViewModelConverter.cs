@@ -22,7 +22,7 @@ public interface IEntityViewModelConverter :
     IDbEntityToViewModelConverter<UiComponentViewModel, UiPageComponent>,
     IDbEntityViewModelConverter<FunctionalityViewModel, Functionality>,
     IDbEntityViewModelConverter<DtoViewModel, Dto>,
-    IDbEntityViewModelConverter<ClaimViewModel, SecurityClaim>,
+    //IDbEntityViewModelConverter<ClaimViewModel, SecurityClaim>,
     IViewModelToDbEntityConverter<CqrsCommandViewModel, CqrsSegregate>,
     IDbEntityViewModelConverter<CqrsViewModelBase, CqrsSegregate>,
     IDbEntityViewModelConverter<ControllerViewModel, Controller>,

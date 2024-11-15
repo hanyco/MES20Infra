@@ -27,31 +27,29 @@ internal class SecurityService(
 
     public async Task<IReadOnlyList<ClaimViewModel>> GetAllAsync(CancellationToken token = default)
     {
-        var query = from x in this._readDbContext.SecurityClaims
-                    select x;
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.ToViewModel(dbResult);
-        return result.Compact().ToReadOnlyList();
+        throw new NotImplementedException();
     }
 
     public async Task<ClaimViewModel?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        var query = from x in this._readDbContext.SecurityClaims
-                    where x.Id == id
-                    select x;
-        var dbResult = await query.FirstOrDefaultAsync(token);
-        var result = this._converter.ToViewModel(dbResult);
-        return result;
+        //var query = from x in this._readDbContext.SecurityClaims
+        //            where x.Id == id
+        //            select x;
+        //var dbResult = await query.FirstOrDefaultAsync(token);
+        //var result = this._converter.ToViewModel(dbResult);
+        //return result;
+        throw new NotImplementedException();
     }
 
     public async Task<Result<IEnumerable<ClaimViewModel>>> GetEntityClaims(Guid entity, CancellationToken token = default)
     {
-        var query = from x in this._readDbContext.EntityClaims.Include(x => x.Claim)
-                    where x.EntityId == entity
-                    select x.Claim;
-        var dbResult = await query.ToListAsync(cancellationToken: token);
-        var result = this._converter.ToViewModel(dbResult).Compact();
-        return Result.Success<IEnumerable<ClaimViewModel>>(result);
+        //var query = from x in this._readDbContext.EntityClaims.Include(x => x.Claim)
+        //            where x.EntityId == entity
+        //            select x.Claim;
+        //var dbResult = await query.ToListAsync(cancellationToken: token);
+        //var result = this._converter.ToViewModel(dbResult).Compact();
+        //return Result.Success<IEnumerable<ClaimViewModel>>(result);
+        throw new NotImplementedException();
     }
 
     public Task<Result<ClaimViewModel>> InsertAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
@@ -59,8 +57,9 @@ internal class SecurityService(
 
     public Task<Result> RemoveEntityClaims(Guid value, bool persist, CancellationToken token)
     {
-        var result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == value).ForEach(x => this._infraWriteDb.EntityClaims.Remove(x)));
-        return Task.FromResult(result);
+        //var result = CatchResult(() => this._infraWriteDb.EntityClaims.Where(x => x.EntityId == value).ForEach(x => this._infraWriteDb.EntityClaims.Remove(x)));
+        //return Task.FromResult(result);
+        throw new NotImplementedException();
     }
 
     public void ResetChanges() =>
