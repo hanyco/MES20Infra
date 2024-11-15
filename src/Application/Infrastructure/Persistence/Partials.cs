@@ -24,46 +24,18 @@ partial class IdentityDbContext
             entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
             entity.Property(e => e.Email).HasMaxLength(256);
             entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
-            entity.HasMany(e => e.Roles)
-                  .WithOne()
-                  .HasForeignKey(r => r.UserId)
-                  .IsRequired();
-        });
-
-        modelBuilder.Entity<IdentityUserRole<string>>(entity =>
-        {
-            entity.ToTable("AspNetUserRoles", "Identity");
-            entity.HasKey(r => new { r.UserId, r.RoleId });
-        });
-
-        modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
-        {
-            entity.ToTable("AspNetUserClaims", "Identity");
-            entity.HasKey(c => c.Id);
         });
 
         modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
         {
+            entity.HasKey(login => new { login.LoginProvider, login.ProviderKey });
             entity.ToTable("AspNetUserLogins", "Identity");
-            entity.HasKey(l => new { l.LoginProvider, l.ProviderKey });
         });
 
         modelBuilder.Entity<IdentityUserToken<string>>(entity =>
         {
+            entity.HasKey(token => new { token.UserId, token.LoginProvider, token.Name });
             entity.ToTable("AspNetUserTokens", "Identity");
-            entity.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
-        });
-
-        modelBuilder.Entity<IdentityRole>(entity =>
-        {
-            entity.ToTable("AspNetRoles", "Identity");
-            entity.HasKey(r => r.Id);
-        });
-
-        modelBuilder.Entity<IdentityRoleClaim<string>>(entity =>
-        {
-            entity.ToTable("AspNetRoleClaims", "Identity");
-            entity.HasKey(rc => rc.Id);
         });
     }
 
