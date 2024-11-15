@@ -1,0 +1,15 @@
+﻿@API_HostAddress = http://localhost:5248
+
+POST {{API_HostAddress}}/identity/register
+Content-Type: application/json
+
+{
+    "email": "testuser@example.com",
+    "password": "Test@1234",
+    "confirmPassword": "Test@1234",
+    "firstName": "Test",
+    "lastName": "User",
+    "userName": "testuser"
+}
+
+###

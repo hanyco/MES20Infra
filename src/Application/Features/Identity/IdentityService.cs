@@ -152,10 +152,10 @@ public sealed class IdentityService(
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         // Check if user already exists
-        var userWithSameEmail = await this._userManager.FindByEmailAsync(request.Email);
-        if (userWithSameEmail != null)
+        var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
+        if (userWithSameUserName != null)
         {
-            return Result.Fail("Email is already taken.");
+            return Result.Fail("UserName is already taken.");
         }
 
         // Create new user object
