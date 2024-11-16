@@ -151,6 +151,8 @@ public sealed class IdentityService(
 
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
+        _dbContext.Database.EnsureCreated();
+
         // Check if user already exists
         var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
         if (userWithSameUserName != null)

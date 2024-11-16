@@ -18,12 +18,13 @@ partial class IdentityDbContext
     {
         modelBuilder.Entity<ApplicationUser>(entity =>
         {
-            entity.ToTable("AspNetUsers", "Identity");
+            entity.ToTable("ApplicationUsers", "Identity");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.UserName).IsRequired().HasMaxLength(256);
             entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
             entity.Property(e => e.Email).HasMaxLength(256);
             entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
+
             entity.HasMany<IdentityUserLogin<string>>().WithOne()
                 .HasForeignKey(e => e.UserId).IsRequired();
             entity.HasMany<IdentityUserToken<string>>().WithOne()
@@ -31,7 +32,6 @@ partial class IdentityDbContext
             entity.HasMany<IdentityUserClaim<string>>().WithOne()
                 .HasForeignKey(e => e.UserId).IsRequired();
         });
-
 
         modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
         {
@@ -50,6 +50,6 @@ partial class IdentityDbContext
             entity.HasNoKey();
             entity.ToTable((string?)null);
         });
-
     }
+
 }

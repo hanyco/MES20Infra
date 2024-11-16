@@ -54,6 +54,7 @@ app.UseAuthenticationMiddleware();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Web.UI.Client._Imports).Assembly);
+    //.AddAdditionalAssemblies(typeof(Web.UI.Client._Imports).Assembly)
+    ;
 
 await app.RunAsync();
