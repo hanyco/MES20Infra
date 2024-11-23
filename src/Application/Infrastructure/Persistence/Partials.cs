@@ -11,49 +11,68 @@ public partial class IdentityDbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
     {
-        _ = modelBuilder.Entity<ApplicationUser>(entity =>
+        // ApplicationUser to AspNetUsers
+        modelBuilder.Entity<ApplicationUser>(entity =>
         {
-            _ = entity.ToTable("ApplicationUsers", "Identity")
-                .HasKey(e => e.Id);
-            _ = entity.Property(e => e.UserName)
-                .IsRequired()
-                .HasMaxLength(256);
-            _ = entity.Property(e => e.NormalizedUserName)
-                .HasMaxLength(256);
-            _ = entity.Property(e => e.Email)
-                .HasMaxLength(256);
-            _ = entity.Property(e => e.NormalizedEmail)
-                .HasMaxLength(256);
+            entity.ToTable("AspNetUsers", "Identity"); // Map to correct table and schema
+            entity.HasKey(e => e.Id);
 
-            _ = entity.HasMany<IdentityUserLogin<string>>().WithOne()
-                .HasForeignKey(e => e.UserId).IsRequired();
-            _ = entity.HasMany<IdentityUserToken<string>>().WithOne()
-                .HasForeignKey(e => e.UserId).IsRequired();
-            _ = entity.HasMany<IdentityUserClaim<string>>().WithOne()
-                .HasForeignKey(e => e.UserId).IsRequired();
+            entity.Property(e => e.UserName).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
+            entity.Property(e => e.Email).HasMaxLength(256);
+            entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
+            entity.Property(e => e.DisplayName).HasMaxLength(256); // Persist DisplayName
+
+            // Relationships
+            entity.HasMany<IdentityUserLogin<string>>().WithOne()
+                .HasForeignKey(login => login.UserId)
+                .IsRequired();
+
+            entity.HasMany<IdentityUserToken<string>>().WithOne()
+                .HasForeignKey(token => token.UserId)
+                .IsRequired();
+
+            entity.HasMany<IdentityUserClaim<string>>().WithOne()
+                .HasForeignKey(claim => claim.UserId)
+                .IsRequired();
         });
 
-        _ = modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
+        // AspNetUserLogins Table
+        modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
         {
-            _ = entity.HasKey(login => new { login.LoginProvider, login.ProviderKey });
-            _ = entity.ToTable("AspNetUserLogins", "Identity");
-            _ = entity.HasOne<ApplicationUser>()
+            entity.ToTable("AspNetUserLogins", "Identity");
+            entity.HasKey(login => new { login.LoginProvider, login.ProviderKey });
+
+            entity.HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(login => login.UserId)
                 .IsRequired();
         });
 
-        _ = modelBuilder.Entity<IdentityUserToken<string>>(entity =>
+        // AspNetUserTokens Table
+        modelBuilder.Entity<IdentityUserToken<string>>(entity =>
         {
-            _ = entity.HasKey(token => new { token.UserId, token.LoginProvider, token.Name });
-            _ = entity.ToTable("AspNetUserTokens", "Identity");
+            entity.ToTable("AspNetUserTokens", "Identity");
+            entity.HasKey(token => new { token.UserId, token.LoginProvider, token.Name });
         });
 
-        _ = modelBuilder.Entity<IdentityUserRole<string>>(entity =>
+        // AspNetUserClaims Table
+        modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
         {
-            _ = entity.HasNoKey();
-            _ = entity.ToTable((string?)null);
+            entity.ToTable("AspNetUserClaims", "Identity");
+            entity.HasKey(claim => claim.Id);
+
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(claim => claim.UserId)
+                .IsRequired();
+        });
+
+        // AspNetUserRoles Table (Not needed but explicitly mapped as ignored)
+        modelBuilder.Entity<IdentityUserRole<string>>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToTable((string?)null); // Disable this table as it's not in use
         });
     }
-
 }

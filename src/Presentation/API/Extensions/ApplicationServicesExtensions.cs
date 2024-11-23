@@ -52,7 +52,8 @@ public static class ApplicationServicesExtensions
             .AddDbContext<IdentityDbContext>(options =>
                 options.UseSqlServer(
                     configuration.GetConnectionString("IdentityConnectionString").NotNull(() => "Identity ConnectionString not found."),
-                    op => op.CommandTimeout(120)));
+                    op => op.CommandTimeout(120))
+                .LogTo(Console.WriteLine, LogLevel.Information));
         _ = services
             .AddIdentity<ApplicationUser, IdentityRole>(options =>
             {

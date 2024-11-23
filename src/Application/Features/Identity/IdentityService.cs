@@ -4,6 +4,8 @@ using Application.Infrastructure.Persistence;
 using Application.Interfaces.Shared;
 using Application.Settings;
 
+using Azure.Core;
+
 using Domain.Identity;
 
 using Library.Data.SqlServer.Dynamics;
@@ -151,8 +153,8 @@ public sealed class IdentityService(
 
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
-        _dbContext.Database.EnsureCreated();
-
+        await TestAsync();
+        return default;
         // Check if user already exists
         var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
         if (userWithSameUserName != null)
@@ -194,6 +196,37 @@ public sealed class IdentityService(
         // You can send this token via email service if needed
 
         return Result.Success("User registered successfully.");
+    }
+
+    private async Task TestAsync()
+    {
+        var user = new ApplicationUser
+        {
+            UserName = "testuser",
+            Email = "testuser@example.com",
+            DisplayName = "Test User"
+        };
+
+        var userWithSameUserName = await this._userManager.FindByNameAsync(user.UserName);
+        if (userWithSameUserName == null)
+        {
+            Console.WriteLine($"No user found with username: {user.UserName}");
+        }
+        else
+        {
+            Console.WriteLine($"User found: {userWithSameUserName.UserName}");
+        }
+
+        var result = await _userManager.CreateAsync(user, "Test@1234");
+        if (result.Succeeded)
+        {
+            Console.WriteLine("User created successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+
     }
 
     public async Task<Result> Remove(string Id)
