@@ -212,7 +212,6 @@ public static class ObjectHelper
         {
             not null => field.GetValue(obj)!.Cast().To<TFieldType>(),
             null => throw new ObjectNotFoundException("Field"),
-            _ => throw new NotImplementedException()
         };
     }
 
@@ -422,7 +421,7 @@ public static class ObjectHelper
         => guid == Guid.Empty;
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this Id id) =>
-        id.Equals(Guid.Empty) || id.Equals(0);
+        id.Equals(Id.Default);
 
     public static bool IsSetMethodInit([DisallowNull] this PropertyInfo propertyInfo)
     {

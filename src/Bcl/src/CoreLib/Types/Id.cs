@@ -1,16 +1,15 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 using Library.DesignPatterns.Markers;
 using Library.Interfaces;
 
-#if USE_LONG_ID
-using IdType = System.Int64;
-#else
-
+#if USE_LONG_GUID
 using IdType = System.Guid;
-
+#else
+using IdType = System.Int64;
 #endif
 
 namespace Library.Types;
@@ -23,7 +22,7 @@ public readonly struct Id(IdType value) :
     ISpanFormattable, IFormattable, ISerializable, ICloneable, IComparable,
     IEquatable<IdType>, IComparable<Id>, IComparable<IdType>,
     IConvertible<IdType>, IEmpty<Id>, IEquatable<Id>
-#if USE_LONG_ID
+#if !USE_LONG_GUID
     , IMinMaxValue<Id>
 #endif
 {
@@ -45,7 +44,7 @@ public readonly struct Id(IdType value) :
     /// <value>The unique identifier.</value>
     public IdType Value { get; } = value;
 
-#if USE_LONG_ID
+#if !USE_LONG_GUID
     public static Id MaxValue { get; } = IdType.MaxValue;
     public static Id MinValue { get; } = IdType.MinValue;
 #endif
@@ -332,6 +331,13 @@ public readonly struct Id(IdType value) :
     /// </returns>
     public bool Equals(Id other)
         => this.Value.Equals(other.Value);
+
+    public static Id Default =>
+#if USE_LONG_GUID
+        Guid.Empty;
+#else
+        0;
+#endif
 
     /// <summary>
     /// Returns a hash code for this instance.
