@@ -23,8 +23,8 @@ public static class PredicateBuilder
     /// <summary>
     /// Returns a predicate that always evaluates to false.
     /// </summary>
-    public static Expression<Func<T, bool>> False<T>()
-        => f => false;
+    public static Expression<Func<T, bool>> False<T>() =>
+        f => false;
 
     /// <summary>
     /// Combines two expressions with an OR operator.
@@ -41,6 +41,6 @@ public static class PredicateBuilder
     /// <summary>
     /// Returns a predicate that always evaluates to true.
     /// </summary>
-    public static Expression<Func<T, bool>> True<T>()
-        => f => true;
+    public static Expression<Func<T, bool>> True<T>() =>
+        f => true;
 }

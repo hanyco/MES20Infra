@@ -98,11 +98,11 @@ internal sealed class DtoService(
             return Result.Fail<int>();
         }
 
-        static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default)
-            => model.Check()
-                    .ArgumentNotNull()
-                    .NotNull(x => x!.Id)
-                    .Build()!;
+        static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default) => 
+            model.Check()
+                .ArgumentNotNull()
+                .NotNull(x => x!.Id)
+                .Build()!;
     }
 
     public async Task<Result> DeleteById(long dtoId, bool persist = true, CancellationToken token = default)

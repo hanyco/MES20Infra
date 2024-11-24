@@ -33,10 +33,12 @@ public static class Caster
     public static T? As<T>([DisallowNull] this ICastable o) where T : class =>
         o.Value as T;
 
+    [Obsolete]
     public static IEnumerable<T> AsEnumerable<T>(this ICastable o) =>
         EnumerableHelper.AsEnumerable(o.To<T>());
 
     [Pure]
+    [Obsolete]
     [return: NotNull]
     public static IEnumerable<T?> AsEnumerable<T>(this ICastable<T> o) =>
         o == null ? Enumerable.Empty<T>() : EnumerableHelper.AsEnumerable(o.Value);

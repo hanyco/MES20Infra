@@ -12,8 +12,7 @@
       "src\\HanyCo\\CodeGenerator\\Services\\Services.csproj",
       "src\\HanyCo\\CodeGenerator\\UI\\UI.csproj",
       "src\\HanyCo\\Domain\\Domain.csproj",
-      "src\\HanyCo\\Infrastructure\\Infrastructure.csproj",
-      "src\\HanyCo\\Security\\Security.csproj"
+      "src\\HanyCo\\Infrastructure\\Infrastructure.csproj"
     ]
   }
 }
