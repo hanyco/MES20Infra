@@ -4,9 +4,8 @@ namespace Library.Types;
 
 public sealed class EmptyDisposable : IDisposable, IEmpty<EmptyDisposable>
 {
-    private static EmptyDisposable? _empty;
     private bool _disposedValue;
-    public static EmptyDisposable Empty => _empty ??= NewEmpty();
+    public static EmptyDisposable Empty => field ??= NewEmpty();
 
     public static EmptyDisposable NewEmpty() =>
         new();

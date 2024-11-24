@@ -11,7 +11,7 @@ public abstract class SmartEnum<TSmartEnum, TIdType>(TIdType id, string? friendl
     public TIdType Id { get; } = id;
 
     public static TSmartEnum? ById(TIdType id)
-        => GetEnumItems().Where(x => x.Id?.Equals(id) ?? id is null).SingleOrDefault();
+        => GetEnumItems().SingleOrDefault(x => x.Id?.Equals(id) ?? id is null);
 
     public static IEnumerable<TSmartEnum> ByName(string? name)
         => GetEnumItems().Where(x => x.FriendlyName == name);
@@ -22,11 +22,10 @@ public abstract class SmartEnum<TSmartEnum, TIdType>(TIdType id, string? friendl
     public static bool operator ==(SmartEnum<TSmartEnum, TIdType>? enum1, SmartEnum<TSmartEnum, TIdType>? enum2)
         => enum1?.Equals(enum2) ?? enum2 is null;
 
-    public bool Equals(TSmartEnum? other)
-        => other is not null
-            && (this.Id is null
-                ? other.Id is null
-                : this.Id.Equals(other.Id));
+    public bool Equals(TSmartEnum? other)=> 
+        other is not null && (this.Id is null
+            ? other.Id is null
+            : this.Id.Equals(other.Id));
 
     public override bool Equals(object? obj)
         => obj is SmartEnum<TSmartEnum, TIdType> other && this.Id.Equals(other.Id);

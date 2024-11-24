@@ -402,7 +402,7 @@ public readonly struct Id(IdType value) :
     private static Id GetDefaultValue()
         => new(default);
 
-    public static explicit operator string?(Id? id) 
+    public static explicit operator string?(Id? id)
         => id?.Value.ToString();
 
     /// <summary>
