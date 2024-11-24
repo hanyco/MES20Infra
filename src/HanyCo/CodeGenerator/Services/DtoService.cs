@@ -1,12 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-
-using HanyCo.Infra.CodeGen.Domain.Services;
+﻿using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
-using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -24,11 +20,12 @@ using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
 
-using Services.Helpers;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 
 using DtoEntity = HanyCo.Infra.Internals.Data.DataSources.Dto;
 
-namespace Services.CodeGen;
+namespace Services;
 
 internal sealed class DtoService(
     InfraReadDbContext readDbContext,
@@ -49,11 +46,11 @@ internal sealed class DtoService(
         var query = from dto in this._readDbContext.Dtos
                     where dto.Name == name
                     select dto.Id;
-        return query.AnyLockAsync(_readDbContext.AsyncLock);
+        return query.AnyLockAsync(this._readDbContext.AsyncLock);
     }
 
-    public Task<DtoViewModel> CreateAsync(CancellationToken token = default)
-        => Task.FromResult(new DtoViewModel());
+    public Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
+        Task.FromResult(new DtoViewModel());
 
     [return: NotNull]
     public DtoViewModel CreateByDbTable(in DbTableViewModel table, in IEnumerable<DbColumnViewModel> columns)
@@ -75,7 +72,7 @@ internal sealed class DtoService(
     {
         if (!validate(model, token).TryParse(out var validationResult))
         {
-            return validationResult.WithValue<int>(-1);
+            return validationResult.WithValue(-1);
         }
 
         try
@@ -298,7 +295,7 @@ internal sealed class DtoService(
         _ = this.InitializeViewModel(viewModel);
         var entity = this.ToDbEntity(viewModel);
 
-        using var transaction = await this.CreateTransactionOnDemand(_writeDbContext, persist, token);
+        using var transaction = await this.CreateTransactionOnDemand(this._writeDbContext, persist, token);
         await insertDto(viewModel, entity.Dto, persist, token);
         await insertProperties(viewModel, persist, entity, token);
         var result = await this.SubmitChangesAsync(persist, transaction, token: token).With((_) => viewModel.Id = entity.Dto.Id);
@@ -416,7 +413,7 @@ internal sealed class DtoService(
         var duplicates = viewModel!.Properties.FindDuplicates().Select(x => x?.Name).Compact().ToList();
         if (duplicates.Any())
         {
-            return Result.Fail<DtoViewModel>(new Library.Exceptions.Validations.ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
+            return Result.Fail<DtoViewModel>(new ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
         };
         return Result.Success(viewModel)!;
     }
