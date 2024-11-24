@@ -34,7 +34,7 @@ public static class StringHelper
     /// <returns></returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(s))]
-    public static string? Add(this string? s, in int count, char add = ' ', bool before = false) =>
+    public static string? Add(this string? s, int count, char add = ' ', bool before = false) =>
         count is 0 ? s : before ? s?.PadLeft(s.Length + count, add) : s?.PadRight(s.Length + count, add);
 
     /// <summary>
@@ -1455,26 +1455,26 @@ public static class StringHelper
     /// <summary>
     /// Converts a collection of strings to lowercase.
     /// </summary>
-    public static Strings ToLower(this Strings strings)
-        => strings.Select(str => str.ToLower(CultureInfo.CurrentCulture));
+    public static Strings ToLower(this Strings strings) => 
+        strings.Select(str => str.ToLower(CultureInfo.CurrentCulture));
 
     /// <summary>
     /// Converts a string to Unicode encoding.
     /// </summary>
-    public static string? ToUnicode(this string? str, Encoding? current = null)
-        => str is null ? null : Encoding.Unicode.GetString((current ?? Encoding.Unicode).GetBytes(str));
+    public static string? ToUnicode(this string? str, Encoding? current = null) => 
+        str is null ? null : Encoding.Unicode.GetString((current ?? Encoding.Unicode).GetBytes(str));
 
     /// <summary>
     /// Trims all strings in the given IEnumerable.
     /// </summary>
-    public static Strings TrimAll(this Strings values)
-        => values.Select(t => t.Trim());
+    public static Strings TrimAll(this Strings values) => 
+        values.Select(t => t.Trim());
 
     /// <summary>
     /// Trims all strings in an IEnumerable using the specified characters.
     /// </summary>
-    public static Strings TrimAll(this Strings values, params char[] trimChars)
-        => values.Select(t => t.Trim(trimChars));
+    public static Strings TrimAll(this Strings values, params char[] trimChars) => 
+        values.Select(t => t.Trim(trimChars));
 
     /// <summary>
     /// Trims the specified trailing substring from the end of a string, if present.

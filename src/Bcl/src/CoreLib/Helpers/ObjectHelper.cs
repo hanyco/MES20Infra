@@ -1,15 +1,15 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-
-using Library.DesignPatterns.Creational;
+﻿using Library.DesignPatterns.Creational;
 using Library.DesignPatterns.Creational.Exceptions;
 using Library.Exceptions;
 using Library.Results;
 using Library.Types;
 using Library.Validations;
+
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Library.Helpers;
 
@@ -25,8 +25,8 @@ public static class ObjectHelper
     /// <param name="defaultValue">The default value.</param>
     /// <param name="converter">The converter.</param>
     /// <returns></returns>
-    public static T CheckDbNull<T>(in object? o, in T defaultValue, in Func<object, T> converter)
-        => IsDbNull(o) ? defaultValue : converter.ArgumentNotNull().Invoke(o);
+    public static T CheckDbNull<T>(in object? o, in T defaultValue, in Func<object, T> converter) =>
+        IsDbNull(o) ? defaultValue : converter.ArgumentNotNull().Invoke(o);
 
     /// <summary>
     /// Determines whether an object contains properties that implement a specified interface.
@@ -211,7 +211,8 @@ public static class ObjectHelper
         return field switch
         {
             not null => field.GetValue(obj)!.Cast().To<TFieldType>(),
-            null => throw new ObjectNotFoundException("Field")
+            null => throw new ObjectNotFoundException("Field"),
+            _ => throw new NotImplementedException()
         };
     }
 
