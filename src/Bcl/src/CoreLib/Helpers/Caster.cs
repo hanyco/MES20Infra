@@ -41,38 +41,38 @@ public static class Caster
     [Obsolete]
     [return: NotNull]
     public static IEnumerable<T?> AsEnumerable<T>(this ICastable<T> o) =>
-        o == null ? Enumerable.Empty<T>() : EnumerableHelper.AsEnumerable(o.Value);
+        o == null ? [] : EnumerableHelper.AsEnumerable(o.Value);
 
     /// <summary>
     /// The entry of casting operations.
     /// </summary>
     /// <param name="obj">The object to cast.</param>
     /// <returns>A new Castable object.</returns>
-    public static ICastable Cast(this object? obj)
-        => new Castable(obj);
+    public static ICastable Cast(this object? obj) =>
+        new Castable(obj);
 
-    public static ICastable<T> CastSafe<T>(this T? obj)
-        => new Castable<T>(obj);
+    public static ICastable<T> CastSafe<T>(this T? obj) =>
+        new Castable<T>(obj);
 
     [return: NotNullIfNotNull(nameof(defaultValue))]
-    public static T? Is<T>([DisallowNull] this ICastable o, T? defaultValue) where T : class
-        => o is T t ? t : defaultValue;
+    public static T? Is<T>([DisallowNull] this ICastable o, T? defaultValue) where T : class =>
+        o is T t ? t : defaultValue;
 
     /// <summary>
     /// Returns the result of a type match between the given object and the generic type T, or the
     /// default value of T if the match fails.
     /// </summary>
-    public static T? Match<T>(object obj)
-        => obj is T result ? result : default;
+    public static T? Match<T>(object obj) =>
+        obj is T result ? result : default;
 
     /// <summary>
     /// Returns a collection of objects of the specified type from the given collection.
     /// </summary>
-    public static IEnumerable<T> OfType<T>(IEnumerable items)
-        => items.OfType<T>();
+    public static IEnumerable<T> OfType<T>(IEnumerable items) =>
+        items.OfType<T>();
 
-    public static ICastable<T> Safe<T>(this ICastable o, T? obj)
-                    => new Castable<T>(obj);
+    public static ICastable<T> Safe<T>(this ICastable o, T? obj) =>
+        new Castable<T>(obj);
 
     /// <summary>
     /// Casts the given object to the specified type.
@@ -81,11 +81,11 @@ public static class Caster
     /// <param name="o">The object to cast.</param>
     /// <returns>The casted object.</returns>
     [return: NotNull]
-    public static T To<T>([DisallowNull] this ICastable o)
-        => (T)o.Value!;
+    public static T To<T>([DisallowNull] this ICastable o) =>
+        (T)o.Value!;
 
-    public static TResult? To<T, TResult>([DisallowNull] this ICastable<T?> o, Func<T?, TResult?> converter)
-        => converter.ArgumentNotNull()(o.ArgumentNotNull().Value);
+    public static TResult? To<T, TResult>([DisallowNull] this ICastable<T?> o, Func<T?, TResult?> converter) =>
+        converter.ArgumentNotNull()(o.ArgumentNotNull().Value);
 
     public static byte ToByte([DisallowNull] this ICastable o, byte defaultValue = default, IFormatProvider? formatProvider = null)
     {
@@ -153,8 +153,8 @@ public static class Caster
     /// </summary>
     /// <param name="o">The object to convert.</param>
     /// <returns>A long that represents the value of the specified object.</returns>
-    public static long ToLong([DisallowNull] this ICastable o)
-        => Convert.ToInt64(o.Value);
+    public static long ToLong([DisallowNull] this ICastable o) =>
+        Convert.ToInt64(o.Value);
 
     /// <summary>
     /// Filters a sequence of items to return only those of type T.
@@ -181,8 +181,8 @@ public static class Caster
     /// Returns the specified type of the given object, or the default value if the object is not of
     /// the specified type.
     /// </summary>
-    public static T? TypeOf<T>(object obj)
-            => obj?.GetType() == typeof(T) ? (T)obj : default;
+    public static T? TypeOf<T>(object obj) =>
+        obj?.GetType() == typeof(T) ? (T)obj : default;
 
     /// <summary>
     /// Filters a sequence of items and returns only those of type T.

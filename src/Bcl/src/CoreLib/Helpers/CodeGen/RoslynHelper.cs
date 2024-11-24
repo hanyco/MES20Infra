@@ -206,6 +206,7 @@ public static class RoslynHelper
     }
 
     [return: NotNull]
+    [Obsolete]
     public static RosMethod CreateConstructor(string className, IEnumerable<SyntaxKind>? modifiers = null, IEnumerable<MethodParameterInfo>? parameters = null, string? body = null)
     {
         modifiers ??= EnumerableHelper.AsEnumerable(SyntaxKind.PublicKeyword);
@@ -449,6 +450,7 @@ public sealed class RosFieldInfo(
     in TypePath type,
     in IEnumerable<SyntaxKind>? accessModifiers = null) : IEquatable<RosFieldInfo>
 {
+    [Obsolete]
     public IEnumerable<SyntaxKind>? AccessModifiers { get; } = accessModifiers ?? EnumerableHelper.AsEnumerable(SyntaxKind.PrivateKeyword);
     public string Name { get; } = name;
     public TypePath Type { get; } = type;
@@ -511,9 +513,12 @@ public sealed class RosPropertyInfo(
     in PropertyAccessorInfo? getAccessor = null,
     in PropertyAccessorInfo? setAccessor = null) : IEquatable<RosPropertyInfo>
 {
+    [Obsolete]
     public PropertyAccessorInfo GetAccessor { get; } = getAccessor == null ? (true, EnumerableHelper.AsEnumerable(SyntaxKind.PublicKeyword)) : getAccessor.Value;
+    [Obsolete]
     public IEnumerable<SyntaxKind> Modifiers { get; } = modifiers ?? EnumerableHelper.AsEnumerable(SyntaxKind.PublicKeyword);
     public string Name { get; } = name;
+    [Obsolete]
     public PropertyAccessorInfo SetAccessor { get; } = setAccessor == null ? (true, EnumerableHelper.AsEnumerable(SyntaxKind.PublicKeyword)) : setAccessor.Value;
     public TypePath Type { get; } = type;
 
