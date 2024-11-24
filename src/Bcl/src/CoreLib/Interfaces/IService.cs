@@ -4,6 +4,11 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Library.Interfaces;
 
+public interface IAsyncCreator<TViewModel>
+{
+    Task<TViewModel> CreateAsync(CancellationToken cancellationToken = default);
+}
+
 /// <summary>
 /// Represents an interface for an asynchronous CRUD service that provides read and write operations
 /// for a view model.
@@ -12,6 +17,16 @@ namespace Library.Interfaces;
 /// <seealso cref="IAsyncRead&lt;TViewModel, TId&gt;"/>
 /// <seealso cref="IAsyncWrite&lt;TViewModel, TId&gt;"/>
 public interface IAsyncCrud<TViewModel> : IAsyncRead<TViewModel>, IAsyncWrite<TViewModel>;
+
+/// <summary>
+/// Interface for an asynchronous CRUD service that provides read and write operations for a view
+/// model type with an ID type.
+/// </summary>
+/// <typeparam name="TViewModel">The type of the view model.</typeparam>
+/// <typeparam name="TId">The type of the identifier.</typeparam>
+/// <seealso cref="IAsyncRead&lt;TViewModel, TId&gt;"/>
+/// <seealso cref="IAsyncWrite&lt;TViewModel, TId&gt;"/>
+public interface IAsyncCrud<TViewModel, TId> : IAsyncRead<TViewModel, TId>, IAsyncWrite<TViewModel, TId>;
 
 public interface IAsyncRead<TViewModel, in TId>
 {
@@ -154,22 +169,6 @@ public interface IViewModelToDbEntityConverter<in TViewModel, out TDbEntity>
     [return: NotNullIfNotNull(nameof(model))]
     TDbEntity? ToDbEntity(TViewModel? model);
 }
-
-public interface IAsyncCreator<TViewModel>
-{
-    Task<TViewModel> CreateAsync(CancellationToken cancellationToken = default);
-}
-
-//=====================================
-/// <summary>
-/// Interface for an asynchronous CRUD service that provides read and write operations for a view
-/// model type with an ID type.
-/// </summary>
-/// <typeparam name="TViewModel">The type of the view model.</typeparam>
-/// <typeparam name="TId">The type of the identifier.</typeparam>
-/// <seealso cref="IAsyncRead&lt;TViewModel, TId&gt;"/>
-/// <seealso cref="IAsyncWrite&lt;TViewModel, TId&gt;"/>
-public interface IAsyncCrud<TViewModel, TId> : IAsyncRead<TViewModel, TId>, IAsyncWrite<TViewModel, TId>;
 
 public record PagingParams(in int PageIndex = 0, in int? PageSize = null);
 public record PagingResult<T>(IReadOnlyList<T> Result, in long TotalCount);
