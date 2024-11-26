@@ -37,7 +37,6 @@ public static class EnumerableHelper
         yield return item;
     }
 
-
     /// <summary>
     /// Adds the specified item immutably and returns a new instance of source.
     /// </summary>
@@ -61,19 +60,27 @@ public static class EnumerableHelper
     public static IEnumerable<T> AddImmutedIf<T>(this IEnumerable<T> source, Func<bool> predicate, Func<T> getItem)
     {
         foreach (var item in source)
+        {
             yield return item;
+        }
 
         if (predicate())
+        {
             yield return getItem();
+        }
     }
 
     public static IEnumerable<T> AddImmutedIf<T>(this IEnumerable<T> source, bool isOk, Func<T> getItem)
     {
         foreach (var item in source)
+        {
             yield return item;
+        }
 
         if (isOk)
+        {
             yield return getItem();
+        }
     }
 
     /// <summary>
@@ -642,7 +649,7 @@ public static class EnumerableHelper
     public static Dictionary<TKey, TValue?> DictionaryFromKeys<TKey, TValue>(IEnumerable<TKey> keys, TValue? defaultValue = default)
         where TKey : notnull =>
         // Create a new dictionary by selecting key-value pairs from the keys sequence with default values.
-        new(keys.Enumerate(x => new KeyValuePair<TKey, TValue?>(x, defaultValue)));
+        [.. keys.Enumerate(x => new KeyValuePair<TKey, TValue?>(x, defaultValue))];
 
     /// <summary>
     /// Creates an empty array.
@@ -972,7 +979,7 @@ public static class EnumerableHelper
     public static void ForEachParallel<TItem>(IEnumerable<TItem> items, Action<TItem> action) =>
         Parallel.ForEach(items, action);
 
-    public static void ForEachReverse<TItem>(this IEnumerable<TItem> items, Action<TItem> action) => 
+    public static void ForEachReverse<TItem>(this IEnumerable<TItem> items, Action<TItem> action) =>
         items.Reverse().ForEach(action);
 
     public static void ForReverse<TItem>(this TItem[] items, Action<(TItem Item, int Index)> action, int? startFrom = null)
@@ -1545,21 +1552,14 @@ public static class EnumerableHelper
         }
     }
 
-    /// <summary> Asynchronously projects each element of a sequence into a new form. </summary>
-    /// <typeparam name="TSource">The type of the elements of source.</typeparam> <typeparam
-    /// name="TResult">The type of the value returned by selectorAsync.</typeparam> <param
-    /// name="source">An IEnumerable<T> to project each element of.</param> <param
-    /// name="selectorAsync">A transform function to apply to each element.</param> <returns>An
-    /// IAsyncEnumerable<T> whose elements are the result of invoking the transform function on each
-    /// element of source.</returns>
-    public static async IAsyncEnumerable<TResult> SelectAsync<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, Task<TResult>> selectorAsync)
+    public static async IAsyncEnumerable<TResult> SelectAsync<TValue, TResult>(this IAsyncEnumerable<TValue> values, Func<TValue, TResult> selector)
     {
-        Check.MustBeArgumentNotNull(source);
-        Check.MustBeArgumentNotNull(selectorAsync);
+        Check.MustBeArgumentNotNull(values);
+        Check.MustBeArgumentNotNull(selector);
 
-        foreach (var item in source)
+        await foreach (var item in values)
         {
-            yield return await selectorAsync(item);
+            yield return selector(item);
         }
     }
 
@@ -1721,7 +1721,7 @@ public static class EnumerableHelper
 
     public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> values)
             where TKey : notnull =>
-            new(values.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2)));
+            [.. values.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2))];
 
     [Obsolete($"Use `{nameof(AsEnumerable)}`, instead.", true)]
     public static IEnumerable<T> ToEnumerable<T>(T item)
@@ -1836,7 +1836,7 @@ public static class EnumerableHelper
     /// Converts an IEnumerable of type T to an ObservableCollection of type T.
     /// </summary>
     public static ObservableCollection<T> ToObservableCollection<T>(this IEnumerable<T> source)
-        => source is ObservableCollection<T> o ? o : new(source);
+        => source is ObservableCollection<T> o ? o : [.. source];
 
     /// <summary>
     /// Converts an IEnumerable to an IReadOnlyList.

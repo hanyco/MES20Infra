@@ -45,7 +45,8 @@ public sealed class IdentityService(
         {
             return Result.Fail($"No Accounts founded with {model.UserId}.");
         }
-        this._logger.LogDebug($"Changing user password. {user.UserName}");
+
+        this._logger.LogDebug($"Changing user password by Admin. {user.UserName}");
         var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
         var result = await this._userManager.ResetPasswordAsync(user, resetToken, model.Password);
 
@@ -63,12 +64,13 @@ public sealed class IdentityService(
             return Result.Fail($"No Accounts founded with this Id.");
         }
 
+        this._logger.LogDebug($"Changing user password by user. {user.UserName}");
         _ = await this._userManager.GeneratePasswordResetTokenAsync(user);
         var result = await this._userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
         await this._signInManager.RefreshSignInAsync(user);
 
         return result.Succeeded
-            ? Result.Success(string.Empty, $"Password changed.")
+            ? Result.Success($"Password changed.")
             : Result.Fail($"Error occurred while changing the password.");
     }
 
@@ -79,6 +81,8 @@ public sealed class IdentityService(
         {
             return Result.Fail("User not found.", string.Empty);
         }
+
+        this._logger.LogDebug($"Email confirmation. {user.UserName}");
         code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
         var result = await this._userManager.ConfirmEmailAsync(user, code);
         return result.Succeeded
