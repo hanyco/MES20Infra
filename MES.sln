@@ -7,8 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeGenerator", "CodeGenera
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_items", "_items", "{7989E273-1C8A-4431-A23C-9517B91AE279}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		items\.globalsIds.cs = items\.globalsIds.cs
 		.globalSuppressions.cs = .globalSuppressions.cs
 		items\DbScript.sql = items\DbScript.sql
 		Directory.Build.props = Directory.Build.props

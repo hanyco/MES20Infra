@@ -4,17 +4,15 @@ using Application.Infrastructure.Persistence;
 using Application.Interfaces.Shared;
 using Application.Settings;
 
-using Azure.Core;
-
 using Domain.Identity;
 
-using Library.Data.SqlServer.Dynamics;
 using Library.Results;
 using Library.Validations;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -30,12 +28,14 @@ public sealed class IdentityService(
     UserManager<ApplicationUser> userManager,
     IOptions<JWTSettings> jwtSettings,
     SignInManager<ApplicationUser> signInManager,
-    IdentityDbContext dbContext) : IIdentityService
+    IdentityDbContext dbContext,
+    ILogger<IdentityService> logger) : IIdentityService
 {
     private readonly IAuthenticatedUserService _authenticatedUser = authenticatedUser;
+    private readonly IdentityDbContext _dbContext = dbContext;
+    private readonly ILogger<IdentityService> _logger = logger;
     private readonly JWTSettings _jwtSettings = jwtSettings.Value;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
-    private readonly IdentityDbContext _dbContext = dbContext;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     public async Task<Result> ChangePassword(ChangePasswordRequest model)
@@ -45,7 +45,7 @@ public sealed class IdentityService(
         {
             return Result.Fail($"No Accounts founded with {model.UserId}.");
         }
-
+        this._logger.LogDebug($"Changing user password. {user.UserName}");
         var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
         var result = await this._userManager.ResetPasswordAsync(user, resetToken, model.Password);
 
@@ -153,8 +153,8 @@ public sealed class IdentityService(
 
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
-        await TestAsync();
-        return default;
+        await this.TestAsync();
+        return default!;
         // Check if user already exists
         var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
         if (userWithSameUserName != null)
@@ -198,37 +198,6 @@ public sealed class IdentityService(
         return Result.Success("User registered successfully.");
     }
 
-    private async Task TestAsync()
-    {
-        var user = new ApplicationUser
-        {
-            UserName = "testuser",
-            Email = "testuser@example.com",
-            DisplayName = "Test User"
-        };
-
-        var userWithSameUserName = await this._userManager.FindByNameAsync(user.UserName);
-        if (userWithSameUserName == null)
-        {
-            Console.WriteLine($"No user found with username: {user.UserName}");
-        }
-        else
-        {
-            Console.WriteLine($"User found: {userWithSameUserName.UserName}");
-        }
-
-        var result = await _userManager.CreateAsync(user, "Test@1234");
-        if (result.Succeeded)
-        {
-            Console.WriteLine("User created successfully.");
-        }
-        else
-        {
-            Console.WriteLine($"Error: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-        }
-
-    }
-
     public async Task<Result> Remove(string Id)
     {
         var userWithSameId = await this._userManager.FindByIdAsync(Id);
@@ -262,6 +231,28 @@ public sealed class IdentityService(
         return result.Succeeded
             ? Result.Success(model.Email, message: $"Password has reset.")
             : Result.Fail($"Error occurred while resetting the password.");
+    }
+
+    public async Task<Result> SetAccessPermissions(AccessPermissionRequest request)
+    {
+        Check.MustBeNotNull(request.UserId, "User ID cannot be null");
+        Check.MustBeNotNull(request.EntityId, "Entity ID cannot be null");
+        Check.MustBeNotNull(request.EntityType, "Entity Type cannot be null");
+
+        var permission = new AccessPermission
+        {
+            UserId = request.UserId,
+            EntityId = request.EntityId,
+            EntityType = request.EntityType,
+            AccessType = request.AccessType,
+            AccessScope = request.AccessScope,
+            CreatedDate = DateTime.UtcNow
+        };
+
+        _ = await this._dbContext.AccessPermissions.AddAsync(permission);
+        _ = await this._dbContext.SaveChangesAsync();
+
+        return Result.Success("Access permissions set successfully.");
     }
 
     public async Task<Result> Update(UpdateRequest request)
@@ -299,13 +290,14 @@ public sealed class IdentityService(
             }
         }
     }
+
     private async Task<JwtSecurityToken> GenerateJWToken(ApplicationUser user, string ipAddress)
     {
         Check.MustBeArgumentNotNull(user);
 
         var userClaims = await this._userManager.GetClaimsAsync(user);
         var roles = await this._userManager.GetRolesAsync(user);
-        var accessPermissions = await _dbContext.AccessPermissions
+        var accessPermissions = await this._dbContext.AccessPermissions
             .Where(ap => ap.UserId == user.Id)
             .ToListAsync();
 
@@ -389,29 +381,33 @@ public sealed class IdentityService(
         return verificationUri;
     }
 
-    public async Task<Result> SetAccessPermissions(AccessPermissionRequest request)
+    private async Task TestAsync()
     {
-        // اعتبارسنجی درخواست
-        Check.MustBeArgumentNotNull(request.UserId, "User ID cannot be null");
-        Check.MustBeArgumentNotNull(request.EntityId, "Entity ID cannot be null");
-        Check.MustBeArgumentNotNull(request.EntityType, "Entity Type cannot be null");
-
-        // ذخیره در جدول AccessPermissions
-        var permission = new AccessPermission
+        var user = new ApplicationUser
         {
-            UserId = request.UserId,
-            EntityId = request.EntityId,
-            EntityType = request.EntityType,
-            AccessType = request.AccessType,
-            AccessScope = request.AccessScope,
-            CreatedDate = DateTime.UtcNow
+            UserName = "testuser",
+            Email = "testuser@example.com",
+            DisplayName = "Test User"
         };
 
-        // اینجا باید Context یا Repository ذخیره سازی جدول AccessPermissions را صدا بزنیم
-        await _dbContext.AccessPermissions.AddAsync(permission);
-        await _dbContext.SaveChangesAsync();
+        var userWithSameUserName = await this._userManager.FindByNameAsync(user.UserName);
+        if (userWithSameUserName == null)
+        {
+            Console.WriteLine($"No user found with username: {user.UserName}");
+        }
+        else
+        {
+            Console.WriteLine($"User found: {userWithSameUserName.UserName}");
+        }
 
-        return Result.Success("Access permissions set successfully.");
+        var result = await this._userManager.CreateAsync(user, "Test@1234");
+        if (result.Succeeded)
+        {
+            Console.WriteLine("User created successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
     }
-
 }
