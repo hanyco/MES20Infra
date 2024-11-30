@@ -649,7 +649,7 @@ public static class EnumerableHelper
     public static Dictionary<TKey, TValue?> DictionaryFromKeys<TKey, TValue>(IEnumerable<TKey> keys, TValue? defaultValue = default)
         where TKey : notnull =>
         // Create a new dictionary by selecting key-value pairs from the keys sequence with default values.
-        [.. keys.Enumerate(x => new KeyValuePair<TKey, TValue?>(x, defaultValue))];
+        keys.ToDictionary(key => key, key => defaultValue);
 
     /// <summary>
     /// Creates an empty array.
@@ -1720,8 +1720,8 @@ public static class EnumerableHelper
     }
 
     public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> values)
-            where TKey : notnull =>
-            [.. values.Select(x => new KeyValuePair<TKey, TValue>(x.Item1, x.Item2))];
+        where TKey : notnull =>
+            values.ToDictionary(pair => pair.Item1, pair => pair.Item2);
 
     [Obsolete($"Use `{nameof(AsEnumerable)}`, instead.", true)]
     public static IEnumerable<T> ToEnumerable<T>(T item)
