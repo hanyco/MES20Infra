@@ -59,7 +59,7 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// </summary>
     /// <returns>A new instance of the Codes class.</returns>
     public static Codes Create(params IEnumerable<Code> arg) =>
-        new(arg);
+        [.. arg];
 
     public static Codes Create(params IEnumerable<Codes> arg) =>
         new(arg);
@@ -78,13 +78,13 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// <param name="c2">The second Codes instance.</param>
     /// <returns>A new Codes instance that combines the Code items from both input instances.</returns>
     public static Codes operator +(Codes c1, Codes c2) =>
-        new(c1.Enumerate().AddRangeImmuted(c2.Enumerate()));
+        [.. c1.Enumerate().AddRangeImmuted(c2.Enumerate())];
 
     public Codes Add(Code code) =>
-        new(this.AddImmuted(code));
+        [.. this.AddImmuted(code)];
 
     public Codes AddRange(IEnumerable<Code> codes) =>
-        new(this.AddRangeImmuted(codes));
+        [.. this.AddRangeImmuted(codes)];
 
     public override string? ToString() =>
         this.Count == 1 ? this[0]!.ToString() : $"{nameof(Codes)} ({this.Count})";

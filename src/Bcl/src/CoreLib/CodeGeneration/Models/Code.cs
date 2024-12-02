@@ -153,18 +153,18 @@ public class Code([DisallowNull] in string name, [DisallowNull] in Language lang
 public static class SourceCodeHelpers
 {
     public static Codes GatherAll(this IEnumerable<Codes> codes) =>
-        new(codes.SelectAll());
+        [.. codes.SelectAll()];
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this Code? code) =>
         code is null || code.Equals(Code.Empty);
 
     [return: NotNull]
     public static Codes ToCodes(this IEnumerable<Code> codes) =>
-        new(codes);
+        [.. codes];
 
     [return: NotNull]
     public static Codes ToCodes(params Code[] codes) =>
-        new(codes);
+        [.. codes];
 
     [return: NotNull]
     public static Codes ToCodes(this IEnumerable<Codes> codes) =>
