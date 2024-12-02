@@ -55,25 +55,13 @@ public readonly struct FieldInfo(
     public string Name { get; } = name;
     public TypePath Type { get; } = type;
 
-    public static bool operator !=(FieldInfo left, FieldInfo right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(FieldInfo left, FieldInfo right) => !(left == right);
 
-    public static bool operator ==(FieldInfo left, FieldInfo right)
-    {
-        return left.Equals(right);
-    }
+    public static bool operator ==(FieldInfo left, FieldInfo right) => left.Equals(right);
 
-    public override bool Equals(object obj)
-    {
-        throw new NotImplementedException();
-    }
+    public override bool Equals(object obj) => throw new NotImplementedException();
 
-    public override int GetHashCode()
-    {
-        throw new NotImplementedException();
-    }
+    public override int GetHashCode() => throw new NotImplementedException();
 }
 
 [Immutable]
