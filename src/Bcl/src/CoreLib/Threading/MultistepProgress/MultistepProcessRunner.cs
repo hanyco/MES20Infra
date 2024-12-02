@@ -23,7 +23,7 @@ public sealed class MultistepProcessRunner<TState>(in TState state, in IProgress
         new(state, reporter, subReporter, owner);
 
     public MultistepProcessRunner<TState> AddStep(in StepInfo<TState> step) =>
-        this.AddStep(EnumerableHelper.ToArray(step));
+        this.AddStep([step]);
 
     public MultistepProcessRunner<TState> AddStep(params StepInfo<TState>[] step)
     {

@@ -1776,8 +1776,8 @@ public static class EnumerableHelper
     /// <typeparam name="TItem">The type of elements in the list.</typeparam>
     /// <param name="sourceList">The source list to convert.</param>
     /// <returns>A new <see cref="FluentList{TItem}"/> containing the elements of the source list.</returns>
-    public static FluentList<TItem> ToFluentList<TItem>(this List<TItem> sourceList) =>
-        FluentList<TItem>.Create(sourceList);
+    public static FluentList<TItem> ToFluentList<TItem>(this List<TItem> sourceList)
+        => FluentList<TItem>.Create(sourceList);
     /// <summary>
     /// Converts an IEnumerable to an ImmutableArray.
     /// </summary>

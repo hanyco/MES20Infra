@@ -1,11 +1,11 @@
-using System.Data;
-using System.Globalization;
-
 using Library.Data.SqlServer;
 using Library.Results;
 using Library.Validations;
 
 using Microsoft.Data.SqlClient;
+
+using System.Data;
+using System.Globalization;
 
 namespace Library.Helpers;
 
@@ -52,11 +52,11 @@ public static class AdoHelper
         Check.MustBeArgumentNotNull(action);
 
         _ = connection.EnsureClosed(c =>
-                {
-                    action(c);
-                    return true;
-                },
-                openConnection);
+        {
+            action(c);
+            return true;
+        },
+        openConnection);
     }
 
     public static void EnsureClosed([DisallowNull] this SqlConnection connection, [DisallowNull] Action action, bool openConnection = false)
@@ -94,12 +94,15 @@ public static class AdoHelper
         }
         finally
         {
-            connection.Close();
+            if (connection?.State == ConnectionState.Open)
+            {
+                connection.Close();
+            }
         }
     }
 
     public static async Task<TResult> EnsureClosedAsync<TResult>([DisallowNull] this SqlConnection connection,
-            [DisallowNull] Func<SqlConnection, Task<TResult>> actionAsync,
+            [DisallowNull] Func<SqlDbConnection, Task<TResult>> actionAsync,
             bool openConnection = false, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(connection);
