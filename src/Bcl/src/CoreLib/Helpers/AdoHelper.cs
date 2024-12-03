@@ -102,7 +102,7 @@ public static class AdoHelper
     }
 
     public static async Task<TResult> EnsureClosedAsync<TResult>([DisallowNull] this SqlConnection connection,
-            [DisallowNull] Func<SqlDbConnection, Task<TResult>> actionAsync,
+            [DisallowNull] Func<SqlConnection, Task<TResult>> actionAsync,
             bool openConnection = false, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(connection);
@@ -110,7 +110,7 @@ public static class AdoHelper
 
         try
         {
-            if (openConnection)
+            if (openConnection && connection.State != ConnectionState.Open)
             {
                 await connection.OpenAsync(cancellationToken);
             }
@@ -132,7 +132,7 @@ public static class AdoHelper
 
         try
         {
-            if (openConnection)
+            if (openConnection && connection.State != ConnectionState.Open)
             {
                 await connection.OpenAsync(cancellationToken);
             }

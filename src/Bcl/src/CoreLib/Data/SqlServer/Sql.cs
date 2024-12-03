@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Diagnostics;
@@ -28,20 +29,23 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return await conn.CanConnectAsync(cancellationToken: cancellationToken);
     }
 
-    public static (TypePath Type, string Name)? FindIdColumn<TEntity>()
-        => FindIdColumn(typeof(TEntity));
+    public static Sql Create(string connectionString) =>
+        new(connectionString);
+
+    public static (TypePath Type, string Name)? FindIdColumn<TEntity>() =>
+        FindIdColumn(typeof(TEntity));
 
     public static (TypePath Type, string Name)? FindIdColumn(in Type entityType)
     {
         Check.MustBeArgumentNotNull(entityType);
-        var idColumn = Array.Find(entityType.GetProperties(), [DebuggerStepThrough, StackTraceHidden] (x) => x.Name.EqualsTo("Id"));
+        var idColumn = Array.Find(entityType.GetProperties(), [DebuggerStepThrough, StackTraceHidden] (x) => x.Name.EqualsTo("Id") || x.GetCustomAttribute<KeyAttribute>() is not null);
         return idColumn == null
             ? default
             : (idColumn.PropertyType, idColumn.Name);
     }
 
-    public static (Func<string?> Schema, Func<string> Name, Func<IEnumerable<(string Name, TypePath Type)>> Columns, Func<(TypePath Type, string Name)?> IdColumn) GetTable<TType>()
-        => GetTable(typeof(TType));
+    public static (Func<string?> Schema, Func<string> Name, Func<IEnumerable<(string Name, TypePath Type)>> Columns, Func<(TypePath Type, string Name)?> IdColumn) GetTable<TType>() =>
+        GetTable(typeof(TType));
 
     public static (Func<string?> Schema, Func<string> Name, Func<IEnumerable<(string Name, TypePath Type)>> Columns, Func<(TypePath Type, string Name)?> IdColumn) GetTable(Type tableType)
     {
@@ -57,8 +61,8 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
             var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
             return tableAttribute?.Name ?? tableType.Name;
         }
-        IEnumerable<(string Name, TypePath Type)> columns()
-            => tableType.GetProperties()
+        IEnumerable<(string Name, TypePath Type)> columns() =>
+            tableType.GetProperties()
                 .Where(x => x.GetCustomAttribute<NotMappedAttribute>() == null)
                 .Select(x =>
                 {
@@ -82,17 +86,13 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
                 }).OrderBy(x => x.order).Select(x => (x.name, x.type));
         return (Schema: schema, Name: name, Columns: columns, IdColumn: () => FindIdColumn(tableType));
     }
-
-    public static Sql Create(string arg)
-        => new(arg);
-
     /// <summary>
     /// Executes the provided converter function for each row in the IDataReader and returns an
     /// IEnumerable of the results. Throws an ArgumentNullException if the IDataReader is null.
     /// </summary>
-    public static IEnumerable<T> Select<T>(IDataReader reader, Func<IDataReader, T> converter)
-            where T : new()
-            => reader is not null
+    public static IEnumerable<T> Select<T>([DisallowNull] IDataReader reader, [DisallowNull] Func<IDataReader, T> converter)
+        where T : new() =>
+        reader is not null
                 ? While(reader.Read, () => converter(reader))
                 : throw new ArgumentNullException(nameof(reader));
 
@@ -165,8 +165,8 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return result;
     }
 
-    public async Task<int> ExecuteNonQueryAsync(string sql, Action<SqlParameterCollection>? fillParams = null, CancellationToken cancellationToken = default)
-        => await this.ExecuteTransactionalCommandAsync<int>(sql, cmd => cmd.ExecuteNonQueryAsync(), fillParams, cancellationToken);
+    public Task<int> ExecuteNonQueryAsync(string sql, Action<SqlParameterCollection>? fillParams = null, CancellationToken cancellationToken = default) =>
+        this.ExecuteTransactionalCommandAsync<int>(sql, cmd => cmd.ExecuteNonQueryAsync(), fillParams, cancellationToken);
 
     public IEnumerable<TResult> ExecuteReader<TResult>(string query, Func<SqlDataReader, TResult> mapper)
     {
@@ -206,11 +206,11 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return result;
     }
 
-    public Task<object?> ExecuteScalarCommandAsync(string sql, CancellationToken cancellationToken = default)
-        => this.ExecuteScalarCommandAsync(sql, null, cancellationToken);
+    public Task<object?> ExecuteScalarCommandAsync(string sql, CancellationToken cancellationToken = default) =>
+        this.ExecuteScalarCommandAsync(sql, null, cancellationToken);
 
-    public async Task<object?> ExecuteScalarCommandAsync(string sql, Action<SqlParameterCollection>? fillParams, CancellationToken cancellationToken = default)
-        => await this.ExecuteTransactionalCommandAsync(sql, cmd => cmd.ExecuteScalarAsync(), fillParams, cancellationToken);
+    public Task<object?> ExecuteScalarCommandAsync(string sql, Action<SqlParameterCollection>? fillParams, CancellationToken cancellationToken = default) =>
+        this.ExecuteTransactionalCommandAsync(sql, cmd => cmd.ExecuteScalarAsync(), fillParams, cancellationToken);
 
     public object? ExecuteScalarQuery(string sql) =>
         this.ExecuteScalarQuery(sql, null);
@@ -256,7 +256,7 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         }
     }
 
-    public async Task<TResult> ExecuteTransactionalCommandAsync<TResult>(string cmdText, Func<SqlCommand, Task<TResult>> executeAsync, Action<SqlParameterCollection>? fillParams = null, CancellationToken cancellationToken = default)
+    public async Task<TResult> ExecuteTransactionalCommandAsync<TResult>([DisallowNull] string cmdText, [DisallowNull] Func<SqlCommand, Task<TResult>> executeAsync, Action<SqlParameterCollection>? fillParams = null, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(cmdText);
         Check.MustBeArgumentNotNull(executeAsync);
@@ -386,7 +386,7 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
     }
 
     public async Task<IEnumerable<T>> SelectAsync<T>(string query)
-                where T : new()
+        where T : new()
     {
         using var conn = new SqlConnection(this.ConnectionString);
         this._logTo?.Invoke(query);
@@ -414,6 +414,8 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         Action<SqlParameterCollection>? fillParams = null)
     {
         Check.MustBeArgumentNotNull(connection);
+        Check.MustBeArgumentNotNull(sql);
+        Check.MustBeArgumentNotNull(rowFiller);
 
         var reader = connection.ExecuteReader(sql, fillParams, CommandBehavior.CloseConnection);
         return While(reader.Read, () => rowFiller(reader), connection.Close);
