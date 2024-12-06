@@ -2,13 +2,6 @@
 
 using Library.Results;
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-
 using Web.UI.Helpers;
 
 namespace Web.UI.Services;
@@ -17,40 +10,27 @@ public sealed class ApiClientService(ILocalStorageService _localStorage, IHttpCl
 {
     private string? _cachedToken;
 
-    public HttpClient CreateClient()
-    {
-        return httpClientFactory.CreateClient("ApiClient");
-    }
+    public HttpClient CreateClient() => httpClientFactory.CreateClient("ApiClient");
 
     public async Task<string?> GetTokenAsync()
     {
-        if (string.IsNullOrEmpty(_cachedToken))
+        if (string.IsNullOrEmpty(this._cachedToken))
         {
-            _cachedToken = await _localStorage.GetItemAsync<string>("authToken");
+            this._cachedToken = await _localStorage.GetItemAsync<string>("authToken");
         }
-        return _cachedToken;
+        return this._cachedToken;
     }
 
-    public async Task<Result<T?>> SendApiRequestAsync<T>(string apiUrl)
+    public string? GetUserNameFromToken(string token)
     {
-        var token = await this.GetTokenAsync();
-        using var httpClient = this.CreateClient();
-        var result = await httpClient.SendApiRequestAsync<T>(token, apiUrl);
-        return result;
-    }
-
-    public async Task<Result<HttpResponseMessage>> SendApiRequestWithoutResponseAsync(string apiUrl, HttpMethod method, object? content = null)
-    {
-        var token = await GetTokenAsync();
-        using var httpClient = CreateClient();
-        var result = await httpClient.SendApiRequestWithoutResponseAsync(token, apiUrl, method, content);
-        return result;
-    }
-
-    public async Task SetTokenAsync(string token)
-    {
-        _cachedToken = token;
-        await _localStorage.SetItemAsync("authToken", token);
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "full_name");
+        if (claim?.Value?.IsNullOrEmpty() is not false)
+        {
+            claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub");
+        }
+        return claim?.Value;
     }
 
     public bool IsTokenExpired(string token)
@@ -66,22 +46,32 @@ public sealed class ApiClientService(ILocalStorageService _localStorage, IHttpCl
         }
         return true;
     }
+
     public async Task LogoutAsync()
     {
-        _cachedToken = null;
+        this._cachedToken = null;
         await _localStorage.RemoveItemAsync("authToken");
     }
-    public string? GetUserNameFromToken(string token)
+
+    public async Task<Result<T?>> SendApiRequestAsync<T>(string apiUrl)
     {
-        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "full_name");
-        if (claim?.Value?.IsNullOrEmpty() is not false)
-        {
-            claim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub");
-        }
-        return claim?.Value;
+        var token = await this.GetTokenAsync();
+        using var httpClient = this.CreateClient();
+        var result = await httpClient.SendApiRequestAsync<T>(token, apiUrl);
+        return result;
     }
 
+    public async Task<Result<HttpResponseMessage>> SendApiRequestWithoutResponseAsync(string apiUrl, HttpMethod method, object? content = null)
+    {
+        var token = await this.GetTokenAsync();
+        using var httpClient = this.CreateClient();
+        var result = await httpClient.SendApiRequestWithoutResponseAsync(token, apiUrl, method, content);
+        return result;
+    }
 
+    public async Task SetTokenAsync(string token)
+    {
+        this._cachedToken = token;
+        await _localStorage.SetItemAsync("authToken", token);
+    }
 }
