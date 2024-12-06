@@ -1,27 +1,24 @@
-﻿using Blazored.LocalStorage;
+﻿using System.Net;
 
-using Library.Web.Bases;
-
-using System.Net;
+using Blazored.LocalStorage;
 
 namespace Web.UI.Middlewares;
 
 public class AuthenticationMiddleware
 {
+    private readonly ILocalStorageService _localStorage;
     private readonly RequestDelegate _next;
-    private readonly ILocalStorageService localStorage;
-
-    public AuthenticationMiddleware(RequestDelegate next)
+    public AuthenticationMiddleware(RequestDelegate next, ILocalStorageService localStorage)
     {
-        _next = next;
-        this.localStorage = localStorage;
+        this._next = next;
+        this._localStorage = localStorage;
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await this._next(context);
             if (context.Response.StatusCode == 401)
             {
                 context.Response.Redirect("/login");
