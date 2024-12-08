@@ -1,4 +1,9 @@
-﻿using Application.DTOs.Identity;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+
+using Application.DTOs.Identity;
 using Application.DTOs.Permissions;
 using Application.Infrastructure.Persistence;
 using Application.Interfaces.Shared;
@@ -16,25 +21,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-
 namespace Application.Features.Identity;
 
 public sealed class IdentityService(
-    IAuthenticatedUserService authenticatedUser,
     UserManager<ApplicationUser> userManager,
-    IOptions<JWTSettings> jwtSettings,
     SignInManager<ApplicationUser> signInManager,
     IdentityDbContext dbContext,
+    IOptions<JWTSettings> jwtSettings,
+    IAuthenticatedUserService authenticatedUser,
     ILogger<IdentityService> logger) : IIdentityService
 {
     private readonly IAuthenticatedUserService _authenticatedUser = authenticatedUser;
     private readonly IdentityDbContext _dbContext = dbContext;
-    private readonly ILogger<IdentityService> _logger = logger;
     private readonly JWTSettings _jwtSettings = jwtSettings.Value;
+    private readonly ILogger<IdentityService> _logger = logger;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
@@ -46,7 +46,7 @@ public sealed class IdentityService(
             return Result.Fail($"No Accounts founded with {model.UserId}.");
         }
 
-        this._logger.LogDebug($"Changing user password by Admin. {user.UserName}");
+        this._logger.LogDebug("Changing user password by Admin. {user.UserName}", user.UserName);
         var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
         var result = await this._userManager.ResetPasswordAsync(user, resetToken, model.Password);
 
@@ -64,7 +64,7 @@ public sealed class IdentityService(
             return Result.Fail($"No Accounts founded with this Id.");
         }
 
-        this._logger.LogDebug($"Changing user password by user. {user.UserName}");
+        this._logger.LogDebug("Changing user password by user. {user.UserName}", user.UserName);
         _ = await this._userManager.GeneratePasswordResetTokenAsync(user);
         var result = await this._userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
         await this._signInManager.RefreshSignInAsync(user);
@@ -82,7 +82,7 @@ public sealed class IdentityService(
             return Result.Fail("User not found.", string.Empty);
         }
 
-        this._logger.LogDebug($"Email confirmation. {user.UserName}");
+        this._logger.LogDebug("Email confirmation. {user.UserName}", user.UserName);
         code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
         var result = await this._userManager.ConfirmEmailAsync(user, code);
         return result.Succeeded
@@ -157,8 +157,8 @@ public sealed class IdentityService(
 
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
-        await this.TestAsync();
-        return default!;
+        //await this.TestAsync();
+        //return default!;
         // Check if user already exists
         var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
         if (userWithSameUserName != null)
