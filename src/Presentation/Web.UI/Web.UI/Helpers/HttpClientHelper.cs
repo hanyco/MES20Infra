@@ -1,12 +1,12 @@
-﻿using Library.Results;
-
-using Microsoft.AspNetCore.Components;
-
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+
+using Library.Results;
+
+using Microsoft.AspNetCore.Components;
 
 namespace Web.UI.Helpers;
 
@@ -18,10 +18,7 @@ public static class HttpClientHelper
         return result.Value.Response;
     }
 
-    public static T? GetResponse<T>(this Result<(T? Response, string? _)> processResult)
-    {
-        return processResult.Value.Response;
-    }
+    public static T? GetResponse<T>(this Result<(T? Response, string? _)> processResult) => processResult.Value.Response;
 
     public static async Task<HttpResponseMessage> GetResponse(this Task<Result<(HttpResponseMessage Response, string? _)>> processResult)
     {
