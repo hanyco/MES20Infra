@@ -1,6 +1,3 @@
-﻿namespace HanyCo.Infra.Markers
-{
-    public interface IRequestDto : IDto
-    {
-    }
-}
+﻿namespace HanyCo.Infra.Markers;
+
+public interface IRequestDto : IDto;
