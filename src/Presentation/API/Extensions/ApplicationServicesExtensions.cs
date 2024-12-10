@@ -1,4 +1,6 @@
-﻿using API.Extensions;
+﻿using System.Text;
+
+using API.Extensions;
 using API.Services.Identity;
 
 using Application;
@@ -23,8 +25,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using Newtonsoft.Json;
-
-using System.Text;
 
 namespace API.Extensions;
 

@@ -29,7 +29,8 @@ public class AccessPermissionsController(IIdentityService identityService, IAcce
     }
 
     [HttpDelete("{entityId}")]
-    public IActionResult RemoveAccessPermission(long entityId) => this.Ok($"Access to EntityId {entityId} removed.");
+    public IActionResult RemoveAccessPermission(long entityId) =>
+        this.Ok($"Access to EntityId {entityId} removed.");
 
     [HttpPost]
     public async Task<IActionResult> SetAccessPermissions([FromBody] AccessPermissionRequest request)
