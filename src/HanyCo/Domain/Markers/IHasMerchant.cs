@@ -1,12 +1,9 @@
-﻿namespace HanyCo.Infra.Markers
-{
-    public interface IHasMerchant<IIdType>
-        where IIdType : struct
-    {
-        IIdType? MerchantId { get; }
-    }
+﻿namespace HanyCo.Infra.Markers;
 
-    public interface IHasMerchant : IHasMerchant<long>
-    {
-    }
+public interface IHasMerchant<IIdType>
+    where IIdType : struct
+{
+    IIdType? MerchantId { get; }
 }
+
+public interface IHasMerchant : IHasMerchant<long>;

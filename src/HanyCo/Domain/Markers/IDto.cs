@@ -1,15 +1,10 @@
-﻿namespace HanyCo.Infra.Markers
+﻿namespace HanyCo.Infra.Markers;
+
+public interface IDto;
+
+public interface IIdenticalDto<TIdType> : IDto
 {
-    public interface IDto
-    {
-    }
-
-    public interface IIdenticalDto<TIdType> : IDto
-    {
-        TIdType Id { get; set; }
-    }
-
-    public interface IMesDto : IIdenticalDto<long>
-    {
-    }
+    TIdType Id { get; set; }
 }
+
+public interface IMesDto : IIdenticalDto<long>;
