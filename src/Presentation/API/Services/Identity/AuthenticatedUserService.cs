@@ -1,6 +1,6 @@
-﻿using Application.Interfaces.Shared;
+﻿using System.Security.Claims;
 
-using System.Security.Claims;
+using Application.Interfaces.Shared;
 
 namespace API.Services.Identity;
 

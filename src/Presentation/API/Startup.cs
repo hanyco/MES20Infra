@@ -14,7 +14,7 @@ internal static class Startup
             .UseAuthentication()
             .UseAuthorization()
             .UseAccessControlMiddleware();
-        
+
         _ = app
             .MapControllers();
 
@@ -33,7 +33,7 @@ internal static class Startup
 
         _ = services
             .AddSecurity(configuration);
-        
+
         _ = services
             .AddSharedInfrastructure(configuration);
 

@@ -140,54 +140,52 @@ public static class ApplicationServicesExtensions
             .AddTransient<ISecurityService, SecurityService>()
             .AddJwtAuthentication(configuration);
 
-    public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        _ = services
+    public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services, IConfiguration configuration) =>
+        services
             .AddApplicationServices(configuration)
             .AddTransient<IAuthenticatedUserService, AuthenticatedUserService>();
-        return services;
-    }
 
     public static IServiceCollection AddSwagger(this IServiceCollection services) =>
-        services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1", new OpenApiInfo
+        services
+            .AddSwaggerGen(c =>
             {
-                Title = "MES API",
-                Version = "v1",
-                Description = "API Documentation for MES System",
-                Contact = new OpenApiContact
+                c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Name = "Support Team",
-                    Email = "support@hanyco.com"
-                }
-            });
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
-                Description = "Input your Bearer token in this format - Bearer {your token here} to access this API",
-            });
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
+                    Title = "MES API",
+                    Version = "v1",
+                    Description = "API Documentation for MES System",
+                    Contact = new OpenApiContact
                     {
-                        Reference = new OpenApiReference
+                        Name = "Support Team",
+                        Email = "support@hanyco.com"
+                    }
+                });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    Description = "Input your Bearer token in this format - Bearer {your token here} to access this API",
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
                         {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer",
-                        },
-                        Scheme = "Bearer",
-                        Name = "Bearer",
-                        In = ParameterLocation.Header,
-                    }, new List<string>()
-                },
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer",
+                            },
+                            Scheme = "Bearer",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header,
+                        }, new List<string>()
+                    },
+                });
             });
-        });
 }
 
 internal static class HttpResponseExtensions
