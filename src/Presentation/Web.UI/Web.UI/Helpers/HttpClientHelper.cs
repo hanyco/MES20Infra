@@ -18,7 +18,8 @@ public static class HttpClientHelper
         return result.Value.Response;
     }
 
-    public static T? GetResponse<T>(this Result<(T? Response, string? _)> processResult) => processResult.Value.Response;
+    public static T? GetResponse<T>(this Result<(T? Response, string? _)> processResult) =>
+        processResult.Value.Response;
 
     public static async Task<HttpResponseMessage> GetResponse(this Task<Result<(HttpResponseMessage Response, string? _)>> processResult)
     {
