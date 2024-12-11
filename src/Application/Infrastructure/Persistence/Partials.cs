@@ -14,7 +14,7 @@ public partial class IdentityDbContext
         // ApplicationUser to AspNetUsers
         modelBuilder.Entity<ApplicationUser>(entity =>
         {
-            entity.ToTable("AspNetUsers", "Identity"); // Map to correct table and schema
+            //entity.ToTable("AspNetUsers", "Identity"); // Map to correct table and schema
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.UserName).IsRequired().HasMaxLength(256);
@@ -40,7 +40,7 @@ public partial class IdentityDbContext
         // AspNetUserLogins Table
         modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
         {
-            entity.ToTable("AspNetUserLogins", "Identity");
+            //entity.ToTable("AspNetUserLogins", "Identity");
             entity.HasKey(login => new { login.LoginProvider, login.ProviderKey });
 
             entity.HasOne<ApplicationUser>()
@@ -52,14 +52,14 @@ public partial class IdentityDbContext
         // AspNetUserTokens Table
         modelBuilder.Entity<IdentityUserToken<string>>(entity =>
         {
-            entity.ToTable("AspNetUserTokens", "Identity");
+            //entity.ToTable("AspNetUserTokens", "Identity");
             entity.HasKey(token => new { token.UserId, token.LoginProvider, token.Name });
         });
 
         // AspNetUserClaims Table
         modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
         {
-            entity.ToTable("AspNetUserClaims", "Identity");
+            //entity.ToTable("AspNetUserClaims", "Identity");
             entity.HasKey(claim => claim.Id);
 
             entity.HasOne<ApplicationUser>()

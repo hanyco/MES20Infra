@@ -4,9 +4,8 @@ using Blazored.LocalStorage;
 
 namespace Web.UI.Middlewares;
 
-public class AuthenticationMiddleware(RequestDelegate next, ILocalStorageService localStorage)
+public class AuthenticationMiddleware(RequestDelegate next)
 {
-    private readonly ILocalStorageService _localStorage = localStorage;
     private readonly RequestDelegate _next = next;
 
     public async Task InvokeAsync(HttpContext context)
