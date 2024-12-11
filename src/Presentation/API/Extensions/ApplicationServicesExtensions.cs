@@ -10,8 +10,6 @@ using Application.Interfaces.Shared;
 using Application.Interfaces.Shared.Security;
 using Application.Settings;
 
-using Domain.Identity;
-
 using Library.Data.SqlServer;
 using Library.Results;
 using Library.Validations;
@@ -55,7 +53,7 @@ public static class ApplicationServicesExtensions
                     op => op.CommandTimeout(120))
                 .LogTo(Console.WriteLine, LogLevel.Information));
         _ = services
-            .AddIdentity<ApplicationUser, IdentityRole>(options =>
+            .AddIdentity<AspNetUser, IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = false;
 
@@ -65,7 +63,7 @@ public static class ApplicationServicesExtensions
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
-                options.Password.RequireDigit = true;
+                options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 4;
             })
             .AddEntityFrameworkStores<IdentityDbContext>()

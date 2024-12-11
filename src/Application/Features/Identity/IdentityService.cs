@@ -9,8 +9,6 @@ using Application.Infrastructure.Persistence;
 using Application.Interfaces.Shared;
 using Application.Settings;
 
-using Domain.Identity;
-
 using Library.Results;
 using Library.Validations;
 
@@ -24,8 +22,8 @@ using Microsoft.IdentityModel.Tokens;
 namespace Application.Features.Identity;
 
 public sealed class IdentityService(
-    UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager,
+    UserManager<AspNetUser> userManager,
+    SignInManager<AspNetUser> signInManager,
     IdentityDbContext dbContext,
     IOptions<JWTSettings> jwtSettings,
     IAuthenticatedUserService authenticatedUser,
@@ -35,8 +33,8 @@ public sealed class IdentityService(
     private readonly IdentityDbContext _dbContext = dbContext;
     private readonly JWTSettings _jwtSettings = jwtSettings.Value;
     private readonly ILogger<IdentityService> _logger = logger;
-    private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly SignInManager<AspNetUser> _signInManager = signInManager;
+    private readonly UserManager<AspNetUser> _userManager = userManager;
 
     public async Task<Result> ChangePassword(ChangePasswordRequest model)
     {
@@ -159,6 +157,7 @@ public sealed class IdentityService(
     {
         //await this.TestAsync();
         //return default!;
+
         // Check if user already exists
         var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
         if (userWithSameUserName != null)
@@ -167,7 +166,7 @@ public sealed class IdentityService(
         }
 
         // Create new user object
-        var user = new ApplicationUser
+        var user = new AspNetUser
         {
             DisplayName = request.DisplayName,
             UserName = request.UserName,
@@ -277,7 +276,7 @@ public sealed class IdentityService(
 
             var user = (await this._userManager.FindByIdAsync(request.UserId)).NotNull(() => $"UserId '{request.UserId}' not found!");
 
-            var passwordHasher = new PasswordHasher<ApplicationUser>();
+            var passwordHasher = new PasswordHasher<AspNetUser>();
             user.DisplayName = request.DisplayName;
             user.UserName = request.UserName.NotNull(() => "User name cannot be null");
             user.Email = request.Email;
@@ -295,7 +294,7 @@ public sealed class IdentityService(
         }
     }
 
-    private async Task<JwtSecurityToken> GenerateJWToken(ApplicationUser user, string ipAddress)
+    private async Task<JwtSecurityToken> GenerateJWToken(AspNetUser user, string ipAddress)
     {
         Check.MustBeArgumentNotNull(user);
 
@@ -373,7 +372,7 @@ public sealed class IdentityService(
         return BitConverter.ToString(randomBytes).Replace("-", "");
     }
 
-    private async Task<string> SendVerificationEmail(ApplicationUser user, string origin)
+    private async Task<string> SendVerificationEmail(AspNetUser user, string origin)
     {
         var code = await this._userManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -387,9 +386,9 @@ public sealed class IdentityService(
 
     private async Task TestAsync()
     {
-        var user = new ApplicationUser
+        var user = new AspNetUser
         {
-            UserName = "testuser",
+            UserName = "Mohammad",
             Email = "testuser@example.com",
             DisplayName = "Test User"
         };
@@ -411,7 +410,8 @@ public sealed class IdentityService(
         }
         else
         {
-            Console.WriteLine($"Error: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+            Console.WriteLine($"Error: {errorMessage}");
         }
     }
 }
