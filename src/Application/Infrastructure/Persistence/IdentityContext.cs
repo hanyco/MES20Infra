@@ -44,30 +44,32 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
         base.OnModelCreating(modelBuilder);
 
         // AspNetUser table mapping
-        modelBuilder.Entity<AspNetUser>(entity =>
+        _ = modelBuilder.Entity<AspNetUser>(entity =>
         {
-            entity.ToTable(nameof(AspNetUser), "Identity");
+            _ = entity.ToTable(nameof(AspNetUser), "Identity");
 
-            entity.HasIndex(e => e.NormalizedUserName, "IX_AspNetUsers_UserName")
-                  .IsUnique()
-                  .HasFilter("([NormalizedUserName] IS NOT NULL)");
+            _ = entity.HasIndex(e => e.NormalizedUserName, "IX_AspNetUsers_UserName")
+                .IsUnique()
+                .HasFilter("([NormalizedUserName] IS NOT NULL)");
 
-            entity.Property(e => e.DisplayName).HasMaxLength(256);
+            _ = entity.Property(e => e.DisplayName).HasMaxLength(256);
         });
+        _ = modelBuilder.Ignore<IdentityUser<string>>();
 
         // AspNetUserClaim table mapping
-        _ = modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
+        _ = modelBuilder.Entity<AspNetUserClaim>(entity =>
         {
-            _ = entity.ToTable(nameof(AspNetUserClaim), SchemaName);
+            _ = entity.ToTable(nameof(AspNetUserClaim), "Identity");
 
             _ = entity.HasOne<AspNetUser>()
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .IsRequired();
         });
+        _ = modelBuilder.Ignore<IdentityUserClaim<string>>();
 
         // AspNetUserLogin table mapping
-        _ = modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
+        _ = modelBuilder.Entity<AspNetUserLogin>(entity =>
         {
             _ = entity.ToTable(nameof(AspNetUserLogin), SchemaName);
 
@@ -78,7 +80,7 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
         });
 
         // AspNetUserToken table mapping
-        _ = modelBuilder.Entity<IdentityUserToken<string>>(entity =>
+        _ = modelBuilder.Entity<AspNetUserToken>(entity =>
         {
             _ = entity.ToTable(nameof(AspNetUserToken), SchemaName);
         });
