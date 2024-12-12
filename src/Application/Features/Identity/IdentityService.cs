@@ -112,35 +112,62 @@ public sealed class IdentityService(
     {
         try
         {
-            var user = await this._userManager.FindByNameAsync(request.UserName);
-            if (user == null)
-            {
-                return Result.Fail<TokenResponse?>("User not found.", default);
-            }
-
-            Check.MustBeNotNull(user, () => $"No Accounts Registered with {request.UserName}.");
-            var result = await this._signInManager.PasswordSignInAsync(user.UserName!, request.Password, false, lockoutOnFailure: false);
-            Check.MustBe(result.Succeeded, () => $"Invalid Credentials for '{request.UserName}'.");
-            var jwtSecurityToken = await this.GenerateJWToken(user, ipAddress);
-            var response = new TokenResponse
-            {
-                Id = user.Id,
-                JWToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                IssuedOn = jwtSecurityToken.ValidFrom.ToLocalTime(),
-                ExpiresOn = jwtSecurityToken.ValidTo.ToLocalTime(),
-                Email = user.Email!,
-                UserName = user.UserName!
-            };
-            var rolesList = await this._userManager.GetRolesAsync(user).ConfigureAwait(false);
-            response.Roles = [.. rolesList];
-            response.IsVerified = user.EmailConfirmed;
-            var refreshToken = this.GenerateRefreshToken(ipAddress);
-            response.RefreshToken = refreshToken.Token;
+            var user = await getUser(request);
+            var response = await initResponse(ipAddress, user);
+            await setRoles(user, response);
+            setRefreshToken(ipAddress, response);
+            
             return Result.Success(response, "Authenticated")!;
         }
         catch (Exception ex)
         {
             return Result.Fail<TokenResponse?>(ex);
+        }
+
+        async Task<AspNetUser> getUser(TokenRequest request)
+        {
+            Check.MustBeNotNull(request.UserName);
+            Check.MustBeNotNull(request.Password);
+
+            var result = await this._userManager.FindByNameAsync(request.UserName);
+            Check.MustBeNotNull(result, () => $"No accounts registered with {request.UserName}.");
+
+            var signInResult = await this._signInManager.PasswordSignInAsync(request.UserName, request.Password, false, lockoutOnFailure: false);
+            Check.MustBe(signInResult.Succeeded, () => signInResult switch
+            {
+                { IsLockedOut: true } => "User attempting to sign-in is locked out,",
+                { IsNotAllowed: true } => "User attempting to sign-in is not allowed to sign-in.",
+                { RequiresTwoFactor: true } => "Uer attempting to sign-in requires two factor authentication.",
+                _ => "Unknown error."
+            });
+            return result;
+        }
+
+        async Task<TokenResponse> initResponse(string ipAddress, AspNetUser user)
+        {
+            var jwtToken = await this.GenerateJWToken(user, ipAddress);
+            return new TokenResponse
+            {
+                Id = user.Id,
+                JWToken = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                IssuedOn = jwtToken.ValidFrom.ToLocalTime(),
+                ExpiresOn = jwtToken.ValidTo.ToLocalTime(),
+                Email = user.Email!,
+                UserName = user.UserName!,
+                IsVerified = user.EmailConfirmed
+            };
+        }
+
+        async Task setRoles(AspNetUser user, TokenResponse response)
+        {
+            var rolesList = await this._userManager.GetRolesAsync(user);
+            response.Roles = [.. rolesList];
+        }
+
+        void setRefreshToken(string ipAddress, TokenResponse response)
+        {
+            var refreshToken = this.GenerateRefreshToken(ipAddress);
+            response.RefreshToken = refreshToken.Token;
         }
     }
 

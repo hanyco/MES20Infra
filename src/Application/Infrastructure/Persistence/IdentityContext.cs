@@ -17,6 +17,8 @@ public class AspNetUserToken : IdentityUserToken<string>;
 
 public class IdentityDbContext : IdentityDbContext<AspNetUser>
 {
+    private const string SchemaName = "Identity";
+
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
         : base(options)
     {
@@ -37,32 +39,26 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
 
     public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=MesInfra;Integrated Security=True;TrustServerCertificate=True");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // AspNetUser table mapping
-        _ = modelBuilder.Entity<AspNetUser>(entity =>
+        modelBuilder.Entity<AspNetUser>(entity =>
         {
-            _ = entity.ToTable(nameof(AspNetUser), "Identity");
-            //entity.HasKey(e => e.Id).HasName("PK_AspNetUsers");
+            entity.ToTable(nameof(AspNetUser), "Identity");
 
-            _ = entity.HasIndex(e => e.NormalizedUserName, "IX_AspNetUsers_UserName")
-                .IsUnique()
-                .HasFilter("([NormalizedUserName] IS NOT NULL)");
+            entity.HasIndex(e => e.NormalizedUserName, "IX_AspNetUsers_UserName")
+                  .IsUnique()
+                  .HasFilter("([NormalizedUserName] IS NOT NULL)");
 
-            _ = entity.Property(e => e.DisplayName).HasMaxLength(256);
+            entity.Property(e => e.DisplayName).HasMaxLength(256);
         });
 
         // AspNetUserClaim table mapping
-        _ = modelBuilder.Entity<AspNetUserClaim>(entity =>
+        _ = modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
         {
-            _ = entity.ToTable(nameof(AspNetUserClaim), "Identity");
-            //entity.HasKey(e => e.Id).HasName("PK_AspNetUserClaims");
+            _ = entity.ToTable(nameof(AspNetUserClaim), SchemaName);
 
             _ = entity.HasOne<AspNetUser>()
                 .WithMany()
@@ -71,10 +67,9 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
         });
 
         // AspNetUserLogin table mapping
-        _ = modelBuilder.Entity<AspNetUserLogin>(entity =>
+        _ = modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
         {
-            _ = entity.ToTable(nameof(AspNetUserLogin), "Identity");
-            //entity.HasKey(e => new { e.LoginProvider, e.ProviderKey }).HasName("PK_AspNetUserLogins");
+            _ = entity.ToTable(nameof(AspNetUserLogin), SchemaName);
 
             _ = entity.HasOne<AspNetUser>()
                 .WithMany()
@@ -83,10 +78,9 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
         });
 
         // AspNetUserToken table mapping
-        _ = modelBuilder.Entity<AspNetUserToken>(entity =>
+        _ = modelBuilder.Entity<IdentityUserToken<string>>(entity =>
         {
-            _ = entity.ToTable(nameof(AspNetUserToken), "Identity");
-            //entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name }).HasName("PK_AspNetUserTokens");
+            _ = entity.ToTable(nameof(AspNetUserToken), SchemaName);
         });
 
         // AccessPermissions table mapping
@@ -105,7 +99,6 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
         // Ignoring AspNetUserRoles table
         _ = modelBuilder.Entity<IdentityUserRole<string>>(entity =>
         {
-            _ = entity.HasNoKey();
             _ = entity.ToTable((string?)null); // Disable this table as it's not in use
         });
     }
