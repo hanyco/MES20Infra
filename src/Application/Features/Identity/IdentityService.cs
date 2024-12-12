@@ -116,7 +116,7 @@ public sealed class IdentityService(
             var response = await initResponse(ipAddress, user);
             await setRoles(user, response);
             setRefreshToken(ipAddress, response);
-            
+
             return Result.Success(response, "Authenticated")!;
         }
         catch (Exception ex)
@@ -164,11 +164,13 @@ public sealed class IdentityService(
             response.Roles = [.. rolesList];
         }
 
-        void setRefreshToken(string ipAddress, TokenResponse response)
-        {
-            var refreshToken = this.GenerateRefreshToken(ipAddress);
-            response.RefreshToken = refreshToken.Token;
-        }
+        //void setRefreshToken(string ipAddress, TokenResponse response)
+        //{
+        //    var refreshToken = this.GenerateRefreshToken(ipAddress);
+        //    response.RefreshToken = refreshToken.Token;
+        //}
+        void setRefreshToken(string ipAddress, TokenResponse response) =>
+            response.RefreshToken = BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
     }
 
     public async Task<Result<UserInfoExResponse>> GetUser(string userId)
@@ -182,56 +184,70 @@ public sealed class IdentityService(
 
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
-        //await this.TestAsync();
-        //return default!;
-
-        // Check if user already exists
-        var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
-        if (userWithSameUserName != null)
+        try
         {
-            return Result.Fail("UserName is already taken.");
+            await validate(request);
+            var user = await createUser(request);
+            await addRolesToUser(request, user);
+            var emailConfirmationToken = await this._userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            return Result.Success("User registered successfully.");
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(ex);
         }
 
-        // Create new user object
-        var user = new AspNetUser
+        async Task validate(RegisterRequest request)
         {
-            DisplayName = request.DisplayName,
-            UserName = request.UserName,
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber
-        };
-
-        // Create the user with the provided password
-        var result = await this._userManager.CreateAsync(user, request.Password);
-
-        // If user creation was not successful
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            return Result.Fail($"User creation failed: {errors}");
+            var userWithSameUserName = await this._userManager.FindByNameAsync(request.UserName);
+            // Check if user already exists
+            if (userWithSameUserName != null)
+            {
+                throw new Exception("UserName is already taken.");
+            }
         }
 
-        // Optionally, add user to a role
-        //if (!string.IsNullOrEmpty(request.Role))
-        //{
-        //    var roleResult = await this._userManager.AddToRoleAsync(user, request.Role);
-        //    if (!roleResult.Succeeded)
-        //    {
-        //        return Result.Fail("Failed to assign role to user.");
-        //    }
-        //}
+        async Task<AspNetUser> createUser(RegisterRequest request)
+        {
+            // Create new user object
+            var user = new AspNetUser
+            {
+                DisplayName = request.DisplayName,
+                UserName = request.UserName,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber
+            };
 
-        // If email confirmation is required, generate and send confirmation token (optional)
-        var emailConfirmationToken = await this._userManager.GenerateEmailConfirmationTokenAsync(user);
-        // You can send this token via email service if needed
+            // Create the user with the provided password
+            var result = await this._userManager.CreateAsync(user, request.Password);
 
-        return Result.Success("User registered successfully.");
+            // If user creation was not successful
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"User creation failed: {errors}");
+            }
+
+            return user;
+        }
+
+        async Task addRolesToUser(RegisterRequest request, AspNetUser user) =>
+            //if (!string.IsNullOrEmpty(request.Role))
+            //{
+            //    var roleResult = await this._userManager.AddToRoleAsync(user, request.Role);
+            //    if (!roleResult.Succeeded)
+            //    {
+            //        throw new Exception("Failed to assign role to user.");
+            //    }
+            //}
+            await Task.CompletedTask;
     }
 
     public async Task<Result> Remove(string Id)
     {
-        var userWithSameId = await this._userManager.FindByIdAsync(Id);
-        if (userWithSameId == null)
+        var user = await this._userManager.FindByIdAsync(Id);
+        if (user == null)
         {
             return Result.Fail($"UserId '{Id}' not found!");
         }
@@ -245,7 +261,7 @@ public sealed class IdentityService(
         {
             return Result.Fail("Cannot remove user");
         }
-        _ = await this._userManager.DeleteAsync(userWithSameId);
+        _ = await this._userManager.DeleteAsync(user);
         return Result.Success("User Removed !");
     }
 
@@ -301,13 +317,14 @@ public sealed class IdentityService(
         {
             Check.MustBeArgumentNotNull(request?.UserId);
 
-            var user = (await this._userManager.FindByIdAsync(request.UserId)).NotNull(() => $"UserId '{request.UserId}' not found!");
+            var user = await this._userManager.FindByIdAsync(request.UserId);
+            Check.MustBeNotNull(user, () => $"UserId '{request.UserId}' not found!");
 
-            var passwordHasher = new PasswordHasher<AspNetUser>();
             user.DisplayName = request.DisplayName;
             user.UserName = request.UserName.NotNull(() => "User name cannot be null");
             user.Email = request.Email;
             user.PhoneNumber = request.PhoneNumber;
+            var passwordHasher = new PasswordHasher<AspNetUser>();
             if (!request.Password.IsNullOrEmpty())
             {
                 user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
@@ -323,17 +340,17 @@ public sealed class IdentityService(
 
     private async Task<JwtSecurityToken> GenerateJWToken(AspNetUser user, string ipAddress)
     {
-        Check.MustBeArgumentNotNull(user);
+        Check.MustBeNotNull(user);
 
         var userClaims = await this._userManager.GetClaimsAsync(user);
         var roles = await this._userManager.GetRolesAsync(user);
-        var accessPermissions = await this._dbContext.AccessPermissions
+        var accessPermissionList = await this._dbContext.AccessPermissions
             .Where(ap => ap.UserId == user.Id)
             .ToListAsync();
 
-        var permissionClaims = accessPermissions.Select(ap => new Claim(ap.EntityType, $"{ap.EntityId}:{ap.AccessType}"));
+        var permissionClaims = accessPermissionList.Select(ap => new Claim(ap.EntityType, $"{ap.EntityId}:{ap.AccessType}"));
         var roleClaims = roles.Select(x => new Claim("roles", x));
-        var result = EnumerableHelper.AsEnumerable<Claim>
+        var claims = EnumerableHelper.AsEnumerable<Claim>
         (
                 new(JwtRegisteredClaimNames.Sub, user.UserName!),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -347,7 +364,8 @@ public sealed class IdentityService(
         .AddRangeImmuted(roleClaims)
         .AddRangeImmuted(roles.Select(x => new Claim("roles", x)))
         .AddRangeImmuted(permissionClaims);
-        return this.JWTGeneration(result);
+        var result = this.JWTGeneration(claims);
+        return result;
     }
 
     private RefreshToken GenerateRefreshToken(string ipAddress) => new()
@@ -392,12 +410,8 @@ public sealed class IdentityService(
         return jwtSecurityToken;
     }
 
-    private string RandomTokenString()
-    {
-        var randomBytes = RandomNumberGenerator.GetBytes(40);
-
-        return BitConverter.ToString(randomBytes).Replace("-", "");
-    }
+    private string RandomTokenString() =>
+        BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
 
     private async Task<string> SendVerificationEmail(AspNetUser user, string origin)
     {

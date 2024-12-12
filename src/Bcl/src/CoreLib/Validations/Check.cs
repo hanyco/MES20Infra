@@ -13,8 +13,6 @@ namespace Library.Validations;
 [StackTraceHidden]
 public sealed class Check
 {
-    private static Check? _that;
-
     private Check()
     { }
 
@@ -23,7 +21,8 @@ public sealed class Check
     /// instance, the signature of a custom assertion provider could be "public static void
     /// IsOfType<T>(this Assert assert, object obj)" Users could then use a syntax similar to the
     /// default assertions which in this case is "Assert.That.IsOfType<Dog>(animal);" </remarks>
-    public static Check That => _that ??= new();
+    [NotNull]
+    public static Check That => field ??= new();
 
     public static Result If(in bool notOk, in Func<string> getErrorMessage) =>
         notOk ? Result.Fail(getErrorMessage()) : Result.Success();
@@ -35,7 +34,7 @@ public sealed class Check
         notOk ? Result.Fail(getErrorMessage()) : Result.Success();
 
     public static Result<TValue> If<TValue>(in TValue value, in bool notOk, in Func<Exception> getErrorMessage) =>
-        notOk ? Result.Fail<TValue>(getErrorMessage(), value) : Result.Success<TValue>(value);
+        notOk ? Result.Fail(getErrorMessage(), value) : Result.Success(value);
 
     public static Result<IEnumerable<string?>?> IfAnyNull(in IEnumerable<string?>? items)
     {
@@ -50,12 +49,15 @@ public sealed class Check
             }
         }
 
-        return Result.Success<IEnumerable<string?>?>(items);
+        return Result.Success(items);
     }
 
     public static Result<TValue> IfArgumentIsNull<TValue>([NotNull][AllowNull] in TValue obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
         If(obj, obj is null, () => new NullValueValidationException(argName!));
-    public static object IfArgumentIsNull(object getById) => throw new NotImplementedException();
+
+    public static object IfArgumentIsNull(object getById) =>
+        throw new NotImplementedException();
+
     public static Result<TValue> IfIsNull<TValue>(in TValue obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
         If(obj, obj is null, () => new NullValueValidationException(argName!));
 
@@ -113,27 +115,27 @@ public sealed class Check
     /// <summary>
     /// Checks if the given object is not null and throws an ArgumentNullException if it is.
     /// </summary>
-    public static void MustBeNotNull([NotNull][AllowNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
+    public static void MustBeNotNull([NotNull][AllowNull] in object? obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
         MustBe(obj is not null, () => new NullValueValidationException(argName!));
 
-    public static void MustBeNotNull([NotNull][AllowNull] object? obj, Func<string> getMessage) =>
+    public static void MustBeNotNull([NotNull][AllowNull] in object? obj, Func<string> getMessage) =>
         MustBe(obj is not null, () => new NullValueValidationException(getMessage(), null));
 
     /// <summary>
     /// Checks if the given object is not null and throws an exception if it is.
     /// </summary>
-    public static void MustBeNotNull([NotNull][AllowNull] object? obj, [DisallowNull] Func<Exception> getException) =>
+    public static void MustBeNotNull([NotNull][AllowNull] in object? obj, [DisallowNull] Func<Exception> getException) =>
         MustBe(obj is not null, getException);
 
     /// <summary>
     /// Checks if the given IEnumerable object has any items and throws an exception if it does not.
     /// </summary>
     [return: NotNull]
-    public static void MustHaveAny([NotNull][AllowNull] IEnumerable? obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
+    public static void MustHaveAny([NotNull][AllowNull] in IEnumerable? obj, [CallerArgumentExpression(nameof(obj))] string? argName = null) =>
         MustBe(obj?.Any() ?? false, () => new NoItemValidationException(argName!));
 
     [return: NotNull]
-    public static void MustHaveAny([NotNull][AllowNull] IEnumerable? obj, Func<string> getMessage) =>
+    public static void MustHaveAny([NotNull][AllowNull] in IEnumerable? obj, Func<string> getMessage) =>
         MustBe(obj?.Any() ?? false, () => new NoItemValidationException(getMessage()));
 
     public static void ThrowIfDisposed<T>(T @this, [DoesNotReturnIf(true)] bool disposed) where T : IDisposable =>
