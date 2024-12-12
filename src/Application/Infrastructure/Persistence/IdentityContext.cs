@@ -46,67 +46,67 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
         base.OnModelCreating(modelBuilder);
 
         // AspNetUser table mapping
-        modelBuilder.Entity<AspNetUser>(entity =>
+        _ = modelBuilder.Entity<AspNetUser>(entity =>
         {
-            entity.ToTable(nameof(AspNetUser), "Identity");
+            _ = entity.ToTable(nameof(AspNetUser), "Identity");
             //entity.HasKey(e => e.Id).HasName("PK_AspNetUsers");
 
-            entity.HasIndex(e => e.NormalizedUserName, "IX_AspNetUsers_UserName")
+            _ = entity.HasIndex(e => e.NormalizedUserName, "IX_AspNetUsers_UserName")
                 .IsUnique()
                 .HasFilter("([NormalizedUserName] IS NOT NULL)");
 
-            entity.Property(e => e.DisplayName).HasMaxLength(256);
+            _ = entity.Property(e => e.DisplayName).HasMaxLength(256);
         });
 
         // AspNetUserClaim table mapping
-        modelBuilder.Entity<AspNetUserClaim>(entity =>
+        _ = modelBuilder.Entity<AspNetUserClaim>(entity =>
         {
-            entity.ToTable(nameof(AspNetUserClaim), "Identity");
+            _ = entity.ToTable(nameof(AspNetUserClaim), "Identity");
             //entity.HasKey(e => e.Id).HasName("PK_AspNetUserClaims");
 
-            entity.HasOne<AspNetUser>()
+            _ = entity.HasOne<AspNetUser>()
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .IsRequired();
         });
 
         // AspNetUserLogin table mapping
-        modelBuilder.Entity<AspNetUserLogin>(entity =>
+        _ = modelBuilder.Entity<AspNetUserLogin>(entity =>
         {
-            entity.ToTable(nameof(AspNetUserLogin), "Identity");
+            _ = entity.ToTable(nameof(AspNetUserLogin), "Identity");
             //entity.HasKey(e => new { e.LoginProvider, e.ProviderKey }).HasName("PK_AspNetUserLogins");
 
-            entity.HasOne<AspNetUser>()
+            _ = entity.HasOne<AspNetUser>()
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .IsRequired();
         });
 
         // AspNetUserToken table mapping
-        modelBuilder.Entity<AspNetUserToken>(entity =>
+        _ = modelBuilder.Entity<AspNetUserToken>(entity =>
         {
-            entity.ToTable(nameof(AspNetUserToken), "Identity");
+            _ = entity.ToTable(nameof(AspNetUserToken), "Identity");
             //entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name }).HasName("PK_AspNetUserTokens");
         });
 
         // AccessPermissions table mapping
-        modelBuilder.Entity<AccessPermission>(entity =>
+        _ = modelBuilder.Entity<AccessPermission>(entity =>
         {
-            entity.ToTable(nameof(this.AccessPermissions), "infra");
+            _ = entity.ToTable(nameof(this.AccessPermissions), "infra");
 
-            entity.Property(e => e.AccessScope).HasMaxLength(50);
-            entity.Property(e => e.AccessType).HasMaxLength(50);
-            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-            entity.Property(e => e.EntityType).HasMaxLength(50);
-            entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.UserId).HasMaxLength(128);
+            _ = entity.Property(e => e.AccessScope).HasMaxLength(50);
+            _ = entity.Property(e => e.AccessType).HasMaxLength(50);
+            _ = entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            _ = entity.Property(e => e.EntityType).HasMaxLength(50);
+            _ = entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+            _ = entity.Property(e => e.UserId).HasMaxLength(128);
         });
 
         // Ignoring AspNetUserRoles table
-        modelBuilder.Entity<IdentityUserRole<string>>(entity =>
+        _ = modelBuilder.Entity<IdentityUserRole<string>>(entity =>
         {
-            entity.HasNoKey();
-            entity.ToTable((string?)null); // Disable this table as it's not in use
+            _ = entity.HasNoKey();
+            _ = entity.ToTable((string?)null); // Disable this table as it's not in use
         });
     }
 }

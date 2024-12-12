@@ -383,35 +383,4 @@ public sealed class IdentityService(
         //Email Service Call Here
         return verificationUri;
     }
-
-    private async Task TestAsync()
-    {
-        var user = new AspNetUser
-        {
-            UserName = "Mohammad",
-            Email = "testuser@example.com",
-            DisplayName = "Test User"
-        };
-
-        var userWithSameUserName = await this._userManager.FindByNameAsync(user.UserName);
-        if (userWithSameUserName == null)
-        {
-            Console.WriteLine($"No user found with username: {user.UserName}");
-        }
-        else
-        {
-            Console.WriteLine($"User found: {userWithSameUserName.UserName}");
-        }
-
-        var result = await this._userManager.CreateAsync(user, "Test@1234");
-        if (result.Succeeded)
-        {
-            Console.WriteLine("User created successfully.");
-        }
-        else
-        {
-            var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
-            Console.WriteLine($"Error: {errorMessage}");
-        }
-    }
 }
