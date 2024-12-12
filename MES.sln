@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31808.319
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeGenerator", "CodeGenerator", "{FD9890F2-FC60-4912-9024-624DF3B975EB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_items", "_items", "{7989E273-1C8A-4431-A23C-9517B91AE279}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{7989E273-1C8A-4431-A23C-9517B91AE279}"
 	ProjectSection(SolutionItems) = preProject
 		.globalSuppressions.cs = .globalSuppressions.cs
 		items\DbScript.sql = items\DbScript.sql
@@ -25,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{32FBB8C5-290
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bcl", "bcl", "{B07F9905-3423-469C-9EDB-12F64D509C58}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_doc", "_doc", "{21D7EC28-AFFA-48D3-A4F9-682D2A63F10B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{21D7EC28-AFFA-48D3-A4F9-682D2A63F10B}"
 	ProjectSection(SolutionItems) = preProject
 		doc\MES Infra.docx = doc\MES Infra.docx
 	EndProjectSection
