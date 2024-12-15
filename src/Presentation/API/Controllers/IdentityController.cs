@@ -71,7 +71,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     [HttpGet("users/{userId}")]
     public async Task<IActionResult> GetUserByUserId(string userId)
     {
-        var result = await this._identityService.GetUser(userId);
+        var result = await this._identityService.GetUserByUserId(userId);
         return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
 

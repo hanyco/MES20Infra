@@ -19,7 +19,7 @@ public interface IIdentityService
 
     Task<Result<TokenResponse?>> GetToken(TokenRequest request, string ipAddress);
 
-    Task<Result<UserInfoExResponse>> GetUser(string userId);
+    Task<Result<UserInfoExResponse>> GetUserByUserId(string userId);
 
     Task<Result<UserInfoExResponse>> GetUserCurrentUser();
 

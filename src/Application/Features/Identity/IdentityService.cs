@@ -173,14 +173,14 @@ public sealed class IdentityService(
             response.RefreshToken = BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
     }
 
-    public async Task<Result<UserInfoExResponse>> GetUser(string userId)
+    public async Task<Result<UserInfoExResponse>> GetUserByUserId(string userId)
     {
         var result = await this.GetUserInfo(userId);
         return Result.Success(result);
     }
 
     public Task<Result<UserInfoExResponse>> GetUserCurrentUser() =>
-        this.GetUser(this._authenticatedUser.UserId);
+        this.GetUserByUserId(this._authenticatedUser.UserId);
 
     public async Task<Result> Register(RegisterRequest request, CancellationToken cancellationToken = default)
     {
