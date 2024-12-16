@@ -11,8 +11,8 @@ public class AuthenticatedUserService : IAuthenticatedUserService
     public AuthenticatedUserService(IHttpContextAccessor httpContextAccessor)
     {
         this.User = httpContextAccessor.HttpContext?.User ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-        this.UserId = httpContextAccessor.HttpContext.User.FindFirstValue("uid").NotNull();
-        this.Roles = httpContextAccessor.HttpContext.User.FindFirstValue("strRoles").NotNull();
+        this.UserId = httpContextAccessor.HttpContext.User.FindFirstValue("uid");
+        this.Roles = httpContextAccessor.HttpContext.User.FindFirstValue("strRoles");
 
     }
     public string Roles { get; }

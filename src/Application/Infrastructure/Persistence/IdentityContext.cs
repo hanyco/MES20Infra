@@ -57,7 +57,7 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
         _ = modelBuilder.Ignore<IdentityUser<string>>();
 
         // AspNetUserClaim table mapping
-        _ = modelBuilder.Entity<AspNetUserClaim>(entity =>
+        _ = modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
         {
             _ = entity.ToTable(nameof(AspNetUserClaim), "Identity");
 
@@ -66,7 +66,6 @@ public class IdentityDbContext : IdentityDbContext<AspNetUser>
                 .HasForeignKey(e => e.UserId)
                 .IsRequired();
         });
-        _ = modelBuilder.Ignore<IdentityUserClaim<string>>();
 
         // AspNetUserLogin table mapping
         _ = modelBuilder.Entity<AspNetUserLogin>(entity =>
