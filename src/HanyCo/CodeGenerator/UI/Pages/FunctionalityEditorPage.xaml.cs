@@ -268,7 +268,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     [MemberNotNull(nameof(ViewModel))]
     private FunctionalityEditorPage PrepareViewModel()
     {
-        this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name?.TrimEnd("Dto").AddToEnd("Functionality");
+        this.ViewModel!.Name ??= this.ViewModel.SourceDto.Name?.TrimEnd("Dto".ToCharArray()).AddToEnd("Functionality");
         return this;
     }
 
@@ -298,7 +298,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
         if (this.ViewModel.Name.IsNullOrEmpty())
         {
-            this.ViewModel.Name = details.Name?.TrimEnd("Dto").AddToEnd("Functionality");
+            this.ViewModel.Name = details.Name?.TrimEnd("Dto".ToArray()).AddToEnd("Functionality");
         }
         //The form is now ready to call services.
     }

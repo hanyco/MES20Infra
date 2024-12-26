@@ -258,7 +258,7 @@ internal sealed partial class FunctionalityService
             var cancelButton = new UiComponentCustomButton()
             {
                 Caption = "Back",
-                CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart("@page").Trim()),
+                CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart("@page".ToArray()).Trim()),
                 ButtonType = ButtonType.Button,
                 EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -356,7 +356,7 @@ internal sealed partial class FunctionalityService
 
             var newButton = new UiComponentCustomButton
             {
-                CodeStatement = CodeSnippets.NavigateTo(pureRoute.TrimStart("@page").Trim()),
+                CodeStatement = CodeSnippets.NavigateTo(pureRoute.TrimStart("@page".ToArray()).Trim()),
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
