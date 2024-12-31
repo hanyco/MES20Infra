@@ -33,7 +33,8 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
     {
-        await this._identityService.ForgotPassword(model, this.Request?.Headers?.Origin.NotNull());
+        var origin = this.Request?.Headers?.Origin.FirstOrDefault() ?? string.Empty;
+        await this._identityService.ForgotPassword(model, origin);
         return this.Ok();
     }
 

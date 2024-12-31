@@ -2,21 +2,12 @@
 
 using Application.Interfaces.Shared;
 
-using Library.Validations;
-
 namespace API.Services.Identity;
 
-public class AuthenticatedUserService : IAuthenticatedUserService
+public class AuthenticatedUserService(IHttpContextAccessor httpContextAccessor) : IAuthenticatedUserService
 {
-    public AuthenticatedUserService(IHttpContextAccessor httpContextAccessor)
-    {
-        this.User = httpContextAccessor.HttpContext?.User ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-        this.UserId = httpContextAccessor.HttpContext.User.FindFirstValue("uid");
-        this.Roles = httpContextAccessor.HttpContext.User.FindFirstValue("strRoles");
-
-    }
-    public string Roles { get; }
-    public ClaimsPrincipal User { get; }
-    public string UserId { get; }
-    public string? Username { get; }
+    public string Roles { get; } = httpContextAccessor.HttpContext?.User?.FindFirstValue("strRoles") ?? throw new ArgumentNullException("Roles");
+    public ClaimsPrincipal User { get; } = httpContextAccessor.HttpContext?.User ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+    public string UserId { get; } = httpContextAccessor.HttpContext.User.FindFirstValue("uid") ?? throw new ArgumentNullException("UserId");
+    public string Username { get; } = httpContextAccessor.HttpContext.User.Identity?.Name ?? throw new ArgumentNullException("Username");
 }
