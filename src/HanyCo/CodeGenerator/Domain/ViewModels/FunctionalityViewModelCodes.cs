@@ -78,7 +78,7 @@ public sealed class FunctionalityViewModelCodes : IEnumerable<Codes>
         this.GetEnumerator();
 
     public Codes ToCodes() =>
-        new(this.GetAllCodes());
+        Codes.Create(this.GetAllCodes());
 
     // Private method to get the codes associated with a functionality.
     private Codes Get([CallerMemberName] string propName = null) =>

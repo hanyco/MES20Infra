@@ -61,7 +61,7 @@ internal partial class FunctionalityService: IFunctionalityCodeService
             if (viewModel.GetAllQuery != null)
             {
                 var codeGenRes = this.GenerateCqrsCodes(viewModel.GetAllQuery);
-                codes.GetAllQueryCodes = new(codeGenRes.Select(x => x.Value));
+                codes.GetAllQueryCodes = Codes.Create(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetAllQuery)}");
                 yield return codes.GetAllQueryCodes;
                 if (codeGenRes.Any(x => !x.IsSucceed))
@@ -73,7 +73,7 @@ internal partial class FunctionalityService: IFunctionalityCodeService
             if (viewModel.GetByIdQuery != null)
             {
                 var codeGenRes = this.GenerateCqrsCodes(viewModel.GetByIdQuery);
-                codes.GetByIdQueryCodes = new(codeGenRes.Select(x => x.Value));
+                codes.GetByIdQueryCodes = Codes.Create(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.GetByIdQuery)}");
                 yield return codes.GetByIdQueryCodes;
                 if (codeGenRes.Any(x => !x.IsSucceed))
@@ -85,7 +85,7 @@ internal partial class FunctionalityService: IFunctionalityCodeService
             if (viewModel.InsertCommand != null)
             {
                 var codeGenRes = this.GenerateCqrsCodes(viewModel.InsertCommand);
-                codes.InsertCommandCodes = new(codeGenRes.Select(x => x.Value));
+                codes.InsertCommandCodes = Codes.Create(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, null);
                 yield return codes.InsertCommandCodes;
                 if (codeGenRes.Any(x => !x.IsSucceed))
@@ -97,7 +97,7 @@ internal partial class FunctionalityService: IFunctionalityCodeService
             if (viewModel.UpdateCommand != null)
             {
                 var codeGenRes = this.GenerateCqrsCodes(viewModel.UpdateCommand);
-                codes.UpdateCommandCodes = new(codeGenRes.Select(x => x.Value));
+                codes.UpdateCommandCodes = Codes.Create(codeGenRes.Select(x => x.Value));
                 this._reporter.Report(max, ++index, $"Code generated for {nameof(viewModel.UpdateCommand)}");
                 yield return codes.UpdateCommandCodes;
                 if (codeGenRes.Any(x => !x.IsSucceed))
@@ -229,7 +229,7 @@ internal partial class FunctionalityService: IFunctionalityCodeService
             Result<Codes?> result;
             if (!results.Any())
             {
-                result = Result.Fail<Codes>("No codes generated. Maybe ViewModel has no parameter to generate any codes.");
+                result = Result.Fail<Codes?>("No codes generated. Maybe ViewModel has no parameter to generate any codes.");
             }
             else if (results.FirstOrDefault(x => x.IsFailure) is { } failure)
             {
@@ -478,7 +478,7 @@ internal partial class FunctionalityService: IFunctionalityCodeService
 
     private ImmutableArray<Result<Codes>> GenerateCqrsCodes(in CqrsViewModelBase cqrsViewModel)
     {
-        return gather(cqrsViewModel).ToImmutableArray();
+        return [.. gather(cqrsViewModel)];
 
         IEnumerable<Result<Codes>> gather(CqrsViewModelBase model)
         {

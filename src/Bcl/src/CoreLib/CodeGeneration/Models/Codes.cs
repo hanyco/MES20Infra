@@ -9,7 +9,7 @@ namespace Library.CodeGeneration.Models;
 
 [Fluent]
 [Immutable]
-public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(items.ToList())
+public sealed class Codes(params IEnumerable<Code?> items) : ReadOnlyCollection<Code?>([.. items])
     , IEnumerable<Code?>
     , IAdditionOperators<Codes, Codes, Codes>
     , IIndexable<string, Code?>
@@ -18,20 +18,6 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     , IEmpty<Codes>
 {
     private static Codes? _empty;
-
-    /// <summary>
-    /// Initializes a new instance of the Codes class with a given collection of Code items.
-    /// </summary>
-    /// <param name="items">The collection of Code items.</param>
-    public Codes(params Code?[] items)
-        : this(items.AsEnumerable()) { }
-
-    /// <summary>
-    /// Initializes a new instance of the Codes class with a given collection of Codes.
-    /// </summary>
-    /// <param name="allCodes">The collection of Codes.</param>
-    public Codes(IEnumerable<Codes> allCodes)
-        : this(allCodes.SelectAll()) { }
 
     /// <summary>
     /// Represents an empty instance of Codes class.
@@ -59,10 +45,10 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// </summary>
     /// <returns>A new instance of the Codes class.</returns>
     public static Codes Create(params IEnumerable<Code> arg) =>
-        [.. arg];
+        new(arg);
 
     public static Codes Create(params IEnumerable<Codes> arg) =>
-        new(arg);
+        new(arg.SelectAll());
 
     /// <summary>
     /// Creates a new instance of the Codes class that is empty.
@@ -78,13 +64,13 @@ public sealed class Codes(IEnumerable<Code?> items) : ReadOnlyCollection<Code?>(
     /// <param name="c2">The second Codes instance.</param>
     /// <returns>A new Codes instance that combines the Code items from both input instances.</returns>
     public static Codes operator +(Codes c1, Codes c2) =>
-        [.. c1.Enumerate().AddRangeImmuted(c2.Enumerate())];
+        Create([c1, c2]);
 
-    public Codes Add(Code code) =>
-        [.. this.AddImmuted(code)];
+    //public Codes Add(Code code) =>
+    //    [.. this.AddImmuted(code)];
 
-    public Codes AddRange(IEnumerable<Code> codes) =>
-        [.. this.AddRangeImmuted(codes)];
+    //public Codes AddRange(IEnumerable<Code> codes) =>
+    //    [.. this.AddRangeImmuted(codes)];
 
     public override string? ToString() =>
         this.Count == 1 ? this[0]!.ToString() : $"{nameof(Codes)} ({this.Count})";

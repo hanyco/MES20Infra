@@ -11,10 +11,11 @@ namespace Library.CodeGeneration.Models;
 [Fluent]
 [Immutable]
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-public class Code([DisallowNull] in string name, [DisallowNull] in Language language, [DisallowNull] in string statement, in bool isPartial = false, in string? fileName = null) :
-    IEquatable<Code>,
-    IEmpty<Code>,
-    IComparable<Code>
+public class Code([DisallowNull] in string name, [DisallowNull] in Language language, [DisallowNull] in string statement, in bool isPartial = false, in string? fileName = null)
+    : IEquatable<Code>
+    , IEmpty<Code>
+    , IComparable<Code>
+    , IFactory<Code, (string Name, Language Language, string Statement, bool IsPartial)>
 {
     private static Code? _empty;
 
@@ -27,8 +28,8 @@ public class Code([DisallowNull] in string name, [DisallowNull] in Language lang
     /// <param name="isPartial">Whether the code is partial or not.</param>
     /// <param name="fileName">File name of the code.</param>
     /// <returns>An instance of the <see cref="Code"/>.</returns>
-    public Code(in (string Name, Language Language, string Statement, bool IsPartial) data)
-        : this(data.Name, data.Language, data.Statement, data.IsPartial) { }
+    public static Code Create((string Name, Language Language, string Statement, bool IsPartial) data) =>
+        new(data.Name, data.Language, data.Statement, data.IsPartial);
 
     /// <summary>
     /// Constructor for the <see cref="Code"/> with parameters.
@@ -153,26 +154,26 @@ public class Code([DisallowNull] in string name, [DisallowNull] in Language lang
 public static class SourceCodeHelpers
 {
     public static Codes GatherAll(this IEnumerable<Codes> codes) =>
-        [.. codes.SelectAll()];
+        Codes.Create(codes);
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this Code? code) =>
         code is null || code.Equals(Code.Empty);
 
     [return: NotNull]
     public static Codes ToCodes(this IEnumerable<Code> codes) =>
-        [.. codes];
+        Codes.Create(codes);
 
     [return: NotNull]
     public static Codes ToCodes(params Code[] codes) =>
-        [.. codes];
+        Codes.Create(codes);
 
     [return: NotNull]
     public static Codes ToCodes(this IEnumerable<Codes> codes) =>
-         new(codes);
+         Codes.Create(codes);
 
     [return: NotNull]
     public static Codes ToCodes(params Codes[] codes) =>
-         new(codes);
+         Codes.Create(codes);
 
     [return: NotNull]
     public static Codes ToCodes(this Code code) =>
