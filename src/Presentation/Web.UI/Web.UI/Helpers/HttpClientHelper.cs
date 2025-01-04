@@ -104,7 +104,7 @@ public static class HttpClientHelper
         }
         catch (Exception ex)
         {
-            // مدیریت سایر خطاها
+            // Handle other exceptions
             return Result.Fail<HttpResponseMessage>(ex);
         }
     }
