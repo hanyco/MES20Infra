@@ -1,10 +1,13 @@
-﻿using Application.DTOs.Identity;
+﻿using System.Security.Claims;
+
+using Application.DTOs.Identity;
 using Application.Features.Identity;
 using Application.Interfaces.Shared.Security;
 
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -104,6 +107,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
         var result = await this._identityService.Update(request);
         return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
     }
+
     private string? GenerateIPAddress() =>
         this.Request.Headers.TryGetValue("X-Forwarded-For", out var value)
             ? (string?)value

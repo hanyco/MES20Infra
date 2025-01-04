@@ -413,6 +413,25 @@ public sealed class IdentityService(
     private string RandomTokenString() =>
         BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
 
+    public async Task<Result> AddClaimsToUser(string userId, IEnumerable<Claim> claims)
+    {
+        var user = await this._userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Fail($"No Accounts founded with {userId}.");
+        }
+        foreach (var claim in claims)
+        {
+            var result = await userManager.AddClaimAsync(user, claim);
+            if (!result.Succeeded)
+            {
+                throw new Exception($"Error adding claim: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
+        }
+        return Result.Succeed;
+    }
+
+
     private async Task<string> SendVerificationEmail(AspNetUser user, string origin)
     {
         var code = await this._userManager.GenerateEmailConfirmationTokenAsync(user);

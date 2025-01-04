@@ -1,4 +1,6 @@
-﻿using Application.DTOs.Identity;
+﻿using System.Security.Claims;
+
+using Application.DTOs.Identity;
 using Application.DTOs.Permissions;
 
 using Library.Results;
@@ -32,4 +34,6 @@ public interface IIdentityService
     Task<Result> SetAccessPermissions(AccessPermissionRequest request);
 
     Task<Result> Update(UpdateRequest request);
+
+    Task<Result> AddClaimsToUser(string userId, IEnumerable<Claim> claims);
 }
