@@ -41,16 +41,22 @@ public sealed class IdentityService(
         var user = await this._userManager.FindByIdAsync(userId);
         if (user == null)
         {
+            this._logger.LogDebug("User with ID {UserId} not found.", userId);
             return Result.Fail($"No Accounts founded with {userId}.");
         }
+
+        this._logger.LogDebug("Adding claims to user {UserName}.", user.UserName);
         foreach (var claim in claims)
         {
             var result = await this._userManager.AddClaimAsync(user, claim);
             if (!result.Succeeded)
             {
+                this._logger.LogTrace("Error adding claim {ClaimType} to user {UserName}: {Errors}.",
+                    claim.Type, user.UserName, result.Errors);
                 return Result.Fail($"Error adding claim: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
         }
+
         return Result.Succeed;
     }
 
@@ -59,16 +65,23 @@ public sealed class IdentityService(
         var user = await this._userManager.FindByIdAsync(model.UserId);
         if (user == null)
         {
+            this._logger.LogDebug("User with ID {UserId} not found.", model.UserId);
             return Result.Fail($"No Accounts founded with {model.UserId}.");
         }
 
-        this._logger.LogDebug("Changing user password by Admin. {user.UserName}", user.UserName);
-        var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await this._userManager.ResetPasswordAsync(user, resetToken, model.Password);
+        this._logger.LogDebug("Changing password for user {UserName}.", user.UserName);
+        var result = await resetPassword(user, model.Password);
 
-        return result.Succeeded
-            ? Result.Success(model.UserId, message: $"Password changed.")
-            : Result.Fail($"Error occurred while changing the password.");
+        return result ?
+            Result.Success(model.UserId, "Password changed.") :
+            Result.Fail("Error occurred while changing the password.");
+
+        async Task<bool> resetPassword(AspNetUser user, string newPassword)
+        {
+            var resetToken = await this._userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await this._userManager.ResetPasswordAsync(user, resetToken, newPassword);
+            return result.Succeeded;
+        }
     }
 
     public async Task<Result> ChangePasswordByUser(ChangePasswordByUserRequest model)
@@ -95,15 +108,19 @@ public sealed class IdentityService(
         var user = await this._userManager.FindByIdAsync(userId);
         if (user == null)
         {
+            this._logger.LogDebug("User with ID {UserId} not found for email confirmation.", userId);
             return Result.Fail("User not found.", string.Empty);
         }
 
-        this._logger.LogDebug("Email confirmation. {user.UserName}", user.UserName);
-        code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+        code = decodeCode(code);
+        this._logger.LogDebug("Confirming email for user {UserName}.", user.UserName);
         var result = await this._userManager.ConfirmEmailAsync(user, code);
-        return result.Succeeded
-            ? Result.Success(user.Id, message: $"Account Confirmed for {user.Email}.")
-            : Result.Fail($"An error occurred while confirming {user.Email}.");
+
+        return result.Succeeded ?
+            Result.Success(user.Id, $"Account Confirmed for {user.Email}.") :
+            Result.Fail($"An error occurred while confirming {user.Email}.");
+
+        static string decodeCode(string encodedCode) => Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(encodedCode));
     }
 
     public Task ForgotPassword(ForgotPasswordRequest model, string origin) =>
@@ -130,38 +147,31 @@ public sealed class IdentityService(
     {
         try
         {
-            var user = await getUser(request);
-            var response = await initResponse(ipAddress, user);
-            await setRoles(user, response);
-            setRefreshToken(ipAddress, response);
-
-            return Result.Success(response, "Authenticated")!;
+            var user = await validateUser(request);
+            var response = await generateTokenResponse(ipAddress, user);
+            return Result.Success(response, "Authenticated");
         }
         catch (Exception ex)
         {
+            this._logger.LogError(ex, "Error occurred during token generation for user {UserName}.", request.UserName);
             return Result.Fail<TokenResponse?>(ex);
         }
 
-        async Task<AspNetUser> getUser(TokenRequest request)
+        async Task<AspNetUser> validateUser(TokenRequest request)
         {
-            Check.MustBeNotNull(request.UserName);
-            Check.MustBeNotNull(request.Password);
+            Check.MustBeNotNull(request.UserName, "UserName cannot be null");
+            Check.MustBeNotNull(request.Password, "Password cannot be null");
 
-            var result = await this._userManager.FindByNameAsync(request.UserName);
-            Check.MustBeNotNull(result, () => $"No accounts registered with {request.UserName}.");
+            var user = await this._userManager.FindByNameAsync(request.UserName);
+            Check.MustBeNotNull(user, () => $"No accounts registered with {request.UserName}.");
 
-            var signInResult = await this._signInManager.PasswordSignInAsync(request.UserName, request.Password, false, lockoutOnFailure: false);
-            Check.MustBe(signInResult.Succeeded, () => signInResult switch
-            {
-                { IsLockedOut: true } => "User attempting to sign-in is locked out,",
-                { IsNotAllowed: true } => "User attempting to sign-in is not allowed to sign-in.",
-                { RequiresTwoFactor: true } => "Uer attempting to sign-in requires two factor authentication.",
-                _ => "Unknown error."
-            });
-            return result;
+            var signInResult = await this._signInManager.PasswordSignInAsync(request.UserName, request.Password, false, false);
+            Check.MustBe(signInResult.Succeeded, () => "Authentication failed.");
+
+            return user;
         }
 
-        async Task<TokenResponse> initResponse(string ipAddress, AspNetUser user)
+        async Task<TokenResponse> generateTokenResponse(string ipAddress, AspNetUser user)
         {
             var jwtToken = await this.GenerateJWToken(user, ipAddress);
             return new TokenResponse
@@ -172,23 +182,10 @@ public sealed class IdentityService(
                 ExpiresOn = jwtToken.ValidTo.ToLocalTime(),
                 Email = user.Email!,
                 UserName = user.UserName!,
-                IsVerified = user.EmailConfirmed
+                IsVerified = user.EmailConfirmed,
+                RefreshToken = this.GenerateRefreshToken(ipAddress).Token
             };
         }
-
-        async Task setRoles(AspNetUser user, TokenResponse response)
-        {
-            var rolesList = await this._userManager.GetRolesAsync(user);
-            response.Roles = [.. rolesList];
-        }
-
-        //void setRefreshToken(string ipAddress, TokenResponse response)
-        //{
-        //    var refreshToken = this.GenerateRefreshToken(ipAddress);
-        //    response.RefreshToken = refreshToken.Token;
-        //}
-        void setRefreshToken(string ipAddress, TokenResponse response) =>
-            response.RefreshToken = BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
     }
 
     public async Task<Result<UserInfoExResponse>> GetUserByUserId(string userId)
@@ -429,7 +426,7 @@ public sealed class IdentityService(
     }
 
     private string RandomTokenString() =>
-        BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
+                BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
     private async Task<string> SendVerificationEmail(AspNetUser user, string origin)
     {
         var code = await this._userManager.GenerateEmailConfirmationTokenAsync(user);

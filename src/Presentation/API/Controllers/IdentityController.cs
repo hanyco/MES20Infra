@@ -1,13 +1,10 @@
-﻿using System.Security.Claims;
-
-using Application.DTOs.Identity;
+﻿using Application.DTOs.Identity;
 using Application.Features.Identity;
 using Application.Interfaces.Shared.Security;
 
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
