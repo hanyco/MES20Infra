@@ -10,7 +10,10 @@ internal class AccessControlService(IAccessControlRepository accessPermissionRep
     public async Task<AccessLevel> GetAccessLevel(string userId, string path)
     {
         var entityId = this.GetEntityIdByPath(path);
-        return await this.GetAccessLevel(userId, entityId);
+        if (entityId is { } id)
+            return await this.GetAccessLevel(userId, id);
+        else 
+            return AccessLevel.ReadOnly;
     }
 
     public async Task<AccessLevel> GetAccessLevel(string userId, long entityId)
@@ -31,8 +34,8 @@ internal class AccessControlService(IAccessControlRepository accessPermissionRep
         return AccessLevelHelper.MapAccessType(accessPermission.AccessType);
     }
 
-    private long GetEntityIdByPath(string path) =>
+    private long? GetEntityIdByPath(string path) =>
         // TODO: Implement a path-to-entity mapping logic
-        throw new NotImplementedException();
+        default;
 }
 

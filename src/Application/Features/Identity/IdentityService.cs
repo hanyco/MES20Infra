@@ -26,10 +26,10 @@ public sealed class IdentityService(
     SignInManager<AspNetUser> signInManager,
     IdentityDbContext dbContext,
     IOptions<JWTSettings> jwtSettings,
-    IAuthenticatedUserService authenticatedUser,
+    ILoggedInUser authenticatedUser,
     ILogger<IdentityService> logger) : IIdentityService
 {
-    private readonly IAuthenticatedUserService _authenticatedUser = authenticatedUser;
+    private readonly ILoggedInUser _authenticatedUser = authenticatedUser;
     private readonly IdentityDbContext _dbContext = dbContext;
     private readonly JWTSettings _jwtSettings = jwtSettings.Value;
     private readonly ILogger<IdentityService> _logger = logger;
@@ -51,8 +51,7 @@ public sealed class IdentityService(
             var result = await this._userManager.AddClaimAsync(user, claim);
             if (!result.Succeeded)
             {
-                this._logger.LogTrace("Error adding claim {ClaimType} to user {UserName}: {Errors}.",
-                    claim.Type, user.UserName, result.Errors);
+                this._logger.LogTrace("Error adding claim {ClaimType} to user {UserName}: {Errors}.", claim.Type, user.UserName, result.Errors);
                 return Result.Fail($"Error adding claim: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
         }
@@ -426,7 +425,7 @@ public sealed class IdentityService(
     }
 
     private string RandomTokenString() =>
-                BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
+        BitConverter.ToString(RandomNumberGenerator.GetBytes(40)).Replace("-", "");
     private async Task<string> SendVerificationEmail(AspNetUser user, string origin)
     {
         var code = await this._userManager.GenerateEmailConfirmationTokenAsync(user);

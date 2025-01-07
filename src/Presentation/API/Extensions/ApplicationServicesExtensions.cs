@@ -141,7 +141,7 @@ public static class ApplicationServicesExtensions
     public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services, IConfiguration configuration) =>
         services
             .AddApplicationServices(configuration)
-            .AddTransient<IAuthenticatedUserService, AuthenticatedUserService>();
+            .AddTransient<ILoggedInUser, LoggedInUser>();
 
     public static IServiceCollection AddSwagger(this IServiceCollection services) =>
         services
