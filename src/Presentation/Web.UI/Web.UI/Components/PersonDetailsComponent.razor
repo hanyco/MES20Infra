@@ -1,0 +1,53 @@
+@namespace Mes.HumanResourcesManagement
+
+@using HanyCo.Infra.Blazor
+@using Microsoft.Extensions.Caching.Memory
+@using Microsoft.AspNetCore.Components
+@using Mes.HumanResourcesManagement.Dtos
+@using Web.UI.Components.Shared
+@using Blazored.LocalStorage
+
+@inject IMemoryCache _memoryCache
+@inject NavigationManager _navigationManager
+@inject HttpClient _http
+@inject ILocalStorageService _localStorage
+
+@inherits HanyCo.Infra.Blazor.ComponentBase<PersonDto, PersonViewModel>
+
+
+<MessageComponent @ref="MessageComponent" />
+<EditForm OnValidSubmit='SaveData' Model='@this.DataContext'>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+<div class='row'>
+</div>
+<div class='row'>
+    <label id='IdLabel' name='IdLabel' class='col-2' disabled='disabled'>Id</label>
+    <InputNumber id='IdNumericTextBox' name='IdNumericTextBox' class='col-5' disabled='disabled' @bind-Value='this.DataContext.Id'/>
+    <ValidationMessage For="@(() => this.DataContext.Id)" Class="error-message" />
+</div>
+<div class='row'>
+    <label id='FirstNameLabel' name='FirstNameLabel' class='col-2'>First Name</label>
+    <InputText id='FirstNameTextBox' name='FirstNameTextBox' class='col-5' type='text' @bind-Value='this.DataContext.FirstName'/>
+    <ValidationMessage For="@(() => this.DataContext.FirstName)" Class="error-message" />
+</div>
+<div class='row'>
+    <label id='LastNameLabel' name='LastNameLabel' class='col-2'>Last Name</label>
+    <InputText id='LastNameTextBox' name='LastNameTextBox' class='col-5' type='text' @bind-Value='this.DataContext.LastName'/>
+    <ValidationMessage For="@(() => this.DataContext.LastName)" Class="error-message" />
+</div>
+<div class='row'>
+    <label id='DateOfBirthLabel' name='DateOfBirthLabel' class='col-2'>Date Of Birth</label>
+    <InputDate id='DateOfBirthDatePicker' name='DateOfBirthDatePicker' class='col-5' Type='InputDateType.DateTimeLocal' @bind-Value='this.DataContext.DateOfBirth'/>
+    <ValidationMessage For="@(() => this.DataContext.DateOfBirth)" Class="error-message" />
+</div>
+<div class='row'>
+    <label id='HeightLabel' name='HeightLabel' class='col-2'>Height</label>
+    <InputNumber id='HeightNumericTextBox' name='HeightNumericTextBox' class='col-5' @bind-Value='this.DataContext.Height'/>
+    <ValidationMessage For="@(() => this.DataContext.Height)" Class="error-message" />
+</div>
+<div class='row'>
+    <Button id='SaveButton' name='SaveButton' class='col-2 offset-2 btn btn-success' type='submit'>Save</Button>
+    <Button id='BackButton' name='BackButton' class='col-2 offset-2 btn btn-success' type='button' @onclick='BackButton_OnClick'>Back</Button>
+</div>
+</EditForm>

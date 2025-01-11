@@ -1,0 +1,18 @@
+@page "/Mes/HumanResourcesManagement/Dtos/Person"
+
+@namespace Mes.HumanResourcesManagement.Pages
+
+@using Microsoft.Extensions.Caching.Memory
+@using Microsoft.AspNetCore.Components
+@using Mes.HumanResourcesManagement.Dtos
+
+@inject NavigationManager NavigationManager
+@inject IMemoryCache _memoryCache
+@inject NavigationManager _navigationManager
+
+@inherits HanyCo.Infra.Blazor.PageBase<PersonViewModel>
+
+
+<div class='row'>
+    <PeopleListComponent DataContext='@this.DataContext?.PeopleListDto' PageDataContext='@this.DataContext'/>
+</div>
