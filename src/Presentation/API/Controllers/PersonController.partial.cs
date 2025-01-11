@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Mes.HumanResourcesManagement.Controllers;
 [ApiControllerAttribute()]
 [RouteAttribute("[controller]")]
-[AuthorizeAttribute(nameof(PersonController))]
+[AuthorizeAttribute]
 public sealed class PersonController : ControllerBase
 {
     private IMediator _mediator;
@@ -19,7 +19,6 @@ public sealed class PersonController : ControllerBase
     }
 
     [HttpGetAttribute()]
-    [AuthorizeAttribute(nameof(GetAll))]
     public async Task<IActionResult> GetAll()
     {
         var result = await this._mediator.Send(new GetAllPeopleQuery());

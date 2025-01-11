@@ -218,7 +218,7 @@ public sealed class IdentityService(
             // Check if user already exists
             if (userWithSameUserName != null)
             {
-                throw new Exception("UserName is already taken.");
+                throw new Exception("Username is already taken. Please choose another username.");
             }
         }
 

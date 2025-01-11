@@ -30,8 +30,11 @@ public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<Glob
         this._logger.LogError(exception, "Unhandled exception occurred. Path: {Path}, Method: {Method}, User: {UserId}, IP: {IPAddress}", context.Request.Path, context.Request.Method, context.User.Identity?.Name ?? "Anonymous", context.Connection.RemoteIpAddress);
 
         var response = new { message = exception.Message, stackTrace = exception.StackTrace };
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        context.Response.ContentType = "application/json";
+        if(!context.Response.HasStarted)
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/json";
+        }
         return context.Response.WriteAsync(JsonConvert.SerializeObject(response));
     }
 }

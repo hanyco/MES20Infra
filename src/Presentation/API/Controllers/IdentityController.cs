@@ -1,7 +1,12 @@
-﻿using Application.DTOs.Identity;
+﻿using System.Net;
+
+using Application.DTOs.Identity;
 using Application.Features.Identity;
 using Application.Interfaces.Shared.Security;
 
+using Domain.Dtos;
+
+using Library.Helpers;
 using Library.Validations;
 
 using Microsoft.AspNetCore.Authorization;
@@ -49,7 +54,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> GetCurrentUser()
     {
         var result = await this._identityService.GetUserCurrentUser();
-        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(new ApiErrorResponse(result.Message!, HttpStatusCode.BadRequest.Cast().ToInt()));
     }
 
     /// <summary>
@@ -73,7 +78,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> GetUserByUserId(string userId)
     {
         var result = await this._identityService.GetUserByUserId(userId);
-        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(new ApiErrorResponse(result.Message!, HttpStatusCode.BadRequest.Cast().ToInt()));
     }
 
     [HttpPost("register")]
@@ -82,7 +87,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     {
         //var origin = this.Request.Headers.Origin.NotNull();
         var result = await this._identityService.Register(request);
-        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(new ApiErrorResponse(result.Message!, HttpStatusCode.BadRequest.Cast().ToInt()));
     }
 
     [HttpDelete("{id}")]
@@ -90,7 +95,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     {
         _ = this.Request.Headers.Origin;
         var result = await this._identityService.Remove(id);
-        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(new ApiErrorResponse(result.Message!, HttpStatusCode.BadRequest.Cast().ToInt()));
     }
 
     [HttpPost("reset-password")]
@@ -102,7 +107,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     public async Task<IActionResult> Update(UpdateRequest request)
     {
         var result = await this._identityService.Update(request);
-        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(result.Message);
+        return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(new ApiErrorResponse(result.Message!, HttpStatusCode.BadRequest.Cast().ToInt()));
     }
 
     private string? GenerateIPAddress() =>
