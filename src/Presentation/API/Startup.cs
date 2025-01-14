@@ -1,4 +1,4 @@
-using API.Extensions;
+﻿using API.Extensions;
 using API.Middlewares;
 
 namespace API;
@@ -13,7 +13,7 @@ internal static class Startup
         _ = app
             .UseAuthentication()
             .UseAuthorization()
-            .UseAccessControlMiddleware();
+            .UsePermissionMiddleware();
 
         _ = app
             .MapControllers();
