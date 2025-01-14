@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Diagnostics;
@@ -15,26 +15,59 @@ using Microsoft.Data.SqlClient;
 
 namespace Library.Data.SqlServer;
 
+/// <summary>
+/// Represents a SQL Server database connection.
+/// </summary>
+/// <param name="connectionString"></param>
+/// <param name="logTo"></param>
 [DebuggerStepThrough, StackTraceHidden]
 public sealed class Sql(string connectionString, Action<string>? logTo = null) : IFactory<Sql, string>
 {
     private readonly Action<string>? _logTo = logTo;
 
+    /// <summary>
+    /// Gets the default log sender for the Sql class.
+    /// </summary>
     public static object DefaultLogSender { get; } = nameof(Sql);
+
+    /// <summary>
+    /// Gets the connection string for the Sql class.
+    /// </summary>
     public string ConnectionString { get; } = connectionString.ArgumentNotNull();
 
+    /// <summary>
+    /// Checks if the connection string is valid and can connect to the database.
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static async Task<bool> CanConnectAsync(string? connectionString, CancellationToken cancellationToken = default)
     {
         await using var conn = new SqlConnection(connectionString);
         return await conn.CanConnectAsync(cancellationToken: cancellationToken);
     }
 
+    /// <summary>
+    /// Creates a new instance of the Sql class with the specified connection string.
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <returns></returns>
     public static Sql Create(string connectionString) =>
         new(connectionString);
 
+    /// <summary>
+    /// Finds the Id column of the specified entity type.
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <returns></returns>
     public static (TypePath Type, string Name)? FindIdColumn<TEntity>() =>
         FindIdColumn(typeof(TEntity));
 
+    /// <summary>
+    /// Finds the Id column of the specified entity type.
+    /// </summary>
+    /// <param name="entityType"></param>
+    /// <returns></returns>
     public static (TypePath Type, string Name)? FindIdColumn(in Type entityType)
     {
         Check.MustBeArgumentNotNull(entityType);
@@ -44,23 +77,23 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
             : (idColumn.PropertyType, idColumn.Name);
     }
 
+    /// <summary>
+    /// Gets the table information for the specified entity type.
+    /// </summary>
+    /// <typeparam name="TType"></typeparam>
+    /// <returns></returns>
     public static (Func<string?> Schema, Func<string> Name, Func<IEnumerable<(string Name, TypePath Type)>> Columns, Func<(TypePath Type, string Name)?> IdColumn) GetTable<TType>() =>
         GetTable(typeof(TType));
 
+    /// <summary>
+    /// Gets the table information for the specified entity type.
+    /// </summary>
+    /// <param name="tableType"></param>
+    /// <returns></returns>
     public static (Func<string?> Schema, Func<string> Name, Func<IEnumerable<(string Name, TypePath Type)>> Columns, Func<(TypePath Type, string Name)?> IdColumn) GetTable(Type tableType)
     {
         Check.MustBeArgumentNotNull(tableType);
 
-        string? schema()
-        {
-            var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
-            return tableAttribute?.Schema;
-        }
-        string name()
-        {
-            var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
-            return tableAttribute?.Name ?? tableType.Name;
-        }
         IEnumerable<(string Name, TypePath Type)> columns() =>
             tableType.GetProperties()
                 .Where(x => x.GetCustomAttribute<NotMappedAttribute>() == null)
@@ -85,6 +118,19 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
                     return (name, type, order);
                 }).OrderBy(x => x.order).Select(x => (x.name, x.type));
         return (Schema: schema, Name: name, Columns: columns, IdColumn: () => FindIdColumn(tableType));
+
+        // Local functions
+
+        string? schema()
+        {
+            var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
+            return tableAttribute?.Schema;
+        }
+        string name()
+        {
+            var tableAttribute = tableType.GetCustomAttribute<TableAttribute>();
+            return tableAttribute?.Name ?? tableType.Name;
+        }
     }
     /// <summary>
     /// Executes the provided converter function for each row in the IDataReader and returns an
@@ -135,12 +181,24 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         }
     }
 
+    /// <summary>
+    /// Try to connect to the database using the specified connection string.
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static async Task<TryMethodResult> TryConnectAsync(string? connectionString, CancellationToken cancellationToken = default)
     {
         await using var conn = new SqlConnection(connectionString);
         return await conn.TryConnectAsync(cancellationToken: cancellationToken);
     }
 
+    /// <summary>
+    /// Executes the specified reader and creates a collection of objects using the specified
+    /// </summary>
+    /// <param name="cmdText"></param>
+    /// <param name="executor"></param>
+    /// <param name="fillParams"></param>
     public void ExecuteCommand(string cmdText, Action<SqlCommand>? executor = null, Action<SqlParameterCollection>? fillParams = null)
     {
         using var connection = new SqlConnection(this.ConnectionString);
@@ -158,6 +216,12 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         }
     }
 
+    /// <summary>
+    /// Executes non-query SQL commands.
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <param name="fillParams"></param>
+    /// <returns></returns>
     public int ExecuteNonQuery(string sql, Action<SqlParameterCollection>? fillParams = null)
     {
         var result = 0;
@@ -165,9 +229,23 @@ public sealed class Sql(string connectionString, Action<string>? logTo = null) :
         return result;
     }
 
+    /// <summary>
+    /// Executes  non-query SQL commands asynchronously.
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <param name="fillParams"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public Task<int> ExecuteNonQueryAsync(string sql, Action<SqlParameterCollection>? fillParams = null, CancellationToken cancellationToken = default) =>
         this.ExecuteTransactionalCommandAsync<int>(sql, cmd => cmd.ExecuteNonQueryAsync(), fillParams, cancellationToken);
 
+    /// <summary>
+    /// Executes the specified query and returns the result as an IEnumerable of type T, using data reader.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="query"></param>
+    /// <param name="mapper"></param>
+    /// <returns></returns>
     public IEnumerable<TResult> ExecuteReader<TResult>(string query, Func<SqlDataReader, TResult> mapper)
     {
         Check.MustBeArgumentNotNull(query);

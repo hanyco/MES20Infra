@@ -57,6 +57,14 @@ public static class EnumerableHelper
         return result;
     }
 
+    /// <summary>
+    /// Adds the specified item immutably and returns a new instance of source.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <param name="predicate"></param>
+    /// <param name="getItem"></param>
+    /// <returns></returns>
     public static IEnumerable<T> AddImmutedIf<T>(this IEnumerable<T> source, Func<bool> predicate, Func<T> getItem)
     {
         foreach (var item in source)
@@ -70,6 +78,14 @@ public static class EnumerableHelper
         }
     }
 
+    /// <summary>
+    /// Adds the specified item immutably and returns a new instance of source, if the condition is true.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <param name="isOk"></param>
+    /// <param name="getItem"></param>
+    /// <returns></returns>
     public static IEnumerable<T> AddImmutedIf<T>(this IEnumerable<T> source, bool isOk, Func<T> getItem)
     {
         foreach (var item in source)
@@ -110,6 +126,14 @@ public static class EnumerableHelper
         return list; // Return the updated collection with added items.
     }
 
+    /// <summary>
+    /// Adds a range of items to the specified collection.
+    /// </summary>
+    /// <typeparam name="TList"></typeparam>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="items"></param>
+    /// <returns></returns>
     public static TList AddRange<TList, TItem>([DisallowNull] this TList list, params TItem[] items)
         where TList : ICollection<TItem>
     {
@@ -240,6 +264,14 @@ public static class EnumerableHelper
         };
     }
 
+    /// <summary>
+    /// Aggregates the elements of an IEnumerable using a custom aggregator function and an optional
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="aggregator"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
     public static T Aggregate<T>(this IEnumerable<T> items, Func<(T current, T result), T> aggregator, T defaultValue)
         => Aggregate(items, (T curr, T res) => aggregator((curr, res)), defaultValue);
 
@@ -309,6 +341,12 @@ public static class EnumerableHelper
     public static bool Any<T>(this ICollection source)
         => source?.Count > 0;
 
+    /// <summary>
+    /// Converts an IEnumerable to an array.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="items"></param>
+    /// <returns></returns>
     public static T[] AsArray<T>(this IEnumerable<T> items)
         => items is T[] array ? array : (items?.ToArray() ?? []);
 
@@ -327,6 +365,12 @@ public static class EnumerableHelper
         yield return item;
     }
 
+    /// <summary>
+    /// Converts multiple items into an IEnumerable of those items.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="items"></param>
+    /// <returns></returns>
     [return: NotNull]
     public static IEnumerable<T> AsEnumerable<T>(params IEnumerable<T> items) =>
         items;
@@ -494,7 +538,6 @@ public static class EnumerableHelper
         return collection;
     }
 
-    // Select values within each chunk group.
     /// <summary>
     /// Clears the list and adds a range of items to it.
     /// </summary>
@@ -558,6 +601,13 @@ public static class EnumerableHelper
             .Select([DebuggerStepThrough] (x) => x!)
            ?? [];
 
+    /// <summary>
+    /// Returns an IEnumerable of non-null elements from the given IEnumerable of nullable elements.
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="isNotNull"></param>
+    /// <returns></returns>
     [return: NotNull]
     public static IEnumerable<TItem> Compact<TItem>(this IEnumerable<TItem?>? items, Func<TItem?, bool> isNotNull)
             => items?
@@ -609,6 +659,12 @@ public static class EnumerableHelper
     public static ImmutableList<T> CopyImmutable<T>(this IList<T> array)
         => array.Enumerate().ToImmutableList();
 
+    /// <summary>
+    /// counts the number of elements in a sequence.
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="items"></param>
+    /// <returns></returns>
     public static int Count<TItem>(IEnumerable<TItem> items)
             => items switch
             {
@@ -618,7 +674,9 @@ public static class EnumerableHelper
                 _ => items.Count()
             };
 
-    /// <summary> Counts the number of elements in a sequence that are not enumerated. </summary>
+    /// <summary>
+    /// Counts the number of elements in a sequence that are not enumerated.
+    /// </summary>
     /// <typeparam name="T">The type of the elements of source.</typeparam> <param name="source">The
     /// IEnumerable<T> to count.</param> <returns>The number of elements in the sequence that are
     /// not enumerated.</returns>
@@ -904,6 +962,12 @@ public static class EnumerableHelper
         return source.Where([DebuggerStepThrough] (x) => !buffer.Add(x));
     }
 
+    /// <summary>
+    /// Finds the first element in the sequence that satisfies the specified predicate.
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="asyncItems"></param>
+    /// <returns></returns>
     public static async Task<TItem?> FirstOrDefaultAsync<TItem>(this IAsyncEnumerable<TItem?> asyncItems)
     {
         Check.MustBeArgumentNotNull(asyncItems);

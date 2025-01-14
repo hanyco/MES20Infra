@@ -137,6 +137,12 @@ public static class StringHelper
         return false;
     }
 
+    /// <summary>
+    /// Append all the given strings to the given StringBuilder.
+    /// </summary>
+    /// <param name="sb"></param>
+    /// <param name="lines"></param>
+    /// <returns></returns>
     [return: NotNull]
     public static StringBuilder AppendAll([DisallowNull] this StringBuilder sb, params Strings lines)
     {
@@ -153,10 +159,26 @@ public static class StringHelper
         return sb;
     }
 
+    /// <summary>
+    /// Append all the given strings to the given StringBuilder.
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="sb"></param>
+    /// <param name="items"></param>
+    /// <param name="formatter"></param>
+    /// <returns></returns>
     [return: NotNull]
     public static StringBuilder AppendAll<TItem>([DisallowNull] this StringBuilder sb, IEnumerable<TItem> items, Func<TItem, string> formatter)
         => sb.AppendAll(items.Select(formatter));
 
+    /// <summary>
+    /// Append all the given strings to the given StringBuilder.
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="sb"></param>
+    /// <param name="items"></param>
+    /// <param name="formatter"></param>
+    /// <returns></returns>
     [return: NotNull]
     public static StringBuilder AppendAll<TItem>([DisallowNull] this StringBuilder sb, IEnumerable<TItem> items, Func<TItem, int, string> formatter)
     {
@@ -174,6 +196,12 @@ public static class StringHelper
         return sb;
     }
 
+    /// <summary>
+    /// Append all the given strings to the given StringBuilder.
+    /// </summary>
+    /// <param name="sb"></param>
+    /// <param name="lines"></param>
+    /// <returns></returns>
     [return: NotNull]
     public static StringBuilder AppendAllLines([DisallowNull] this StringBuilder sb, params Strings lines)
     {

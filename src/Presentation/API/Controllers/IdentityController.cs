@@ -66,7 +66,7 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
     [AllowAnonymous]
     public async Task<IActionResult> GetTokenAsync(TokenRequest tokenRequest)
     {
-        var ipAddress = this.GenerateIPAddress().NotNull(() => "Cannot find local address");
+        var ipAddress = this.FindIPAddress().NotNull(() => "Cannot find local address");
         var token = await this._identityService.GetToken(tokenRequest, ipAddress);
         return token.IsSucceed
             ? this.Ok(token.Value)
@@ -110,7 +110,11 @@ public sealed class IdentityController(IIdentityService identityService, ISecuri
         return result.IsSucceed ? this.Ok(result.Message) : this.BadRequest(new ApiErrorResponse(result.Message!, HttpStatusCode.BadRequest.Cast().ToInt()));
     }
 
-    private string? GenerateIPAddress() =>
+    /// <summary>
+    /// Find the IP address of the client.
+    /// </summary>
+    /// <returns></returns>
+    private string? FindIPAddress() =>
         this.Request.Headers.TryGetValue("X-Forwarded-For", out var value)
             ? (string?)value
             : this.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
