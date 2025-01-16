@@ -31,6 +31,8 @@ public partial class Controller
 
     public string? CtorParams { get; set; }
 
+    public string? Permission { get; set; }
+
     public long ModuleId { get; set; }
 
     [InverseProperty("Controller")]

@@ -1,4 +1,5 @@
 ﻿using HanyCo.Infra.CodeGeneration.Definitions;
+using HanyCo.Infra.Security;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -13,13 +14,13 @@ namespace HanyCo.Infra.CodeGen.Domain.ViewModels;
 
 public sealed class ControllerMethodViewModel : InfraViewModelBase
 {
-    private string? _body;
-
     public ISet<MethodArgument> Arguments { get; } = new HashSet<MethodArgument>();
 
-    public string? Body { get => this._body; set => this.SetProperty(ref this._body, value); }
+    public string? Body { get; set => this.SetProperty(ref field, value); }
 
     public ISet<HttpMethodAttribute> HttpMethods { get; } = new HashSet<HttpMethodAttribute>();
+    
+    public string? PermissionValue { get; set => this.SetProperty(ref field, value); }
 
     public bool IsAsync { get; set; }
 
@@ -70,6 +71,14 @@ public static class ApiExtensions
         _ = apiMethod.HttpMethods.Add(httpMethod);
         return apiMethod;
     }
+
+    // Add PermissionAttribute
+    public static ControllerMethodViewModel AddPermission(this ControllerMethodViewModel apiMethod, string permissionValue)
+    {
+        _ = apiMethod.PermissionValue = permissionValue;
+        return apiMethod;
+    }
+
 
     public static ControllerMethodViewModel AddHttpMethod<THttpMethod>(this ControllerMethodViewModel apiMethod, [StringSyntax("Route")] string template)
         where THttpMethod : HttpMethodAttribute

@@ -89,16 +89,12 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 .ThrowIfCancellationRequested(cancellationToken)
                 .End();
 
-            var result = await this._service.SaveViewModelAsync(this.ViewModel, cancellationToken: cancellationToken);
-            
-            if (result.IsSucceed)
-            {
-                IsViewModelChanged = false;
-            }
-
+            var result = await this._service
+                .SaveViewModelAsync(this.ViewModel, cancellationToken: cancellationToken)
+                .ThrowOnFailAsync(this, "Error occurred while saving functionality to database.");
             return result;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return Result.Fail(ex);
         }
@@ -298,7 +294,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
         if (this.ViewModel.Name.IsNullOrEmpty())
         {
-            this.ViewModel.Name = details.Name?.TrimEnd("Dto".ToArray()).AddToEnd("Functionality");
+            this.ViewModel.Name = details.Name?.TrimEnd([.. "Dto"]).AddToEnd("Functionality");
         }
         //The form is now ready to call services.
     }
@@ -312,7 +308,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         var codes = this.ViewModel!.Codes.SelectAll().Compact();
         if (!codes.Any())
         {
-            return Result.Fail<string>("No source code found. Please press <Generate Sources> button.", string.Empty);
+            return Result.Fail("No source code found. Please press <Generate Sources> button.", string.Empty);
         }
         var settings = SettingsService.Get();
         var dir = settings.projectSourceRoot;

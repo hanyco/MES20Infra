@@ -7,6 +7,7 @@ using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.Helpers;
 using HanyCo.Infra.Internals.Data.DataSources;
 using HanyCo.Infra.Markers;
+using HanyCo.Infra.Security;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
@@ -143,6 +144,7 @@ internal sealed partial class ControllerService(
 
         static Method createMethod(in INamespace ns, in ControllerMethodViewModel api, in string returnType)
         {
+            // Create method
             var method = new Method(api.Name!)
             {
                 Body = api.Body,
@@ -160,6 +162,14 @@ internal sealed partial class ControllerService(
                     ? method.AddAttribute(TypePath.New(httpType))
                     : method.AddAttribute(TypePath.New(httpType), (null, route));
                 _ = ns.AddUsingNameSpace(httpType.Namespace!);
+            }
+
+            // Add PermissionAttribute to method using api's PermissionValue
+            if (!api.PermissionValue.IsNullOrEmpty())
+            {
+                var permissionType = typeof(PermissionAttribute);
+                _ = method.AddAttribute(TypePath.New(permissionType), (null, api.PermissionValue));
+                _ = ns.AddUsingNameSpace(permissionType.Namespace!);
             }
 
             return method;

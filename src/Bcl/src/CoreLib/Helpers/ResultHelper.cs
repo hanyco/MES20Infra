@@ -55,23 +55,20 @@ public static class ResultHelper
     }
 
     public static void Deconstruct(this Result result, out bool isSucceed, out string message) =>
-            (isSucceed, message) = (result.ArgumentNotNull().IsSucceed, result.Message?.ToString() ?? string.Empty);
+        (isSucceed, message) = (result.ArgumentNotNull().IsSucceed, result.Message?.ToString() ?? string.Empty);
 
     public static void Deconstruct<TValue>(this Result<TValue> result, out bool IsSucceed, out TValue Value) =>
         (IsSucceed, Value) = (result.ArgumentNotNull().IsSucceed, result.Value);
 
-    public static void End(this Result _)
-    { }
-
-    public static void End<TValue>(this Result<TValue> _)
+    public static void End(this ResultBase _)
     { }
 
     public static Task End(this Task<Result> _) =>
         Task.CompletedTask;
 
     [return: NotNull]
-    public static IEnumerable<Exception>? GetAllErrors(this IResult result)
-        => result.IterateOnAll<IEnumerable<Exception>>(x => x.Errors).SelectAll();
+    public static IEnumerable<Exception>? GetAllErrors(this IResult result) => 
+        result.IterateOnAll<IEnumerable<Exception>>(x => x.Errors).SelectAll();
 
     public static async Task<TValue> GetValueAsync<TValue>(this Task<Result<TValue>> taskResult)
     {

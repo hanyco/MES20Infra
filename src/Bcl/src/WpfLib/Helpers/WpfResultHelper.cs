@@ -5,17 +5,16 @@ using Library.Wpf.Dialogs;
 
 namespace Library.Wpf.Helpers;
 
-[DebuggerStepThrough]
+//[DebuggerStepThrough]
 public static class WpfResultHelper
 {
     public static TResult ShowOrThrow<TResult>(this TResult result, object? owner = null, string? instruction = null, string? successMessage = null)
         where TResult : ResultBase
     {
-        var res = result.ThrowOnFail(owner, instruction);
-        var text = res.Message.IfNullOrEmpty(successMessage);
-        MsgBox2.Inform(instruction, text ?? "The operation is successfully done.");
+        result.ThrowOnFail(owner, instruction).End();
+        MsgBox2.Inform(instruction, result.Message.IfNullOrEmpty(successMessage) ?? "The operation is successfully done.");
 
-        return res;
+        return result;
     }
 
     public static async Task<TResult> ShowOrThrowAsync<TResult>(this Task<TResult> result, object? owner = null, string? instruction = null, string? successMessage = null)

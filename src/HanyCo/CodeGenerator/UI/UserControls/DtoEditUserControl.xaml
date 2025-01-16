@@ -39,13 +39,6 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.RowSpan="5" Grid.Column="4">
-                <TextBlock Style="{StaticResource Heading}" Text="Security" />
-                <local:SecurityClaimCollectorUserControl
-                    x:Name="DtoSecurityClaimCollectorUserControl"
-                    MinWidth="300"
-                    MinHeight="120" />
-            </StackPanel>
 
             <!--<TextBlock
                 Grid.ColumnSpan="3"

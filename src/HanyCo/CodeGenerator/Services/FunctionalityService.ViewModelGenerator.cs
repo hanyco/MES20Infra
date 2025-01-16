@@ -63,7 +63,7 @@ internal sealed partial class FunctionalityService
         ProgressData getTitle(in string description)
             => new(Description: description, Sender: nameof(FunctionalityService));
 
-        [DebuggerStepThrough]
+        //[DebuggerStepThrough]
         MultistepProcessRunner<CreationData> initSteps(in CreationData data)
              //?! ☠ Don't change the sequence of the steps ☠
              => MultistepProcessRunner<CreationData>.New(data, this._reporter, owner: nameof(FunctionalityService))
@@ -83,7 +83,7 @@ internal sealed partial class FunctionalityService
                 .AddStep(this.CreateBlazorDetailsComponent, getTitle($"Creating Blazor `{data.ViewModel.Name}DetailsComponent`…"));
 
         // Finalize the process
-        [DebuggerStepThrough]
+        //[DebuggerStepThrough]
         static string getResultMessage(in Result result, CancellationToken token)
         {
             if (!result.Message.IsNullOrEmpty())
@@ -124,6 +124,7 @@ internal sealed partial class FunctionalityService
         _ = model.AdditionalInjects.Add(httpClient);
         return model;
     }
+    
     private static UiComponentViewModel AddLocalStorageService(UiComponentViewModel model)
     {
         var localStorage = (Type: TypePath.New("Microsoft.AspNetCore.Components.WebAssembly.Authentication.ILocalStorageService"), FieldName: "_localStorage");
@@ -134,10 +135,6 @@ internal sealed partial class FunctionalityService
 
     private static DbColumnViewModel GetDbColumn(string name, PropertyType type, string? dtoFullName = null) =>
         new(name, -1, PropertyTypeHelper.ToFullTypeName(type, dtoFullName), false);
-
-    [Obsolete("Mappers are no longer used in this project", true)]
-    private static string GetMapperNameSpace(CreationData data)
-        => TypePath.Combine(GetRootNameSpace(data), "Mappers");
 
     private static PropertyViewModel GetPluralizedSourceDtoAsPropertyModel(CreationData data) =>
         new(StringHelper.Pluralize(CommonHelpers.Purify(data.SourceDtoName!)), PropertyType.Dto)
@@ -258,7 +255,7 @@ internal sealed partial class FunctionalityService
             var cancelButton = new UiComponentCustomButton()
             {
                 Caption = "Back",
-                CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart("@page".ToArray()).Trim()),
+                CodeStatement = CodeSnippets.NavigateTo(pageRoute.TrimStart([.. "@page"]).Trim()),
                 ButtonType = ButtonType.Button,
                 EventHandlerName = "BackButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -356,7 +353,7 @@ internal sealed partial class FunctionalityService
 
             var newButton = new UiComponentCustomButton
             {
-                CodeStatement = CodeSnippets.NavigateTo(pureRoute.TrimStart("@page".ToArray()).Trim()),
+                CodeStatement = CodeSnippets.NavigateTo(pureRoute.TrimStart([.. "@page"]).Trim()),
                 Caption = "New",
                 EventHandlerName = "NewButton_OnClick",
                 Guid = Guid.NewGuid(),
@@ -415,6 +412,7 @@ internal sealed partial class FunctionalityService
 
     private Task CreateController(CreationData data, CancellationToken token)
     {
+        var entityName = CommonHelpers.Purify(data.SourceDtoType.FullPath);
         return TaskRunner.SetState(data)
             .Then(initialize)
             .Then(createCtor)
@@ -441,6 +439,7 @@ internal sealed partial class FunctionalityService
             var api = ControllerMethodViewModel
                 .New("GetAll")
                 .AddHttpMethod<HttpGetAttribute>()
+                .AddPermission($"{entityName}:ViewAll")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetAllQuery}());")
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetAllQuery.ResultDto.Properties[0].Name});")
                 .WithReturnType(TypePath.NewTask<IActionResult>())
@@ -455,6 +454,7 @@ internal sealed partial class FunctionalityService
             var api = ControllerMethodViewModel
                 .New("GetById")
                 .AddHttpMethod<HttpGetAttribute>("{id}")
+                .AddPermission($"{entityName}:View")
                 .AddArgument(TypePath.New(idType), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.GetByIdQuery}(id));")
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.GetByIdQuery.ResultDto.Properties[0].Name});")
@@ -469,6 +469,7 @@ internal sealed partial class FunctionalityService
             var api = ControllerMethodViewModel
                 .New("Insert")
                 .AddHttpMethod<HttpPostAttribute>()
+                .AddPermission($"{entityName}:Create")
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.InsertCommand}({argName}));")
                 .AddBodyLine($"return this.Ok(result.{data.ViewModel.InsertCommand.ResultDto.Properties[0].Name});")
@@ -484,6 +485,7 @@ internal sealed partial class FunctionalityService
             var api = ControllerMethodViewModel
                 .New("Update")
                 .AddHttpMethod<HttpPutAttribute>("{id}")
+                .AddPermission($"{entityName}:Update")
                 .AddArgument(TypePath.New(idType), "id")
                 .AddArgument(data.SourceDtoName!, argName)
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.UpdateCommand}(id, {argName}));")
@@ -499,6 +501,7 @@ internal sealed partial class FunctionalityService
             var api = ControllerMethodViewModel
                 .New("Delete")
                 .AddHttpMethod<HttpDeleteAttribute>("{id}")
+                .AddPermission($"{entityName}:Delete")
                 .AddArgument(TypePath.New(idType), "id")
                 .AddBodyLine($"var result = await this._mediator.Send(new {data.ViewModel.DeleteCommand}(id));")
                 .AddBodyLine("return this.Ok(true);")

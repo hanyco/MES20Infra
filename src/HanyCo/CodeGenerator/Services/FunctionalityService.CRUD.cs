@@ -228,37 +228,37 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             var exists = await this.AnyByNameAsync(model.Name!);
             if (exists)
             {
-                return Result.Fail()!;
+                return Result.Fail("Functionality already exists.");
             }
             exists = await this._dtoService.AnyByNameAsync(model.SourceDto.Name!);
             if (exists)
             {
-                return Result.Fail()!;
+                return Result.Fail("Source DTO already exists.");
             }
             exists = await this._queryService.AnyByNameAsync(model.GetAllQuery.Name!);
             if (exists)
             {
-                return Result.Fail()!;
+                return Result.Fail("GetAll query already exists.");
             }
             exists = await this._queryService.AnyByNameAsync(model.GetByIdQuery.Name!);
             if (exists)
             {
-                return Result.Fail()!;
+                return Result.Fail("GetById query already exists.");
             }
             exists = await this._commandService.AnyByName(model.InsertCommand.Name!);
             if (exists)
             {
-                return Result.Fail()!;
+                return Result.Fail("Insert command already exists.");
             }
             exists = await this._commandService.AnyByName(model.UpdateCommand.Name!);
             if (exists)
             {
-                return Result.Fail()!;
+                return Result.Fail("Update command already exists.");
             }
             exists = await this._commandService.AnyByName(model.DeleteCommand.Name!);
             if (exists)
             {
-                return Result.Fail()!;
+                return Result.Fail("Delete command already exists.");
             };
             return Result.Succeed;
         }

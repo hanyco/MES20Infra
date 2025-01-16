@@ -29,7 +29,6 @@ public partial class DtoEditUserControl : UserControl,
     public DtoEditUserControl()
     {
         this.InitializeComponent();
-        this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);
     }
 
     public bool IsReadOnly
@@ -45,7 +44,7 @@ public partial class DtoEditUserControl : UserControl,
     }
 
     public DtoViewModel? ViewModel =>
-        this.DataContext.Cast().As<DtoViewModel>()?.With(x => x.SecurityClaims.AddRange(this.DtoSecurityClaimCollectorUserControl.ClaimViewModels));
+        this.DataContext.Cast().As<DtoViewModel>();
 
     public async Task BindAsync(CancellationToken cancellationToken = default)
     {
@@ -62,7 +61,6 @@ public partial class DtoEditUserControl : UserControl,
         }
 
         this.PropertyDetails.IsEnabled = !this.IsReadOnly && viewModel is not null;
-        this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);
     }
 
     private void DeletePropertyButton_Click(object sender, RoutedEventArgs e)
@@ -107,8 +105,10 @@ public partial class DtoEditUserControl : UserControl,
             ? []
             : [new ClaimViewModel { Key = this.ViewModel.Name }];
 
-    private void Me_Loaded(object sender, RoutedEventArgs e) =>
-        this.DtoSecurityClaimCollectorUserControl.HandleAutoGenerateClaimEvent(this.DtoSecurityClaimCollectorUserControl_OnAutoGenerateClaim);
+    private void Me_Loaded(object sender, RoutedEventArgs e)
+    {
+
+    }
 
     private void NewPropertyButton_Click(object sender, RoutedEventArgs e)
     {

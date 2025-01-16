@@ -46,38 +46,6 @@ public abstract class ApiControllerBase : ControllerBase
         where T : notnull
         => this.HttpContext.RequestServices.GetRequiredService<T>();
 
-    //[DebuggerStepThrough]
-    //protected async Task<IApiResult<TResult?>> EnqueryAsync<TQueryResult, TResult>(IQuery<TQueryResult> queryParameter)
-    //    where TQueryResult : IQueryResult<TResult>
-    //{
-    //    var cqResult = await this.QueryProcessor.ExecuteAsync(queryParameter);
-    //    return this.ProcessResult(cqResult.Result);
-    //}
-
-    //[DebuggerStepThrough]
-    //protected async Task<IApiResult<TResult?>> EnqueryAsync<TQueryParameter, TQueryResult, TResult>()
-    //       where TQueryParameter : IQuery<TQueryResult>, new()
-    //       where TQueryResult : IQueryResult<TResult>
-    //{
-    //    var cqResult = await this.QueryProcessor.ExecuteAsync(new TQueryParameter());
-    //    return this.ProcessResult(cqResult.Result);
-    //}
-
-    //[DebuggerStepThrough]
-    //protected virtual async Task<IApiResult<bool>> ExecuteAsync<TCommand, TCommandResult>(TCommand parameter)
-    //{
-    //    _ = await this.CommandProcessor.ExecuteAsync<TCommand, TCommandResult>(parameter);
-    //    return this.Succees(true);
-    //}
-
-    //[DebuggerStepThrough]
-    //protected virtual async Task<IApiResult<bool>> ExecuteAsync<TCommand, TCommandResult>()
-    //    where TCommand : new()
-    //{
-    //    _ = await this.CommandProcessor.ExecuteAsync<TCommand, TCommandResult>(new());
-    //    return this.Succees(true);
-    //}
-
     protected virtual IApiResult Result(in string? message = null, in int statusCode = (int)HttpStatusCode.OK)
         => ApiResult.New(statusCode, message);
 
