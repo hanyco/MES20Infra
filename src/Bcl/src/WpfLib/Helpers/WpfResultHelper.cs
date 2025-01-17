@@ -5,7 +5,7 @@ using Library.Wpf.Dialogs;
 
 namespace Library.Wpf.Helpers;
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 public static class WpfResultHelper
 {
     public static TResult ShowOrThrow<TResult>(this TResult result, object? owner = null, string? instruction = null, string? successMessage = null)

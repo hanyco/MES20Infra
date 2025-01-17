@@ -64,7 +64,7 @@ public static class ResultHelper
     { }
 
     public static Task End(this Task<Result> _) =>
-        Task.CompletedTask;
+        _;
 
     [return: NotNull]
     public static IEnumerable<Exception>? GetAllErrors(this IResult result) => 
