@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 
 namespace Library.Helpers;
 
-//[DebuggerStepThrough, StackTraceHidden]
+[DebuggerStepThrough, StackTraceHidden]
 public static class EnumerableHelper
 {
     /// <summary>

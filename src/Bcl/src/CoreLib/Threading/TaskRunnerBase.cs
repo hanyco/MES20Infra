@@ -6,7 +6,7 @@ using Library.Results;
 namespace Library.Threading;
 
 [Fluent]
-[DebuggerStepThrough, StackTraceHidden]
+//[DebuggerStepThrough, StackTraceHidden]
 public abstract class TaskRunnerBase<TSelf, TResult>
     where TSelf : TaskRunnerBase<TSelf, TResult>
     where TResult : ResultBase

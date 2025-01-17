@@ -77,7 +77,7 @@ public static class ResultHelper
     }
 
     [return: NotNullIfNotNull(nameof(Result))]
-    public static TResult? IfFailure<TResult>([DisallowNull] this TResult result, [DisallowNull] Action action) where TResult : ResultBase
+    public static TResult? OnFailure<TResult>([DisallowNull] this TResult result, [DisallowNull] Action action) where TResult : ResultBase
     {
         if (result?.IsSucceed == false)
         {
@@ -88,7 +88,7 @@ public static class ResultHelper
     }
 
     [return: NotNullIfNotNull(nameof(Result))]
-    public static TResult? IfFailure<TResult>([DisallowNull] this TResult result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    public static TResult? OnFailure<TResult>([DisallowNull] this TResult result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
     {
         if (result?.IsSucceed == false)
         {
@@ -98,7 +98,7 @@ public static class ResultHelper
         return result;
     }
 
-    public static async Task<TResult> IfFailure<TResult>(this Task<TResult> result, [DisallowNull] Action next) where TResult : ResultBase
+    public static async Task<TResult> OnFailure<TResult>(this Task<TResult> result, [DisallowNull] Action next) where TResult : ResultBase
     {
         var r = await result;
         if (r.IsFailure)
@@ -109,7 +109,7 @@ public static class ResultHelper
         return r;
     }
 
-    public static async Task<TResult> IfFailure<TResult>(this Task<TResult> result, [DisallowNull] Action<TResult> next) where TResult : ResultBase
+    public static async Task<TResult> OnFailure<TResult>(this Task<TResult> result, [DisallowNull] Action<TResult> next) where TResult : ResultBase
     {
         var r = await result;
         if (r.IsFailure)
@@ -120,13 +120,13 @@ public static class ResultHelper
         return r;
     }
 
-    public static async Task<TResult> IfFailure<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult> next) where TResult : ResultBase
+    public static async Task<TResult> OnFailure<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult> next) where TResult : ResultBase
     {
         var r = await result;
         return r.IsFailure ? next.ArgumentNotNull()() : r;
     }
 
-    public static async Task<TResult> IfFailure<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult, TResult> next) where TResult : ResultBase
+    public static async Task<TResult> OnFailure<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult, TResult> next) where TResult : ResultBase
     {
         var r = await result;
         return r.IsFailure ? next.ArgumentNotNull()(r) : r;
@@ -143,7 +143,7 @@ public static class ResultHelper
     //}
 
     [return: NotNullIfNotNull(nameof(result))]
-    public static TResult? IfSucceed<TResult>(this TResult? result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    public static TResult? OnSucceed<TResult>(this TResult? result, [DisallowNull] Action<TResult> action) where TResult : ResultBase
     {
         if (result?.IsSucceed == true)
         {
@@ -153,7 +153,7 @@ public static class ResultHelper
         return result;
     }
 
-    public static async Task<TResult> IfSucceed<TResult>(this Task<TResult> resultTask, [DisallowNull] Action<TResult> action) where TResult : ResultBase
+    public static async Task<TResult> OnSucceed<TResult>(this Task<TResult> resultTask, [DisallowNull] Action<TResult> action) where TResult : ResultBase
     {
         var result = await resultTask;
         if (result?.IsSucceed == true)
@@ -164,12 +164,12 @@ public static class ResultHelper
         return result;
     }
 
-    public static async Task<TResult?> IfSucceedAsync<TResult>(this TResult? result, [DisallowNull] Func<TResult, CancellationToken, Task<TResult>> next, CancellationToken token = default) where TResult : ResultBase
+    public static async Task<TResult?> OnSucceedAsync<TResult>(this TResult? result, [DisallowNull] Func<TResult, CancellationToken, Task<TResult>> next, CancellationToken token = default) where TResult : ResultBase
         => result?.IsSucceed == true
             ? await next.ArgumentNotNull()(result, token)
             : result;
 
-    public static async Task<TResult> IfSucceedAsync<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult, CancellationToken, Task<TResult>> next, CancellationToken token = default) where TResult : ResultBase
+    public static async Task<TResult> OnSucceedAsync<TResult>(this Task<TResult> result, [DisallowNull] Func<TResult, CancellationToken, Task<TResult>> next, CancellationToken token = default) where TResult : ResultBase
     {
         var r = await result;
         return r.IsSucceed ? await next.ArgumentNotNull()(r, token) : r;

@@ -62,7 +62,7 @@ internal partial class ControllerService
             _ = await this._writeDbContext.ControllerMethods.AddAsync(apiEntity, cancellationToken);
             apis.Add((api, apiEntity));
         }
-        var result = await this.SubmitChangesAsync(persist, transaction, token: cancellationToken).IfSucceed(r =>
+        var result = await this.SubmitChangesAsync(persist, transaction, token: cancellationToken).OnSucceed(r =>
         {
             model.Id = controllerEntity.Id;
             foreach (var (Model, Entity) in apis)

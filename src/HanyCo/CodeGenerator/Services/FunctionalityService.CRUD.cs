@@ -1,4 +1,7 @@
-﻿using HanyCo.Infra.CodeGen.Domain.ViewModels;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+
+using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
 using Library.Data.EntityFrameworkCore;
@@ -9,9 +12,6 @@ using Library.Threading;
 using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
-
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Services;
 
@@ -45,7 +45,10 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
 
         var removeEntitiesResult = await tasks.RunAllAsync(functionality, cancellationToekn).ThrowIfCancellationRequested(cancellationToekn);
         if (removeEntitiesResult.IsFailure)
+        {
             return removeEntitiesResult.WithValue(0);
+        }
+
         var saveResult = await this.SaveChangesAsync(cancellationToekn);
         return saveResult;
 
@@ -90,20 +93,23 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
     public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
         // Read from database
-        var query = from f in _readDbContext.Functionalities.Include(f => f.Module)
+        var query = from f in this._readDbContext.Functionalities.Include(f => f.Module)
                     where f.Id == id
                     select f;
-        var dbResult = await query.FirstOrDefaultLockAsync(_readDbContext.AsyncLock, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
         if (dbResult == null)
+        {
             return null;
-        var result = _converter.ToViewModel(dbResult);
-        result.SourceDto = await _dtoService.GetByIdAsync(dbResult.SourceDtoId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
-        result.GetAllQuery = await _queryService.GetByIdAsync(dbResult.GetAllQueryId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
-        result.GetByIdQuery = await _queryService.GetByIdAsync(dbResult.GetByIdQueryId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
-        result.InsertCommand = await _commandService.GetByIdAsync(dbResult.InsertCommandId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
-        result.UpdateCommand = await _commandService.GetByIdAsync(dbResult.UpdateCommandId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
-        result.DeleteCommand = await _commandService.GetByIdAsync(dbResult.DeleteCommandId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
-        result.Controller = await _controllerService.GetByIdAsync(dbResult.ControllerId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        }
+
+        var result = this._converter.ToViewModel(dbResult);
+        result.SourceDto = await this._dtoService.GetByIdAsync(dbResult.SourceDtoId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        result.GetAllQuery = await this._queryService.GetByIdAsync(dbResult.GetAllQueryId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        result.GetByIdQuery = await this._queryService.GetByIdAsync(dbResult.GetByIdQueryId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        result.InsertCommand = await this._commandService.GetByIdAsync(dbResult.InsertCommandId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        result.UpdateCommand = await this._commandService.GetByIdAsync(dbResult.UpdateCommandId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        result.DeleteCommand = await this._commandService.GetByIdAsync(dbResult.DeleteCommandId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
+        result.Controller = await this._controllerService.GetByIdAsync(dbResult.ControllerId, cancellationToken).ThrowIfCancellationRequested(cancellationToken);
 
         var (_, (data, _)) = InitializeWorkspace(result, cancellationToken);
         await this.CreateBlazorListPage(data, cancellationToken);
@@ -115,112 +121,106 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
 
     public async Task<Result<FunctionalityViewModel>> InsertAsync(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
     {
-        CheckPersistence(persist);
+        // Non-persistent operation is not supported.
+        if (!CatchResult(() => CheckPersistence(persist)).TryParse(out var persistenceCheckResult))
+        {
+            return persistenceCheckResult.WithValue(model);
+        }
+        // Validate the model
         if (!this.Validate(model).TryParse(out var vr))
         {
             return vr!;
         }
-
+        // Check if the functionality or it's components already exist.
         var er = await checkExitance(model);
         if (er.IsFailure)
         {
             return er.WithValue(model);
         }
-        var transaction = await this._writeDbContext.BeginTransactionAsync(token);
 
-        var result = await TaskRunner.SetState(model)
-            .Then(x => saveQuery(x.GetAllQuery, token))
-            .Then(x => saveQuery(x.GetByIdQuery, token))
-            .Then(x => saveCommand(x.InsertCommand, token))
-            .Then(x => saveCommand(x.UpdateCommand, token))
-            .Then(x => saveCommand(x.DeleteCommand, token))
-            .Then(x => saveDto(x.SourceDto, token))
-            .Then(x => _controllerService.SaveViewModelAsync(x.Controller, cancellationToken: token))
-            //.Then(x => x.Controller.Api.ForEach(y => _controllerApiService.SaveViewModelAsync(y, cancellationToken: token)))
-            .Then(x => saveFunctionality(x, token))
-            .RunAsync(token)
-            .IfFailure(this._dtoService.ResetChanges)
-            .IfSucceedAsync(async (viewModel, token) =>
-            {
-                var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token);
-                if (!saveResult.IsSucceed)
-                {
-                    this._dtoService.ResetChanges();
-                }
-                return saveResult.WithValue(viewModel);
-            }, token);
-
-        return result.ToNotNullValue();
-
-        async Task<Result> saveQuery(CqrsQueryViewModel model, CancellationToken token)
+        // Save the functionality
+        using var transaction = await this._writeDbContext.BeginTransactionAsync(token);
+        try
         {
-            Result result = await this._dtoService.InsertAsync(model.ParamsDto, true, token);
-            if (!result.IsSucceed)
-            {
-                this._dtoService.ResetChanges();
-                return result;
-            }
-
-            result = await this._dtoService.InsertAsync(model.ResultDto, true, token);
-            if (!result.IsSucceed)
-            {
-                this._dtoService.ResetChanges();
-                return result;
-            }
-
-            result = await this._queryService.InsertAsync(model, true, token);
-            if (!result.IsSucceed)
-            {
-                this._queryService.ResetChanges();
-            }
-            return result;
+            var result = await TaskRunner.SetState(model)
+                .Then(x => saveQuery(x.GetAllQuery, token))
+                .Then(x => saveQuery(x.GetByIdQuery, token))
+                .Then(x => saveCommand(x.InsertCommand, token))
+                .Then(x => saveCommand(x.UpdateCommand, token))
+                .Then(x => saveCommand(x.DeleteCommand, token))
+                .Then(x => saveDto(x.SourceDto, token))
+                .Then(x => this._controllerService.SaveViewModelAsync(x.Controller, cancellationToken: token).ThrowOnFailAsync())
+                .Then(x => saveFunctionality(x, token))
+                .RunAsync(token)
+                .ThrowOnFailAsync();
+            var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync();
+            return result.ToNotNullValue();
         }
-        async Task<Result> saveCommand(CqrsCommandViewModel model, CancellationToken token)
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(token);
+            this._dtoService.ResetChanges();
+            return Result.Fail<FunctionalityViewModel>(ex);
+        }
+
+        async Task saveQuery(CqrsQueryViewModel model, CancellationToken token)
+        {
+            await this._dtoService.InsertAsync(model.ParamsDto, true, token)
+                .OnFailure(this._dtoService.ResetChanges)
+                .ThrowOnFailAsync();
+
+            await this._dtoService.InsertAsync(model.ResultDto, true, token)
+                .OnFailure(this._dtoService.ResetChanges)
+                .ThrowOnFailAsync();
+
+            await this._queryService.InsertAsync(model, true, token)
+                .OnFailure(this._queryService.ResetChanges)
+                .ThrowOnFailAsync();
+        }
+        async Task saveCommand(CqrsCommandViewModel model, CancellationToken token)
         {
             //model.ParamsDto.Functionality = model.ResultDto.Functionality = functionality;
-            Result result = await this._dtoService.InsertAsync(model.ParamsDto, true, token);
-            if (!result.IsSucceed)
-            {
-                this._dtoService.ResetChanges();
-                return result;
-            }
-            result = await this._dtoService.InsertAsync(model.ResultDto, true, token);
-            if (!result.IsSucceed)
-            {
-                this._dtoService.ResetChanges();
-                return result;
-            }
-            result = await this._commandService.InsertAsync(model, true, token);
-            if (!result.IsSucceed)
-            {
-                this._queryService.ResetChanges();
-            }
-
-            return result;
+            await this._dtoService.InsertAsync(model.ParamsDto, true, token)
+                .OnFailure(this._dtoService.ResetChanges)
+                .ThrowOnFailAsync();
+            await this._dtoService.InsertAsync(model.ResultDto, true, token)
+                .OnFailure(this._dtoService.ResetChanges)
+                .ThrowOnFailAsync();
+            await this._commandService.InsertAsync(model, true, token)
+                .OnFailure(this._commandService.ResetChanges)
+                .ThrowOnFailAsync();
         }
-        Task<Result> saveDto(DtoViewModel model, CancellationToken token)
-            => this._dtoService.InsertAsync(model, true, token).ToResultAsync();
-        async Task<Result> saveFunctionality(FunctionalityViewModel model, CancellationToken token)
+        Task saveDto(DtoViewModel model, CancellationToken token) =>
+            this._dtoService.InsertAsync(model, true, token).ThrowOnFailAsync();
+
+        async Task saveFunctionality(FunctionalityViewModel model, CancellationToken token)
         {
+            //Reset the navigation properties
             var entity = this._converter.ToDbEntity(model);
-            var (getAllId, getById, insertId, updateId, deleteId, moduleId, sourceDtoId) =
-                (entity.GetAllQuery.Id, entity.GetByIdQuery.Id, entity.InsertCommand.Id, entity.UpdateCommand.Id, entity.DeleteCommand.Id, entity.Module?.Id ?? entity.ModuleId, entity.SourceDto.Id);
-            entity.GetAllQuery
-                = entity.GetByIdQuery
-                = entity.InsertCommand
-                = entity.UpdateCommand
-                = entity.DeleteCommand
-                = null!;
+            var getAllId = entity.GetAllQuery.Id;
+            var getById = entity.GetByIdQuery.Id;
+            var insertId = entity.InsertCommand.Id;
+            var updateId = entity.UpdateCommand.Id;
+            var deleteId = entity.DeleteCommand.Id;
+            var moduleId = entity.Module?.Id ?? entity.ModuleId;
+            var sourceDtoId = entity.SourceDto.Id;
+
+            entity.GetAllQuery = entity.GetByIdQuery = entity.InsertCommand = entity.UpdateCommand = entity.DeleteCommand = null!;
             entity.Module = null!;
             entity.SourceDto = null!;
             entity.Controller = null!;
-            (entity.GetAllQueryId, entity.GetByIdQueryId, entity.InsertCommandId, entity.UpdateCommandId, entity.DeleteCommandId, entity.ModuleId, entity.SourceDtoId) =
-                (getAllId, getById, insertId, updateId, deleteId, moduleId, sourceDtoId);
+
+            entity.GetAllQueryId = getAllId;
+            entity.GetByIdQueryId = getById;
+            entity.InsertCommandId = insertId;
+            entity.UpdateCommandId = updateId;
+            entity.DeleteCommandId = deleteId;
+            entity.ModuleId = moduleId;
+            entity.SourceDtoId = sourceDtoId;
 
             var entry = await this._writeDbContext.Functionalities.AddAsync(entity, token);
             entity.Module = null!;
-            var result = await this.SaveChangesAsync(token);
-            return result.WithValue(entry.Entity.Id);
+            await this.SaveChangesAsync(token).ThrowOnFailAsync();
         }
 
         async Task<Result> checkExitance(FunctionalityViewModel model)
@@ -329,7 +329,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         var query = from dto in this._readDbContext.Functionalities
                     where dto.Name == name
                     select dto.Id;
-        return query.AnyLockAsync(_readDbContext.AsyncLock);
+        return query.AnyLockAsync(this._readDbContext.AsyncLock);
     }
 
     private async Task<Functionality?> GetByIdFunctionality(long id, CancellationToken cancellationToken)

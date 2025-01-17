@@ -16,7 +16,7 @@ using System.Reflection;
 
 namespace Library.Data.EntityFrameworkCore;
 
-[DebuggerStepThrough, StackTraceHidden]
+//[DebuggerStepThrough, StackTraceHidden]
 public static class DataServiceHelper
 {
     #region CRUD
@@ -651,19 +651,19 @@ public static class DataServiceHelper
 
         try
         {
+            // Save the changes and store the result
+            var result = await service.SaveChangesAsync(token);
+            // If the result is successful, reset the changes
+            if (!result.IsSucceed)
+            {
+                service.ResetChanges();
+                return result;
+            }
+
             // If a transaction is provided, commit it
             if (transaction is not null)
             {
                 await transaction.CommitAsync(token);
-            }
-
-            // Save the changes and store the result
-            var result = await service.SaveChangesAsync(token);
-
-            // If the result is successful, reset the changes
-            if (result.IsSucceed)
-            {
-                service.ResetChanges();
             }
 
             // Return the result
