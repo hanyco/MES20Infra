@@ -110,7 +110,7 @@ internal sealed class CqrsQueryService(
             var paramPropsQuery = from p in this._readDbContext.Properties
                                   where p.ParentEntityId == paramDtoId
                                   select p;
-            var dbParamProps = await paramPropsQuery.ToListAsync(cancellationToken: token);
+            var dbParamProps = await paramPropsQuery.AsNoTracking().ToListAsync(cancellationToken: token);
             var paramProps = this._converter.ToViewModel(dbParamProps);
             return paramProps!;
         }
@@ -119,7 +119,7 @@ internal sealed class CqrsQueryService(
     public async Task<IReadOnlyList<CqrsQueryViewModel>> GetAllAsync(CancellationToken token = default)
     {
         var query = this.GetAllQuery();
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.ToViewModel(dbResult).Cast<CqrsQueryViewModel>().ToList();
         return result;
     }
@@ -129,7 +129,7 @@ internal sealed class CqrsQueryService(
         var query = from qry in this.GetAllQuery()
                     where qry.Id == id
                     select qry;
-        var dbResult = await query.FirstOrDefaultAsync(cancellationToken: token);
+        var dbResult = await query.AsNoTracking().FirstOrDefaultAsync(cancellationToken: token);
         return this._converter.ToViewModel(dbResult).Cast().As<CqrsQueryViewModel>();
     }
 
@@ -138,7 +138,7 @@ internal sealed class CqrsQueryService(
         var query = from qry in this.GetAllQuery()
                     where qry.ParamDtoId == dtoId || qry.ResultDtoId == dtoId
                     select qry;
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.ToViewModel(dbResult).Cast<CqrsQueryViewModel>().ToList();
         return result;
     }

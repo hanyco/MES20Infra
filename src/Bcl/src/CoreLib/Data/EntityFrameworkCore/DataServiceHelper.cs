@@ -112,7 +112,7 @@ public static class DataServiceHelper
     {
         var query = from entity in dbEntities
                     select entity;
-        var dbResult = await query.ToListLockAsync(asyncLock);
+        var dbResult = await query.AsNoTracking().ToListLockAsync(asyncLock);
         //var result = dbResult?.Any() is true ? toViewModel(dbResult).ToReadOnlyList() : Enumerable.Empty<TViewModel>().ToReadOnlyList();
         var result = toViewModel.ArgumentNotNull()(dbResult).Compact().ToReadOnlyList();
         return result;

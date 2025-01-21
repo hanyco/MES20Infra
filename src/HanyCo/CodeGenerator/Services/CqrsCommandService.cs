@@ -159,6 +159,6 @@ internal sealed class CqrsCommandService(
         var query = from cmd in this._readDbContext.CqrsSegregates
                     where cmd.SegregateType == type
                     select cmd;
-        return query;
+        return query.AsNoTracking();
     }
 }

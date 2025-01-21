@@ -52,7 +52,7 @@ internal sealed class PropertyService : IPropertyService
             var query = from x in this._writeDbContext.Properties
                         where x.ParentEntityId == parentId
                         select new Property() { Id = x.Id, Guid = x.Guid };
-            var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
+            var dbResult = await query.AsNoTracking().ToListAsync(cancellationToken: cancellationToken);
             return dbResult;
         }
 
@@ -69,7 +69,7 @@ internal sealed class PropertyService : IPropertyService
     {
         var query = from x in this._readDbContext.Properties
                     select x;
-        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
+        var dbResult = await query.AsNoTracking().ToListAsync(cancellationToken: cancellationToken);
         var result = this._converter.ToViewModel(dbResult).Compact().ToReadOnlyList();
         return result;
     }
@@ -108,7 +108,7 @@ internal sealed class PropertyService : IPropertyService
         var query = from d in this._readDbContext.Properties
                     where d.ParentEntityId == parentId
                     select d;
-        var dbResult = await query.ToListAsync(cancellationToken: cancellationToken);
+        var dbResult = await query.AsNoTracking().ToListAsync(cancellationToken: cancellationToken);
         return dbResult;
     }
 

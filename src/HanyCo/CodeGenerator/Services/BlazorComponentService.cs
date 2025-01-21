@@ -173,7 +173,7 @@ internal sealed class BlazorComponentService(
         var query = from c in this._readDbContext.UiComponents
                     where c.PageDataContextId == dataDataContextId
                     select c;
-        var dbComponents = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbComponents = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
         var result = dbComponents.Select(this._converter.ToViewModel).ToImmutableArray();
         return result!;
     }

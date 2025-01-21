@@ -184,7 +184,7 @@ internal sealed class DtoService(
         var query = from dto in this._readDbContext.Dtos
                     select dto;
 
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.ToViewModel(dbResult).ToList();
         return result;
     }
@@ -196,7 +196,7 @@ internal sealed class DtoService(
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels, token);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
 
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.ToViewModel(dbResult).ToReadOnlySet();
         return result;
 
@@ -242,7 +242,7 @@ internal sealed class DtoService(
             var query = from x in this._readDbContext.Dtos.Include(x => x.Module)
                         where x.Id == id
                         select x;
-            var dbResult = await query.FirstOrDefaultLockAsync(this._readDbContext.AsyncLock, cancellationToken: token);
+            var dbResult = await query.AsNoTracking().FirstOrDefaultLockAsync(this._readDbContext.AsyncLock, cancellationToken: token);
 
             //! MOHAMMAD: 💀 Sample code. Don't remove the following lines 💀
             //var q1 = EF.CompileAsyncQuery((InfraReadDbContext db, long id) => db.Dtos.FirstOrDefault(x => x.Id == id));
@@ -276,7 +276,7 @@ internal sealed class DtoService(
         var query = from dto in this._readDbContext.Dtos
                     where dto.ModuleId == id
                     select dto;
-        var dbResult = await query.ToListLockAsync(this._readDbContext.AsyncLock);
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
         var result = this._converter.ToViewModel(dbResult).ToList();
         return result;
     }
@@ -296,10 +296,23 @@ internal sealed class DtoService(
         var entity = this.ToDbEntity(viewModel);
 
         using var transaction = await this.CreateTransactionOnDemand(this._writeDbContext, persist, token);
-        await insertDto(viewModel, entity.Dto, persist, token);
-        await insertProperties(viewModel, persist, entity, token);
-        var result = await this.SubmitChangesAsync(persist, transaction, token: token).With((_) => viewModel.Id = entity.Dto.Id);
-        return Result.From(result, viewModel);
+        try
+        {
+            // Insert DTO
+            await insertDto(viewModel, entity.Dto, persist, token);
+            await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
+            // Insert DTO properties
+            await insertProperties(viewModel, persist, entity, token);
+            // Commit transaction
+            var result = await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token)
+                .With((_) => viewModel.Id = entity.Dto.Id);
+            return Result.From(result, viewModel);
+        }
+        catch (Exception ex)
+        {
+            _ = transaction?.RollbackAsync(token);
+            return Result.Fail<DtoViewModel>(ex);
+        }
 
         async Task insertDto(DtoViewModel viewModel, DtoEntity dto, bool persist, CancellationToken token = default)
         {
@@ -309,7 +322,6 @@ internal sealed class DtoService(
             {
                 _ = await this.SaveChangesAsync(token);
             }
-            //x await this._securityDescriptor.SetSecurityDescriptorsAsync(viewModel, false, token);
         }
 
         Task insertProperties(DtoViewModel viewModel, bool persist, (DtoEntity Dto, IEnumerable<Property> Properties, IEnumerable<PropertyViewModel> PropertyViewModels) entity, CancellationToken token)
@@ -420,8 +432,10 @@ internal sealed class DtoService(
 
     private DtoService InitializeViewModel(in DtoViewModel viewModel)
     {
+        // if viewModel.Guid is null or empty
         if (viewModel.Guid.IsNullOrEmpty())
         {
+            // Initialize it
             viewModel.Guid = Guid.NewGuid();
         }
         return this;

@@ -4,8 +4,17 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Library.Interfaces;
 
+/// <summary>
+/// Represents an interface for an asynchronous creator that creates a new view model.
+/// </summary>
+/// <typeparam name="TViewModel"></typeparam>
 public interface IAsyncCreator<TViewModel>
 {
+    /// <summary>
+    /// Creates a new view model asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<TViewModel> CreateAsync(CancellationToken cancellationToken = default);
 }
 
@@ -28,6 +37,11 @@ public interface IAsyncCrud<TViewModel> : IAsyncRead<TViewModel>, IAsyncWrite<TV
 /// <seealso cref="IAsyncWrite&lt;TViewModel, TId&gt;"/>
 public interface IAsyncCrud<TViewModel, TId> : IAsyncRead<TViewModel, TId>, IAsyncWrite<TViewModel, TId>;
 
+/// <summary>
+/// A standardizer for services to read data asynchronously.
+/// </summary>
+/// <typeparam name="TViewModel"></typeparam>
+/// <typeparam name="TId"></typeparam>
 public interface IAsyncRead<TViewModel, in TId>
 {
     /// <summary>
@@ -54,6 +68,9 @@ public interface IAsyncRead<TViewModel, in TId>
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
 public interface IAsyncRead<TViewModel> : IAsyncRead<TViewModel, long>;
 
+/// <summary>
+/// A standardizer for services to write data asynchronously.
+/// </summary>
 public interface IAsyncSaveChanges
 {
     /// <summary>
@@ -62,6 +79,9 @@ public interface IAsyncSaveChanges
     Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// A standardizer for services to support transactions asynchronously.
+/// </summary>
 public interface IAsyncTransactional
 {
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
@@ -71,6 +91,9 @@ public interface IAsyncTransactional
     Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// A standardizer for services to support transactions and save changes asynchronously.
+/// </summary>
 public interface IAsyncTransactionalSave : IAsyncTransactional, IAsyncSaveChanges, IResetChanges;
 
 /// <summary>
@@ -130,6 +153,11 @@ public interface IDbEntityToViewModelConverter<out TViewModel, in TDbEntity>
     TViewModel? ToViewModel(TDbEntity? entity);
 }
 
+/// <summary>
+/// Conveter for database entity and view model.
+/// </summary>
+/// <typeparam name="TViewMode"></typeparam>
+/// <typeparam name="TDbEntity"></typeparam>
 public interface IDbEntityViewModelConverter<TViewMode, TDbEntity> : IDbEntityToViewModelConverter<TViewMode, TDbEntity>, IViewModelToDbEntityConverter<TViewMode, TDbEntity>;
 
 /// <summary>
@@ -138,7 +166,7 @@ public interface IDbEntityViewModelConverter<TViewMode, TDbEntity> : IDbEntityTo
 public interface IResetChanges
 {
     /// <summary>
-    /// Resets the changes.
+    /// Resets the changes of the given DbContext and optionally disposes the current transaction.
     /// </summary>
     void ResetChanges();
 }
@@ -170,5 +198,17 @@ public interface IViewModelToDbEntityConverter<in TViewModel, out TDbEntity>
     TDbEntity? ToDbEntity(TViewModel? model);
 }
 
+/// <summary>
+/// A class that represents a set of paging parameters.
+/// </summary>
+/// <param name="PageIndex"></param>
+/// <param name="PageSize"></param>
 public record PagingParams(in int PageIndex = 0, in int? PageSize = null);
+
+/// <summary>
+/// A class that represents a set of paging results.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="Result"></param>
+/// <param name="TotalCount"></param>
 public record PagingResult<T>(IReadOnlyList<T> Result, in long TotalCount);
