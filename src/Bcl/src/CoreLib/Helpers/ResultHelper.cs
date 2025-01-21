@@ -67,7 +67,7 @@ public static class ResultHelper
         _;
 
     [return: NotNull]
-    public static IEnumerable<Exception>? GetAllErrors(this IResult result) => 
+    public static IEnumerable<Exception>? GetAllErrors(this IResult result) =>
         result.IterateOnAll<IEnumerable<Exception>>(x => x.Errors).SelectAll();
 
     public static async Task<TValue> GetValueAsync<TValue>(this Task<Result<TValue>> taskResult)
@@ -241,15 +241,36 @@ public static class ResultHelper
     /// <param name="owner">The owner of the result.</param>
     /// <param name="instruction">The instruction associated with the result.</param>
     /// <returns>The result of the provided Task.</returns>
-    public static async Task<Result<TValue>> ThrowOnFailAsync<TValue>(this Task<Result<TValue>> resultAsync, object? owner = null, string? instruction = null)
-        => InnerThrowOnFail(await resultAsync, owner, instruction);
+    public static async Task<Result<TValue>> ThrowOnFailAsync<TValue>(this Task<Result<TValue>> resultAsync, object? owner = null, string? instruction = null, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var result = await resultAsync;
+        return InnerThrowOnFail(result, owner, instruction);
+    }
 
-    public static async Task<TResult> ThrowOnFailAsync<TResult>(this Task<TResult> resultAsync, object? owner = null, string? instruction = null)
-        where TResult : ResultBase =>
-        InnerThrowOnFail(await resultAsync, owner, instruction);
+    /// <summary>
+    /// Throws an exception if the result of the provided Task is a failure.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="resultAsync"></param>
+    /// <param name="owner"></param>
+    /// <param name="instruction"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<TResult> ThrowOnFailAsync<TResult>(this Task<TResult> resultAsync, object? owner = null, string? instruction = null, CancellationToken cancellationToken = default)
+        where TResult : ResultBase
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var result = await resultAsync;
+        return InnerThrowOnFail(result, owner, instruction);
+    }
 
-    public static async Task<Result> ThrowOnFailAsync(this Task<Result> resultAsync, object? owner = null, string? instruction = null)
-        => InnerThrowOnFail(await resultAsync, owner, instruction);
+    public static async Task<Result> ThrowOnFailAsync(this Task<Result> resultAsync, object? owner = null, string? instruction = null, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var result = await resultAsync;
+        return InnerThrowOnFail(result, owner, instruction);
+    }
 
     public static Task<TResult> ToAsync<TResult>(this TResult result) where TResult : ResultBase
         => Task.FromResult(result);

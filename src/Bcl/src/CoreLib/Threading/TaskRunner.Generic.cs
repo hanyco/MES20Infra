@@ -122,6 +122,6 @@ public sealed class TaskRunner<TState> : TaskRunnerBase<TaskRunner<TState?>, Res
 
             state = await func(state, token);
         }
-        return Result.Success(state);
+        return Result.Success<TState?>(state);
     }
 }

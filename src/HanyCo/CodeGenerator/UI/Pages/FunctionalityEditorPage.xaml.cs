@@ -85,13 +85,13 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             await this
                 .PrepareViewModel()
                 .ValidateFormAsync(cancellationToken)
-                .ThrowOnFailAsync(this.Title)
+                .ThrowOnFailAsync(this.Title, cancellationToken: cancellationToken)
                 .ThrowIfCancellationRequested(cancellationToken)
                 .End();
 
             var result = await this._service
                 .SaveViewModelAsync(this.ViewModel, cancellationToken: cancellationToken)
-                .ThrowOnFailAsync(this, "Error occurred while saving functionality to database.");
+                .ThrowOnFailAsync(this, "Error occurred while saving functionality to database.", cancellationToken: cancellationToken);
             return result;
         }
         catch (Exception ex)

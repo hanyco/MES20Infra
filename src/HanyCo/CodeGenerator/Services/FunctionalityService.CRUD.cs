@@ -152,8 +152,8 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
                 .Then(x => this._controllerService.SaveViewModelAsync(x.Controller, cancellationToken: token).ThrowOnFailAsync())
                 .Then(x => saveFunctionality(x, token))
                 .RunAsync(token)
-                .ThrowOnFailAsync();
-            var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync();
+                .ThrowOnFailAsync(cancellationToken: token);
+            var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
             return result.ToNotNullValue();
         }
         catch (Exception ex)
