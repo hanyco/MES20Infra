@@ -150,7 +150,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             await saveController(model, token).ThrowIfCancellationRequested(token);
             await saveFunctionality(model, token).ThrowIfCancellationRequested(token);
 
-            var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token).OnFailure(this._dtoService.ResetChanges).ThrowOnFailAsync(cancellationToken: token);
+            var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
             return Result.Success(model);
         }
         catch (Exception ex)
@@ -163,34 +163,27 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         async Task saveQuery(CqrsQueryViewModel model, CancellationToken token)
         {
             _ = await this._dtoService.InsertAsync(model.ParamsDto, true, token)
-                .OnFailure(this._dtoService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
 
             _ = await this._dtoService.InsertAsync(model.ResultDto, true, token)
-                .OnFailure(this._dtoService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
 
             _ = await this._queryService.InsertAsync(model, true, token)
-                .OnFailure(this._queryService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
         }
         async Task saveCommand(CqrsCommandViewModel model, CancellationToken token)
         {
             _ = await this._dtoService.InsertAsync(model.ParamsDto, true, token)
-                .OnFailure(this._dtoService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
 
             _ = await this._dtoService.InsertAsync(model.ResultDto, true, token)
-                .OnFailure(this._dtoService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
 
             _ = await this._commandService.InsertAsync(model, true, token)
-                .OnFailure(this._commandService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
         }
         Task saveDto(DtoViewModel model, CancellationToken token) =>
             this._dtoService.InsertAsync(model, true, token)
-                .OnFailure(this._dtoService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
 
         async Task saveFunctionality(FunctionalityViewModel model, CancellationToken token)
@@ -221,7 +214,6 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             var entry = await this._writeDbContext.Functionalities.AddAsync(entity, token);
             entity.Module = null!;
             _ = await this.SaveChangesAsync(token)
-                .OnFailure(this._dtoService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
         }
 
@@ -267,7 +259,6 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
 
         async Task saveController(FunctionalityViewModel model, CancellationToken token) =>
             await this._controllerService.SaveViewModelAsync(model.Controller, cancellationToken: token)
-                .OnFailure(this._dtoService.ResetChanges)
                 .ThrowOnFailAsync(cancellationToken: token);
     }
 

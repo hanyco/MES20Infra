@@ -114,8 +114,7 @@ internal sealed class PropertyService : IPropertyService
 
     public async Task<Result<PropertyViewModel>> InsertAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
-        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken);
-        void manipulate(Property property) => this._writeDbContext.Properties.Add(property);
+        return await this.SaveChangesAsync(model, persist, property => this._writeDbContext.Properties.Add(property), cancellationToken: cancellationToken);
     }
 
     public async Task<Result> InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default)
@@ -124,7 +123,7 @@ internal sealed class PropertyService : IPropertyService
         {
             if (token.IsCancellationRequested)
             {
-                return Result.Fail(new OperationCanceledException());
+                return Result.Fail<OperationCanceledException>();
             }
 
             property.ParentEntityId = parentEntityId;
@@ -133,10 +132,6 @@ internal sealed class PropertyService : IPropertyService
             {
                 return insertResult;
             }
-        }
-        if (persist)
-        {
-            _ = await this.SaveChangesAsync(token);
         }
 
         return Result.Succeed;
@@ -181,7 +176,7 @@ internal sealed class PropertyService : IPropertyService
 
     private async Task<Result<PropertyViewModel>> SaveChangesAsync(PropertyViewModel model, bool persist, Action<Property> manipulate, CancellationToken cancellationToken = default)
     {
-        _ = await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync();
+        _ = await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync(cancellationToken: cancellationToken);
         var property = this._converter.ToDbEntity(model)!;
         manipulate(property);
         if (persist)

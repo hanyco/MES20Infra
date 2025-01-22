@@ -292,12 +292,13 @@ internal sealed class DtoService(
             return validationCheck!;
         }
 
-        _ = this.InitializeViewModel(viewModel);
-        var entity = this.ToDbEntity(viewModel);
-
         using var transaction = await this.CreateTransactionOnDemand(this._writeDbContext, persist, token);
         try
         {
+            // Initialize view model and convert it to db entity.
+            _ = this.InitializeViewModel(viewModel);
+            var entity = this.ToDbEntity(viewModel);
+
             // Insert DTO
             await insertDto(viewModel, entity.Dto, persist, token);
             await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
