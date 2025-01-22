@@ -189,7 +189,9 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
                 .ThrowOnFailAsync(cancellationToken: token);
         }
         Task saveDto(DtoViewModel model, CancellationToken token) =>
-            this._dtoService.InsertAsync(model, true, token).OnFailure(this._dtoService.ResetChanges).ThrowOnFailAsync(cancellationToken: token);
+            this._dtoService.InsertAsync(model, true, token)
+                .OnFailure(this._dtoService.ResetChanges)
+                .ThrowOnFailAsync(cancellationToken: token);
 
         async Task saveFunctionality(FunctionalityViewModel model, CancellationToken token)
         {

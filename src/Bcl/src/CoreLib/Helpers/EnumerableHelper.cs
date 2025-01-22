@@ -833,6 +833,14 @@ public static class EnumerableHelper
         }
     }
 
+    /// <summary>
+    /// Asynchronously iterates over an <see cref="IEnumerable{T}"/> and applies an action to each item.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="values"></param>
+    /// <param name="action"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     public static async Task EnumerateAsync<T>(this IEnumerable<T> values, Func<T, CancellationToken, Task> action, CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(action);
@@ -848,6 +856,15 @@ public static class EnumerableHelper
         }
     }
 
+    /// <summary>
+    /// Asynchronously iterates over an <see cref="IEnumerable{T}"/> and applies an action to each item.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="values"></param>
+    /// <param name="action"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     public static async IAsyncEnumerable<TResult> EnumerateAsync<T, TResult>(this IEnumerable<T> values, Func<T, CancellationToken, Task<TResult>> action, [EnumeratorCancellation] CancellationToken token = default)
     {
         Check.MustBeArgumentNotNull(action);
@@ -908,11 +925,6 @@ public static class EnumerableHelper
         }
     }
 
-    //public static (TItems Items, IEnumerable<TResult> Results) ForEach<TItems, TItem, TResult>([DisallowNull] this TItems items, [DisallowNull] Func<TItem, TResult> action)
-    //    where TItems: IEnumerable<TItem>
-    //{
-    //    return (items, items.ForEach(action));
-    //}
     /// <summary>
     /// Compares two IEnumerable objects for equality.
     /// </summary>
@@ -979,6 +991,13 @@ public static class EnumerableHelper
         return default;
     }
 
+    /// <summary>
+    /// Returns a hierarchy of items from a collection of items as a flat list.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="roots"></param>
+    /// <param name="getChildren"></param>
+    /// <returns></returns>
     public static IEnumerable<T> Flatten<T>([DisallowNull] IEnumerable<T> roots, [DisallowNull] Func<T, IEnumerable<T>?> getChildren)
             => roots.SelectAllChildren(getChildren);
 
@@ -1043,9 +1062,17 @@ public static class EnumerableHelper
     public static void ForEachParallel<TItem>(IEnumerable<TItem> items, Action<TItem> action) =>
         Parallel.ForEach(items, action);
 
+
     public static void ForEachReverse<TItem>(this IEnumerable<TItem> items, Action<TItem> action) =>
         items.Reverse().ForEach(action);
 
+    /// <summary>
+    /// Executes the specified action for each item in the specified collection in reverse order.
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="action"></param>
+    /// <param name="startFrom"></param>
     public static void ForReverse<TItem>(this TItem[] items, Action<(TItem Item, int Index)> action, int? startFrom = null)
     {
         for (var index = startFrom ?? items.Length - 1; index >= 0; index--)
@@ -1098,16 +1125,11 @@ public static class EnumerableHelper
         items.GroupBy(x => x).Enumerate(x => (x.Key, x.Count()));
 
     /// <summary>
-    /// Finds the duplicates in a given IEnumerable of type T.
+    /// Checks whether the given IEnumerable contains any duplicates.
     /// </summary>
-    /// <returns>An IEnumerable of type T containing the duplicates.</returns>
-    //public static IEnumerable<T> FindDuplicates<T>(this IEnumerable<T> items)
-    //{
-    //    //Create a new HashSet to store the items
-    //    var buffer = new HashSet<T>();
-    //    //Return the items from the IEnumerable collection that are not added to the HashSet
-    //    return items.Where(x => !buffer.Add(x));
-    //}
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static bool HasDuplicates<T>(this IEnumerable<T> source) =>
         FindDuplicates(source).Any();
 
@@ -1302,6 +1324,13 @@ public static class EnumerableHelper
         }
     }
 
+    /// <summary>
+    /// Merges two IEnumerable sequences into a single IEnumerable sequence.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="enumerable1"></param>
+    /// <param name="enumerable2"></param>
+    /// <returns></returns>
     public static IEnumerable<T> Merge<T>(IEnumerable<T> enumerable1, IEnumerable<T> enumerable2) =>
             [.. enumerable1, .. enumerable2];
 
@@ -1463,6 +1492,12 @@ public static class EnumerableHelper
     public static IEnumerable<TSource> RemoveDefaults<TSource>(this IEnumerable<TSource> source, TSource? defaultValue = default)
         => defaultValue is null ? source.Where(item => item is not null) : source.Where(item => (!item?.Equals(defaultValue)) ?? false);
 
+    /// <summary>
+    /// Removes duplicate elements from the source IEnumerable.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static IEnumerable<T> RemoveDuplicates<T>(this IEnumerable<T> source)
             => source.GroupBy(x => x).Select(x => x.First());
 
@@ -1493,6 +1528,14 @@ public static class EnumerableHelper
     public static IEnumerable<TSource> RemoveNulls<TSource>(this IEnumerable<TSource> source)
         where TSource : class => RemoveDefaults(source);
 
+    /// <summary>
+    /// Removes the specified items from the source IEnumerable.
+    /// </summary>
+    /// <typeparam name="TList"></typeparam>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="items"></param>
+    /// <returns></returns>
     public static TList RemoveRange<TList, TItem>([DisallowNull] this TList list, params TItem[] items)
                                                                                                                                                                                                                                                                                                                         where TList : ICollection<TItem>
     {
@@ -1507,6 +1550,14 @@ public static class EnumerableHelper
         return list;
     }
 
+    /// <summary>
+    /// Removes the specified items from the source IEnumerable.
+    /// </summary>
+    /// <typeparam name="TList"></typeparam>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="items"></param>
+    /// <returns></returns>
     public static TList RemoveRange<TList, TItem>([DisallowNull] this TList list, in IEnumerable<TItem> items)
             where TList : ICollection<TItem>
     {
@@ -1616,6 +1667,14 @@ public static class EnumerableHelper
         }
     }
 
+    /// <summary>
+    /// Selects all elements from a sequence of sequences asynchronously.
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="values"></param>
+    /// <param name="selector"></param>
+    /// <returns></returns>
     public static async IAsyncEnumerable<TResult> SelectAsync<TValue, TResult>(this IAsyncEnumerable<TValue> values, Func<TValue, TResult> selector)
     {
         Check.MustBeArgumentNotNull(values);
@@ -1749,7 +1808,7 @@ public static class EnumerableHelper
     /// <returns>An array containing the item.</returns>
     [Obsolete]
     public static T[] ToArray<T>(T item)
-         => AsEnumerable(item).ToArray();
+         => [.. AsEnumerable(item)];
 
     /// <summary>
     /// Converts a list to a dictionary using a selector function to extract the key-value pairs.
@@ -1783,6 +1842,13 @@ public static class EnumerableHelper
         return result;
     }
 
+    /// <summary>
+    /// Converts a sequence of key-value pairs to a dictionary.
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="values"></param>
+    /// <returns></returns>
     public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> values)
         where TKey : notnull =>
             values.ToDictionary(pair => pair.Item1, pair => pair.Item2);
