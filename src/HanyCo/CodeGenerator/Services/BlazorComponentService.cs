@@ -158,10 +158,10 @@ internal sealed class BlazorComponentService(
     }
 
     public Task<IReadOnlyList<UiComponentViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => this.GetAllAsync<UiComponentViewModel, UiComponent>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => this.GetAll<UiComponentViewModel, UiComponent>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<UiComponentViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => this.GetByIdAsync(id, this._readDbContext.UiComponents
+        => this.GetById(id, this._readDbContext.UiComponents
             .Include(x => x.UiComponentActions)
             .Include(x => x.UiComponentProperties)
             .Include(x => x.UiPageComponents)
@@ -188,7 +188,7 @@ internal sealed class BlazorComponentService(
     }
 
     public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
-            => this.InsertAsync(this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
+            => this.Insert(this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
@@ -266,7 +266,7 @@ internal sealed class BlazorComponentService(
 
         async Task<Result<UiComponentViewModel>> saveChanges()
         {
-            var result = await this.SubmitChangesAsync(persist, token: cancellationToken);
+            var result = await this.SubmitChanges(persist, token: cancellationToken);
             model.Id = entity.Id;
             return Result.From(result, model);
         }

@@ -87,7 +87,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
     }
 
     public Task<IReadOnlyList<FunctionalityViewModel>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        this.GetAllAsync<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        this.GetAll<FunctionalityViewModel, Functionality>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public async Task<FunctionalityViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
@@ -150,7 +150,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             await saveController(model, token).ThrowIfCancellationRequested(token);
             await saveFunctionality(model, token).ThrowIfCancellationRequested(token);
 
-            var saveResult = await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
+            var saveResult = await this.SubmitChanges(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
             return Result.Success(model);
         }
         catch (Exception ex)
@@ -258,7 +258,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         }
 
         async Task saveController(FunctionalityViewModel model, CancellationToken token) =>
-            await this._controllerService.SaveViewModelAsync(model.Controller, cancellationToken: token)
+            await this._controllerService.SaveViewModel(model.Controller, cancellationToken: token)
                 .ThrowOnFailAsync(cancellationToken: token);
     }
 
@@ -310,7 +310,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         {
             return actionResult.WithValue(model);
         }
-        var result = await DataServiceHelper.UpdateAsync(this, this._readDbContext, model, this._converter.ToDbEntity, false, logger: this.Logger, cancellationToken: cancellationToken).ModelResult();
+        var result = await DataServiceHelper.Update(this, this._readDbContext, model, this._converter.ToDbEntity, false, logger: this.Logger, cancellationToken: cancellationToken).ModelResult();
         if (persist)
         {
             _ = await this.SaveChangesAsync(cancellationToken);

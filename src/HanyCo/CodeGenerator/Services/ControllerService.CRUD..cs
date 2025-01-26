@@ -19,17 +19,17 @@ internal partial class ControllerService
     private readonly ISecurityService _securityService = securityService;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
     public Task<Result<int>> DeleteAsync(ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
-        this.DeleteAsync<ControllerViewModel, Controller>(this._writeDbContext, model, persist);
+        this.Delete<ControllerViewModel, Controller>(this._writeDbContext, model, persist);
 
     public async Task<Result> DeleteById(long controllerId, bool persist = true, CancellationToken token = default)
     {
         var entry = this._writeDbContext.ReAttach(new CqrsSegregate { Id = controllerId }).Entry;
         _ = this._writeDbContext.Remove(entry.Entity);
-        return await this.SubmitChangesAsync(persist: persist, token: token);
+        return await this.SubmitChanges(persist: persist, token: token);
     }
 
     public Task<IReadOnlyList<ControllerViewModel>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        this.GetAllAsync<ControllerViewModel, Controller>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        this.GetAll<ControllerViewModel, Controller>(this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public async Task<ControllerViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
@@ -62,7 +62,7 @@ internal partial class ControllerService
             _ = await this._writeDbContext.ControllerMethods.AddAsync(apiEntity, cancellationToken);
             apis.Add((api, apiEntity));
         }
-        var result = await this.SubmitChangesAsync(persist, transaction, token: cancellationToken).OnSucceed(r =>
+        var result = await this.SubmitChanges(persist, transaction, token: cancellationToken).OnSucceed(r =>
         {
             model.Id = controllerEntity.Id;
             foreach (var (Model, Entity) in apis)
@@ -98,7 +98,7 @@ internal partial class ControllerService
             .SetModified(x => x.ModuleId)
             .SetModified(x => x.NameSpace);
         _ = await this._securityService.SetEntityClaims(model.Guid!.Value, model.SecurityClaims, persist, cancellationToken);
-        _ = await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
+        _ = await this.SubmitChanges(persist: persist, token: cancellationToken);
         return Result.Success(model);
     }
 

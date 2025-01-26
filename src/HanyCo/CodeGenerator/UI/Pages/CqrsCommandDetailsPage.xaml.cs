@@ -58,7 +58,7 @@ public partial class CqrsCommandDetailsPage : IStatefulPage, IAsyncSavePage
         try
         {
             this.ViewModel.SecurityClaims.AddRange(this.SecurityClaimCollectorUserControl.ClaimViewModels);
-            var result = await this._service.SaveViewModelAsync(this.ViewModel);
+            var result = await this._service.SaveViewModel(this.ViewModel);
             if (result.IsSucceed)
             {
                 this.IsViewModelChanged = false;

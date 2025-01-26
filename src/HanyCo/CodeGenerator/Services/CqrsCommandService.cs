@@ -50,14 +50,14 @@ internal sealed class CqrsCommandService(
         var entry = this._writeDbContext.Attach(new CqrsSegregate { Id = model.Id.Value });
         _ = this._writeDbContext.Remove(entry.Entity);
         _ = await this._securityService.RemoveEntityClaims(model.Guid!.Value, persist, token);
-        return await this.SubmitChangesAsync(persist: persist, token: token);
+        return await this.SubmitChanges(persist: persist, token: token);
     }
 
     public async Task<Result> DeleteById(long commandId, bool persist = true, CancellationToken token = default)
     {
         var entry = this._writeDbContext.ReAttach(new CqrsSegregate { Id = commandId }).Entry;
         _ = this._writeDbContext.Remove(entry.Entity);
-        return await this.SubmitChangesAsync(persist: persist, token: token);
+        return await this.SubmitChanges(persist: persist, token: token);
     }
 
     public Task<CqrsCommandViewModel> FillByDbEntity(
@@ -75,7 +75,7 @@ internal sealed class CqrsCommandService(
         string? resultDtoName = null,
         CancellationToken token = default)
     {
-        var result = await DataServiceHelper.GetByIdAsync(this, model.Id!.Value, this.GetAllQuery()
+        var result = await DataServiceHelper.GetById(this, model.Id!.Value, this.GetAllQuery()
                        .Include(x => x.Module).Include(x => x.ParamDto)
                        .Include(x => x.ResultDto), x => this._converter.ToViewModel(x) as CqrsCommandViewModel, this._readDbContext.AsyncLock)
             ?? throw new Library.Exceptions.ObjectNotFoundException();
@@ -88,7 +88,7 @@ internal sealed class CqrsCommandService(
     }
 
     public Task<IReadOnlyList<CqrsCommandViewModel>> GetAllAsync(CancellationToken token = default)
-        => DataServiceHelper.GetAllAsync(
+        => DataServiceHelper.GetAll(
             this,
             this.GetAllQuery(),
             x => this._converter.ToViewModel(x).Cast<CqrsCommandViewModel>(),
@@ -100,7 +100,7 @@ internal sealed class CqrsCommandService(
     public async Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         model.Guid ??= Guid.NewGuid();
-        var man = DataServiceHelper.InsertAsync(this,
+        var man = DataServiceHelper.Insert(this,
             this._writeDbContext,
             model,
             this._converter.ToDbEntity,
@@ -142,7 +142,7 @@ internal sealed class CqrsCommandService(
             .SetModified(x => x.CqrsNameSpace)
             .SetModified(x => x.DtoNameSpace);
         _ = await this._securityService.SetEntityClaims(model.Guid!.Value, model.SecurityClaims, persist, token);
-        _ = await this.SubmitChangesAsync(persist: persist, token: token);
+        _ = await this.SubmitChanges(persist: persist, token: token);
         return Result.Success<CqrsCommandViewModel>(model);
     }
 

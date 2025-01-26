@@ -84,7 +84,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             })));
 
     public Property? ToDbEntity(PropertyViewModel? viewModel) =>
-        viewModel is null ? null : this._mapper.MapExcept<Property>(viewModel, x => new { x.Id })
+        viewModel is null ? null : this._mapper.MapExcept<Property>(viewModel, x => x.Id )
             .ForMember(x => x.ParentEntityId = viewModel.ParentEntityId)
             .ForMember(x => x.DbObjectId = viewModel.DbObject?.ToDbFormat())
             .ForMember(x => x.PropertyType = viewModel.Type.Cast().ToInt())
@@ -99,7 +99,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             return null;
         }
 
-        var result = this._mapper.Map<Dto>(model)
+        var result = this._mapper.MapExcept<Dto>(model, x => x.Id)
             .ForMember(x => x.Module = null)
             .ForMember(x => x.DbObjectId = model.DbObject?.ToDbFormat());
         if (model.Module?.Id is { } moduleId)

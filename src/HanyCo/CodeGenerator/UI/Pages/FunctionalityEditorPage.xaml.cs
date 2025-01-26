@@ -90,7 +90,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 .End();
 
             var result = await this._service
-                .SaveViewModelAsync(this.ViewModel, cancellationToken: cancellationToken)
+                .SaveViewModel(this.ViewModel, cancellationToken: cancellationToken)
                 .ThrowOnFailAsync(this, "Error occurred while saving functionality to database.", cancellationToken: cancellationToken);
             return result;
         }

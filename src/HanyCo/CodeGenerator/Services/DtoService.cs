@@ -79,7 +79,7 @@ internal sealed class DtoService(
         {
             _ = await this._propertyService.DeleteByParentIdAsync(model.Id!.Value, false, token);
             _ = this._writeDbContext.RemoveById<DtoEntity>(model.Id!.Value);
-            return await this.SubmitChangesAsync(persist: persist, token: token);
+            return await this.SubmitChanges(persist: persist, token: token);
         }
         catch (DbUpdateException ex) when (ex.GetBaseException().Message.Contains("FK_CqrsSegregate_Dto"))
         {
@@ -301,11 +301,11 @@ internal sealed class DtoService(
 
             // Insert DTO
             await insertDto(viewModel, entity.Dto, persist, token);
-            await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
+            await this.SubmitChanges(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
             // Insert DTO properties
             await insertProperties(viewModel, persist, entity, token);
             // Commit transaction
-            var result = await this.SubmitChangesAsync(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token)
+            var result = await this.SubmitChanges(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token)
                 .With((_) => viewModel.Id = entity.Dto.Id);
             return Result.From(result, viewModel);
         }
@@ -354,7 +354,7 @@ internal sealed class DtoService(
         updateDto(viewModel, entity.Dto, token);
         updateProperties(entity.PropertyViewModels, entity.Dto, token);
 
-        var result = await this.SubmitChangesAsync(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id);
+        var result = await this.SubmitChanges(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id);
         return Result.From(result, viewModel);
 
         void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)

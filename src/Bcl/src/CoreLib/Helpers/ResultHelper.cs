@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 namespace Library.Helpers;
 
 [DebuggerStepThrough]
+[StackTraceHidden]
 public static class ResultHelper
 {
     /// <summary>

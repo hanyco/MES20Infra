@@ -248,7 +248,7 @@ public partial class BlazorPageGeneratorPage
     private async void SaveToDbButton_Click(object sender, RoutedEventArgs e)
     {
         this.ValidateForm();
-        this.ViewModel = await this._service.SaveViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
+        this.ViewModel = await this._service.SaveViewModel(this.ViewModel).ThrowOnFailAsync(this.Title);
         this.RefreshPageComponents();
         this.Debug("Saved to database.");
     }

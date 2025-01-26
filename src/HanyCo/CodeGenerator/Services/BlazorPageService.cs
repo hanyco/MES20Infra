@@ -96,16 +96,16 @@ internal sealed class BlazorPageService(
     }
 
     public Task<Result<int>> DeleteAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
-        DataServiceHelper.DeleteAsync<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
+        DataServiceHelper.Delete<UiPageViewModel, UiPage>(this, this._writeDbContext, model, persist, null, this.Logger);
 
     public Task<IReadOnlyList<UiPageViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetAllAsync<UiPageViewModel, UiPage>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetAll<UiPageViewModel, UiPage>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<UiPageViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetByIdAsync(this, id, this._readDbContext.UiPages.Include(x => x.Dto).Include(x => x.Module).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContext).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContextProperty).Include(x => x.UiPageComponents).ThenInclude(x => x.Position), this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetById(this, id, this._readDbContext.UiPages.Include(x => x.Dto).Include(x => x.Module).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContext).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContextProperty).Include(x => x.UiPageComponents).ThenInclude(x => x.Position), this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<Result<UiPageViewModel>> InsertAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
-        DataServiceHelper.InsertAsync(this, this._writeDbContext, model, this._converter.ToDbEntity, x => this.Validate(x), persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
+        DataServiceHelper.Insert(this, this._writeDbContext, model, this._converter.ToDbEntity, x => this.Validate(x), persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
         => this._writeDbContext.ResetChanges();
@@ -138,7 +138,7 @@ internal sealed class BlazorPageService(
             var removedComponents = await query.ToListLockAsync(this._readDbContext.AsyncLock, cancellationToken: cancellationToken);
             _ = this._writeDbContext.RemoveById<UiPageComponent>(removedComponents);
 
-            var save = await this.SubmitChangesAsync(persist, token: cancellationToken);
+            var save = await this.SubmitChanges(persist, token: cancellationToken);
             var result = (await this.GetByIdAsync(entity.Id, cancellationToken: cancellationToken))!;
             return Result.From<UiPageViewModel>(save, result);
         }

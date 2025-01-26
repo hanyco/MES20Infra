@@ -56,7 +56,7 @@ public partial class CqrsQueryDetailsPage : IStatefulPage, IAsyncSavePage
         Check.MustBeNotNull(this.ViewModel);
         try
         {
-            var result = await this._service.SaveViewModelAsync(this.ViewModel, cancellationToken: cancellation);
+            var result = await this._service.SaveViewModel(this.ViewModel, cancellationToken: cancellation);
 
             if (result.IsSucceed)
             {

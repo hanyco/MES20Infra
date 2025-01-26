@@ -36,7 +36,7 @@ internal sealed class PropertyService : IPropertyService
         Check.MustBeArgumentNotNull(model?.Id);
 
         _ = this._writeDbContext.RemoveById<Property>(model.Id.Value);
-        var dbResult = await this.SubmitChangesAsync(persist: persist, token: cancellationToken);
+        var dbResult = await this.SubmitChanges(persist: persist, token: cancellationToken);
 
         return dbResult;
     }
@@ -45,7 +45,7 @@ internal sealed class PropertyService : IPropertyService
     {
         var dbProperties = await queryProperties(parentId, cancellationToken);
         await removeProperties(dbProperties, cancellationToken);
-        return await this.SubmitChangesAsync(persist: persist, token: cancellationToken) > 0;
+        return await this.SubmitChanges(persist: persist, token: cancellationToken) > 0;
 
         async Task<IEnumerable<Property>> queryProperties(long parentId, CancellationToken cancellationToken = default)
         {

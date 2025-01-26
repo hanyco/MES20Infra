@@ -324,7 +324,7 @@ public partial class DtoDetailsPage
 
             this.Debug("Saving DTO…");
             var viewModel = this.ViewModel!;
-            var saveResult = await this._service.SaveViewModelAsync(viewModel).ThrowOnFailAsync(this.Title);
+            var saveResult = await this._service.SaveViewModel(viewModel).ThrowOnFailAsync(this.Title);
 
             this.Debug("Reloading DTO…");
             var resultViewModel = await this._service.GetByIdAsync(viewModel.Id!.Value).WaitAsync(TimeSpan.FromSeconds(15));

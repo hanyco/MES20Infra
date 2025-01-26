@@ -20,10 +20,10 @@ internal sealed class ModuleService : IBusinessService, IModuleService
         => (this._readDbContext, this._converter) = (readDbContext, converter);
 
     public Task<IReadOnlyList<ModuleViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetAllAsync<ModuleViewModel, HanyCo.Infra.Internals.Data.DataSources.Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetAll<ModuleViewModel, HanyCo.Infra.Internals.Data.DataSources.Module>(this, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public Task<ModuleViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
-        => DataServiceHelper.GetByIdAsync<ModuleViewModel, HanyCo.Infra.Internals.Data.DataSources.Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
+        => DataServiceHelper.GetById<ModuleViewModel, HanyCo.Infra.Internals.Data.DataSources.Module>(this, id, this._readDbContext, this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
     public IAsyncEnumerable<HanyCo.Infra.Internals.Data.DataSources.Module> GetChildEntitiesAsync(HanyCo.Infra.Internals.Data.DataSources.Module entity, CancellationToken cancellationToken = default)
         => this.GetChildEntitiesByIdAsync(entity.ArgumentNotNull().Id, cancellationToken);

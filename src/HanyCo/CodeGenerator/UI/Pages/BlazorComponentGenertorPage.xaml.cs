@@ -94,7 +94,7 @@ public partial class BlazorComponentGenertorPage : IStatefulPage, IAsyncSavePage
             this.ValidateForm(false);
             var scope = this.ActionScopeBegin("Saving...");
             var saveResult = await this._service
-                .SaveViewModelAsync(this.ViewModel, cancellationToken: cancellation)
+                .SaveViewModel(this.ViewModel, cancellationToken: cancellation)
                 .ThrowIfCancellationRequested(cancellation)
                 .ThrowOnFailAsync();
             ((IStatefulPage)this).IsViewModelChanged = false;
