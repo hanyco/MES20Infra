@@ -50,43 +50,38 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.PageDataContextPropertyId = model.PageDataContextProperty?.Id)
             .ForMember(x => x.IsGrid = model.IsGrid)
             .Fluent()
-            .IfTrue(model.Properties.Any() is true, x => x.UiComponentProperties = model.Properties.Select(this.ToDbEntity).Compact().ToList());
+            .IfTrue(model.Properties.Any() is true, x => x.UiComponentProperties = [.. model.Properties.Select(this.ToDbEntity).Compact()]);
 
-    // TODO: Think about how to load component complexity from database
-    //?.IfTrue(model.UiActions.Any() is true, x => x.UiComponentActions = model.UiActions.Select(this.ToDbEntity).ToList()!);
-
-    [return: NotNullIfNotNull(nameof(model))]
     public HanyCo.Infra.Internals.Data.DataSources.Module? ToDbEntity(ModuleViewModel? model) =>
         model is null ? null : this._mapper.Map<HanyCo.Infra.Internals.Data.DataSources.Module>(model);
 
-    [return: NotNullIfNotNull(nameof(model))]
     public UiBootstrapPosition? ToDbEntity(UiBootstrapPositionViewModel? model) =>
         model is null ? null : this._mapper.Map<UiBootstrapPosition>(model);
 
     public UiPage? ToDbEntity(UiPageViewModel? model) =>
         model is null ? null : this._mapper.Map<UiPage>(model)
-                      .ForMember(x => x.DtoId = model.DataContext?.Id)
-                      .ForMember(x => x.Dto = null)
-                      .ForMember(x => x.ModuleId = model.Module.Id ?? default)
-                      .ForMember(x => x.Module = null!)
-                      .ForMember(x => x.UiPageComponents.AddRange(model.Components.Select(cmp =>
-                      {
-                          var uiPageComponent = new UiPageComponent
-                          {
-                              PageId = model.Id ?? default,
-                              Position = this.ToDbEntity(cmp.Position),
-                              PositionId = cmp.Position.Id,
-                              UiComponentId = cmp.Id ?? default,
-                              UiComponent = null!,
-                              //Id = cmp.PageComponentId ?? long.MinValue
-                          };
-                          if (cmp.PageComponentId is { } upcid)
-                          {
-                              uiPageComponent.Id = upcid;
-                          }
-
-                          return uiPageComponent;
-                      })));
+            .ForMember(x => x.DtoId = model.DataContext?.Id)
+            .ForMember(x => x.Dto = null)
+            .ForMember(x => x.ModuleId = model.Module.Id ?? default)
+            .ForMember(x => x.Module = null!)
+            .ForMember(x => x.UiPageComponents.AddRange(model.Components.Select(cmp =>
+            {
+                var uiPageComponent = new UiPageComponent
+                {
+                    PageId = model.Id ?? default,
+                    Position = this.ToDbEntity(cmp.Position),
+                    PositionId = cmp.Position.Id,
+                    UiComponentId = cmp.Id ?? default,
+                    UiComponent = null!,
+                    //Id = cmp.PageComponentId ?? long.MinValue
+                };
+                if (cmp.PageComponentId is { } upcid)
+                {
+                    uiPageComponent.Id = upcid;
+                }
+            
+                return uiPageComponent;
+            })));
 
     public Property? ToDbEntity(PropertyViewModel? viewModel) =>
         viewModel is null ? null : this._mapper.MapExcept<Property>(viewModel, x => new { x.Id })
@@ -96,7 +91,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => (x.Id < 0).IfTrue(() => x.Id = 0).Fluent().IfTrue(viewModel.Id > 0, () => x.Id = viewModel.Id!.Value))
             .ForMember(x => x.DtoId = viewModel.Dto?.Id);
 
-    [return: NotNullIfNotNull(nameof(model))]
+
     public Dto? ToDbEntity(DtoViewModel? model)
     {
         if (model is null)
@@ -115,11 +110,11 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         return result;
     }
 
-    [return: NotNullIfNotNull(nameof(model))]
+
     public CqrsSegregate? ToDbEntity(CqrsQueryViewModel? model) =>
         this.CqrsViewModelToDbEntityInner(model, CqrsSegregateType.Query);
 
-    [return: NotNullIfNotNull(nameof(model))]
+
     public CqrsSegregate? ToDbEntity(CqrsCommandViewModel? model) =>
         this.CqrsViewModelToDbEntityInner(model, CqrsSegregateType.Command);
 
@@ -151,12 +146,12 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         else
         {
             result.Module = this.ToDbEntity(model.Module);
-        }        
-        
+        }
+
         return result;
     }
 
-    [return: NotNullIfNotNull(nameof(model))]
+
     public CqrsSegregate? ToDbEntity(CqrsViewModelBase? model)
     {
         if (model == null)
@@ -175,21 +170,21 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
         if (model.Module?.Id is { } moduleId)
         {
-            result.ModuleId= moduleId;
-        }        
-        if(model.ParamsDto?.Id is { } paramsDtoId)
+            result.ModuleId = moduleId;
+        }
+        if (model.ParamsDto?.Id is { } paramsDtoId)
         {
             result.ParamDtoId = paramsDtoId;
         }
-        if(model.ResultDto?.Id is { } resultDtoId)
+        if (model.ResultDto?.Id is { } resultDtoId)
         {
             result.ResultDtoId = resultDtoId;
         }
-        
+
         return result;
     }
 
-    [return: NotNullIfNotNull(nameof(model))]
+
     public Controller? ToDbEntity(ControllerViewModel? model)
     {
         if (model == null)
@@ -216,7 +211,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         return result;
     }
 
-    [return: NotNullIfNotNull("model")]
+    [return: NotNullIfNotNull(nameof(model))]
     public ControllerMethod? ToDbEntity(ControllerMethodViewModel? model)
     {
         if (model == null)
@@ -262,7 +257,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         }
 
         var result = this._mapper.Map<DtoViewModel>(entity)
-            .ForMember(x => x.DbObject = DbObjectViewModel.FromDbFormat(entity.DbObjectId));        
+            .ForMember(x => x.DbObject = DbObjectViewModel.FromDbFormat(entity.DbObjectId));
 
         if (entity.Properties?.Count > 0)
         {
@@ -309,7 +304,8 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                 .ForMember(x => x.Position = this.ToViewModel(entity.Position) ?? new())
                 .ForMember(x => x.CqrsSegregate = this.ToViewModel(entity.CqrsSegregate))
                 .ForMember(x => x.Placement = EnumHelper.ToEnum<Placement>(entity.TriggerTypeId));
-        };
+        }
+        ;
 
         return this._mapper.Map<UiComponentCustomButton>(entity)
             .ForMember(x => x.Position = this.ToViewModel(entity.Position) ?? new())
@@ -373,10 +369,10 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.Controller = new())
             ;
 
-    [return: NotNullIfNotNull("entity")]
+    [return: NotNullIfNotNull(nameof(entity))]
     public ControllerViewModel? ToViewModel(Controller? entity) => throw new NotImplementedException();
 
-    [return: NotNullIfNotNull("entity")]
+    [return: NotNullIfNotNull(nameof(entity))]
     public ControllerMethodViewModel? ToViewModel(ControllerMethod? entity)
     {
         if (entity is null)
