@@ -1,4 +1,9 @@
-﻿using HanyCo.Infra.CodeGen.Domain.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Windows;
+using System.Windows.Input;
+
+using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.UI.Helpers;
@@ -17,10 +22,6 @@ using Library.Wpf.Windows;
 using Library.Wpf.Windows.CommonTools;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
-
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Windows;
 
 using UI;
 
@@ -120,19 +121,6 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         Check.MustBe(initiated, () => "Please create a new Functionality or edit an old one.");
     }
 
-    private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            this.EnableActors(false);
-            await CreateFunctionality();
-        }
-        finally
-        {
-            this.EnableActors(true);
-        }
-    }
-
     private async Task CreateFunctionality(CancellationToken cancellationToken = default)
     {
         await this.AskToSaveIfChangedAsync(cancellationToken: cancellationToken).BreakOnFail().End();
@@ -140,19 +128,18 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         this.ViewModel = await this.GetNewViewModel(cancellationToken);
     }
 
-    private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
+    private async void CreateFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             this.EnableActors(false);
-            await DeleteFunctionality();
+            await this.CreateFunctionality();
         }
         finally
         {
             this.EnableActors(true);
         }
     }
-
     private async Task DeleteFunctionality(CancellationToken cancellationToken = default)
     {
         var functionality = this.FunctionalityTreeView.SelectedItem;
@@ -167,31 +154,29 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         await this.BindDataAsync();
     }
 
-    private async void EditFunctionalityButton_Click(object sender, RoutedEventArgs e)
+    private async void DeleteFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             this.EnableActors(false);
-            await LoadFunctionality();            
+            await this.DeleteFunctionality();
         }
         finally
         {
             this.EnableActors(true);
         }
     }
-
-    private async Task LoadFunctionality(CancellationToken cancellation = default)
+    private async void EditFunctionalityButton_Click(object sender, RoutedEventArgs e)
     {
-        var id = this.FunctionalityTreeView.SelectedItem
-                        .Check()
-                        .NotNull(() => "No functionality is selected.")
-                        .NotNull(x => x!.Id).ThrowOnFail()
-                        .Value!.Id!.Value;
-        await this.AskToSaveIfChangedAsync(cancellationToken: cancellation).BreakOnFail().End();
-        var viewModel = await this._service.GetByIdAsync(id, cancellation);
-        this.ViewModel = viewModel;
-        await this.BindDataAsync();
-        CheckIfInitiated(true);
+        try
+        {
+            this.EnableActors(false);
+            await this.LoadFunctionality();
+        }
+        finally
+        {
+            this.EnableActors(true);
+        }
     }
 
     private void EnableActors(bool enable)
@@ -230,7 +215,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.EnableActors(false);
             this.CheckIfInitiated(false);
-            this.PrepareViewModel();
+            _ = this.PrepareViewModel();
             this.ViewModel = await this._service.GenerateViewModelAsync(this.ViewModel).ThrowOnFailAsync(this.Title);
         }
         finally
@@ -241,6 +226,39 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
     private async Task<FunctionalityViewModel> GetNewViewModel(CancellationToken cancellationToken = default) =>
         await this._service.CreateAsync(cancellationToken).WithAsync(x => x.SourceDto.NameSpace = SettingsService.Get().productName ?? string.Empty);
+
+    private async Task LoadFunctionality(CancellationToken cancellation = default)
+    {
+        var id = this.FunctionalityTreeView.SelectedItem
+                        .Check()
+                        .NotNull(() => "No functionality is selected.")
+                        .NotNull(x => x!.Id).ThrowOnFail()
+                        .Value!.Id!.Value;
+        await this.AskToSaveIfChangedAsync(cancellationToken: cancellation).BreakOnFail().End();
+        var viewModel = await this._service.GetByIdAsync(id, cancellation);
+        this.ViewModel = viewModel;
+        await this.BindDataAsync();
+        this.CheckIfInitiated(true);
+    }
+    private void Me_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        // Perform actions based on key and modifier combinations
+        if (e.Key == Key.N)
+        {
+            if (hasModifiers(ModifierKeys.Control, ModifierKeys.Shift))
+            {
+                this.SelectRootDtoByDtoButton.PerformClick();
+            }
+            else if (hasModifiers(ModifierKeys.Control))
+            {
+                this.SelectRootDtoByTableButton.PerformClick();
+            }
+        }
+
+        // Local method to check if specific modifiers are pressed
+        static bool hasModifiers(params ModifierKeys[] modifiers) =>
+            modifiers.All(mod => Keyboard.Modifiers.HasFlag(mod));
+    }
 
     private async void Me_Loaded(object sender, RoutedEventArgs e)
     {
@@ -375,19 +393,6 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         }
     }
 
-    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            this.EnableActors(false);
-            await SaveToDisk();
-        }
-        finally
-        {
-            this.EnableActors(true);
-        }
-    }
-
     private async Task SaveToDisk(CancellationToken cancellationToken = default)
     {
         _ = ControlHelper.MoveToNextUIElement();
@@ -395,6 +400,18 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         SourceCodeHelper.ShowDiskOperationResult(saveResult);
     }
 
+    private async void SaveToDiskButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            this.EnableActors(false);
+            await this.SaveToDisk();
+        }
+        finally
+        {
+            this.EnableActors(true);
+        }
+    }
     private async void SelectRootDtoByDtoButton_Click(object sender, RoutedEventArgs e)
     {
         this.EnableActors(false);

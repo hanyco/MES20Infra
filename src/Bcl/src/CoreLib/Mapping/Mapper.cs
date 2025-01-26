@@ -7,9 +7,9 @@ using Library.Validations;
 
 namespace Library.Mapping;
 
-//[DebuggerStepThrough]
-//[StackTraceHidden]
-//[Stateless]
+[DebuggerStepThrough]
+[StackTraceHidden]
+[Stateless]
 public sealed class Mapper : IMapper
 {
     private static readonly HashSet<CustomMapper> _customMappers = [];

@@ -134,4 +134,44 @@ public partial class DatabaseExplorerUserControl : UserControl, INotifyPropertyC
     {
         this.FilterTextBox.Text = string.Empty;
     }
+
+    private void FilterTextBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            // Send System.Windows.Input.Key.Enter to the owner Window
+            this.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice, PresentationSource.FromVisual(this), 0, System.Windows.Input.Key.Enter)
+            {
+                RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent
+            });
+        }
+        if (e.Key == System.Windows.Input.Key.Down)
+        {
+            // Set focus to TreeView
+            this.TreeView.Focus();
+        }
+    }
+
+    private void TreeView_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            // Send System.Windows.Input.Key.Enter to the owner Window
+            this.RaiseEvent(new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice, PresentationSource.FromVisual(this), 0, System.Windows.Input.Key.Enter)
+            {
+                RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent
+            });
+        }
+        // If TreeView's selected item is the first item and the user presses Up, then move focus to the FilterTextBox
+        if (e.Key == System.Windows.Input.Key.Up && this.TreeView.SelectedItem == this.TreeView.Items[0])
+        {
+            this.FilterTextBox.Focus();
+        }
+    }
+
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Focus on FilterTextBox
+        _ = this.FilterTextBox.Focus();
+    }
 }

@@ -101,6 +101,7 @@ internal partial class HostDialogBox
 
     private void Me_Loaded(object sender, RoutedEventArgs e)
     {
-
+        // Focus on HostFrame
+        _ = this.HostFrame.Focus();
     }
 }
