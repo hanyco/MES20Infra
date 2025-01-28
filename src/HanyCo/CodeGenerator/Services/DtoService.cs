@@ -1,4 +1,7 @@
-﻿using HanyCo.Infra.CodeGen.Domain.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
+
+using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.CodeGeneration.Definitions;
 using HanyCo.Infra.CodeGeneration.Helpers;
@@ -10,7 +13,6 @@ using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
 using Library.Data.EntityFrameworkCore;
 using Library.Data.Linq;
-using Library.Data.Markers;
 using Library.Exceptions.Validations;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
@@ -20,10 +22,7 @@ using Library.Validations;
 using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-
-using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
+using Microsoft.IdentityModel.Tokens;
 
 using DtoEntity = HanyCo.Infra.Internals.Data.DataSources.Dto;
 
@@ -100,7 +99,7 @@ internal sealed class DtoService(
             return Result.Fail<int>();
         }
 
-        static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default) => 
+        static Result<DtoViewModel> validate(DtoViewModel? model, CancellationToken token = default) =>
             model.Check()
                 .ArgumentNotNull()
                 .NotNull(x => x!.Id)
@@ -113,7 +112,8 @@ internal sealed class DtoService(
         if (!Check.IfIsNull(dto).TryParse(out var ncr))
         {
             return ncr;
-        };
+        }
+        ;
 
         return await this.DeleteAsync(dto!, persist, token);
     }
@@ -286,38 +286,47 @@ internal sealed class DtoService(
     public Task<IReadOnlyList<PropertyViewModel>> GetPropertiesByDtoIdAsync(long dtoId, CancellationToken token = default)
         => this._propertyService.GetByParentIdAsync(dtoId, token);
 
-    public async Task<Result<DtoViewModel>> Insert(DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
+    public Task<Result<DtoViewModel>> Insert(DtoViewModel viewModel, bool persist = true, CancellationToken token = default) => CatchResultAsync(async () =>
     {
-        var validationCheck = await this.ValidateAsync(viewModel, token);
-        if (!validationCheck.IsSucceed)
-        {
-            return validationCheck!;
-        }
+        await this.ValidateAsync(viewModel, token).ThrowOnFailAsync(token).End();
 
-        using var transaction = await this.CreateTransactionOnDemand(this._writeDbContext, persist, token);
+        var transaction = this._writeDbContext.Database.CurrentTransaction is null
+            ? await this._writeDbContext.Database.BeginTransactionAsync(token)
+            : null;
         try
         {
             // Initialize view model.
             _ = this.InitializeViewModel(viewModel);
-            
+
             // Insert DTO
-            var dto = await insertDto(viewModel, persist, token);
-            
+            var dto = await insertDto(viewModel, persist, token).ThrowIfCancellationRequested(token);
+
             // Insert DTO properties
-            await insertProperties(viewModel, dto.Id, persist, token);
+            await insertProperties(viewModel, dto.Id, persist, token).ThrowIfCancellationRequested(token);
 
             if (persist)
             {
-                await transaction!.CommitAsync(token);
+                await this.SaveChangesAsync(token).ThrowOnFailAsync(token).End();
+                if (transaction is not null)
+                {
+                    await transaction.CommitAsync(token);
+                }
                 viewModel.Id = dto.Id;
             }
 
-            return Result.Success(viewModel);
+            return viewModel;
         }
-        catch (Exception ex)
+        catch
         {
             _ = transaction?.RollbackAsync(token);
-            return Result.Fail<DtoViewModel>(ex);
+            throw;
+        }
+        finally
+        {
+            if (transaction != null)
+            {
+                await transaction.DisposeAsync();
+            }
         }
 
         async Task<DtoEntity> insertDto(DtoViewModel viewModel, bool persist, CancellationToken token)
@@ -325,9 +334,9 @@ internal sealed class DtoService(
             var (dto, _) = this.ToDbEntity(viewModel);
             dto.Module = null;
             var entry = await this._writeDbContext.Dtos.AddAsync(dto, token);
-            if(persist)
+            if (persist)
             {
-                await this.SubmitChanges(true, token: token).ThrowOnFailAsync(cancellationToken: token);
+                _ = await this.SubmitChanges(true, token: token).ThrowOnFailAsync(cancellationToken: token);
             }
             return entry.Entity;
         }
@@ -337,7 +346,7 @@ internal sealed class DtoService(
             _ = this.PrepareProperties(viewModel);
             return this._propertyService.InsertProperties(viewModel.Properties, dtoId, persist, token).ThrowOnFailAsync(cancellationToken: token);
         }
-    }
+    });
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();
@@ -345,13 +354,9 @@ internal sealed class DtoService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken token = default)
         => this._writeDbContext.SaveChangesResultAsync(cancellationToken: token);
 
-    public async Task<Result<DtoViewModel>> Update(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
+    public Task<Result<DtoViewModel>> Update(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default) => CatchResultAsync(async () =>
     {
-        var vr = await this.ValidateAsync(viewModel, token);
-        if (vr.IsFailure)
-        {
-            return vr!;
-        }
+        _ = await this.ValidateAsync(viewModel, token).ThrowOnFailAsync();
         this.ResetChanges();
 
         var entity = this.InitializeViewModel(viewModel)
@@ -361,8 +366,8 @@ internal sealed class DtoService(
         updateDto(viewModel, entity.Dto, token);
         updateProperties(viewModel.Properties, entity.Dto, token);
 
-        var result = await this.SubmitChanges(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id);
-        return Result.From(result, viewModel);
+        var result = await this.SubmitChanges(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id).ThrowOnFailAsync();
+        return viewModel;
 
         void updateDto(DtoViewModel viewModel, DtoEntity dto, CancellationToken token = default)
             => this._writeDbContext.Attach(dto)
@@ -408,7 +413,7 @@ internal sealed class DtoService(
                 }
             }
         }
-    }
+    });
 
     public async Task<Result<DtoViewModel?>> ValidateAsync(DtoViewModel? viewModel, CancellationToken token = default)
     {
@@ -434,7 +439,8 @@ internal sealed class DtoService(
         if (duplicates.Any())
         {
             return Result.Fail<DtoViewModel?>(new ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
-        };
+        }
+        ;
         return Result.Success(viewModel)!;
     }
 

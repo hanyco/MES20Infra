@@ -118,24 +118,16 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         return result;
     }
 
-    public async Task<Result<FunctionalityViewModel>> Insert(FunctionalityViewModel model, bool persist = true, CancellationToken token = default)
+    public Task<Result<FunctionalityViewModel>> Insert(FunctionalityViewModel model, bool persist = true, CancellationToken token = default) => CatchResultAsync(async () =>
     {
         // Non-persistent operation is not supported.
-        if (!CatchResult(() => CheckPersistence(persist)).TryParse(out var persistenceCheckResult))
-        {
-            return persistenceCheckResult.WithValue(model);
-        }
+        CheckPersistence(persist);
+
         // Validate the model
-        if (!this.Validate(model).TryParse(out var vr))
-        {
-            return vr!;
-        }
+        this.Validate(model).ThrowOnFail();
+
         // Check if the functionality or it's components already exist.
-        var er = await checkExitance(model);
-        if (er.IsFailure)
-        {
-            return er.WithValue(model);
-        }
+        await checkExitance(model).ThrowOnFailAsync(token);
 
         // Save the functionality and its components
         using var transaction = await this._writeDbContext.BeginTransactionAsync(token);
@@ -151,9 +143,9 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             await saveFunctionality(model, token).ThrowIfCancellationRequested(token);
 
             var saveResult = await this.SubmitChanges(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
-            return Result.Success(model);
+            return model;
         }
-        catch (Exception ex)
+        catch
         {
             await transaction.RollbackAsync(token);
             //this._dtoService.ResetChanges();
@@ -161,7 +153,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             //this._commandService.ResetChanges();
             this.ResetChanges();
 
-            return Result.Fail<FunctionalityViewModel>(ex);
+            throw;
         }
 
         async Task saveQuery(CqrsQueryViewModel model, CancellationToken token)
@@ -221,14 +213,15 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             if (await this._commandService.AnyByName(model.DeleteCommand.Name!))
             {
                 return Result.Fail("Delete command already exists.");
-            };
+            }
+            ;
             return Result.Succeed;
         }
 
         async Task saveController(FunctionalityViewModel model, CancellationToken token) =>
             await this._controllerService.SaveViewModel(model.Controller, cancellationToken: token)
                 .ThrowOnFailAsync(cancellationToken: token);
-    }
+    });
 
     public async Task<Result<FunctionalityViewModel>> Update(long id, FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {

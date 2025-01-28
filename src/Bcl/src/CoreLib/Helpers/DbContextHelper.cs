@@ -496,23 +496,9 @@ public static class DbContextHelper
     /// name="dbContext">The DbContext to save changes to.</param> <param
     /// name="cancellationToken">The CancellationToken to use.</param> <returns>A Result<int>
     /// containing the number of changes saved or an exception message and the exception itself.</returns>
-    public static async Task<Result<int>> SaveChangesResultAsync<TDbContext>(this TDbContext dbContext, CancellationToken cancellationToken = default)
-                where TDbContext : DbContext
-    {
-        Check.MustBeArgumentNotNull(dbContext);
-
-        try
-        {
-            var saveResult = await dbContext.SaveChangesAsync(cancellationToken);
-            var result = Result.Success(saveResult);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            var result = Result.Fail<int>(ex);
-            return result;
-        }
-    }
+    public static Task<Result<int>> SaveChangesResultAsync<TDbContext>(this TDbContext dbContext, CancellationToken cancellationToken = default)
+        where TDbContext : DbContext => 
+        CatchResultAsync(() => dbContext.ArgumentNotNull().SaveChangesAsync(cancellationToken));
 
     public static EntityEntry<TEntity> SetEntryModified<TEntity>(
             this EntityEntry<TEntity> entityEntry,

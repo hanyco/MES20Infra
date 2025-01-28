@@ -29,14 +29,14 @@ public static class CodeHelper
         throw new BreakException();
 
     /// <summary>
-    /// Executes the specified try method and catches any exceptions that occur.
+    /// Catch the result of a function.
     /// </summary>
-    /// <param name="tryMethod">The try method.</param>
-    /// <param name="catchMethod">The catch method.</param>
-    /// <param name="finallyMethod">The finally method.</param>
-    /// <param name="handling">The exception handling.</param>
-    /// <param name="throwException">if set to <c>true</c> [throw exception].</param>
-    /// <returns>The exception that was caught, or null if no exception was caught.</returns>
+    /// <param name="tryMethod"></param>
+    /// <param name="catchMethod"></param>
+    /// <param name="finallyMethod"></param>
+    /// <param name="handling"></param>
+    /// <param name="throwException"></param>
+    /// <returns></returns>
     public static Exception? Catch(
         in Action tryMethod,
         in Action<Exception>? catchMethod = null,
@@ -69,9 +69,19 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// Catch the result of a function.
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="exceptionHandling"></param>
     public static void Catch(in Action action, in ExceptionHandling exceptionHandling)
         => Catch(action, handling: exceptionHandling);
 
+    /// <summary>
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
+    /// </summary>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static async Task<Result> CatchAsync(Func<Task> action)
     {
         Check.MustBeArgumentNotNull(action);
@@ -87,6 +97,12 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static async Task<Result<TResult?>> CatchAsync<TResult>(Func<Task<TResult?>> action)
     {
         try
@@ -100,11 +116,11 @@ public static class CodeHelper
     }
 
     /// <summary>
-    /// Executes the specified action and returns the result or an exception.
+    /// Catch the result of a function and return the result value and the exception if occurred.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="action">The action to execute.</param>
-    /// <returns>A tuple containing the result or an exception.</returns>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static (TResult? Result, Exception? Exception) CatchFunc<TResult>(in Func<TResult> action)
     {
         Check.MustBeArgumentNotNull(action);
@@ -119,15 +135,12 @@ public static class CodeHelper
     }
 
     /// <summary>
-    /// Executes the specified action and returns the result or a default value if an exception is thrown.
+    /// Catch the result of a function and return the result value and the exception if occurred.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="action">The action to execute.</param>
-    /// <param name="defaultValue">The default value to return if an exception is thrown.</param>
-    /// <returns>
-    /// A tuple containing the result of the action or the default value and the exception if one
-    /// was thrown.
-    /// </returns>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="action"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
     public static (TResult Result, Exception? Exception) CatchFunc<TResult>(in Func<TResult> action, in TResult defaultValue)
     {
         Check.MustBeArgumentNotNull(action);
@@ -141,6 +154,14 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TException"></typeparam>
+    /// <param name="action"></param>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
     public static TResult? CatchFunc<TResult, TException>(in Func<TResult> action, in Predicate<TException> predicate)
         where TException : Exception
     {
@@ -155,10 +176,10 @@ public static class CodeHelper
     }
 
     /// <summary>
-    /// Executes the given action and returns a Result object indicating success or failure.
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
     /// </summary>
-    /// <param name="action">The action to execute.</param>
-    /// <returns>A Result object indicating success or failure.</returns>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static Result CatchResult([DisallowNull] in Action action)
     {
         Check.MustBeArgumentNotNull(action);
@@ -174,12 +195,12 @@ public static class CodeHelper
     }
 
     /// <summary>
-    /// Executes the specified action and returns a <see cref="Result"/>.
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="action">The action to execute.</param>
-    /// <param name="onErrorResult">The default result to return if an exception is thrown.</param>
-    /// <returns>A <see cref="ResultTResult"/>.</returns>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="action"></param>
+    /// <param name="onErrorResult"></param>
+    /// <returns></returns>
     public static Result<TResult?> CatchResult<TResult>([DisallowNull] in Func<TResult> action, TResult? onErrorResult = default)
     {
         Check.MustBeArgumentNotNull(action);
@@ -193,6 +214,14 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TArg"></typeparam>
+    /// <param name="method"></param>
+    /// <param name="arg"></param>
+    /// <returns></returns>
     public static Result<IEnumerable<TResult?>?> CatchResult<TResult, TArg>(Func<TArg, IEnumerable<TResult?>> method, TArg arg)
     {
         Check.MustBeArgumentNotNull(method);
@@ -208,35 +237,31 @@ public static class CodeHelper
     }
 
     /// <summary>
-    /// Executes a function asynchronously and returns a Result object with the result of the
-    /// function or an error message.
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="func">The function to execute.</param>
-    /// <param name="defaultResult">The default result to return in case of an error.</param>
-    /// <returns>A Result object with the result of the function or an error message.</returns>
-    public static async Task<Result<TResult?>> CatchResultAsync<TResult>(Func<Task<TResult>> func, TResult? defaultResult = default)
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="func"></param>
+    /// <param name="defaultResult"></param>
+    /// <returns></returns>
+    public static async Task<Result<TResult>> CatchResultAsync<TResult>(Func<Task<TResult>> func, TResult? defaultResult = default)
     {
         Check.MustBeArgumentNotNull(func);
         try
         {
             var result = await func();
-            return Result.Success<TResult?>(result);
+            return Result.Success<TResult>(result);
         }
         catch (Exception ex)
         {
-            return Result.Fail<TResult?>(ex.GetBaseException().Message, defaultResult);
+            return Result.Fail<TResult>(ex.GetBaseException().Message, defaultResult);
         }
     }
 
     /// <summary>
-    /// Executes a function asynchronously and returns a Result object with the result of the
-    /// function or an error message.
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="func">The function to execute.</param>
-    /// <param name="defaultResult">The default result to return in case of an error.</param>
-    /// <returns>A Result object with the result of the function or an error message.</returns>
+    /// <param name="func"></param>
+    /// <returns></returns>
     public static async Task<Result> CatchResultAsync(Func<Task<Result>> func)
     {
         Check.MustBeArgumentNotNull(func);
@@ -250,6 +275,11 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// Catch the result of a function and return the result value in <see cref="Result"/> class.
+    /// </summary>
+    /// <param name="func"></param>
+    /// <returns></returns>
     public static async Task<Result> CatchResultAsync(Func<Task> func)
     {
         Check.MustBeArgumentNotNull(func);
@@ -263,7 +293,15 @@ public static class CodeHelper
             return Result.Fail(ex);
         }
     }
-
+    
+    /// <summary>
+    /// Compose a function with a given argument.
+    /// </summary>
+    /// <typeparam name="TArgs"></typeparam>
+    /// <typeparam name="TResult2"></typeparam>
+    /// <param name="args"></param>
+    /// <param name="func"></param>
+    /// <returns></returns>
     public static Func<TResult2> Compose<TArgs, TResult2>(TArgs args, Func<TArgs, TResult2> func)
     {
         Check.MustBeArgumentNotNull(func);
@@ -271,14 +309,6 @@ public static class CodeHelper
         TArgs create() => args;
     }
 
-    /// <summary>
-    /// Combines two functions into one.
-    /// </summary>
-    /// <typeparam name="TArgs">The type of the first function's return value.</typeparam>
-    /// <typeparam name="TResult2">The type of the second function's return value.</typeparam>
-    /// <param name="create">The first function.</param>
-    /// <param name="func">The second function.</param>
-    /// <returns>A function that combines the two functions.</returns>
     public static Func<TResult2> Compose<TArgs, TResult2>([DisallowNull] this Func<TArgs> create, Func<TArgs, TResult2> func)
     {
         Check.MustBeArgumentNotNull(create);
@@ -618,6 +648,13 @@ public static class CodeHelper
         return @this;
     }
 
+    /// <summary>
+    /// Loop through the items and execute the action for each item.
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
+    /// <param name="items"></param>
+    /// <param name="action"></param>
+    /// <param name="getNext"></param>
     public static void For<TItem>(IEnumerable<TItem>? items, in Action<(TItem Item, int Index)> action, Func<int, int>? getNext = null)
     {
         var act = action;
@@ -625,7 +662,7 @@ public static class CodeHelper
     }
 
     /// <summary>
-    /// Simulated
+    /// Loop through the items and execute the action for each item. This method is a replacement for the keyword <code>for</code>.
     /// <code>for</code>
     /// keyword.
     /// </summary>
@@ -673,6 +710,13 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// Loop through the items and execute the action for each item.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="max"></param>
+    /// <param name="selector"></param>
+    /// <returns></returns>
     public static IEnumerable<T> For<T>(int max, Func<int, T> selector)
     {
         Check.MustBeArgumentNotNull(selector);
@@ -683,6 +727,15 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// Loops through the items and executes the action for each item.
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <typeparam name="Item"></typeparam>
+    /// <param name="this"></param>
+    /// <param name="items"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static TInstance ForEach<TInstance, Item>(in TInstance @this, IEnumerable<Item>? items, in Action<Item> action)
     {
         if (items is null || action is null)
@@ -750,22 +803,11 @@ public static class CodeHelper
         => GetCallerMethod(index)?.Name;
 
     /// <summary>
-    /// Gets the current method.
+    /// If b returns true then invoke the ifTrue function else invoke the ifFalse function.
     /// </summary>
-    /// <returns></returns>
-    [Obsolete("Subject to remove", true)]
-    public static MethodBase? GetCurrentMethod()
-        => GetCallerMethod();
-
-    /// <summary>
-    /// Determines whether the specified try function has exception.
-    /// </summary>
-    /// <param name="tryFunc">The try function.</param>
-    /// <returns><c>true</c> if the specified tryFunc has exception; otherwise, <c>false</c>.</returns>
-    [Obsolete("Subject to remove", true)]
-    public static bool HasException(in Action tryFunc)
-        => Catch(tryFunc) is not null;
-
+    /// <param name="b"></param>
+    /// <param name="ifTrue"></param>
+    /// <param name="ifFalse"></param>
     public static void If(Func<bool> b, in Action ifTrue, in Action? ifFalse = null)
     {
         if (b())
@@ -778,6 +820,12 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// If b is false then invoke the ifFalse function.
+    /// </summary>
+    /// <param name="b"></param>
+    /// <param name="ifTrue"></param>
+    /// <param name="ifFalse"></param>
     public static void If(bool b, in Action ifTrue, in Action? ifFalse = null)
     {
         if (b)
@@ -790,6 +838,12 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    /// If b is false then invoke the ifFalse function.
+    /// </summary>
+    /// <param name="b"></param>
+    /// <param name="ifFalse"></param>
+    /// <returns></returns>
     public static bool IfFalse(this bool b, in Action ifFalse)
     {
         if (b is false)
@@ -799,9 +853,23 @@ public static class CodeHelper
         return b;
     }
 
+    /// <summary>
+    /// If b is false then invoke the ifFalse function else return the default value.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="b"></param>
+    /// <param name="ifFalse"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
     public static T IfFalse<T>(this bool b, in Func<T> ifFalse, in T defaultValue = default!)
         => b is false ? ifFalse.Invoke() : defaultValue;
 
+    /// <summary>
+    /// If b is true then invoke the ifTrue function.
+    /// </summary>
+    /// <param name="b"></param>
+    /// <param name="ifTrue"></param>
+    /// <returns></returns>
     public static bool IfTrue(this bool b, in Action ifTrue)
     {
         if (b is true)
@@ -811,9 +879,22 @@ public static class CodeHelper
         return b;
     }
 
+    /// <summary>
+    /// If b is true then invoke the ifTrue function else return the default value.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="b"></param>
+    /// <param name="ifTrue"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
     public static T IfTrue<T>(this bool b, in Func<T> ifTrue, in T defaultValue = default!)
         => b is true ? ifTrue.Invoke() : defaultValue;
 
+    /// <summary>
+    /// Locks the specified lock object.
+    /// </summary>
+    /// <param name="lockObject"></param>
+    /// <param name="action"></param>
     public static void Lock(object? lockObject, Action action)
         => _ = Lock(lockObject, ()
             =>
@@ -822,6 +903,13 @@ public static class CodeHelper
                 return true;
             });
 
+    /// <summary>
+    /// Locks the specified lock object.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="lockObject"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static TResult Lock<TResult>(object? lockObject, in Func<TResult> action)
     {
         lock (lockObject ?? CodeHelper.GetCallerMethod()!.DeclaringType!)
@@ -839,6 +927,12 @@ public static class CodeHelper
             where T : class, new()
             => new();
 
+    /// <summary>
+    /// Creates a new instance of the generic type T.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="args"></param>
+    /// <returns></returns>
     public static T New<T>(params object[] args)
         => Activator.CreateInstance(typeof(T), args).NotNull().Cast().To<T>();
 
@@ -846,9 +940,6 @@ public static class CodeHelper
     /// Throws a new instance of the specified exception type.
     /// </summary>
     [DoesNotReturn]
-    [DebuggerHidden]
-    [StackTraceHidden]
-    [DebuggerStepThrough]
     public static void Throw<TException>() where TException : Exception, new()
         => throw new TException();
 
@@ -909,19 +1000,29 @@ public static class CodeHelper
         }
     }
 
+    /// <summary>
+    ///  Converts an action to an other action.
+    /// </summary>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static Action ToAction(Action action)
         => action;
 
+    /// <summary>
+    /// Converts a function to an other function.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static Func<TResult> ToFunc<TResult>(Func<TResult> action)
         => action;
 
     /// <summary>
-    /// Extension method to convert a Task of type TValue to a Task of type Void.
+    /// Executes an action using a disposable object.
     /// </summary>
-    [Obsolete("Subject to remove", true)]
-    public static Task ToVoidAsync<TValue>(this Task<TValue> task) =>
-        task;
-
+    /// <typeparam name="TDisposable"></typeparam>
+    /// <param name="getItem"></param>
+    /// <param name="action"></param>
     public static void Using<TDisposable>(Func<TDisposable> getItem, Action<TDisposable> action)
                 where TDisposable : IDisposable
     {
@@ -929,6 +1030,14 @@ public static class CodeHelper
         action(item);
     }
 
+    /// <summary>
+    /// Executes an action using a disposable object.
+    /// </summary>
+    /// <typeparam name="TDisposable"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="getItem"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static TResult Using<TDisposable, TResult>(Func<TDisposable> getItem, Func<TDisposable, TResult> action)
         where TDisposable : IDisposable
     {
@@ -949,6 +1058,11 @@ public static class CodeHelper
         onIterationDone?.Invoke();
     }
 
+    /// <summary>
+    /// Executes an action while a predicate is true.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="action"></param>
     public static void While(in Func<bool> predicate, in Action? action = null)
     {
         Check.MustBeArgumentNotNull(predicate);
@@ -968,6 +1082,13 @@ public static class CodeHelper
     public static TInstance With<TInstance>(this TInstance instance, in Action<TInstance>? action) =>
         instance.Fluent(action);
 
+    /// <summary>
+    /// Executes an action on a task instance and returns the result.
+    /// </summary>
+    /// <typeparam name="TInstance"></typeparam>
+    /// <param name="instance"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static TInstance With<TInstance>(this TInstance instance, in Func<TInstance, TInstance> action) =>
         instance.Fluent(action);
 

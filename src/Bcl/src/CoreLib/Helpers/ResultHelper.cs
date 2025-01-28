@@ -67,6 +67,8 @@ public static class ResultHelper
 
     public static Task End(this Task<Result> _) =>
         _;
+    public static Task End<T>(this Task<Result<T>> _) =>
+        _;
 
     [return: NotNull]
     public static IEnumerable<Exception>? GetAllErrors(this IResult result) =>

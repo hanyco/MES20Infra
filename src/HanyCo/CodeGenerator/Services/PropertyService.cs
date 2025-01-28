@@ -3,6 +3,7 @@ using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
+using Library.BusinessServices;
 using Library.Data.EntityFrameworkCore;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
@@ -112,30 +113,29 @@ internal sealed class PropertyService : IPropertyService
         return dbResult;
     }
 
-    public async Task<Result<PropertyViewModel>> Insert(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public Task<Result<PropertyViewModel>> Insert(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default) => CatchResultAsync(async () =>
     {
-        return await this.SaveChangesAsync(model, persist, property => this._writeDbContext.Properties.Add(property), cancellationToken: cancellationToken);
-    }
+        await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync(cancellationToken: cancellationToken);
+        var entity = _converter.ToDbEntity(model);
+        await this._writeDbContext.Properties.AddAsync(entity, cancellationToken);
+        if (persist)
+        {
+            await this.SubmitChangesAsync(token: cancellationToken);
+            model.Id = entity.Id;
+        }
+        return model;
+    });
 
-    public async Task<Result> InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default)
+    public Task<Result> InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default) => CatchResultAsync(async () =>
     {
         foreach (var property in properties)
         {
-            if (token.IsCancellationRequested)
-            {
-                return Result.Fail<OperationCanceledException>();
-            }
+            token.ThrowIfCancellationRequested();
 
             property.ParentEntityId = parentEntityId;
-            var insertResult = await this.Insert(property, false, token);
-            if (!insertResult.IsSucceed)
-            {
-                return insertResult;
-            }
+            await this.Insert(property, false, token).ThrowOnFailAsync(token);
         }
-
-        return Result.Succeed;
-    }
+    });
 
     public void ResetChanges()
         => this._writeDbContext.ChangeTracker.Clear();

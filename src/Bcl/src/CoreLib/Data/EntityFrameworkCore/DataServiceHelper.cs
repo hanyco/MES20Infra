@@ -445,9 +445,15 @@ public static class DataServiceHelper
             .IfTrue(onCommitting is not null, x => onCommitting!(x)).GetValue(); // On Before commit
 
         //! Setup transaction
-        var transaction = persist && transactionInfo is { } t and { UseTransaction: true }
-            ? await CreateTransactionOnDemand(null, dbContext, persist, cancellationToken)
-            : null;
+        IDbContextTransaction? transaction;
+        if (persist && transactionInfo is { } t and { UseTransaction: true } && dbContext.Database.CurrentTransaction is null)
+        {
+            transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        }
+        else
+        {
+            transaction = null;
+        }
 
         //! Execute manipulation
         var entry = manipulate(entity);
