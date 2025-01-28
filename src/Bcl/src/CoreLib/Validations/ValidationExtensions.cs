@@ -39,11 +39,11 @@ public static class ValidationExtensions
     /// <summary>
     /// Adds a rule to the ValidationResultSet to check if the value is not null.
     /// </summary>
-    [MemberNotNull(nameof(ValidationResultSet<TValue>.Value))]
+    [MemberNotNull(nameof(ValidationResultSet<>.Value))]
     public static ValidationResultSet<TValue> ArgumentNotNull<TValue>(this ValidationResultSet<TValue> vrs, Func<Exception> onError = null) =>
         vrs.InnerAddRule(x => x, [DebuggerStepThrough, StackTraceHidden] (_) => vrs.Value is not null, onError, () => new ArgumentNullException(vrs._valueName));
 
-    [MemberNotNull(nameof(ValidationResultSet<string>.Value))]
+    [MemberNotNull(nameof(ValidationResultSet<>.Value))]
     public static ValidationResultSet<string> ArgumentNotNull(this ValidationResultSet<string> vrs, Func<Exception> onError = null) =>
         vrs.InnerAddRule(x => x, [DebuggerStepThrough, StackTraceHidden] (_) => !vrs.Value.IsNullOrEmpty(), onError, () => new ArgumentNullException(vrs._valueName));
 
@@ -91,7 +91,7 @@ public static class ValidationExtensions
     [return: NotNull]
     public static TValue NotNull<TValue>([NotNull] this TValue value, Func<string> onErrorMessage)
         => InnerDefaultCheck(value).NotNull(onErrorMessage);
-   
+
     /// <summary>
     /// Checks if the given value is not null and throws an exception if it is.
     /// </summary>

@@ -96,6 +96,9 @@ public sealed class Result : ResultBase, IResult
     public static Result<TValue> Success<TValue>(in TValue value, in string message = null)
         => new(value, true, message);
 
+    public static Result<TValue> Success<TValue>(in string message = null)
+        => new(default, true, message);
+
     public Result Combine(Result obj) => this + obj;
 
     public Result Combine(ResultBase obj) => this + obj;
