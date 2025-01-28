@@ -120,7 +120,7 @@ internal sealed class DtoService(
     {
         if (!validate(viewModel).TryParse(out var validationResult))
         {
-            return validationResult.WithValue(Codes.Empty);
+            return validationResult.WithValue<Codes?>(default);
         }
 
         var properties = viewModel.Properties.Distinct().Select(toProperty);
@@ -184,8 +184,8 @@ internal sealed class DtoService(
         var query = from dto in this._readDbContext.Dtos
                     select dto;
 
-        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.ToViewModel(dbResult).ToList();
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock, cancellationToken: token);
+        var result = this._converter.ToViewModel(dbResult).Compact().ToList();
         return result;
     }
 
@@ -196,8 +196,8 @@ internal sealed class DtoService(
         var whereClause = generateWhereClause(paramsDtos, resultDtos, viewModels, token);
         var query = rawQuery.Where(whereClause).Select(dto => dto);
 
-        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.ToViewModel(dbResult).ToReadOnlySet();
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock, cancellationToken: token);
+        var result = this._converter.ToViewModel(dbResult).Compact().ToReadOnlySet();
         return result;
 
         static Expression<Func<DtoEntity, bool>> generateWhereClause(bool? paramsDtos, bool? resultDtos, bool? viewModels, CancellationToken token = default)
@@ -276,15 +276,15 @@ internal sealed class DtoService(
         var query = from dto in this._readDbContext.Dtos
                     where dto.ModuleId == id
                     select dto;
-        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock);
-        var result = this._converter.ToViewModel(dbResult).ToList();
+        var dbResult = await query.AsNoTracking().ToListLockAsync(this._readDbContext.AsyncLock, cancellationToken: token);
+        var result = this._converter.ToViewModel(dbResult).Compact().ToList();
         return result;
     }
 
     public Task<IReadOnlyList<PropertyViewModel>> GetPropertiesByDtoIdAsync(long dtoId, CancellationToken token = default)
         => this._propertyService.GetByParentIdAsync(dtoId, token);
 
-    public async Task<Result<DtoViewModel>> InsertAsync(DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
+    public async Task<Result<DtoViewModel>> Insert(DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
         var validationCheck = await this.ValidateAsync(viewModel, token);
         if (!validationCheck.IsSucceed)
@@ -325,10 +325,10 @@ internal sealed class DtoService(
             }
         }
 
-        Task insertProperties(DtoViewModel viewModel, bool persist, (DtoEntity Dto, IEnumerable<Property> Properties, IEnumerable<PropertyViewModel> PropertyViewModels) entity, CancellationToken token)
+        Task insertProperties(DtoViewModel viewModel, bool persist, (DtoEntity Dto, IEnumerable<Property> Properties) entity, CancellationToken token)
         {
             _ = this.PrepareProperties(viewModel);
-            return this._propertyService.InsertProperties(entity.PropertyViewModels, entity.Dto.Id, false, token);
+            return this._propertyService.InsertProperties(viewModel.Properties, entity.Dto.Id, false, token);
         }
     }
 
@@ -352,7 +352,7 @@ internal sealed class DtoService(
             .ToDbEntity(viewModel);
         removeDeletedProperties(viewModel.DeletedProperties);
         updateDto(viewModel, entity.Dto, token);
-        updateProperties(entity.PropertyViewModels, entity.Dto, token);
+        updateProperties(viewModel.Properties, entity.Dto, token);
 
         var result = await this.SubmitChanges(persist, token: token).With(_ => viewModel.Id = entity.Dto.Id);
         return Result.From(result, viewModel);
@@ -420,13 +420,13 @@ internal sealed class DtoService(
                     select dto.Id;
         if (await query.AnyAsync(cancellationToken: token))
         {
-            return Result.Fail<DtoViewModel>(new ObjectDuplicateValidationException("DTO"));
+            return Result.Fail(default(DtoViewModel?));
         }
 
         var duplicates = viewModel!.Properties.FindDuplicates().Select(x => x?.Name).Compact().ToList();
         if (duplicates.Any())
         {
-            return Result.Fail<DtoViewModel>(new ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
+            return Result.Fail<DtoViewModel?>(new ValidationException($"{duplicates.Merge(",")} property name(s) are|is duplicated."));
         };
         return Result.Success(viewModel)!;
     }
@@ -459,12 +459,10 @@ internal sealed class DtoService(
         return this;
     }
 
-    private (DtoEntity Dto, IEnumerable<Property> Properties, IEnumerable<PropertyViewModel> PropertyViewModels) ToDbEntity(in DtoViewModel viewModel)
+    private (DtoEntity Dto, IEnumerable<Property> Properties) ToDbEntity(in DtoViewModel viewModel)
     {
-        var propsVm = viewModel.Properties.Copy();
-        viewModel.Properties.Clear();
         var dto = this._converter.ToDbEntity(viewModel)!;
-        var props = propsVm.Select(x => this._converter.ToDbEntity(x)).AsReadOnly();
-        return (dto, props!, propsVm);
+        var props = viewModel.Properties.Select(this._converter.ToDbEntity).Compact().AsReadOnly();
+        return (dto, props);
     }
 }
