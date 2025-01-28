@@ -52,7 +52,7 @@ internal class SecurityService(
         throw new NotImplementedException();
     }
 
-    public Task<Result<ClaimViewModel>> InsertAsync(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
+    public Task<Result<ClaimViewModel>> Insert(ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
         throw new NotImplementedException();
 
     public Task<Result> RemoveEntityClaims(Guid value, bool persist, CancellationToken token)
@@ -73,6 +73,6 @@ internal class SecurityService(
         return Task.FromResult(Result.Succeed);
     }
 
-    public Task<Result<ClaimViewModel>> UpdateAsync(Guid id, ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
+    public Task<Result<ClaimViewModel>> Update(Guid id, ClaimViewModel model, bool persist = true, CancellationToken token = default) =>
         throw new NotImplementedException();
 }

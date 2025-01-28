@@ -187,7 +187,7 @@ internal sealed class BlazorComponentService(
         return this._converter.ToViewModel(result);
     }
 
-    public Task<Result<UiComponentViewModel>> InsertAsync(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public Task<Result<UiComponentViewModel>> Insert(UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
             => this.Insert(this._writeDbContext, model, this._converter.ToDbEntity, this.ValidateAsync, persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
@@ -196,7 +196,7 @@ internal sealed class BlazorComponentService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
         => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<UiComponentViewModel>> UpdateAsync(long id, UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<UiComponentViewModel>> Update(long id, UiComponentViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         Check.MustBeArgumentNotNull(model);
         model.Id = id;

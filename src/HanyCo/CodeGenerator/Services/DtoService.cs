@@ -10,6 +10,7 @@ using Library.CodeGeneration.v2;
 using Library.CodeGeneration.v2.Back;
 using Library.Data.EntityFrameworkCore;
 using Library.Data.Linq;
+using Library.Data.Markers;
 using Library.Exceptions.Validations;
 using Library.Helpers.CodeGen;
 using Library.Interfaces;
@@ -19,6 +20,7 @@ using Library.Validations;
 using Library.Windows;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -41,7 +43,7 @@ internal sealed class DtoService(
     private readonly InfraReadDbContext _readDbContext = readDbContext;
     private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
-    public Task<bool> AnyByNameAsync(string name)
+    public Task<bool> AnyByName(string name)
     {
         var query = from dto in this._readDbContext.Dtos
                     where dto.Name == name
@@ -295,19 +297,22 @@ internal sealed class DtoService(
         using var transaction = await this.CreateTransactionOnDemand(this._writeDbContext, persist, token);
         try
         {
-            // Initialize view model and convert it to db entity.
+            // Initialize view model.
             _ = this.InitializeViewModel(viewModel);
-            var entity = this.ToDbEntity(viewModel);
-
+            
             // Insert DTO
-            await insertDto(viewModel, entity.Dto, persist, token);
-            await this.SubmitChanges(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
+            var dto = await insertDto(viewModel, persist, token);
+            
             // Insert DTO properties
-            await insertProperties(viewModel, persist, entity, token);
-            // Commit transaction
-            var result = await this.SubmitChanges(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token)
-                .With((_) => viewModel.Id = entity.Dto.Id);
-            return Result.From(result, viewModel);
+            await insertProperties(viewModel, dto.Id, persist, token);
+
+            if (persist)
+            {
+                await transaction!.CommitAsync(token);
+                viewModel.Id = dto.Id;
+            }
+
+            return Result.Success(viewModel);
         }
         catch (Exception ex)
         {
@@ -315,20 +320,22 @@ internal sealed class DtoService(
             return Result.Fail<DtoViewModel>(ex);
         }
 
-        async Task insertDto(DtoViewModel viewModel, DtoEntity dto, bool persist, CancellationToken token = default)
+        async Task<DtoEntity> insertDto(DtoViewModel viewModel, bool persist, CancellationToken token)
         {
+            var (dto, _) = this.ToDbEntity(viewModel);
             dto.Module = null;
-            _ = this._writeDbContext.Dtos.Add(dto).With(_ => viewModel.Guid = dto.Guid);
-            if (persist)
+            var entry = await this._writeDbContext.Dtos.AddAsync(dto, token);
+            if(persist)
             {
-                _ = await this.SaveChangesAsync(token);
+                await this.SubmitChanges(true, token: token).ThrowOnFailAsync(cancellationToken: token);
             }
+            return entry.Entity;
         }
 
-        Task insertProperties(DtoViewModel viewModel, bool persist, (DtoEntity Dto, IEnumerable<Property> Properties) entity, CancellationToken token)
+        Task insertProperties(DtoViewModel viewModel, long dtoId, bool persist, CancellationToken token)
         {
             _ = this.PrepareProperties(viewModel);
-            return this._propertyService.InsertProperties(viewModel.Properties, entity.Dto.Id, false, token);
+            return this._propertyService.InsertProperties(viewModel.Properties, dtoId, persist, token).ThrowOnFailAsync(cancellationToken: token);
         }
     }
 
@@ -338,7 +345,7 @@ internal sealed class DtoService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken token = default)
         => this._writeDbContext.SaveChangesResultAsync(cancellationToken: token);
 
-    public async Task<Result<DtoViewModel>> UpdateAsync(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
+    public async Task<Result<DtoViewModel>> Update(long id, DtoViewModel viewModel, bool persist = true, CancellationToken token = default)
     {
         var vr = await this.ValidateAsync(viewModel, token);
         if (vr.IsFailure)

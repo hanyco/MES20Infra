@@ -134,6 +134,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.EnableActors(false);
             await this.CreateFunctionality();
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after creating functionality.");
         }
         finally
         {
@@ -160,6 +161,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.EnableActors(false);
             await this.DeleteFunctionality();
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after deleting functionality.");
         }
         finally
         {
@@ -172,6 +174,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.EnableActors(false);
             await this.LoadFunctionality();
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after loading functionality.");
         }
         finally
         {
@@ -202,6 +205,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             this.EnableActors(false);
             await this.ValidateFormAsync().ThrowOnFailAsync(this.Title).End();
             this.ComponentCodeResultUserControl.Codes = this.ActionScopeRun(() => this._codeService.GenerateCodes(this.ViewModel!, new()), "Generating code...").ThrowOnFail(this.Title);
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after generating codes.");
         }
         finally
         {
@@ -230,13 +234,12 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
     private async Task LoadFunctionality(CancellationToken cancellation = default)
     {
         var id = this.FunctionalityTreeView.SelectedItem
-                        .Check()
-                        .NotNull(() => "No functionality is selected.")
-                        .NotNull(x => x!.Id).ThrowOnFail()
-                        .Value!.Id!.Value;
+            .Check()
+            .NotNull(() => "No functionality is selected.")
+            .NotNull(x => x!.Id).ThrowOnFail()
+            .Value!.Id!.Value;
         await this.AskToSaveIfChangedAsync(cancellationToken: cancellation).BreakOnFail().End();
-        var viewModel = await this._service.GetByIdAsync(id, cancellation);
-        this.ViewModel = viewModel;
+        this.ViewModel = await this._service.GetByIdAsync(id, cancellation);
         await this.BindDataAsync();
         this.CheckIfInitiated(true);
     }
@@ -386,6 +389,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
             _ = ControlHelper.MoveToNextUIElement();
             await this.SaveToDbAsync().ShowOrThrowAsync(this.Title).End();
             await this.FunctionalityTreeView.BindAsync();
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after saving to DB.");
         }
         finally
         {
@@ -406,6 +410,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
         {
             this.EnableActors(false);
             await this.SaveToDisk();
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after saving to disk.");
         }
         finally
         {
@@ -429,6 +434,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 var dto = await this._dtoService.GetByIdAsync(selectedDto.Id!.Value);
                 this.PrepareViewModelByDto(dto);
             }
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after selecting root DTO.");
         }
         finally
         {
@@ -454,6 +460,7 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
                 var dto = this._dtoService.CreateByDbTable(table, columns);
                 this.PrepareViewModelByDto(dto);
             }
+            Check.MustBeNotNull(this.ViewModel, () => "ViewModel must not be null after selecting root table.");
         }
         finally
         {

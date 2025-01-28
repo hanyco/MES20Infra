@@ -25,7 +25,7 @@ internal sealed class CqrsQueryService(
 
     protected override CqrsSegregateType SegregateType { get; } = CqrsSegregateType.Query;
 
-    public Task<bool> AnyByNameAsync(string name)
+    public Task<bool> AnyByName(string name)
     {
         var query = from entity in this.GetAllQuery()
                     where entity.Name == name
@@ -143,7 +143,7 @@ internal sealed class CqrsQueryService(
         return result;
     }
 
-    public async Task<Result<CqrsQueryViewModel>> InsertAsync(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
+    public async Task<Result<CqrsQueryViewModel>> Insert(CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
     {
         CqrsSegregate? segregate = null;
         try
@@ -166,7 +166,6 @@ internal sealed class CqrsQueryService(
             _ = this._writeDbContext.Add(segregate);
             if (persist)
             {
-                
                 _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: token);
             }
 
@@ -189,7 +188,7 @@ internal sealed class CqrsQueryService(
     public void ResetChanges() =>
         this._writeDbContext.ResetChanges();
 
-    public async Task<Result<CqrsQueryViewModel>> UpdateAsync(long id, CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
+    public async Task<Result<CqrsQueryViewModel>> Update(long id, CqrsQueryViewModel model, bool persist = true, CancellationToken token = default)
     {
         CqrsSegregate? segregate = null;
         try

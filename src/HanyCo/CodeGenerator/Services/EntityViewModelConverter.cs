@@ -6,6 +6,7 @@ using HanyCo.Infra.Markers;
 
 using Library.CodeGeneration;
 using Library.CodeGeneration.Models;
+using Library.Data.Markers;
 using Library.Mapping;
 using Library.Validations;
 
@@ -31,8 +32,16 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     ILogger ILoggerContainer.Logger => this._logger;
 
 
+    [return: NotNullIfNotNull(nameof(entity))]
+    public TEntity MapId<TEntity>(in TEntity entity, InfraViewModelBase model) where TEntity : IIdenticalEntity =>
+        entity.With(x => x.Id = model.Id ?? 0);
+
+    [return: NotNullIfNotNull(nameof(model))]
+    public TInfraViewModel MapId<TInfraViewModel>(in TInfraViewModel model, IIdenticalEntity entity) where TInfraViewModel : InfraViewModelBase =>
+        model.With(x => x.Id = entity.Id);
+
     public UiComponentAction? ToDbEntity(UiComponentButtonViewModelBase? model) =>
-        model is null ? null : this._mapper.Map<UiComponentAction>(model)
+                model is null ? null : this._mapper.Map<UiComponentAction>(model)
             .ForMember(x => x.TriggerTypeId = model.Placement.Cast().ToInt())
             // TODO: Think about how to save component complexity in database
             //?.ForMember(x => x.CqrsSegregateId = model.CqrsSegregate?.Id)
@@ -79,18 +88,27 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
                 {
                     uiPageComponent.Id = upcid;
                 }
-            
+
                 return uiPageComponent;
             })));
 
-    public Property? ToDbEntity(PropertyViewModel? viewModel) =>
-        viewModel is null ? null : this._mapper.MapExcept<Property>(viewModel, x => x.Id )
+    public Property? ToDbEntity(PropertyViewModel? viewModel)
+    {
+        if (viewModel is null)
+        {
+            return null;
+        }
+        var result = this._mapper.MapExcept<Property>(viewModel, x => x.Id)
             .ForMember(x => x.ParentEntityId = viewModel.ParentEntityId)
             .ForMember(x => x.DbObjectId = viewModel.DbObject?.ToDbFormat())
             .ForMember(x => x.PropertyType = viewModel.Type.Cast().ToInt())
-            .ForMember(x => (x.Id < 0).IfTrue(() => x.Id = 0).Fluent().IfTrue(viewModel.Id > 0, () => x.Id = viewModel.Id!.Value))
             .ForMember(x => x.DtoId = viewModel.Dto?.Id);
-
+        if (viewModel.Id > 0)
+        {
+            result.Id = viewModel.Id.Value;
+        }
+        return result;
+    }
 
     public Dto? ToDbEntity(DtoViewModel? model)
     {
@@ -102,7 +120,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
         var result = this._mapper.MapExcept<Dto>(model, x => x.Id)
             .ForMember(x => x.Module = null)
             .ForMember(x => x.DbObjectId = model.DbObject?.ToDbFormat());
-        if (model.Id is not (null or 0))
+        if (model.Id > 0)
         {
             model.Id = model.Id!.Value;
         }

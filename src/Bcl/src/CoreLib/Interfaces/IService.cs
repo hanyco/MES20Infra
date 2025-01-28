@@ -112,14 +112,14 @@ public interface IAsyncWrite<TViewModel, TId>
     /// Inserts an entity asynchronously.
     /// </summary>
     /// <param name="model">The model.</param>
-    Task<Result<TViewModel>> InsertAsync(TViewModel model, bool persist = true, CancellationToken cancellationToken = default);
+    Task<Result<TViewModel>> Insert(TViewModel model, bool persist = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an entity asynchronously.
     /// </summary>
     /// <param name="id">The identifier.</param>
     /// <param name="model">The model.</param>
-    Task<Result<TViewModel>> UpdateAsync(TId id, TViewModel model, bool persist = true, CancellationToken cancellationToken = default);
+    Task<Result<TViewModel>> Update(TId id, TViewModel model, bool persist = true, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

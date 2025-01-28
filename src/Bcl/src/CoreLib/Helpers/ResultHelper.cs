@@ -8,6 +8,7 @@ using Library.Windows;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 
 namespace Library.Helpers;
 
@@ -377,8 +378,8 @@ public static class ResultHelper
         {
             exception = new CommonException(result.ToNotificationMessage(owner: owner, instruction: instruction)).With(x => x.Source = owner?.ToString());
         }
-
-        throw exception;
+        ExceptionDispatchInfo.Throw(exception);
+        return result;
     }
 
     private static IEnumerable<T> IterateOnAll<T>(this IResult result, Func<IResult, T> selector)

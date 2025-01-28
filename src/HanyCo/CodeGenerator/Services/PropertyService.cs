@@ -112,7 +112,7 @@ internal sealed class PropertyService : IPropertyService
         return dbResult;
     }
 
-    public async Task<Result<PropertyViewModel>> InsertAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<PropertyViewModel>> Insert(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         return await this.SaveChangesAsync(model, persist, property => this._writeDbContext.Properties.Add(property), cancellationToken: cancellationToken);
     }
@@ -127,7 +127,7 @@ internal sealed class PropertyService : IPropertyService
             }
 
             property.ParentEntityId = parentEntityId;
-            var insertResult = await this.InsertAsync(property, false, token);
+            var insertResult = await this.Insert(property, false, token);
             if (!insertResult.IsSucceed)
             {
                 return insertResult;
@@ -143,7 +143,7 @@ internal sealed class PropertyService : IPropertyService
     public async Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<PropertyViewModel>> UpdateAsync(long id, PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<PropertyViewModel>> Update(long id, PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken);
         void manipulate(Property property) =>

@@ -20,9 +20,8 @@ namespace Library.Data.EntityFrameworkCore;
 public static class DataServiceHelper
 {
     #region CRUD
-
     public static async Task<IDbContextTransaction?> CreateTransactionOnDemand(this IBusinessService? _, DbContext dbContext, bool persist, CancellationToken token) =>
-            !persist || dbContext.Database.CurrentTransaction != null ? null : await dbContext.Database.BeginTransactionAsync(token);
+        !persist ? null : dbContext.Database.CurrentTransaction ?? await dbContext.Database.BeginTransactionAsync(token);
 
     /// <summary>
     /// Deletes an entity from the database.
@@ -596,12 +595,12 @@ public static class DataServiceHelper
         if (model.Id is { } id && id > 0)
         {
             //If the Id is not null and greater than 0, update the model
-            return service.UpdateAsync(id, model, persist, cancellationToken);
+            return service.Update(id, model, persist, cancellationToken);
         }
         else
         {
             //If the Id is null or less than 0, insert the model
-            return service.InsertAsync(model, persist, cancellationToken);
+            return service.Insert(model, persist, cancellationToken);
         }
     }
 
@@ -624,12 +623,12 @@ public static class DataServiceHelper
         if (!model.ArgumentNotNull().Id.IsNullOrEmpty())
         {
             //If it does, update the model
-            return service.UpdateAsync(model.Id, model, persist);
+            return service.Update(model.Id, model, persist);
         }
         else
         {
             //Otherwise, insert the model
-            return service.InsertAsync(model, persist);
+            return service.Insert(model, persist);
         }
     }
 

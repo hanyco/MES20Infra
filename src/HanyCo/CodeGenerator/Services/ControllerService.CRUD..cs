@@ -43,7 +43,7 @@ internal partial class ControllerService
         return result;
     }
 
-    public async Task<Result<ControllerViewModel>> InsertAsync(ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<ControllerViewModel>> Insert(ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         var validationCheck = await this.ValidateAsync(model, cancellationToken);
         if (!validationCheck.IsSucceed)
@@ -80,7 +80,7 @@ internal partial class ControllerService
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<ControllerViewModel>> UpdateAsync(long id, ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<ControllerViewModel>> Update(long id, ControllerViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         var vr = await this.ValidateAsync(model, cancellationToken);
         if (!vr.IsSucceed)

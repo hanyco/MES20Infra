@@ -104,7 +104,7 @@ internal sealed class BlazorPageService(
     public Task<UiPageViewModel?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         => DataServiceHelper.GetById(this, id, this._readDbContext.UiPages.Include(x => x.Dto).Include(x => x.Module).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContext).Include(x => x.UiPageComponents).ThenInclude(x => x.UiComponent.PageDataContextProperty).Include(x => x.UiPageComponents).ThenInclude(x => x.Position), this._converter.ToViewModel, this._readDbContext.AsyncLock);
 
-    public Task<Result<UiPageViewModel>> InsertAsync(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
+    public Task<Result<UiPageViewModel>> Insert(UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default) =>
         DataServiceHelper.Insert(this, this._writeDbContext, model, this._converter.ToDbEntity, x => this.Validate(x), persist, onCommitted: (m, e) => m.Id = e.Id, cancellationToken: cancellationToken).ModelResult();
 
     public void ResetChanges()
@@ -113,7 +113,7 @@ internal sealed class BlazorPageService(
     public Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
         => this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<UiPageViewModel>> UpdateAsync(long id, UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public async Task<Result<UiPageViewModel>> Update(long id, UiPageViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
         if (!this.Validate(model).TryParse(out var validation))
         {

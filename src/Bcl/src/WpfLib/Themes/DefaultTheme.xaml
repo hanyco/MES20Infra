@@ -500,8 +500,8 @@
         <Setter Property="Margin" Value="{StaticResource DefaultMargin}" />
         <Setter Property="Background" Value="{StaticResource SkinBackground}" />
         <Setter Property="Foreground" Value="{StaticResource SkinForeground}" />
-        <Setter Property="Width" Value="140" />
-        <Setter Property="Height" Value="25" />
+        <Setter Property="Width" Value="{StaticResource ControlWidth}" />
+        <Setter Property="Height" Value="{StaticResource ControlHeight}" />
     </Style>
 
     <Style

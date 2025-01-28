@@ -8,7 +8,7 @@ namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface ICqrsQueryService : IBusinessService, IAsyncCrud<CqrsQueryViewModel>, IAsyncCreator<CqrsQueryViewModel>, IResetChanges
 {
-    Task<bool> AnyByNameAsync(string name);
+    Task<bool> AnyByName(string name);
     Task<Result> DeleteById(long id, bool persist = true, CancellationToken token = default);
 
     Task<CqrsQueryViewModel> FillByDbEntity(CqrsQueryViewModel @this, long dbQueryId, string? moduleName = null, string? paramDtoName = null, string? resultDtoName = null, CancellationToken token = default);

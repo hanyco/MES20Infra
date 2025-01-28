@@ -9,7 +9,7 @@ namespace HanyCo.Infra.CodeGen.Domain.Services;
 
 public interface IDtoService : IBusinessService, IAsyncCrud<DtoViewModel>, IAsyncCreator<DtoViewModel>, IResetChanges
 {
-    Task<bool> AnyByNameAsync(string name);
+    Task<bool> AnyByName(string name);
 
     new Task<DtoViewModel> CreateAsync(CancellationToken token = default) =>
         Task.FromResult(new DtoViewModel() { Module = new() { Id = 0 } });

@@ -585,12 +585,12 @@ public static class ServiceHelper
         if (model.Id is { } id && id > 0)
         {
             //If the Id is not null and greater than 0, update the model
-            return service.UpdateAsync(id, model, persist);
+            return service.Update(id, model, persist);
         }
         else
         {
             //If the Id is null or less than 0, insert the model
-            return service.InsertAsync(model, persist);
+            return service.Insert(model, persist);
         }
     }
 
@@ -613,12 +613,12 @@ public static class ServiceHelper
         if (!model.ArgumentNotNull().Id.IsNullOrEmpty())
         {
             //If it does, update the model
-            return service.UpdateAsync(model.Id, model, persist);
+            return service.Update(model.Id, model, persist);
         }
         else
         {
             //Otherwise, insert the model
-            return service.InsertAsync(model, persist);
+            return service.Insert(model, persist);
         }
     }
 

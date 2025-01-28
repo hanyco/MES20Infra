@@ -97,7 +97,7 @@ internal sealed class CqrsCommandService(
     public async Task<CqrsCommandViewModel?> GetByIdAsync(long id, CancellationToken token = default) =>
         await this.FillViewModelAsync(new() { Id = id }, token: token);
 
-    public async Task<Result<CqrsCommandViewModel>> InsertAsync(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
+    public async Task<Result<CqrsCommandViewModel>> Insert(CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         model.Guid ??= Guid.NewGuid();
         var man = DataServiceHelper.Insert(this,
@@ -123,7 +123,7 @@ internal sealed class CqrsCommandService(
     public async Task<Result<int>> SaveChangesAsync(CancellationToken token = default) =>
         await this._writeDbContext.SaveChangesResultAsync(cancellationToken: token);
 
-    public async Task<Result<CqrsCommandViewModel>> UpdateAsync(long id, CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
+    public async Task<Result<CqrsCommandViewModel>> Update(long id, CqrsCommandViewModel model, bool persist = true, CancellationToken token = default)
     {
         _ = await this.ValidateAsync(model, token);
         Check.MustBeArgumentNotNull(model.Id);

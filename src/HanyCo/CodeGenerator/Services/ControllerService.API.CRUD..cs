@@ -11,6 +11,6 @@ internal partial class ControllerService : IControllerApiService
     public Task<Result<int>> DeleteAsync(ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     Task<IReadOnlyList<ControllerMethodViewModel>> IAsyncRead<ControllerMethodViewModel, long>.GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
     Task<ControllerMethodViewModel?> IAsyncRead<ControllerMethodViewModel, long>.GetByIdAsync(long id, CancellationToken cancellationToken) => throw new NotImplementedException();
-    public Task<Result<ControllerMethodViewModel>> InsertAsync(ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-    public Task<Result<ControllerMethodViewModel>> UpdateAsync(long id, ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public Task<Result<ControllerMethodViewModel>> Insert(ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public Task<Result<ControllerMethodViewModel>> Update(long id, ControllerMethodViewModel model, bool persist = true, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 }
