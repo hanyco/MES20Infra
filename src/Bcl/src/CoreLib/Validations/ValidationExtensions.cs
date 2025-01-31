@@ -141,6 +141,10 @@ public static class ValidationExtensions
     public static ValidationResultSet<TValue> RuleFor<TValue>(this ValidationResultSet<TValue> vrs, Func<TValue, bool> isValid, Func<Exception> onError) =>
         vrs.InnerAddRule(isValid, onError);
 
+    public static ValidationResultSet<TValue> RuleFor<TValue, TException>(this ValidationResultSet<TValue?> vrs, Func<TValue, bool> isValid)
+        where TException : Exception, new() =>
+        vrs.InnerAddRule(isValid, () => new TException());
+
     /// <summary>
     /// Adds a rule to the validation set with a custom error message.
     /// </summary>
