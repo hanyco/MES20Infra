@@ -491,15 +491,24 @@ public static class DbContextHelper
     public static Task<Result<int>> SaveChangesResultAsync(this EntityEntry entityEntry, CancellationToken cancellationToken = default)
         => entityEntry?.Context.SaveChangesResultAsync(cancellationToken)!;
 
-    /// <summary> Saves changes to the database and returns a Result<int> containing the number of
-    /// changes saved or an exception message and the exception itself. </summary> <param
-    /// name="dbContext">The DbContext to save changes to.</param> <param
-    /// name="cancellationToken">The CancellationToken to use.</param> <returns>A Result<int>
-    /// containing the number of changes saved or an exception message and the exception itself.</returns>
+    /// <summary>
+    /// Saves changes to the database asynchronously for the given DbContext.
+    /// </summary>
+    /// <typeparam name="TDbContext">The type of the DbContext.</typeparam>
+    /// <param name="dbContext">The DbContext.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns></returns>
     public static Task<Result<int>> SaveChangesResultAsync<TDbContext>(this TDbContext dbContext, CancellationToken cancellationToken = default)
-        where TDbContext : DbContext => 
-        CatchResultAsync(() => dbContext.ArgumentNotNull().SaveChangesAsync(cancellationToken));
+        where TDbContext : DbContext => CatchResultAsync(() =>
+        dbContext.ArgumentNotNull().SaveChangesAsync(cancellationToken));
 
+    /// <summary>
+    /// Sets the state of <see cref="EntityState.Modified"/> of the given <paramref name="entityEntry"/> in the given DbContext.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <param name="entityEntry"> The entity entry to set the state of. </param>
+    /// <param name="isModified">The value to set the state to.</param>
+    /// <returns>The entity entry with the state set.</returns>
     public static EntityEntry<TEntity> SetEntryModified<TEntity>(
             this EntityEntry<TEntity> entityEntry,
             bool isModified = true)

@@ -18,7 +18,7 @@ public sealed class PropertyViewModel : InfraViewModelBase
     {
         this.TypeFullName = dbColumnViewModel.Type;
         this.DbObject = dbColumnViewModel;
-        this.Id = dbColumnViewModel.ObjectId;
+        this.DbObject.Id = dbColumnViewModel.ObjectId;
         this.IsNullable = dbColumnViewModel.IsNullable;
     }
 

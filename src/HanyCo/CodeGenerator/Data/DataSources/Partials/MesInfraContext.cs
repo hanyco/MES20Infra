@@ -46,26 +46,6 @@ public partial class InfraWriteDbContext : DbContext
     [DbFunction(Name = "SOUNDEX", IsBuiltIn = true)]
     public static string SoundEx(string query) =>
         throw new NotImplementedException();
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Module>().HasData(
-            new { Name = "Finance and Accounting" },
-            new { Name = "Human Resources Management" },
-            new { Name = "Inventory Management" },
-            new { Name = "Supply Chain Management" },
-            new { Name = "Customer Relationship Management" },
-            new { Name = "Manufacturing" },
-            new { Name = "Procurement" },
-            new { Name = "Project Management" },
-            new { Name = "Warehouse Management System" },
-            new { Name = "Production Planning and Control" },
-            new { Name = "Quality Management" },
-            new { Name = "Sales and Distribution" },
-            new { Name = "Asset Management" },
-            new { Name = "Enterprise Performance Management" }
-        );
-    }
 }
 
 public partial class Module : IMesEntity;
