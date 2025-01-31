@@ -129,60 +129,56 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         // Check if the functionality or it's components already exist.
         await checkExitance(model).ThrowOnFailAsync(token);
 
-        // Save the functionality and its components
         using var transaction = await this._writeDbContext.BeginTransactionAsync(token);
         try
         {
-            await saveQuery(model.GetAllQuery, token).ThrowIfCancellationRequested(token);
-            await saveQuery(model.GetByIdQuery, token).ThrowIfCancellationRequested(token);
-            await saveCommand(model.InsertCommand, token).ThrowIfCancellationRequested(token);
-            await saveCommand(model.UpdateCommand, token).ThrowIfCancellationRequested(token);
-            await saveCommand(model.DeleteCommand, token).ThrowIfCancellationRequested(token);
-            await saveDto(model.SourceDto, token).ThrowIfCancellationRequested(token);
-            await saveController(model, token).ThrowIfCancellationRequested(token);
-            await saveFunctionality(model, token).ThrowIfCancellationRequested(token);
+            // Save the functionality and its components
+            await insertQuery(model.GetAllQuery, token).ThrowOnFailAsync(token).End();
+            await insertQuery(model.GetByIdQuery, token).ThrowOnFailAsync(token).End();
+            await insertCommand(model.InsertCommand, token).ThrowOnFailAsync(token).End();
+            await insertCommand(model.UpdateCommand, token).ThrowOnFailAsync(token).End();
+            await insertCommand(model.DeleteCommand, token).ThrowOnFailAsync(token).End();
+            await insertDto(model.SourceDto, token).ThrowOnFailAsync(token).End();
+            await insertController(model, token).ThrowOnFailAsync(token).End();
+            await insertFunctionality(model, token).ThrowOnFailAsync(token).End();
 
-            var saveResult = await this.SubmitChanges(persist, transaction, token: token).ThrowOnFailAsync(cancellationToken: token);
+            await transaction.CommitAsync(token);
             return model;
         }
         catch
         {
             await transaction.RollbackAsync(token);
-            //this._dtoService.ResetChanges();
-            //this._queryService.ResetChanges();
-            //this._commandService.ResetChanges();
-            this.ResetChanges();
-
             throw;
         }
-
-        async Task saveQuery(CqrsQueryViewModel model, CancellationToken token)
+        finally
         {
-            await saveDto(model.ParamsDto, token);
-            await saveDto(model.ResultDto, token);
-
-            _ = await this._queryService.Insert(model, true, token)
-                .ThrowOnFailAsync(cancellationToken: token);
+            this.ResetChanges();
         }
-        async Task saveCommand(CqrsCommandViewModel model, CancellationToken token)
+
+        async Task<Result> insertQuery(CqrsQueryViewModel model, CancellationToken token)
         {
-            await saveDto(model.ParamsDto, token);
-            await saveDto(model.ResultDto, token);
+            await insertDto(model.ParamsDto, token);
+            await insertDto(model.ResultDto, token);
 
-            _ = await this._commandService.Insert(model, true, token)
-                .ThrowOnFailAsync(cancellationToken: token);
+            return await this._queryService.Insert(model, true, token);
         }
-        Task saveDto(DtoViewModel model, CancellationToken token) =>
-            this._dtoService.Insert(model, true, token)
-                .ThrowOnFailAsync(cancellationToken: token);
+        async Task<Result<CqrsCommandViewModel>> insertCommand(CqrsCommandViewModel model, CancellationToken token)
+        {
+            await insertDto(model.ParamsDto, token);
+            await insertDto(model.ResultDto, token);
 
-        async Task saveFunctionality(FunctionalityViewModel model, CancellationToken token)
+            return await this._commandService.Insert(model, true, token);
+        }
+        async Task<Result> insertDto(DtoViewModel model, CancellationToken token) =>
+            await this._dtoService.Insert(model, true, token);
+        async Task<Result> insertFunctionality(FunctionalityViewModel model, CancellationToken token)
         {
             var entity = this._converter.ToDbEntity(model).With(x => x.Module = null!);
             _ = await this._writeDbContext.Functionalities.AddAsync(entity, token);
-            _ = await this.SaveChangesAsync(token)
-                .ThrowOnFailAsync(cancellationToken: token);
+            return await this.SaveChangesAsync(token);
         }
+        async Task<Result> insertController(FunctionalityViewModel model, CancellationToken token) =>
+            await this._controllerService.Insert(model.Controller, cancellationToken: token);
 
         async Task<Result> checkExitance(FunctionalityViewModel model)
         {
@@ -217,10 +213,6 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             ;
             return Result.Succeed;
         }
-
-        async Task saveController(FunctionalityViewModel model, CancellationToken token) =>
-            await this._controllerService.SaveViewModel(model.Controller, cancellationToken: token)
-                .ThrowOnFailAsync(cancellationToken: token);
     });
 
     public async Task<Result<FunctionalityViewModel>> Update(long id, FunctionalityViewModel model, bool persist = true, CancellationToken cancellationToken = default)

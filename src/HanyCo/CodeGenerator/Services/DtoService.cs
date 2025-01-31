@@ -316,9 +316,12 @@ internal sealed class DtoService(
 
             return viewModel;
         }
-        catch
+        catch(Exception ex)
         {
-            _ = transaction?.RollbackAsync(token);
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync(token);
+            }
             throw;
         }
         finally

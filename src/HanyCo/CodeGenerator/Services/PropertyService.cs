@@ -3,7 +3,6 @@ using HanyCo.Infra.CodeGen.Domain.Services;
 using HanyCo.Infra.CodeGen.Domain.ViewModels;
 using HanyCo.Infra.Internals.Data.DataSources;
 
-using Library.BusinessServices;
 using Library.Data.EntityFrameworkCore;
 using Library.Exceptions.Validations;
 using Library.Interfaces;
@@ -12,25 +11,22 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace Services.CodeGen;
+namespace Services;
 
-internal sealed class PropertyService : IPropertyService
+internal sealed class PropertyService(
+    InfraReadDbContext readDbContext
+    , InfraWriteDbContext writeDbContext
+    , IEntityViewModelConverter converter
+    , ISecurityService securityService)
+    : IPropertyService
     , IAsyncValidator<PropertyViewModel>
     , IAsyncSaveChanges
     , IResetChanges
 {
-    private readonly IEntityViewModelConverter _converter;
-    private readonly InfraReadDbContext _readDbContext;
-    private readonly ISecurityService _securityService;
-    private readonly InfraWriteDbContext _writeDbContext;
-
-    public PropertyService(InfraReadDbContext readDbContext, InfraWriteDbContext writeDbContext, IEntityViewModelConverter converter, ISecurityService securityService)
-    {
-        this._readDbContext = readDbContext;
-        this._writeDbContext = writeDbContext;
-        this._converter = converter;
-        this._securityService = securityService;
-    }
+    private readonly IEntityViewModelConverter _converter = converter;
+    private readonly InfraReadDbContext _readDbContext = readDbContext;
+    private readonly ISecurityService _securityService = securityService;
+    private readonly InfraWriteDbContext _writeDbContext = writeDbContext;
 
     public async Task<Result<int>> DeleteAsync(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
     {
@@ -114,17 +110,7 @@ internal sealed class PropertyService : IPropertyService
     }
 
     public Task<Result<PropertyViewModel>> Insert(PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default) => CatchResultAsync(async () =>
-    {
-        await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync(cancellationToken: cancellationToken);
-        var entity = _converter.ToDbEntity(model);
-        await this._writeDbContext.Properties.AddAsync(entity, cancellationToken);
-        if (persist)
-        {
-            await this.SubmitChangesAsync(token: cancellationToken);
-            model.Id = entity.Id;
-        }
-        return model;
-    });
+        await this.SaveChangesAsync(model, persist, x => this._writeDbContext.Properties.Add(x), cancellationToken: cancellationToken));
 
     public Task<Result> InsertProperties(IEnumerable<PropertyViewModel> properties, long parentEntityId, bool persist, CancellationToken token = default) => CatchResultAsync(async () =>
     {
@@ -133,57 +119,54 @@ internal sealed class PropertyService : IPropertyService
             token.ThrowIfCancellationRequested();
 
             property.ParentEntityId = parentEntityId;
-            await this.Insert(property, false, token).ThrowOnFailAsync(token);
+            _ = await this.Insert(property, false, token).ThrowOnFailAsync(token);
+        }
+        if (persist)
+        {
+            _ = await this.SaveChangesAsync(token);
         }
     });
 
-    public void ResetChanges()
-        => this._writeDbContext.ChangeTracker.Clear();
+    public void ResetChanges() =>
+        this._writeDbContext.ChangeTracker.Clear();
 
-    public async Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => await this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
+    public async Task<Result<int>> SaveChangesAsync(CancellationToken cancellationToken = default) =>
+        await this._writeDbContext.SaveChangesResultAsync(cancellationToken: cancellationToken);
 
-    public async Task<Result<PropertyViewModel>> Update(long id, PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default)
+    public Task<Result<PropertyViewModel>> Update(long id, PropertyViewModel model, bool persist = true, CancellationToken cancellationToken = default) => CatchResultAsync(() =>
     {
-        return await this.SaveChangesAsync(model, persist, manipulate, cancellationToken: cancellationToken);
+        return this.SaveChangesAsync(model, persist, manipulate, cancellationToken);
         void manipulate(Property property) =>
             this._writeDbContext.Properties.Attach(property)
-                                           .SetModified(x => x.Name)
-                                           .SetModified(x => x.Comment)
-                                           .SetModified(x => x.HasGetter)
-                                           .SetModified(x => x.HasGetter)
-                                           .SetModified(x => x.IsList)
-                                           .SetModified(x => x.PropertyType)
-                                           .SetModified(x => x.TypeFullName);
-    }
+                .SetModified(x => x.Name)
+                .SetModified(x => x.Comment)
+                .SetModified(x => x.HasGetter)
+                .SetModified(x => x.HasGetter)
+                .SetModified(x => x.IsList)
+                .SetModified(x => x.PropertyType)
+                .SetModified(x => x.TypeFullName);
+    });
 
-    public async Task<Result<PropertyViewModel?>> ValidateAsync(PropertyViewModel? item, CancellationToken cancellationToken = default)
+    public Task<Result<PropertyViewModel?>> ValidateAsync(PropertyViewModel? item, CancellationToken cancellationToken = default) => CatchResultAsync(() =>
     {
-        Check.MustBeNotNull(item);
+        item.Check()
+            .ArgumentNotNull()
+            .NotNull(x => x!.Name)
+            .RuleFor<PropertyViewModel,NullValueValidationException>(x => x.ParentEntityId != 0).ThrowOnFail();
+        return Task.FromResult(item);
+    });
 
-        var errors = new List<Exception>();
-        if (item.Name.IsNullOrEmpty())
-        {
-            errors.Add(new NullValueValidationException(nameof(item.Name)));
-        }
-        if (item.ParentEntityId == 0)
-        {
-            errors.Add(new NullValueValidationException(nameof(item.ParentEntityId)));
-        }
-        var result = new Result<PropertyViewModel?>(item, errors: errors);
-        return await Task.FromResult(result);
-    }
-
-    private async Task<Result<PropertyViewModel>> SaveChangesAsync(PropertyViewModel model, bool persist, Action<Property> manipulate, CancellationToken cancellationToken = default)
+    private async Task<PropertyViewModel> SaveChangesAsync(PropertyViewModel model, bool persist, Action<Property> manipulate, CancellationToken cancellationToken = default)
     {
-        _ = await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync(cancellationToken: cancellationToken);
-        var property = this._converter.ToDbEntity(model)!;
-        manipulate(property);
+        await this.ValidateAsync(model, cancellationToken).ThrowOnFailAsync(cancellationToken: cancellationToken).End();
+        var entity = this._converter.ToDbEntity(model)!;
+        manipulate(entity);
         if (persist)
         {
             _ = await this._writeDbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+            model.Id = entity.Id;
         }
 
-        return Result.Success(model);
+        return model;
     }
 }
