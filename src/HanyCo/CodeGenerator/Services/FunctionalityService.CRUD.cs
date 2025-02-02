@@ -139,7 +139,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             await insertCommand(model.UpdateCommand, token).ThrowOnFailAsync(token).End();
             await insertCommand(model.DeleteCommand, token).ThrowOnFailAsync(token).End();
             await insertDto(model.SourceDto, token).ThrowOnFailAsync(token).End();
-            await insertController(model, token).ThrowOnFailAsync(token).End();
+            await insertController(model.Controller, token).ThrowOnFailAsync(token).End();
             await insertFunctionality(model, token).ThrowOnFailAsync(token).End();
 
             await transaction.CommitAsync(token);
@@ -162,7 +162,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
 
             return await this._queryService.Insert(model, true, token);
         }
-        async Task<Result<CqrsCommandViewModel>> insertCommand(CqrsCommandViewModel model, CancellationToken token)
+        async Task<Result> insertCommand(CqrsCommandViewModel model, CancellationToken token)
         {
             await insertDto(model.ParamsDto, token);
             await insertDto(model.ResultDto, token);
@@ -171,15 +171,15 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
         }
         async Task<Result> insertDto(DtoViewModel model, CancellationToken token) =>
             await this._dtoService.Insert(model, true, token);
+        async Task<Result> insertController(ControllerViewModel model, CancellationToken token) =>
+            await this._controllerService.Insert(model, cancellationToken: token);
         async Task<Result> insertFunctionality(FunctionalityViewModel model, CancellationToken token)
         {
             var entity = this._converter.ToDbEntity(model).With(x => x.Module = null!);
             _ = await this._writeDbContext.Functionalities.AddAsync(entity, token);
             return await this.SaveChangesAsync(token);
         }
-        async Task<Result> insertController(FunctionalityViewModel model, CancellationToken token) =>
-            await this._controllerService.Insert(model.Controller, cancellationToken: token);
-
+        
         async Task<Result> checkExitance(FunctionalityViewModel model)
         {
             if (await this.AnyByName(model.Name!))

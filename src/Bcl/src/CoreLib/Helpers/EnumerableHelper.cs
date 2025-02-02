@@ -359,7 +359,7 @@ public static class EnumerableHelper
     /// This code creates an IEnumerable of type T and returns the item passed in as an argument.
     /// </remarks>
     [return: NotNull]
-    [Obsolete("Use `[]` instead in C# 11.")]
+    [Obsolete("Use `[..item]` instead in C# 11.")]
     public static IEnumerable<T> AsEnumerable<T>(T item)
     {
         yield return item;

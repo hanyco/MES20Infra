@@ -254,10 +254,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
     public PropertyViewModel? ToPropertyViewModel(DbColumnViewModel? columnViewModel) =>
         columnViewModel == null
             ? null
-            : new(columnViewModel)
-            {
-                Id = columnViewModel.ObjectId * -1
-            };
+            : new(columnViewModel);
 
     public UiPropertyViewModel? ToUiComponentProperty(in PropertyViewModel? propertyViewModel) =>
         propertyViewModel == null ? null : new()
@@ -388,12 +385,24 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             .ForMember(x => x.UpdateCommand = this.ToCommandViewModel(entity.UpdateCommand))
             .ForMember(x => x.DeleteCommand = this.ToCommandViewModel(entity.DeleteCommand))
             .ForMember(x => x.Module = this.ToViewModel(entity.Module))
-            //.ForMember(x => x.Controller = this.ToViewModel(entity.Controller))
-            .ForMember(x => x.Controller = new())
+            .ForMember(x => x.Controller = this.ToViewModel(entity.Controller))
             ;
 
     [return: NotNullIfNotNull(nameof(entity))]
-    public ControllerViewModel? ToViewModel(Controller? entity) => throw new NotImplementedException();
+    public ControllerViewModel? ToViewModel(Controller? entity)
+    {
+        if (entity is null)
+        {
+            return null;
+        }
+        var result = this._mapper.Map<ControllerViewModel>(entity)
+            .ForMember(x => x.AdditionalUsings.ClearAndAddRange((entity.AdditionalUsings??string.Empty).Split(';')))
+            .ForMember(x => x.Apis.AddRange(entity.ControllerMethods.Select(this.ToViewModel)))
+            .ForMember(x => x.Name = entity.ControllerName)
+            .ForMember(x => x.Route = entity.ControllerRoute)
+            .ForMember(x => x.Module = this.ToViewModel(entity.Module));
+        return result;
+    }
 
     [return: NotNullIfNotNull(nameof(entity))]
     public ControllerMethodViewModel? ToViewModel(ControllerMethod? entity)
