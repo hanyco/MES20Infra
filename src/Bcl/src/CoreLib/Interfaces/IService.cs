@@ -84,10 +84,25 @@ public interface IAsyncSaveChanges
 /// </summary>
 public interface IAsyncTransactional
 {
+    /// <summary>
+    /// Begins a new transaction asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Commits the transaction created by <see cref="BeginTransactionAsync(CancellationToken)"/> asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<Result> CommitTransactionAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Rolls back the transaction created by <see cref="BeginTransactionAsync(CancellationToken)"/> asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
 }
 

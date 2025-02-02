@@ -291,29 +291,25 @@ public sealed partial class FunctionalityEditorPage : IStatefulPage, IAsyncSaveP
 
     private void PrepareViewModelByDto(in DtoViewModel? details)
     {
+        // Check if the form is initiated.
         this.CheckIfInitiated(false);
 
         this.ViewModel.SourceDto = null!;
 
-        //Optional! To make sure that the selected dto exists and has details.
+        // Optional! To make sure that the selected dto exists and has details.
         if (details == null)
         {
             return;
         }
 
+        // Set the selected dto as the source dto of the functionality.
         this.ViewModel.SourceDto = details;
-        //Maybe the user filled these data. We shouldn't overwrite user's preferences. If user
-        // presses <Reset> button, user's preferences will be cleaned.
-        //if (this.ViewModel.NameSpace.IsNullOrEmpty())
-        //{
-        //    this.ViewModel.NameSpace = this.ViewModel.SourceDto.NameSpace = details.NameSpace ?? SettingsService.Get().productName;
-        //}
-        if (this.ViewModel.SourceDto.NameSpace.IsNullOrEmpty())
+        if (this.ViewModel.SourceDto.NameSpace.IsNullOrEmpty()) // If the namespace is not set, set it to the detail's namespace or the product name..
         {
             this.ViewModel.SourceDto.NameSpace = details.NameSpace ?? SettingsService.Get().productName ?? string.Empty;
         }
 
-        if (this.ViewModel.Name.IsNullOrEmpty())
+        if (this.ViewModel.Name.IsNullOrEmpty()) // If the name is not set, set it to the detail's name.
         {
             this.ViewModel.Name = details.Name?.TrimEnd([.. "Dto"]).AddToEnd("Functionality");
         }
