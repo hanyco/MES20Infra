@@ -175,7 +175,7 @@ internal partial class FunctionalityService : IValidator<FunctionalityViewModel>
             await this._controllerService.Insert(model, cancellationToken: token);
         async Task<Result> insertFunctionality(FunctionalityViewModel model, CancellationToken token)
         {
-            var entity = this._converter.ToDbEntity(model).With(x => x.Module = null!);
+            var entity = this._converter.ToDbEntity(model).With(x => x.Module = null!).With(x => x.Controller = null!);
             _ = await this._writeDbContext.Functionalities.AddAsync(entity, token);
             return await this.SaveChangesAsync(token);
         }

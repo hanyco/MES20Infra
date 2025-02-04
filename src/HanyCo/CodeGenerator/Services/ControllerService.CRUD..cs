@@ -9,6 +9,8 @@ using Library.Validations;
 
 using Microsoft.EntityFrameworkCore;
 
+using Newtonsoft.Json.Linq;
+
 namespace Services;
 
 internal partial class ControllerService
@@ -52,26 +54,45 @@ internal partial class ControllerService
         }
 
         var controllerEntity = this._converter.ToDbEntity(model);
-        await using var transaction = await this._writeDbContext.Database.BeginTransactionAsync(cancellationToken);
+        var transaction = this._writeDbContext.Database.CurrentTransaction is null
+            ? await this._writeDbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
         _ = await this._writeDbContext.Controllers.AddAsync(controllerEntity, cancellationToken);
 
-        var apis = new List<(ControllerMethodViewModel Model, ControllerMethod Entity)>();
-        foreach (var api in model.Apis)
+        try
         {
-            var apiEntity = this._converter.ToDbEntity(api).With(x => x.Controller = controllerEntity);
-            _ = await this._writeDbContext.ControllerMethods.AddAsync(apiEntity, cancellationToken);
-            apis.Add((api, apiEntity));
-        }
-        var result = await this.SubmitChanges(persist, transaction, token: cancellationToken).OnSucceed(r =>
-        {
-            model.Id = controllerEntity.Id;
-            foreach (var (Model, Entity) in apis)
+            var apis = new List<(ControllerMethodViewModel Model, ControllerMethod Entity)>();
+            foreach (var api in model.Apis)
             {
-                Model.Id = Entity.Id;
+                var apiEntity = this._converter.ToDbEntity(api).With(x => x.Controller = controllerEntity);
+                _ = await this._writeDbContext.ControllerMethods.AddAsync(apiEntity, cancellationToken);
+                apis.Add((api, apiEntity));
             }
-        });
-
-        return Result.From(result, model);
+            var result = await this.SubmitChanges(persist, transaction, token: cancellationToken).OnSucceed(r =>
+            {
+                model.Id = controllerEntity.Id;
+                foreach (var (model, entity) in apis)
+                {
+                    model.Id = entity.Id;
+                }
+            });
+            return Result.From(result, model);
+        }
+        catch
+        {
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
+            throw;
+        }
+        finally
+        {
+            if (transaction != null)
+            {
+                await transaction.DisposeAsync();
+            }
+        }
     }
 
     public void ResetChanges() =>

@@ -117,8 +117,7 @@ internal sealed class EntityViewModelConverter(IMapper mapper, ILogger logger) :
             return null;
         }
 
-        var result = this._mapper.MapExcept<Dto>(model, x => x.Id)
-            .ForMember(x => x.Module = null)
+        var result = this._mapper.MapExcept<Dto>(model, x => new { x.Id, x.Module })
             .ForMember(x => x.DbObjectId = model.DbObject?.ToDbFormat());
         if (model.Id > 0)
         {

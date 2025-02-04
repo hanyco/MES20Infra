@@ -316,7 +316,7 @@ internal sealed class DtoService(
 
             return viewModel;
         }
-        catch(Exception ex)
+        catch
         {
             if (transaction != null)
             {

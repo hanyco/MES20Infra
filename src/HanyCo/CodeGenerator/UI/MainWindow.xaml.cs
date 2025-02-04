@@ -22,7 +22,7 @@ namespace UI;
 public partial class MainWindow
 {
     public static readonly DependencyProperty IsInitiatedProperty =
-        DependencyProperty.Register("IsInitiated", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+        DependencyProperty.Register(nameof(IsInitiated), typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
 
     private readonly IEventualLogger _logger;
     private readonly InfraWriteDbContext _writeDbContext;
@@ -192,6 +192,11 @@ public partial class MainWindow
             }
 
             this._logger.Debug("Ready.");
+            this.IsInitiated = true;
+        }
+        catch(SqlException ex) when (ex.Message.Contains("Database 'MesInfra' already exists"))
+        {
+            this._logger.Debug("Database check: OK.");
             this.IsInitiated = true;
         }
         catch (SqlException ex) when (ex.ErrorCode == -2146232060)

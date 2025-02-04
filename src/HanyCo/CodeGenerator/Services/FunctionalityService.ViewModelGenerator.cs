@@ -429,7 +429,8 @@ internal sealed partial class FunctionalityService
                 .With(x => x.AdditionalUsings.Add(typeof(Result).Namespace!))
                 .With(x => x.AdditionalUsings.Add(typeof(Result<>).Namespace!))
                 .With(x => x.NameSpace = TypePath.Combine(GetRootNameSpace(data), "Controllers"))
-                .With(x => x.Name = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"));
+                .With(x => x.Name = string.Concat(CommonHelpers.Purify(data.SourceDtoName), "Controller"))
+                .With(async x => x.Module = (await this._moduleService.GetByIdAsync(data.ViewModel.SourceDto.Module.Id!.Value, token))!);
 
         void createCtor(CreationData data)
             => data.ViewModel.Controller.CtorParams.Add((MethodArgument.Create(TypePath.New<IMediator>()), true));
